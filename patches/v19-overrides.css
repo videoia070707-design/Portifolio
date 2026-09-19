@@ -1,0 +1,84 @@
+/* =========================================================
+   MOVX v19 — conveyor wall + contact contrast
+   Scope: only the 3-row living archive and contact readability
+   ========================================================= */
+
+/* Three-row continuous conveyor. The duplicated cards already rendered by
+   renderLoopWall() make the 50% handoff seamless. */
+.loop-wall .loop-track{
+  animation:movx-conveyor-left 46s linear infinite !important;
+  animation-play-state:running !important;
+  will-change:transform;
+}
+.loop-wall .loop-row:nth-child(1) .loop-track{
+  animation-duration:46s !important;
+  animation-delay:-6s !important;
+}
+.loop-wall .loop-row:nth-child(2) .loop-track{
+  animation-name:movx-conveyor-right !important;
+  animation-duration:52s !important;
+  animation-delay:-18s !important;
+}
+.loop-wall .loop-row:nth-child(3) .loop-track{
+  animation-duration:49s !important;
+  animation-delay:-29s !important;
+}
+@keyframes movx-conveyor-left{
+  from{transform:translate3d(0,0,0)}
+  to{transform:translate3d(calc(-50% - 9px),0,0)}
+}
+@keyframes movx-conveyor-right{
+  from{transform:translate3d(calc(-50% - 9px),0,0)}
+  to{transform:translate3d(0,0,0)}
+}
+
+/* Do not stop the whole wall merely because the pointer entered the section.
+   Pause only the row containing the artwork being inspected. */
+.loop-wall:hover .loop-track,
+.loop-wall[data-loop-paused="true"] .loop-track{
+  animation-play-state:running !important;
+}
+.loop-row:has(.loop-card:hover) .loop-track{
+  animation-play-state:paused !important;
+}
+
+/* Keep the wall fully readable until an actual artwork is hovered. */
+.loop-wall:hover .loop-card,
+.loop-wall[data-loop-paused="true"] .loop-card{
+  opacity:1;
+  filter:none;
+}
+.loop-wall:has(.loop-card:hover) .loop-card{
+  opacity:.34;
+  filter:saturate(.82) blur(.1px);
+}
+.loop-wall:has(.loop-card:hover) .loop-card:hover{
+  opacity:1;
+  filter:none;
+}
+
+/* Contact section: intentional theme inversion for maximum legibility. */
+body[data-page="social"] .contact-section{
+  background:#0a0a0a !important;
+  color:#f4efe9 !important;
+  border-top-color:rgba(244,239,233,.18) !important;
+}
+html[data-theme="dark"] body[data-page="social"] .contact-section{
+  background:#f0ebe5 !important;
+  color:#090909 !important;
+  border-top-color:rgba(9,9,9,.16) !important;
+}
+body[data-page="social"] .contact-section .contact-copy p{
+  color:inherit;
+  opacity:.86;
+}
+body[data-page="social"] .contact-section .contact-copy .kicker,
+body[data-page="social"] .contact-section .contact-form label>span{
+  color:inherit;
+  opacity:.7;
+}
+body[data-page="social"] .contact-section input::placeholder,
+body[data-page="social"] .contact-section textarea::placeholder{
+  color:currentColor;
+  opacity:.42;
+}
