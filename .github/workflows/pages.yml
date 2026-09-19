@@ -24,7 +24,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Build MOVX v31 exhibition-grade motion
+      - name: Build MOVX v32 authored editorial architecture
         shell: bash
         run: |
           set -euo pipefail
@@ -78,32 +78,38 @@ jobs:
           python3 patches/v23-copy.py _site
 
           # V28 = safe decorative scaffolding. V30 = collision-safe editorial layout.
-          # V31 = exhibition-grade navigation, artwork and case-study interaction.
+          # V31 = exhibition interactions. V32 = authored asymmetry, chapter hierarchy and grid rhythm.
           test -s patches/v28-motion-safe.css
           test -s patches/v30-polish.css
           test -s patches/v30-motion-premium.js
           test -s patches/v31-exhibition.css
           test -s patches/v31-exhibition.js
+          test -s patches/v32-editorial-architecture.css
+          test -s patches/v32-editorial-architecture.js
           printf '\n\n' >> _site/styles.css
           cat patches/v28-motion-safe.css >> _site/styles.css
           printf '\n\n' >> _site/styles.css
           cat patches/v30-polish.css >> _site/styles.css
           printf '\n\n' >> _site/styles.css
           cat patches/v31-exhibition.css >> _site/styles.css
+          printf '\n\n' >> _site/styles.css
+          cat patches/v32-editorial-architecture.css >> _site/styles.css
           printf '\n\n' >> _site/script.js
           cat patches/v30-motion-premium.js >> _site/script.js
           printf '\n\n' >> _site/script.js
           cat patches/v31-exhibition.js >> _site/script.js
+          printf '\n\n' >> _site/script.js
+          cat patches/v32-editorial-architecture.js >> _site/script.js
 
-          # Fresh requests for the v31 experience.
+          # Fresh requests for the v32 architecture.
           python3 - <<'PY'
           from pathlib import Path
           p = Path('_site/social-media.html')
           h = p.read_text(encoding='utf-8')
-          h = h.replace('href="styles.css"', 'href="styles.css?v=31-exhibition"')
-          h = h.replace('src="projects.js"', 'src="projects.js?v=31-exhibition"')
-          h = h.replace('src="i18n.js"', 'src="i18n.js?v=31-exhibition"')
-          h = h.replace('src="script.js"', 'src="script.js?v=31-exhibition"')
+          h = h.replace('href="styles.css"', 'href="styles.css?v=32-editorial"')
+          h = h.replace('src="projects.js"', 'src="projects.js?v=32-editorial"')
+          h = h.replace('src="i18n.js"', 'src="i18n.js?v=32-editorial"')
+          h = h.replace('src="script.js"', 'src="script.js?v=32-editorial"')
           p.write_text(h, encoding='utf-8')
           PY
 
@@ -139,9 +145,13 @@ jobs:
           grep -q 'MOVX v30 — premium editorial refinement' _site/styles.css
           grep -q 'MOVX v31 — exhibition-grade interaction runtime' _site/script.js
           grep -q 'MOVX v31 — exhibition-grade interaction layer' _site/styles.css
+          grep -q 'MOVX v32 — editorial architecture runtime' _site/script.js
+          grep -q 'MOVX v32 — editorial architecture' _site/styles.css
           grep -q 'v31-nav-current' _site/script.js
           grep -q 'v31-media-interactive' _site/styles.css
           grep -q 'v31-case-visible' _site/script.js
+          grep -q 'data-v32-order' _site/script.js
+          grep -q 'grid-template-columns:repeat(12,minmax(0,1fr))' _site/styles.css
           grep -q 'grid-template-columns:minmax(180px,.44fr)' _site/styles.css
           grep -q 'white-space:normal!important' _site/styles.css
           grep -q 'Tecnologia & Inovação' _site/i18n.js
@@ -156,7 +166,7 @@ jobs:
           ! grep -q 'vendor/lenis.min.js' _site/index.html
           ! grep -q 'social-cover-art__image{opacity:0' _site/styles.css
 
-          echo "MOVX v31 validated: exhibition navigation + image-plane motion + editorial case transitions"
+          echo "MOVX v32 validated: asymmetric editorial grids + chapter markers + exhibition interactions"
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
