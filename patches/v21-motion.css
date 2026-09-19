@@ -1,0 +1,38 @@
+/* MOVX v21 — motion engine compatibility layer */
+.movx-motion-v21 .loop-row{overflow:hidden}
+.movx-motion-v21 .movx-conveyor-stage{
+  display:block;
+  width:max-content;
+  will-change:transform;
+  transform:translate3d(0,0,0);
+}
+/* Neutralize every legacy transform/animation on the track itself. Motion is
+   now applied only to the stage wrapper by v21-motion.js. */
+.movx-motion-v21 .movx-conveyor-stage>.loop-track{
+  animation:none!important;
+  transform:none!important;
+  will-change:auto;
+}
+.movx-motion-v21 .loop-wall:hover .loop-track,
+.movx-motion-v21 .loop-wall[data-loop-paused="true"] .loop-track,
+.movx-motion-v21 .loop-row:has(.loop-card:hover) .loop-track{
+  animation:none!important;
+}
+.movx-motion-v21 .velocity-strip{overflow:hidden}
+.movx-motion-v21 .movx-ticker-stage{display:block;width:max-content;will-change:transform}
+.movx-motion-v21 .movx-ticker-stage>.velocity-track{transform:none!important;will-change:auto}
+
+/* Give the static hero artwork a restrained cinematic breathing motion. */
+.movx-motion-v21 .social-cover-art__image{
+  transform-origin:50% 48%;
+  animation:movx-v21-hero-breathe 18s cubic-bezier(.45,0,.2,1) infinite alternate!important;
+  will-change:transform;
+}
+@keyframes movx-v21-hero-breathe{
+  0%{transform:scale(1.002) translate3d(0,0,0)}
+  100%{transform:scale(1.018) translate3d(-.25%,.15%,0)}
+}
+
+/* Restore premium case entrance even when old reduced-motion blocks won the cascade. */
+.movx-motion-v21 .case-viewer.open{animation:caseReveal .64s var(--ease-inout) both!important}
+.movx-motion-v21 .case-viewer.closing{animation:caseHide .42s var(--ease-inout) both!important}
