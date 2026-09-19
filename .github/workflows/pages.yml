@@ -59,6 +59,9 @@ jobs:
             echo "Applied MOVX v19 style overrides"
           fi
 
+          # Correct the Belive Cashflow case sequence.
+          python3 case-order-v20.py _site/projects.js
+
           # Validate the real application before publishing.
           test -s _site/index.html
           test -s _site/social-media.html
@@ -77,6 +80,7 @@ jobs:
 
           grep -q 'movx-conveyor-left' _site/styles.css
           grep -q 'contact contrast' _site/styles.css
+          grep -q "slides: \['assets/projects/belive-cashflow.webp'.*'assets/projects/belive-01.webp'\]" _site/projects.js
           echo "MOVX build validated and ready for GitHub Pages"
 
       - name: Configure GitHub Pages
