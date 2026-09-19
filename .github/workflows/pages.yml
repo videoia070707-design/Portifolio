@@ -1,4 +1,4 @@
-name: Deploy Full MOVX v18
+name: Deploy MOVX Portfolio
 
 on:
   push:
@@ -52,7 +52,14 @@ jobs:
           # Publish the complete unified MOVX experience as the real homepage.
           cp _site/social-media.html _site/index.html
 
-          # Validate the real v18 application before publishing.
+          # Apply repository-side refinements without altering the source ZIP.
+          if [ -s patches/v19-overrides.css ]; then
+            printf '\n\n' >> _site/styles.css
+            cat patches/v19-overrides.css >> _site/styles.css
+            echo "Applied MOVX v19 style overrides"
+          fi
+
+          # Validate the real application before publishing.
           test -s _site/index.html
           test -s _site/social-media.html
           test -s _site/styles.css
@@ -68,7 +75,9 @@ jobs:
             exit 1
           fi
 
-          echo "Full MOVX v18 validated and ready for GitHub Pages"
+          grep -q 'movx-conveyor-left' _site/styles.css
+          grep -q 'contact contrast' _site/styles.css
+          echo "MOVX build validated and ready for GitHub Pages"
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
