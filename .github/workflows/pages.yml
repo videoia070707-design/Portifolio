@@ -1,4 +1,4 @@
-name: Deploy MOVX to GitHub Pages
+name: Deploy Full MOVX v18
 
 on:
   push:
@@ -24,32 +24,65 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Restore complete MOVX site bundle
+      - name: Build full MOVX site from uploaded ZIP
         shell: bash
         run: |
-          rm -rf site site.zip
-          mkdir -p site
-          python3 - <<'PY'
-          import base64, pathlib
-          text = pathlib.Path('.restore/site.b64').read_text(encoding='utf-8')
-          pathlib.Path('site.zip').write_bytes(base64.b64decode(text))
-          PY
-          unzip -q site.zip -d site
-          test -s site/index.html
-          test -s site/styles.css
-          test -s site/script.js
-          test -s site/i18n.js
-          test -s site/projects.js
-          test -s site/hero.webp
-          test -s site/sprite.webp
+          set -euo pipefail
+
+          ZIP=""
+          for candidate in "MOVX_Portfolio_v18(1).zip" "MOVX_Portfolio_v18.zip"; do
+            if [ -f "$candidate" ]; then
+              ZIP="$candidate"
+              break
+            fi
+          done
+
+          if [ -z "$ZIP" ]; then
+            echo "::error::Upload MOVX_Portfolio_v18(1).zip or MOVX_Portfolio_v18.zip to the repository root."
+            exit 1
+          fi
+
+          rm -rf _restore _site
+          mkdir -p _restore _site
+          unzip -q "$ZIP" -d _restore
+
+          SOCIAL="$(find _restore -type f -name 'social-media.html' -print -quit)"
+          if [ -z "$SOCIAL" ]; then
+            echo "::error::social-media.html not found inside ZIP"
+            exit 1
+          fi
+
+          ROOT="$(dirname "$SOCIAL")"
+          cp -a "$ROOT"/. _site/
+
+          # Make the complete unified v18 experience the actual homepage.
+          cp _site/social-media.html _site/index.html
+
+          # Validate the real v18 files and asset library before publishing.
+          test -s _site/index.html
+          test -s _site/social-media.html
+          test -s _site/styles.css
+          test -s _site/script.js
+          test -s _site/i18n.js
+          test -s _site/projects.js
+          test -s _site/assets/hero/soul-of-design-hero-clean.png
+
+          ASSET_COUNT="$(find _site/assets -type f | wc -l | tr -d ' ')"
+          echo "MOVX asset count: $ASSET_COUNT"
+          if [ "$ASSET_COUNT" -lt 70 ]; then
+            echo "::error::Expected at least 70 MOVX assets, found $ASSET_COUNT"
+            exit 1
+          fi
+
+          echo "Full MOVX v18 validated and ready for Pages"
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
 
-      - name: Upload site
+      - name: Upload full site
         uses: actions/upload-pages-artifact@v3
         with:
-          path: site
+          path: _site
 
       - name: Deploy
         id: deployment
