@@ -1,6 +1,8 @@
 name: Deploy MOVX to GitHub Pages
 
 on:
+  push:
+    branches: ["main"]
   workflow_dispatch:
 
 permissions:
@@ -8,8 +10,47 @@ permissions:
   pages: write
   id-token: write
 
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
 jobs:
-  hold:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
-      - run: echo "MOVX restore staging"
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Restore complete MOVX site bundle
+        shell: bash
+        run: |
+          rm -rf site site.zip
+          mkdir -p site
+          python3 - <<'PY'
+          import base64, pathlib
+          text = pathlib.Path('.restore/site.b64').read_text(encoding='utf-8')
+          pathlib.Path('site.zip').write_bytes(base64.b64decode(text))
+          PY
+          unzip -q site.zip -d site
+          test -s site/index.html
+          test -s site/styles.css
+          test -s site/script.js
+          test -s site/i18n.js
+          test -s site/projects.js
+          test -s site/hero.webp
+          test -s site/sprite.webp
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload site
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4
