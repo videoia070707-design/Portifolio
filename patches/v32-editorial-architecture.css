@@ -1,0 +1,311 @@
+/* MOVX v32 — editorial architecture
+   Purpose: make the portfolio feel authored, paced and publication-like rather than template-like.
+   The work stays primary; variation comes from proportion, whitespace, alignment and hierarchy. */
+html.movx-v32 body{
+  --v32-ease:cubic-bezier(.19,1,.22,1);
+  --v32-ui:cubic-bezier(.4,0,.2,1);
+  --v32-accent:var(--editorial-red,#9c2e24);
+  --v32-hairline:color-mix(in srgb,var(--fg) 14%,transparent);
+  --v32-strong:color-mix(in srgb,var(--fg) 28%,transparent);
+}
+
+/* ---------------------------------------------------------
+   Chapter architecture — subtle publication markers
+   --------------------------------------------------------- */
+html.movx-v32 [data-v32-label]{position:relative}
+html.movx-v32 [data-v32-label]::after{
+  content:attr(data-v32-index) " / " attr(data-v32-label);
+  position:absolute;
+  top:clamp(22px,2.8vw,42px);
+  right:var(--pad,4vw);
+  z-index:8;
+  pointer-events:none;
+  font-family:var(--mono,monospace);
+  font-size:9px;
+  line-height:1;
+  letter-spacing:.16em;
+  text-transform:uppercase;
+  color:var(--muted);
+  opacity:.62;
+  transform:translate3d(0,8px,0);
+  transition:opacity .9s var(--v32-ui),transform 1.05s var(--v32-ease);
+}
+html.movx-v32 [data-v32-label].v32-section-live::after{
+  opacity:.92;
+  transform:translate3d(0,0,0);
+}
+
+/* Keep section boundaries architectural, not decorative. */
+html.movx-v32 #livingArchive,
+html.movx-v32 #nicheIndex,
+html.movx-v32 #archiveControls,
+html.movx-v32 #projectsList,
+html.movx-v32 .about-section,
+html.movx-v32 .services-section,
+html.movx-v32 .process-section,
+html.movx-v32 .contact-section{
+  border-top-color:var(--v32-hairline)!important;
+}
+
+/* ---------------------------------------------------------
+   Living archive — wide exhibition wall with deliberate offsets
+   --------------------------------------------------------- */
+html.movx-v32 #livingArchive .loop-wall{
+  margin-left:calc(var(--pad,4vw) * -1);
+  margin-right:calc(var(--pad,4vw) * -1);
+}
+html.movx-v32 #livingArchive .loop-row{
+  position:relative;
+  padding-left:var(--v32-row-indent,0px);
+  transition:padding-left 1.2s var(--v32-ease);
+}
+html.movx-v32 #livingArchive .loop-row:nth-child(1){--v32-row-indent:0vw}
+html.movx-v32 #livingArchive .loop-row:nth-child(2){--v32-row-indent:5.5vw}
+html.movx-v32 #livingArchive .loop-row:nth-child(3){--v32-row-indent:2.25vw}
+html.movx-v32 #livingArchive .loop-card{
+  border-color:var(--v32-hairline)!important;
+  background:transparent!important;
+}
+html.movx-v32 #livingArchive .loop-card b,
+html.movx-v32 #livingArchive .loop-card strong{
+  letter-spacing:-.025em;
+}
+
+/* ---------------------------------------------------------
+   Niche index — irregular editorial spread instead of equal cards
+   --------------------------------------------------------- */
+@media(min-width:901px){
+  html.movx-v32 #nicheGrid{
+    display:grid!important;
+    grid-template-columns:repeat(12,minmax(0,1fr))!important;
+    gap:clamp(12px,1.35vw,20px)!important;
+    align-items:stretch;
+  }
+  html.movx-v32 #nicheGrid>.niche-card{
+    grid-column:span 4;
+    min-width:0;
+    min-height:clamp(240px,28vw,430px);
+    border-color:var(--v32-hairline)!important;
+    background:transparent!important;
+  }
+  html.movx-v32 #nicheGrid>.niche-card:nth-child(6n+1){grid-column:span 5}
+  html.movx-v32 #nicheGrid>.niche-card:nth-child(6n+2){grid-column:span 3}
+  html.movx-v32 #nicheGrid>.niche-card:nth-child(6n+3){grid-column:span 4}
+  html.movx-v32 #nicheGrid>.niche-card:nth-child(6n+4){grid-column:2 / span 3}
+  html.movx-v32 #nicheGrid>.niche-card:nth-child(6n+5){grid-column:span 5}
+  html.movx-v32 #nicheGrid>.niche-card:nth-child(6n+6){grid-column:span 3}
+}
+html.movx-v32 #nicheGrid .niche-card{
+  position:relative;
+  overflow:hidden;
+  border-radius:0!important;
+}
+html.movx-v32 #nicheGrid .niche-card::after{
+  content:"";
+  position:absolute;
+  left:0;
+  bottom:0;
+  width:clamp(28px,4vw,64px);
+  height:1px;
+  background:var(--v32-accent);
+  opacity:.52;
+  transform:scaleX(.24);
+  transform-origin:left center;
+  transition:transform 1s var(--v32-ease),opacity .7s var(--v32-ui);
+}
+html.movx-v32 #nicheGrid .niche-card:hover::after,
+html.movx-v32 #nicheGrid .niche-card:focus-within::after{
+  transform:scaleX(1);
+  opacity:.88;
+}
+
+/* ---------------------------------------------------------
+   Archive controls — typography first, no pill/filter-chip language
+   --------------------------------------------------------- */
+html.movx-v32 #archiveControls button,
+html.movx-v32 #archiveControls .filter-button,
+html.movx-v32 #archiveControls .filter-btn{
+  position:relative;
+  border-radius:0!important;
+  box-shadow:none!important;
+  background:transparent!important;
+  padding-left:0!important;
+  padding-right:0!important;
+  margin-right:clamp(18px,2.4vw,34px);
+}
+html.movx-v32 #archiveControls button::after,
+html.movx-v32 #archiveControls .filter-button::after,
+html.movx-v32 #archiveControls .filter-btn::after{
+  content:"";
+  position:absolute;
+  left:0;
+  right:0;
+  bottom:3px;
+  height:1px;
+  background:currentColor;
+  opacity:.68;
+  transform:scaleX(0);
+  transform-origin:right center;
+  transition:transform .82s var(--v32-ease);
+}
+html.movx-v32 #archiveControls button:hover::after,
+html.movx-v32 #archiveControls button:focus-visible::after,
+html.movx-v32 #archiveControls button.active::after,
+html.movx-v32 #archiveControls .filter-button.active::after,
+html.movx-v32 #archiveControls .filter-btn.active::after{
+  transform:scaleX(1);
+  transform-origin:left center;
+}
+
+/* ---------------------------------------------------------
+   Archive grid — controlled rhythm changes, still image-led
+   --------------------------------------------------------- */
+@media(min-width:1081px){
+  html.movx-v32 #archiveGrid{
+    display:grid!important;
+    grid-template-columns:repeat(12,minmax(0,1fr))!important;
+    gap:clamp(16px,1.7vw,26px)!important;
+    align-items:start;
+  }
+  html.movx-v32 #archiveGrid>.archive-card{
+    grid-column:span 3;
+    min-width:0;
+    border-radius:0!important;
+  }
+  html.movx-v32 #archiveGrid>.archive-card:nth-child(8n+1){grid-column:span 6}
+  html.movx-v32 #archiveGrid>.archive-card:nth-child(8n+2){grid-column:span 3}
+  html.movx-v32 #archiveGrid>.archive-card:nth-child(8n+3){grid-column:span 3}
+  html.movx-v32 #archiveGrid>.archive-card:nth-child(8n+6){grid-column:3 / span 4}
+  html.movx-v32 #archiveGrid>.archive-card:nth-child(8n+7){grid-column:span 3}
+  html.movx-v32 #archiveGrid>.archive-card:nth-child(8n+8){grid-column:span 3}
+}
+html.movx-v32 #archiveGrid .archive-card{
+  border-color:var(--v32-hairline)!important;
+  background:transparent!important;
+}
+html.movx-v32 #archiveGrid .archive-card:nth-child(8n+1) .archive-card__meta,
+html.movx-v32 #archiveGrid .archive-card:nth-child(8n+1) .card-meta{
+  max-width:44ch;
+}
+
+/* ---------------------------------------------------------
+   Selected work list — magazine index cadence
+   --------------------------------------------------------- */
+html.movx-v32 #projectsList,
+html.movx-v32 .projects-list{
+  position:relative;
+}
+html.movx-v32 #projectsList .selected-index-row,
+html.movx-v32 .projects-list .selected-index-row{
+  position:relative;
+  border-color:var(--v32-hairline)!important;
+  padding-top:clamp(26px,3.4vw,46px)!important;
+  padding-bottom:clamp(26px,3.4vw,46px)!important;
+  transition:opacity .82s var(--v32-ui),border-color .82s var(--v32-ui)!important;
+}
+html.movx-v32 #projectsList .selected-index-row:nth-child(even),
+html.movx-v32 .projects-list .selected-index-row:nth-child(even){
+  padding-left:clamp(0px,3vw,46px)!important;
+}
+html.movx-v32 #projectsList .selected-index-row::before,
+html.movx-v32 .projects-list .selected-index-row::before{
+  content:attr(data-v32-order);
+  position:absolute;
+  right:0;
+  top:clamp(24px,3vw,42px);
+  font-family:var(--mono,monospace);
+  font-size:9px;
+  letter-spacing:.14em;
+  color:var(--muted);
+  opacity:.5;
+}
+html.movx-v32 #projectsList .selected-index-row:hover,
+html.movx-v32 .projects-list .selected-index-row:hover{
+  border-color:var(--v32-strong)!important;
+}
+
+/* ---------------------------------------------------------
+   About / Services / Process — editorial measures and breathing room
+   --------------------------------------------------------- */
+html.movx-v32 .about-section .about-copy{max-width:62ch!important}
+html.movx-v32 .about-section .about-heading{max-width:13ch}
+html.movx-v32 .services-list{max-width:1180px;margin-left:auto;margin-right:0}
+html.movx-v32 .service-row{
+  border-color:var(--v32-hairline)!important;
+}
+html.movx-v32 .service-row:nth-child(even){
+  padding-left:clamp(0px,2.4vw,34px)!important;
+}
+html.movx-v32 .process-list{max-width:980px;margin-left:auto!important}
+html.movx-v32 .process-list li:nth-child(even)>div{
+  padding-left:clamp(0px,1.8vw,24px)!important;
+}
+
+/* Contact should finish like a printed colophon, not a SaaS form card. */
+html.movx-v32 .contact-section .contact-copy{max-width:760px}
+html.movx-v32 .contact-form{border-radius:0!important;box-shadow:none!important}
+html.movx-v32 .contact-form input,
+html.movx-v32 .contact-form textarea,
+html.movx-v32 .contact-form select{
+  border-radius:0!important;
+}
+
+/* ---------------------------------------------------------
+   Responsive: asymmetry collapses before readability does
+   --------------------------------------------------------- */
+@media(max-width:1080px){
+  html.movx-v32 #archiveGrid{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    gap:18px!important;
+  }
+  html.movx-v32 #archiveGrid>.archive-card{grid-column:auto!important}
+}
+@media(max-width:900px){
+  html.movx-v32 [data-v32-label]::after{
+    position:relative;
+    display:block;
+    top:auto;
+    right:auto;
+    margin:0 var(--pad,4vw) 18px;
+    transform:none;
+    opacity:.72;
+  }
+  html.movx-v32 #livingArchive .loop-row{padding-left:0!important}
+  html.movx-v32 #nicheGrid{
+    display:grid!important;
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    gap:14px!important;
+  }
+  html.movx-v32 #nicheGrid>.niche-card{
+    grid-column:auto!important;
+    min-height:0!important;
+  }
+  html.movx-v32 .service-row:nth-child(even),
+  html.movx-v32 .process-list li:nth-child(even)>div,
+  html.movx-v32 #projectsList .selected-index-row:nth-child(even),
+  html.movx-v32 .projects-list .selected-index-row:nth-child(even){
+    padding-left:0!important;
+  }
+}
+@media(max-width:620px){
+  html.movx-v32 #nicheGrid,
+  html.movx-v32 #archiveGrid{
+    grid-template-columns:minmax(0,1fr)!important;
+  }
+  html.movx-v32 #archiveControls button,
+  html.movx-v32 #archiveControls .filter-button,
+  html.movx-v32 #archiveControls .filter-btn{
+    margin-right:18px;
+  }
+  html.movx-v32 #projectsList .selected-index-row::before,
+  html.movx-v32 .projects-list .selected-index-row::before{display:none}
+}
+
+@media(prefers-reduced-motion:reduce){
+  html.movx-v32 [data-v32-label]::after,
+  html.movx-v32 #nicheGrid .niche-card::after,
+  html.movx-v32 #archiveControls button::after{
+    transition:none!important;
+    transform:none!important;
+  }
+}
