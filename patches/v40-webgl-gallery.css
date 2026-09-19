@@ -1,0 +1,118 @@
+/* MOVX v40 — native WebGL project corridor
+   The GPU scene lives behind the authored DOM spreads. DOM remains readable,
+   accessible and fully functional when WebGL is unavailable. */
+html.movx-v40 body{
+  --v40-ease:cubic-bezier(.16,1,.3,1);
+  --v40-scene-line:color-mix(in srgb,var(--fg) 14%,transparent);
+}
+
+html.movx-v40 body[data-page="social"] .projects-list{
+  isolation:isolate;
+  position:relative;
+  overflow:clip!important;
+}
+
+html.movx-v40 body[data-page="social"] .v40-webgl-stage{
+  position:sticky;
+  top:0;
+  height:100vh;
+  width:100%;
+  margin-bottom:-100vh;
+  z-index:0;
+  pointer-events:none;
+  opacity:0;
+  overflow:hidden;
+  transition:opacity .8s var(--v40-ease);
+  contain:strict;
+}
+html.movx-v40 body[data-page="social"] .v40-webgl-stage.v40-webgl-ready.v40-webgl-active{
+  opacity:.92;
+}
+html.movx-v40 body[data-page="social"] .v40-webgl-canvas{
+  display:block;
+  width:100%;
+  height:100%;
+  opacity:.92;
+  filter:saturate(.9) contrast(1.02);
+}
+
+/* Subtle depth-room guides: not UI cards, just perspective reference lines. */
+html.movx-v40 body[data-page="social"] .v40-webgl-stage::before,
+html.movx-v40 body[data-page="social"] .v40-webgl-stage::after{
+  content:"";
+  position:absolute;
+  inset:8vh 6vw;
+  pointer-events:none;
+  opacity:.22;
+  z-index:2;
+}
+html.movx-v40 body[data-page="social"] .v40-webgl-stage::before{
+  border-top:1px solid var(--v40-scene-line);
+  border-bottom:1px solid var(--v40-scene-line);
+  transform:perspective(900px) rotateX(66deg) translateY(18vh) scaleX(.86);
+  transform-origin:center bottom;
+}
+html.movx-v40 body[data-page="social"] .v40-webgl-stage::after{
+  background:
+    linear-gradient(90deg,transparent 49.92%,var(--v40-scene-line) 50%,transparent 50.08%),
+    linear-gradient(180deg,transparent 49.92%,var(--v40-scene-line) 50%,transparent 50.08%);
+  opacity:.12;
+}
+
+html.movx-v40 body[data-page="social"] #projectsList{
+  position:relative;
+  z-index:3!important;
+}
+html.movx-v40 body[data-page="social"] #projectsList .project-entry{
+  position:relative;
+  z-index:2;
+}
+
+/* Let the WebGL corridor breathe around the DOM cover without hurting copy. */
+@media(min-width:1101px){
+  html.movx-v40 body[data-page="social"] #projectsList .project-entry{
+    min-height:clamp(760px,92vh,1040px);
+    align-items:center!important;
+  }
+  html.movx-v40 body[data-page="social"] #projectsList .project-cover{
+    backdrop-filter:blur(.1px);
+  }
+}
+
+/* Make the v39 DOM depth a little more decisive now that the WebGL room supports it. */
+@media(min-width:981px){
+  html.movx-v40 body[data-page="social"] #projectsList .project-cover{
+    filter:drop-shadow(0 var(--v39-project-shadow-y,28px) var(--v39-project-shadow-blur,54px) rgba(0,0,0,var(--v39-project-shadow-a,.16)))!important;
+  }
+  html.movx-v40 body[data-page="social"] #projectsList .project-entry.v39-depth-current .project-cover{
+    outline:1px solid color-mix(in srgb,var(--fg) 11%,transparent);
+    outline-offset:8px;
+  }
+}
+
+/* Light theme: keep image ghosts present but quieter. */
+html[data-theme="light"].movx-v40 body[data-page="social"] .v40-webgl-canvas{
+  opacity:.72;
+  filter:saturate(.78) contrast(.96);
+}
+html[data-theme="dark"].movx-v40 body[data-page="social"] .v40-webgl-canvas{
+  opacity:.96;
+  filter:saturate(.92) contrast(1.04);
+}
+
+@media(max-width:980px){
+  html.movx-v40 body[data-page="social"] .v40-webgl-stage{
+    opacity:0!important;
+    display:none!important;
+  }
+}
+
+@media(prefers-reduced-motion:reduce){
+  html.movx-v40 body[data-page="social"] .v40-webgl-stage{
+    display:none!important;
+  }
+}
+
+html.v40-webgl-fallback body[data-page="social"] .v40-webgl-stage{
+  display:none!important;
+}
