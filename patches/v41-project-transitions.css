@@ -1,0 +1,78 @@
+/* MOVX v41 — WebGL project portal + project mood
+   Adds one signature transition and contextual atmosphere without moving copy. */
+html.movx-v41 body{
+  --v41-mood:var(--editorial-red,#9c2e24);
+  --v41-ease:cubic-bezier(.16,1,.3,1);
+}
+
+/* The selected-cases chapter now shifts atmosphere with the active artwork. */
+html.movx-v41 body[data-page="social"] .projects-list{
+  background-color:color-mix(in srgb,var(--v41-mood) 5.5%,var(--v38-wash,var(--bg)))!important;
+  transition:background-color .95s var(--v41-ease)!important;
+}
+html.movx-v41 body[data-page="social"] .v40-webgl-stage::before{
+  border-color:color-mix(in srgb,var(--v41-mood) 32%,var(--v40-scene-line))!important;
+  transition:border-color .85s var(--v41-ease);
+}
+html.movx-v41 body[data-page="social"] .v40-webgl-stage::after{
+  background:
+    linear-gradient(90deg,transparent 49.92%,color-mix(in srgb,var(--v41-mood) 24%,var(--v40-scene-line)) 50%,transparent 50.08%),
+    linear-gradient(180deg,transparent 49.92%,color-mix(in srgb,var(--v41-mood) 20%,var(--v40-scene-line)) 50%,transparent 50.08%)!important;
+  transition:opacity .8s var(--v41-ease);
+}
+
+/* WebGL portal — fixed above DOM only during the short project transition. */
+html.movx-v41 .v41-project-transition{
+  position:fixed;
+  inset:0;
+  z-index:12000;
+  pointer-events:none;
+  opacity:0;
+  visibility:hidden;
+  overflow:hidden;
+  contain:strict;
+  transition:opacity .12s linear,visibility 0s linear .14s;
+}
+html.movx-v41 .v41-project-transition.v41-transition-live{
+  opacity:1;
+  visibility:visible;
+  transition:opacity .06s linear,visibility 0s linear 0s;
+}
+html.movx-v41 .v41-project-transition__canvas{
+  display:block;
+  width:100%;
+  height:100%;
+}
+
+/* A tiny flash of project color makes the portal feel intentional, not like a screenshot zoom. */
+html.movx-v41 .v41-project-transition::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:radial-gradient(circle at 50% 50%,color-mix(in srgb,var(--v41-mood) 18%,transparent),transparent 62%);
+  opacity:0;
+  transition:opacity .25s ease;
+}
+html.movx-v41 .v41-project-transition.v41-transition-live::after{opacity:.48}
+
+/* During the portal, suppress only decorative hover emphasis; layout/copy stay still. */
+html.v41-transition-running body[data-page="social"] #projectsList .project-entry{
+  transition:none!important;
+}
+html.v41-transition-running body[data-page="social"] #projectsList .project-cover::after{
+  opacity:0!important;
+}
+
+@media(max-width:720px){
+  html.movx-v41 .v41-project-transition{display:none!important}
+  html.movx-v41 body[data-page="social"] .projects-list{
+    background-color:var(--v38-wash,var(--bg))!important;
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  html.movx-v41 .v41-project-transition{display:none!important}
+  html.movx-v41 body[data-page="social"] .projects-list{transition:none!important}
+}
+html.v41-portal-fallback .v41-project-transition,
+html.v41-portal-reduced .v41-project-transition{display:none!important}
