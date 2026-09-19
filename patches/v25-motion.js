@@ -5,15 +5,15 @@
   const params = new URLSearchParams(location.search);
   const staticMode = params.has('static') || matchMedia('(prefers-reduced-motion: reduce)').matches;
   const root = document.documentElement;
-  root.classList.add('movx-v25');
 
   const gsap = window.gsap;
   const ScrollTrigger = window.ScrollTrigger;
   const LenisCtor = window.Lenis;
   if (!gsap || !ScrollTrigger) {
-    console.warn('MOVX v25: GSAP/ScrollTrigger unavailable; revealing static content.');
+    console.warn('MOVX v25: GSAP/ScrollTrigger unavailable; keeping the stable static site visible.');
     return;
   }
+  root.classList.add('movx-v25');
   gsap.registerPlugin(ScrollTrigger);
 
   const q = (s,ctx=document) => ctx.querySelector(s);
@@ -37,6 +37,16 @@
     });
     gsap.ticker.add(time => lenis.raf(time * 1000));
     gsap.ticker.lagSmoothing(0);
+
+    document.addEventListener('click', event => {
+      const link = event.target.closest('a[href^="#"]');
+      if (!link) return;
+      const href = link.getAttribute('href');
+      const target = href && href.length > 1 ? document.querySelector(href) : document.body;
+      if (!target) return;
+      event.preventDefault();
+      lenis.scrollTo(target,{duration:1.25,offset:-68,easing:t=>1-Math.pow(1-t,4)});
+    });
   }
 
   /* 2) 2.5D hero: approved Soul of Design artwork split into spatial planes. */
@@ -82,10 +92,11 @@
     }
   }
 
-  /* 3) Calm editorial reveals, including dynamic content. */
+  /* 3) Calm editorial reveals, including dynamic content.
+        About owns its own transform space and is intentionally excluded. */
   const revealSelectors = [
-    ['.archive-head .kicker,.archive-head>p,.section-intro>p,.about-copy,.contact-copy>p,.contact-form','copy'],
-    ['.archive-head h2,.section-intro h2,.about-heading h2,.process-title h2,.contact-copy h2','title'],
+    ['.archive-head .kicker,.archive-head>p,.section-intro>p,.contact-copy>p,.contact-form','copy'],
+    ['.archive-head h2,.section-intro h2,.process-title h2,.contact-copy h2','title'],
     ['.niche-card,.archive-card,.project-entry','media']
   ];
   const registerReveals = (scope=document) => {
@@ -158,11 +169,15 @@
   if(about){
     let word=q('.v25-about-word',about);
     if(!word){word=document.createElement('div');word.className='v25-about-word';word.setAttribute('aria-hidden','true');word.textContent='SOUL';about.prepend(word)}
+    const aboutHeading=q('.about-heading',about);
+    const aboutCopy=q('.about-copy',about);
+    const aboutSignature=q('.about-signature',about);
     if(!staticMode){
+      gsap.fromTo([aboutHeading,aboutCopy],{autoAlpha:0},{autoAlpha:1,duration:1.45,ease:'power3.out',stagger:.12,scrollTrigger:{trigger:about,start:'top 78%',once:true}});
       gsap.fromTo(word,{xPercent:-8,yPercent:-42},{xPercent:8,yPercent:-57,ease:'none',scrollTrigger:{trigger:about,start:'top bottom',end:'bottom top',scrub:1.8}});
-      gsap.fromTo(q('.about-heading',about),{y:72},{y:-54,ease:'none',scrollTrigger:{trigger:about,start:'top bottom',end:'bottom top',scrub:1.55}});
-      gsap.fromTo(q('.about-copy',about),{y:28},{y:-36,ease:'none',scrollTrigger:{trigger:about,start:'top bottom',end:'bottom top',scrub:1.8}});
-      gsap.fromTo(q('.about-signature',about),{x:-34},{x:48,ease:'none',scrollTrigger:{trigger:about,start:'top 85%',end:'bottom 20%',scrub:1.7,onUpdate:self=>about.style.setProperty('--v25-signature',`${(self.progress*100).toFixed(1)}%`)}});
+      gsap.fromTo(aboutHeading,{y:72},{y:-54,ease:'none',scrollTrigger:{trigger:about,start:'top bottom',end:'bottom top',scrub:1.55}});
+      gsap.fromTo(aboutCopy,{y:28},{y:-36,ease:'none',scrollTrigger:{trigger:about,start:'top bottom',end:'bottom top',scrub:1.8}});
+      gsap.fromTo(aboutSignature,{x:-34},{x:48,ease:'none',scrollTrigger:{trigger:about,start:'top 85%',end:'bottom 20%',scrub:1.7,onUpdate:self=>about.style.setProperty('--v25-signature',`${(self.progress*100).toFixed(1)}%`)}});
     }
   }
 
