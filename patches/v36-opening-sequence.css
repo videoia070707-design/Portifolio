@@ -1,0 +1,244 @@
+/* MOVX v36 — cinematic opening sequence
+   Goal: make header -> hero -> contents rail -> archive read as one authored opening,
+   then hand off cleanly to the editorial chapters. The work remains primary. */
+html.movx-v36 body{
+  --v36-ease:cubic-bezier(.19,1,.22,1);
+  --v36-ui:cubic-bezier(.4,0,.2,1);
+  --v36-ink:#f4efe9;
+  --v36-night:#090909;
+  --v36-night-line:rgba(244,239,233,.18);
+  --v36-hero-progress:0;
+  --v36-handoff:0;
+}
+
+/* Opening header: the chrome belongs to the hero until the hero is gone. */
+html.movx-v36.v36-hero-mode body[data-page="social"] .site-header{
+  background:rgba(9,9,9,.90)!important;
+  color:var(--v36-ink)!important;
+  border-bottom-color:rgba(244,239,233,.10)!important;
+  backdrop-filter:blur(18px) saturate(.76)!important;
+}
+html.movx-v36.v36-hero-mode body[data-page="social"] .wordmark,
+html.movx-v36.v36-hero-mode body[data-page="social"] .nav a,
+html.movx-v36.v36-hero-mode body[data-page="social"] .menu-button,
+html.movx-v36.v36-hero-mode body[data-page="social"] .theme-toggle{
+  color:var(--v36-ink)!important;
+}
+html.movx-v36.v36-hero-mode body[data-page="social"] .wordmark small,
+html.movx-v36.v36-hero-mode body[data-page="social"] .language-switcher button{
+  color:rgba(244,239,233,.62)!important;
+}
+html.movx-v36.v36-hero-mode body[data-page="social"] .language-switcher button.active,
+html.movx-v36.v36-hero-mode body[data-page="social"] .language-switcher button:hover,
+html.movx-v36.v36-hero-mode body[data-page="social"] .language-switcher button:focus-visible{
+  color:var(--v36-ink)!important;
+}
+html.movx-v36.v36-hero-mode body[data-page="social"] .theme-toggle{
+  border-bottom-color:rgba(244,239,233,.42)!important;
+}
+html.movx-v36 body[data-page="social"] .site-header{
+  transition:background .72s var(--v36-ui),color .62s var(--v36-ui),border-color .62s var(--v36-ui)!important;
+}
+
+/* Hero remains artwork-first. We remove hard framing instead of adding effects. */
+html.movx-v36 body[data-page="social"] .social-cover-art{
+  border-bottom:0!important;
+  background:var(--v36-night)!important;
+}
+html.movx-v36 body[data-page="social"] .social-cover-art__stage{
+  max-width:none!important;
+  background:var(--v36-night)!important;
+}
+html.movx-v36 body[data-page="social"] .social-cover-art__shade{
+  background:linear-gradient(180deg,rgba(0,0,0,.03),transparent 23%,transparent 72%,rgba(0,0,0,.22))!important;
+  opacity:calc(1 - (var(--v36-hero-progress,0) * .16));
+}
+html.movx-v36 body[data-page="social"] .v28-hero-overlay{
+  opacity:calc(1 - (var(--v36-hero-progress,0) * .12));
+}
+
+/* Contents rail: one editorial strip, not four app-like tiles. */
+html.movx-v36 body[data-page="social"] .hero-index{
+  background:var(--v36-night)!important;
+  color:var(--v36-ink)!important;
+  border-top:1px solid var(--v36-night-line)!important;
+  border-bottom:0!important;
+}
+html.movx-v36 body[data-page="social"] .hero-index__inner{
+  display:grid!important;
+  grid-template-columns:1.15fr .8fr .8fr 1.25fr!important;
+  gap:clamp(22px,3vw,54px)!important;
+  padding:0 var(--pad)!important;
+}
+html.movx-v36 body[data-page="social"] .hero-index__item{
+  min-height:70px!important;
+  display:grid!important;
+  grid-template-columns:30px minmax(0,1fr)!important;
+  align-items:center!important;
+  gap:12px!important;
+  padding:12px 0!important;
+  border:0!important;
+  background:transparent!important;
+  color:inherit!important;
+  opacity:.72;
+  transition:opacity .55s var(--v36-ui)!important;
+}
+html.movx-v36 body[data-page="social"] .hero-index__item:hover,
+html.movx-v36 body[data-page="social"] .hero-index__item:focus-visible,
+html.movx-v36 body[data-page="social"] .hero-index__item.v31-nav-current{
+  background:transparent!important;
+  color:inherit!important;
+  opacity:1;
+}
+html.movx-v36 body[data-page="social"] .hero-index__item span{
+  color:rgba(244,239,233,.44)!important;
+  font-size:8px!important;
+}
+html.movx-v36 body[data-page="social"] .hero-index__item strong{
+  font-family:var(--serif,Georgia,'Times New Roman',serif)!important;
+  font-weight:400!important;
+  font-size:clamp(15px,1.15vw,18px)!important;
+  line-height:1.05!important;
+  letter-spacing:-.032em!important;
+}
+html.movx-v36 body[data-page="social"] .hero-index__item::after{
+  left:42px!important;
+  right:calc(100% - 42px)!important;
+  bottom:11px!important;
+  height:1px!important;
+  background:var(--v36-ink)!important;
+  opacity:.58!important;
+  transition:right .95s var(--v36-ease),opacity .5s var(--v36-ui)!important;
+}
+html.movx-v36 body[data-page="social"] .hero-index__item:hover::after,
+html.movx-v36 body[data-page="social"] .hero-index__item:focus-visible::after,
+html.movx-v36 body[data-page="social"] .hero-index__item.v31-nav-current::after{
+  right:0!important;
+}
+
+/* Running folio: used as the hinge between cover and archive, not as decoration. */
+html.movx-v36 body[data-page="social"] .velocity-strip--social{
+  position:relative;
+  background:var(--v36-night)!important;
+  color:var(--v36-ink)!important;
+  border-top:1px solid var(--v36-night-line)!important;
+  border-bottom:0!important;
+}
+html.movx-v36 body[data-page="social"] .velocity-strip--social .velocity-track{
+  opacity:.46;
+}
+html.movx-v36 body[data-page="social"] .velocity-strip--social .velocity-track span{
+  padding-top:11px!important;
+  padding-bottom:12px!important;
+  font-size:8px!important;
+  letter-spacing:.18em!important;
+}
+
+/* First chapter: tighter handoff, larger editorial measure, slower wall. */
+html.movx-v36 body[data-page="social"] #livingArchive{
+  padding-top:clamp(68px,7vw,112px)!important;
+  background:var(--bg)!important;
+}
+html.movx-v36 body[data-page="social"] #livingArchive .archive-head{
+  grid-template-columns:minmax(0,1.3fr) minmax(260px,.7fr)!important;
+  gap:clamp(44px,7vw,116px)!important;
+  padding-bottom:clamp(38px,5vw,74px)!important;
+  border-bottom:0!important;
+}
+html.movx-v36 body[data-page="social"] #livingArchive .archive-head h2{
+  max-width:10.5ch!important;
+  font-size:clamp(60px,8.4vw,136px)!important;
+  line-height:.82!important;
+  letter-spacing:-.072em!important;
+}
+html.movx-v36 body[data-page="social"] #livingArchive .archive-head p{
+  max-width:44ch!important;
+  align-self:end!important;
+  margin-bottom:4px!important;
+}
+html.movx-v36 body[data-page="social"] #livingArchive .loop-wall{
+  gap:clamp(14px,1.6vw,24px)!important;
+  padding-top:0!important;
+}
+html.movx-v36 body[data-page="social"] #livingArchive .loop-row{
+  overflow:visible!important;
+}
+html.movx-v36 body[data-page="social"] #livingArchive .loop-track{
+  gap:clamp(14px,1.5vw,22px)!important;
+  animation-timing-function:linear!important;
+}
+html.movx-v36 body[data-page="social"] #livingArchive .loop-row:nth-child(1) .loop-track{animation-duration:68s!important}
+html.movx-v36 body[data-page="social"] #livingArchive .loop-row:nth-child(2) .loop-track{animation-duration:76s!important}
+html.movx-v36 body[data-page="social"] #livingArchive .loop-row:nth-child(3) .loop-track{animation-duration:72s!important}
+html.movx-v36 body[data-page="social"] #livingArchive .loop-row:nth-child(1) .loop-card{flex-basis:clamp(235px,24vw,360px)!important}
+html.movx-v36 body[data-page="social"] #livingArchive .loop-row:nth-child(2) .loop-card{flex-basis:clamp(210px,21.5vw,326px)!important}
+html.movx-v36 body[data-page="social"] #livingArchive .loop-row:nth-child(3) .loop-card{flex-basis:clamp(225px,23vw,344px)!important}
+html.movx-v36 body[data-page="social"] #livingArchive .loop-card{
+  transform:none!important;
+  box-shadow:none!important;
+  transition:opacity .58s var(--v36-ui),filter .72s var(--v36-ui),border-color .58s var(--v36-ui)!important;
+}
+html.movx-v36 body[data-page="social"] #livingArchive .loop-card:hover,
+html.movx-v36 body[data-page="social"] #livingArchive .loop-card:focus-within{
+  transform:none!important;
+  box-shadow:none!important;
+}
+html.movx-v36 body[data-page="social"] #livingArchive .loop-card img{
+  transform:scale(1)!important;
+  transition:transform 1.35s var(--v36-ease),filter .72s var(--v36-ui)!important;
+}
+html.movx-v36 body[data-page="social"] #livingArchive .loop-card:hover img,
+html.movx-v36 body[data-page="social"] #livingArchive .loop-card:focus-within img{
+  transform:scale(1.016)!important;
+}
+html.movx-v36 body[data-page="social"] #livingArchive .loop-card__overlay{
+  transform:none!important;
+  transition:opacity .62s var(--v36-ui)!important;
+}
+
+/* A single visual cadence between opening and the rest of the publication. */
+html.movx-v36 body[data-page="social"] #nicheIndex{
+  padding-top:clamp(100px,10vw,164px)!important;
+}
+html.movx-v36 body[data-page="social"] #nicheIndex::before{
+  opacity:.52!important;
+}
+
+@media(max-width:900px){
+  html.movx-v36 body[data-page="social"] .hero-index__inner{
+    display:flex!important;
+    gap:0!important;
+    overflow-x:auto;
+    overscroll-behavior-inline:contain;
+    scrollbar-width:none;
+    padding:0 var(--pad)!important;
+  }
+  html.movx-v36 body[data-page="social"] .hero-index__inner::-webkit-scrollbar{display:none}
+  html.movx-v36 body[data-page="social"] .hero-index__item{
+    flex:0 0 min(42vw,210px);
+    min-height:64px!important;
+    margin-right:28px;
+  }
+  html.movx-v36 body[data-page="social"] #livingArchive .archive-head{
+    grid-template-columns:1fr!important;
+    gap:24px!important;
+  }
+  html.movx-v36 body[data-page="social"] #livingArchive .archive-head p{max-width:58ch!important}
+}
+@media(max-width:620px){
+  html.movx-v36 body[data-page="social"] .social-cover-art__stage{min-height:540px!important}
+  html.movx-v36 body[data-page="social"] .hero-index__item{flex-basis:178px;min-height:60px!important}
+  html.movx-v36 body[data-page="social"] .hero-index__item strong{font-size:15px!important}
+  html.movx-v36 body[data-page="social"] #livingArchive{padding-top:62px!important}
+  html.movx-v36 body[data-page="social"] #livingArchive .archive-head h2{font-size:clamp(50px,15vw,78px)!important}
+  html.movx-v36 body[data-page="social"] #livingArchive .loop-row:nth-child(n) .loop-card{flex-basis:clamp(190px,62vw,260px)!important}
+}
+@media(prefers-reduced-motion:reduce){
+  html.movx-v36 body[data-page="social"] .site-header,
+  html.movx-v36 body[data-page="social"] .hero-index__item,
+  html.movx-v36 body[data-page="social"] .hero-index__item::after,
+  html.movx-v36 body[data-page="social"] #livingArchive .loop-card,
+  html.movx-v36 body[data-page="social"] #livingArchive .loop-card img,
+  html.movx-v36 body[data-page="social"] #livingArchive .loop-card__overlay{transition:none!important}
+  html.movx-v36 body[data-page="social"] #livingArchive .loop-track{animation-play-state:paused!important}
+}
