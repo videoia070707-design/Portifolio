@@ -10,6 +10,18 @@
 
   const ease = 'cubic-bezier(.2,.75,.18,1)';
 
+  // Shared scroll impulse: keeps the stable engine but lets archive/ticker react to the visitor.
+  let wallImpulse = 0;
+  let tickerImpulse = 0;
+  let impulseLastY = window.scrollY;
+  window.addEventListener('scroll', () => {
+    const y = window.scrollY;
+    const delta = y - impulseLastY;
+    wallImpulse += delta * .42;
+    tickerImpulse += delta * .42;
+    impulseLastY = y;
+  }, { passive: true });
+
   /* ---------------------------------------------------------
      3-row artwork conveyor — single source of motion truth
      --------------------------------------------------------- */
@@ -100,10 +112,12 @@
     const frame = now => {
       const dt = Math.min(0.05, Math.max(0, (now - last) / 1000));
       last = now;
+      wallImpulse *= Math.pow(.84, dt * 60);
+      const velocityBoost = Math.min(34, Math.abs(wallImpulse) * 1.15);
       for (const state of rowStates) {
         if (!state.stage.isConnected || !state.distance) continue;
         if (state.row !== hoveredRow) {
-          state.x += state.direction * state.speed * dt;
+          state.x += state.direction * (state.speed + velocityBoost) * dt;
           if (state.direction < 0 && state.x <= -state.distance) state.x += state.distance;
           if (state.direction > 0 && state.x >= 0) state.x -= state.distance;
           state.stage.dataset.motionX = String(state.x);
@@ -136,8 +150,12 @@
       const dt = Math.min(0.05, (now - lastTicker) / 1000);
       lastTicker = now;
       const half = Math.max(1, ticker.scrollWidth / 2);
-      x -= 26 * dt;
-      if (x <= -half) x += half;
+      tickerImpulse *= Math.pow(.88, dt * 60);
+      const tickerBoost = Math.min(22, Math.abs(tickerImpulse) * .72);
+      const direction = tickerImpulse > 1.2 ? -1 : tickerImpulse < -1.2 ? 1 : -1;
+      x += direction * (26 + tickerBoost) * dt;
+      while (x <= -half) x += half;
+      while (x > 0) x -= half;
       stage.style.transform = `translate3d(${x.toFixed(2)}px,0,0)`;
       requestAnimationFrame(tick);
     };
