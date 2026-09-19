@@ -29,19 +29,13 @@ jobs:
         run: |
           set -euo pipefail
 
-          ZIP=""
-          for candidate in "MOVX_Portfolio_v18(1).zip" "MOVX_Portfolio_v18.zip"; do
-            if [ -f "$candidate" ]; then
-              ZIP="$candidate"
-              break
-            fi
-          done
-
+          ZIP="$(find . -maxdepth 1 -type f -name 'MOVX_Portfolio_v18*.zip' -print -quit)"
           if [ -z "$ZIP" ]; then
-            echo "::error::Upload MOVX_Portfolio_v18(1).zip or MOVX_Portfolio_v18.zip to the repository root."
+            echo "::error::No MOVX_Portfolio_v18*.zip file found in the repository root."
             exit 1
           fi
 
+          echo "Using source archive: $ZIP"
           rm -rf _restore _site
           mkdir -p _restore _site
           unzip -q "$ZIP" -d _restore
@@ -55,10 +49,10 @@ jobs:
           ROOT="$(dirname "$SOCIAL")"
           cp -a "$ROOT"/. _site/
 
-          # Make the complete unified v18 experience the actual homepage.
+          # Publish the complete unified MOVX experience as the real homepage.
           cp _site/social-media.html _site/index.html
 
-          # Validate the real v18 files and asset library before publishing.
+          # Validate the real v18 application before publishing.
           test -s _site/index.html
           test -s _site/social-media.html
           test -s _site/styles.css
@@ -74,7 +68,7 @@ jobs:
             exit 1
           fi
 
-          echo "Full MOVX v18 validated and ready for Pages"
+          echo "Full MOVX v18 validated and ready for GitHub Pages"
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
