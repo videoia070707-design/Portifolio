@@ -1,0 +1,198 @@
+/* MOVX v29 — editorial polish + motion softening */
+html.movx-v29 body{
+  --v29-ease:cubic-bezier(.16,1,.3,1);
+  --v29-line:color-mix(in srgb,var(--fg) 18%,transparent);
+}
+
+/* Motion should breathe, not snap. */
+html.movx-v29 .reveal{
+  transform:translate3d(0,16px,0)!important;
+  transition:opacity 1.15s var(--v29-ease),transform 1.22s var(--v29-ease)!important;
+}
+html.movx-v29 .reveal.in{transform:translate3d(0,0,0)!important}
+html.movx-v29 .mask-reveal>*{
+  transform:translate3d(0,108%,0)!important;
+  transition:transform 1.28s var(--v29-ease)!important;
+}
+html.movx-v29 .mask-reveal.in>*{transform:translate3d(0,0,0)!important}
+html.movx-v29 .media-reveal{
+  transform:translate3d(0,18px,0) scale(1.018)!important;
+  transition:clip-path 1.28s var(--v29-ease),transform 1.42s var(--v29-ease),opacity 1.1s var(--v29-ease)!important;
+}
+html.movx-v29 .media-reveal.in{transform:translate3d(0,0,0) scale(1)!important}
+
+/* Continuous parallax sections should never be skipped by content-visibility. */
+html.movx-v29 .about-section,
+html.movx-v29 .services-section,
+html.movx-v29 .process-section,
+html.movx-v29 .contact-section{
+  content-visibility:visible!important;
+  contain-intrinsic-size:auto!important;
+}
+
+/* Services: remove the generic sticky-overlay look and any text collisions. */
+html.movx-v29 .services-section .section-intro{
+  position:relative!important;
+  top:auto!important;
+  z-index:2!important;
+  background:none!important;
+  padding-top:0!important;
+  padding-bottom:0!important;
+}
+html.movx-v29 .services-list{margin-top:clamp(48px,6vw,84px)!important}
+html.movx-v29 .service-row{
+  grid-template-columns:54px minmax(180px,.42fr) minmax(0,.58fr)!important;
+  gap:clamp(24px,3.4vw,54px)!important;
+  padding:clamp(30px,4.2vw,52px) 0!important;
+  background:transparent!important;
+  min-width:0;
+  opacity:var(--v29-service-opacity,.62);
+  transition:opacity .65s var(--v29-ease),border-color .65s ease!important;
+}
+html.movx-v29 .service-row:hover{
+  padding-left:0!important;
+  padding-right:0!important;
+  background:transparent!important;
+}
+html.movx-v29 .service-row h3{
+  transform:none!important;
+  transition:color .6s ease!important;
+  max-width:12ch;
+  text-wrap:balance;
+}
+html.movx-v29 .service-row p{
+  max-width:52ch!important;
+  min-width:0;
+  text-wrap:pretty;
+}
+html.movx-v29 .service-row::after{
+  height:1px!important;
+  opacity:.74!important;
+  transition:none!important;
+}
+
+/* ABOUT: keep typography readable; parallax lives in background/decorative plane. */
+html.movx-v29 .about-heading,
+html.movx-v29 .about-copy,
+html.movx-v29 .about-signature{
+  transform:none!important;
+}
+html.movx-v29 .about-copy{max-width:58ch}
+
+/* PROCESS — replace the generic timeline/dots with an editorial chapter index. */
+html.movx-v29 .process-grid{
+  grid-template-columns:minmax(240px,.72fr) minmax(0,1.28fr)!important;
+  gap:clamp(64px,8vw,138px)!important;
+  align-items:start;
+}
+html.movx-v29 .process-title{position:sticky;top:112px;align-self:start;min-width:0}
+html.movx-v29 .process-title h2{
+  font-size:clamp(62px,7.4vw,118px)!important;
+  line-height:.83!important;
+  letter-spacing:-.068em!important;
+  max-width:6.2ch;
+  text-wrap:balance;
+}
+html.movx-v29 .process-list{
+  padding:0!important;
+  margin:0!important;
+  border-top:1px solid var(--line)!important;
+}
+html.movx-v29 .process-list::before,
+html.movx-v29 .process-list::after{display:none!important}
+html.movx-v29 .process-list li{
+  display:grid!important;
+  grid-template-columns:48px minmax(0,1fr)!important;
+  gap:22px!important;
+  padding:clamp(28px,3.6vw,46px) 0!important;
+  border-bottom:1px solid var(--line)!important;
+  min-width:0;
+  opacity:var(--v29-process-opacity,.48);
+  transform:none!important;
+  transition:opacity .72s var(--v29-ease),border-color .6s ease!important;
+}
+html.movx-v29 .process-list li::before{display:none!important}
+html.movx-v29 .process-list li>span{
+  position:relative;
+  padding-top:8px!important;
+  font-size:9px!important;
+  letter-spacing:.17em!important;
+  color:var(--editorial-red)!important;
+}
+html.movx-v29 .process-list li>span::after{
+  content:"";
+  display:block;
+  width:18px;
+  height:1px;
+  margin-top:12px;
+  background:var(--editorial-red);
+  transform:scaleX(var(--v29-process-rule,.28));
+  transform-origin:left;
+  opacity:.72;
+}
+html.movx-v29 .process-list li>div{
+  display:grid;
+  grid-template-columns:minmax(150px,.42fr) minmax(0,1fr);
+  gap:clamp(26px,4vw,70px);
+  align-items:start;
+  min-width:0;
+}
+html.movx-v29 .process-list strong{
+  margin:0!important;
+  font-size:clamp(26px,2.45vw,38px)!important;
+  line-height:.96!important;
+  letter-spacing:-.052em!important;
+  max-width:10ch;
+  text-wrap:balance;
+}
+html.movx-v29 .process-list p{
+  margin:0!important;
+  max-width:48ch!important;
+  min-width:0;
+  font-size:14px!important;
+  line-height:1.72!important;
+  color:var(--muted)!important;
+  text-wrap:pretty;
+  overflow-wrap:anywhere;
+}
+html.movx-v29 .process-list li.v29-current{
+  --v29-process-rule:1;
+  border-color:var(--line-strong)!important;
+}
+html.movx-v29 .process-list li.v29-current strong{color:var(--fg)}
+html.movx-v29 .process-list li.v29-current p{color:color-mix(in srgb,var(--fg) 78%,var(--muted))!important}
+
+/* Contact stays calm: movement in the ornament, not in the copy. */
+html.movx-v29 .contact-copy,
+html.movx-v29 .contact-form{transform:none!important}
+
+/* Tactile but restrained artwork hover. */
+html.movx-v29 .loop-card{
+  transition:opacity .62s var(--v29-ease),filter .62s var(--v29-ease),box-shadow .78s var(--v29-ease),border-color .55s ease!important;
+}
+html.movx-v29 .loop-card:hover{transform:none!important}
+html.movx-v29 .loop-card img{transition:transform 1.3s var(--v29-ease),filter .72s ease!important}
+html.movx-v29 .loop-card:hover img{transform:scale(1.035)!important}
+
+@media(max-width:1100px){
+  html.movx-v29 .process-grid{grid-template-columns:minmax(210px,.62fr) minmax(0,1.38fr)!important;gap:54px!important}
+  html.movx-v29 .process-list li>div{grid-template-columns:minmax(140px,.4fr) minmax(0,1fr);gap:28px}
+}
+
+@media(max-width:900px){
+  html.movx-v29 .service-row{grid-template-columns:42px 1fr!important;gap:18px!important}
+  html.movx-v29 .service-row p{grid-column:2!important}
+  html.movx-v29 .process-grid{grid-template-columns:1fr!important;gap:46px!important}
+  html.movx-v29 .process-title{position:relative!important;top:auto!important}
+  html.movx-v29 .process-title h2{max-width:7ch}
+  html.movx-v29 .process-list li{grid-template-columns:38px minmax(0,1fr)!important;gap:16px!important}
+  html.movx-v29 .process-list li>div{grid-template-columns:1fr;gap:12px}
+  html.movx-v29 .process-list strong{max-width:none}
+  html.movx-v29 .process-list p{max-width:58ch!important}
+}
+
+@media(prefers-reduced-motion:reduce){
+  html.movx-v29 .reveal,
+  html.movx-v29 .mask-reveal>*,
+  html.movx-v29 .media-reveal{transition:none!important;transform:none!important}
+}
