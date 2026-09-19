@@ -27,8 +27,16 @@ jobs:
       - name: Rebuild optimized MOVX assets
         shell: bash
         run: |
-          cat .assets/hero/part-*.b64 | tr -d '\n\r' | base64 --ignore-garbage -d > hero.webp
-          cat .assets/sprite/part-*.b64 | tr -d '\n\r' | base64 --ignore-garbage -d > sprite.webp
+          : > hero.webp
+          for f in .assets/hero/part-*.b64; do
+            base64 --ignore-garbage -d "$f" >> hero.webp
+          done
+
+          : > sprite.webp
+          for f in .assets/sprite/part-*.b64; do
+            base64 --ignore-garbage -d "$f" >> sprite.webp
+          done
+
           test -s hero.webp
           test -s sprite.webp
           file hero.webp
