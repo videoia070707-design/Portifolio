@@ -24,18 +24,18 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Build MOVX v26 from source archive
+      - name: Build stable MOVX site
         shell: bash
         run: |
           set -euo pipefail
 
           ZIP="$(find . -maxdepth 1 -type f -name 'MOVX_Portfolio_v18*.zip' -print -quit)"
           if [ -z "$ZIP" ]; then
-            echo "::error::No MOVX_Portfolio_v18*.zip file found in repository root."
+            echo "::error::No MOVX source ZIP found in repository root"
             exit 1
           fi
 
-          rm -rf _restore _site node_modules
+          rm -rf _restore _site
           mkdir -p _restore _site
           unzip -q "$ZIP" -d _restore
           SOCIAL="$(find _restore -type f -name 'social-media.html' -print -quit)"
@@ -43,48 +43,53 @@ jobs:
           ROOT="$(dirname "$SOCIAL")"
           cp -a "$ROOT"/. _site/
 
-          # Vendor the motion runtime into the deployed site. The previous remote CDN tags were
-          # synchronous and could block script.js itself, which prevented projects/text/images
-          # from rendering when jsDelivr was slow or unavailable.
-          npm install --no-save --no-package-lock gsap@3.13.0 lenis@1.3.11 >/dev/null
-          mkdir -p _site/vendor
-          cp node_modules/gsap/dist/gsap.min.js _site/vendor/gsap.min.js
-          cp node_modules/gsap/dist/ScrollTrigger.min.js _site/vendor/ScrollTrigger.min.js
-          cp node_modules/lenis/dist/lenis.min.js _site/vendor/lenis.min.js
-
-          # Preserve validated content/data refinements.
+          # Keep the proven design/data/copy refinements only.
           if [ -s patches/v19-overrides.css ]; then
             printf '\n\n' >> _site/styles.css
             cat patches/v19-overrides.css >> _site/styles.css
           fi
           python3 case-order-v20.py _site/projects.js
           python3 v22-build.py _site
+
+          # Restore the last known-good independent 3-row conveyor instead of the
+          # v25/v26 GSAP/Lenis runtime that was preventing dynamic content from rendering.
+          if [ -s patches/v21-motion.css ]; then
+            printf '\n\n' >> _site/styles.css
+            cat patches/v21-motion.css >> _site/styles.css
+          fi
+          if [ -s patches/v21-motion.js ]; then
+            printf '\n\n' >> _site/script.js
+            cat patches/v21-motion.js >> _site/script.js
+          fi
+
           if [ -s patches/v22-performance.css ]; then
             printf '\n\n' >> _site/styles.css
             cat patches/v22-performance.css >> _site/styles.css
           fi
           python3 patches/v23-copy.py _site
 
-          # V26: one motion runtime, but dependencies are local and core content always wins.
-          python3 v25-build.py _site
-          printf '\n\n' >> _site/styles.css
-          cat patches/v25-motion.css >> _site/styles.css
-          printf '\n\n' >> _site/script.js
-          cat patches/v25-motion.js >> _site/script.js
+          # Force fresh browser requests after the broken v25/v26 deployment.
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('_site/social-media.html')
+          h = p.read_text(encoding='utf-8')
+          h = h.replace('href="styles.css"', 'href="styles.css?v=27-stable"')
+          h = h.replace('src="projects.js"', 'src="projects.js?v=27-stable"')
+          h = h.replace('src="i18n.js"', 'src="i18n.js?v=27-stable"')
+          h = h.replace('src="script.js"', 'src="script.js?v=27-stable"')
+          p.write_text(h, encoding='utf-8')
+          PY
 
           cp _site/social-media.html _site/index.html
 
-          # Validation: content, assets, local runtime and motion architecture.
+          # Hard validation: dynamic mounts/data/assets must exist and the broken runtime
+          # must not leak into the deploy again.
           test -s _site/index.html
-          test -s _site/social-media.html
           test -s _site/styles.css
           test -s _site/script.js
           test -s _site/i18n.js
           test -s _site/projects.js
           test -s _site/assets/hero/soul-of-design-hero-clean.png
-          test -s _site/vendor/gsap.min.js
-          test -s _site/vendor/ScrollTrigger.min.js
-          test -s _site/vendor/lenis.min.js
 
           ASSET_COUNT="$(find _site/assets -type f | wc -l | tr -d ' ')"
           echo "MOVX asset count: $ASSET_COUNT"
@@ -92,19 +97,26 @@ jobs:
 
           node --check _site/script.js
           node --check _site/i18n.js
-          grep -q 'MOVX v25 — unified premium motion runtime' _site/script.js
-          grep -q 'html.movx-v25' _site/styles.css
-          grep -q 'vendor/gsap.min.js' _site/social-media.html
-          grep -q 'vendor/ScrollTrigger.min.js' _site/social-media.html
-          grep -q 'vendor/lenis.min.js' _site/social-media.html
-          ! grep -q 'cdn.jsdelivr.net/npm/gsap' _site/social-media.html
-          ! grep -q 'cdn.jsdelivr.net/npm/lenis' _site/social-media.html
-          grep -q 'legacy animation engine disabled' _site/script.js
-          grep -q 'const rowIndexes = ' _site/script.js
+          node --check _site/projects.js
+
+          grep -q 'id="loopWall"' _site/index.html
+          grep -q 'id="nicheGrid"' _site/index.html
+          grep -q 'id="archiveGrid"' _site/index.html
+          grep -q 'id="projectsList"' _site/index.html
+          grep -q 'window.MOVX_PROJECTS' _site/projects.js
+          grep -q 'renderLoopWall' _site/script.js
+          grep -q 'renderArchive' _site/script.js
+          grep -q 'renderProjectList' _site/script.js
+          grep -q 'MOVX v21 — resilient motion engine' _site/script.js
           grep -q 'Tecnologia & Inovação' _site/i18n.js
           grep -q 'Direção que transforma repertório' _site/i18n.js
-          grep -q "slides: \['assets/projects/belive-cashflow.webp'.*'assets/projects/belive-01.webp'\]" _site/projects.js
-          echo "MOVX v26 validated: local runtime + complete content + premium motion"
+
+          ! grep -q 'MOVX v25 — unified premium motion runtime' _site/script.js
+          ! grep -q 'legacy animation engine disabled' _site/script.js
+          ! grep -q 'vendor/gsap.min.js' _site/index.html
+          ! grep -q 'vendor/lenis.min.js' _site/index.html
+
+          echo "MOVX v27 stable recovery validated"
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
