@@ -24,7 +24,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Build MOVX v40 native WebGL corridor
+      - name: Build MOVX v41 WebGL project portals
         shell: bash
         run: |
           set -euo pipefail
@@ -68,7 +68,8 @@ jobs:
             patches/v37-performance-editorial.css \
             patches/v38-selected-cases.css \
             patches/v39-depth-motion.css \
-            patches/v40-webgl-gallery.css; do
+            patches/v40-webgl-gallery.css \
+            patches/v41-project-transitions.css; do
             test -s "$file"
             printf '\n\n' >> _site/styles.css
             cat "$file" >> _site/styles.css
@@ -85,13 +86,13 @@ jobs:
             patches/v37-performance-editorial.js \
             patches/v38-selected-cases.js \
             patches/v39-depth-motion.js \
-            patches/v40-webgl-gallery.js; do
+            patches/v40-webgl-gallery.js \
+            patches/v41-project-transitions.js; do
             test -s "$file"
             printf '\n\n' >> _site/script.js
             cat "$file" >> _site/script.js
           done
 
-          # Existing audits still remove old competing motion owners after assembly.
           python3 patches/v37-runtime-audit.py _site
           python3 patches/v38-runtime-audit.py _site
 
@@ -100,10 +101,10 @@ jobs:
           import re
           p = Path('_site/social-media.html')
           h = p.read_text(encoding='utf-8')
-          h = re.sub(r'href="styles\.css(?:\?[^\"]*)?"', 'href="styles.css?v=40-webgl"', h)
-          h = re.sub(r'src="projects\.js(?:\?[^\"]*)?"', 'src="projects.js?v=40-webgl"', h)
-          h = re.sub(r'src="i18n\.js(?:\?[^\"]*)?"', 'src="i18n.js?v=40-webgl"', h)
-          h = re.sub(r'src="script\.js(?:\?[^\"]*)?"', 'src="script.js?v=40-webgl"', h)
+          h = re.sub(r'href="styles\.css(?:\?[^\"]*)?"', 'href="styles.css?v=41-portal"', h)
+          h = re.sub(r'src="projects\.js(?:\?[^\"]*)?"', 'src="projects.js?v=41-portal"', h)
+          h = re.sub(r'src="i18n\.js(?:\?[^\"]*)?"', 'src="i18n.js?v=41-portal"', h)
+          h = re.sub(r'src="script\.js(?:\?[^\"]*)?"', 'src="script.js?v=41-portal"', h)
           p.write_text(h, encoding='utf-8')
           PY
 
@@ -137,20 +138,20 @@ jobs:
           grep -q 'renderProjectList' _site/script.js
           grep -q 'renderCase' _site/script.js
 
-          grep -q 'MOVX v37 — performance-led editorial archive runtime' _site/script.js
-          grep -q 'MOVX v38 — selected cases / interaction QA runtime' _site/script.js
           grep -q 'MOVX v39 — perceptible parallax + 3D scroll runtime' _site/script.js
           grep -q 'MOVX v40 — native WebGL scroll corridor' _site/script.js
-          grep -q 'MOVX v40 — native WebGL project corridor' _site/styles.css
-          grep -q 'v40-native-scroll-corridor' _site/script.js
-          grep -q "getContext('webgl'" _site/script.js
-          grep -q 'gl.drawElements' _site/script.js
-          grep -q 'uniform float u_curve' _site/script.js
-          grep -q 'v40-webgl-stage' _site/styles.css
-          grep -q 'v=40-webgl' _site/index.html
+          grep -q 'MOVX v41 — WebGL project portal + mood runtime' _site/script.js
+          grep -q 'MOVX v41 — WebGL project portal + project mood' _site/styles.css
+          grep -q 'v41-webgl-project-transition' _site/script.js
+          grep -q 'v41-project-transition' _site/styles.css
+          grep -q 'uniform vec4 u_from' _site/script.js
+          grep -q 'uniform float u_texAspect' _site/script.js
+          grep -q 'runPortal' _site/script.js
+          grep -q 'color-mix(in srgb,var(--v41-mood)' _site/styles.css
+          grep -q 'v=41-portal' _site/index.html
           grep -q 'Rosa choque' _site/i18n.js
 
-          # Stability guards from v37/v38 remain mandatory.
+          # Stability guards from previous architecture remain mandatory.
           grep -q 'MOVX v37 build optimization' _site/script.js
           grep -q 'MOVX v38 build optimization' _site/script.js
           grep -q 'function initConveyorLoop(){ stopConveyorLoop(); }' _site/script.js
@@ -164,7 +165,7 @@ jobs:
           ! grep -q 'vendor/lenis.min.js' _site/index.html
           ! grep -q 'three.min.js' _site/index.html
 
-          echo "MOVX v40 validated: native WebGL project corridor + scroll camera + velocity shader + DOM fallback"
+          echo "MOVX v41 validated: WebGL corridor + authored project portal + reverse close transition + mood shifts"
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
