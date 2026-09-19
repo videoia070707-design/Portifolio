@@ -1,0 +1,229 @@
+/* MOVX v31 — exhibition-grade interaction layer
+   Direction: editorial restraint, image-led pacing, tactile navigation, zero text collisions. */
+html.movx-v31 body{
+  --v31-ease:cubic-bezier(.19,1,.22,1);
+  --v31-ease-ui:cubic-bezier(.25,.8,.25,1);
+  --v31-line:color-mix(in srgb,var(--fg) 22%,transparent);
+  --v31-accent:var(--editorial-red,#9c2e24);
+}
+
+/* ---------------------------------------------------------
+   Navigation — editorial state, never a floating/pill UI
+   --------------------------------------------------------- */
+html.movx-v31 header a[href^="#"],
+html.movx-v31 .site-header a[href^="#"]{
+  position:relative;
+  text-decoration:none;
+}
+html.movx-v31 header a[href^="#"]::after,
+html.movx-v31 .site-header a[href^="#"]::after{
+  content:"";
+  position:absolute;
+  left:0;
+  right:0;
+  bottom:-5px;
+  height:1px;
+  background:currentColor;
+  opacity:.62;
+  transform:scaleX(0);
+  transform-origin:right center;
+  transition:transform .82s var(--v31-ease),opacity .55s ease;
+}
+html.movx-v31 header a[href^="#"]:hover::after,
+html.movx-v31 header a[href^="#"]:focus-visible::after,
+html.movx-v31 header a[href^="#"].v31-nav-current::after,
+html.movx-v31 .site-header a[href^="#"]:hover::after,
+html.movx-v31 .site-header a[href^="#"]:focus-visible::after,
+html.movx-v31 .site-header a[href^="#"].v31-nav-current::after{
+  transform:scaleX(1);
+  transform-origin:left center;
+}
+html.movx-v31 header a[href^="#"].v31-nav-current,
+html.movx-v31 .site-header a[href^="#"].v31-nav-current{opacity:1}
+
+/* ---------------------------------------------------------
+   Global interaction rhythm — remove dry hover snaps
+   --------------------------------------------------------- */
+html.movx-v31 button,
+html.movx-v31 a,
+html.movx-v31 input,
+html.movx-v31 textarea,
+html.movx-v31 select{
+  transition-timing-function:var(--v31-ease-ui);
+}
+html.movx-v31 .hero-index__item::after{
+  transition:transform 1.05s var(--v31-ease)!important,
+             right 1.05s var(--v31-ease)!important;
+}
+html.movx-v31 .filter-button,
+html.movx-v31 .filter-btn,
+html.movx-v31 .archive-filter button{
+  transition:background-color .72s var(--v31-ease-ui),
+             color .72s var(--v31-ease-ui),
+             border-color .72s var(--v31-ease-ui),
+             opacity .72s var(--v31-ease-ui)!important;
+}
+
+/* ---------------------------------------------------------
+   Artwork — museum/exhibition feel instead of bouncing cards
+   JS only moves the image plane by a few pixels; card geometry stays fixed.
+   --------------------------------------------------------- */
+html.movx-v31 .v31-media-interactive{
+  overflow:hidden;
+  isolation:isolate;
+}
+html.movx-v31 .v31-media-interactive img{
+  transform-origin:center center!important;
+  transform:translate3d(var(--v31-media-x,0px),var(--v31-media-y,0px),0)
+            scale(var(--v31-media-scale,1))!important;
+  transition:transform 1.18s var(--v31-ease),filter .82s var(--v31-ease-ui)!important;
+  backface-visibility:hidden;
+}
+html.movx-v31 .v31-media-interactive:hover img,
+html.movx-v31 .v31-media-interactive:focus-within img{
+  --v31-media-scale:1.022;
+}
+html.movx-v31 .loop-wall:has(.loop-card:hover) .loop-card{opacity:.54!important;filter:saturate(.9)!important}
+html.movx-v31 .loop-wall:has(.loop-card:hover) .loop-card:hover{opacity:1!important;filter:none!important}
+html.movx-v31 .loop-card,
+html.movx-v31 .archive-card,
+html.movx-v31 .niche-card,
+html.movx-v31 .project-cover{
+  transform:none!important;
+  transition:opacity .82s var(--v31-ease),filter .82s var(--v31-ease-ui),border-color .72s var(--v31-ease-ui)!important;
+}
+
+/* Preview changes should cross-fade, not snap. */
+html.movx-v31 .selected-index-row__preview{
+  transform:translate3d(0,var(--v31-preview-y,0px),0) scale(var(--v31-preview-scale,1));
+  opacity:var(--v31-preview-opacity,1);
+  transition:opacity .62s var(--v31-ease-ui),transform .86s var(--v31-ease)!important;
+}
+
+/* ---------------------------------------------------------
+   Services + Process — focus by hierarchy, never by moving copy
+   --------------------------------------------------------- */
+html.movx-v31 .service-row,
+html.movx-v31 .process-list li{
+  isolation:isolate;
+}
+html.movx-v31 .service-row::before,
+html.movx-v31 .process-list li::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:-1;
+  pointer-events:none;
+  background:linear-gradient(90deg,color-mix(in srgb,var(--fg) 2.4%,transparent),transparent 72%);
+  opacity:0;
+  transition:opacity .9s var(--v31-ease-ui);
+}
+html.movx-v31 .service-row:hover::before,
+html.movx-v31 .process-list li:hover::after,
+html.movx-v31 .process-list li.v30-current::after{opacity:1}
+html.movx-v31 .service-row h3,
+html.movx-v31 .service-row p,
+html.movx-v31 .process-list strong,
+html.movx-v31 .process-list p{
+  transform:none!important;
+}
+html.movx-v31 .process-list li{
+  scroll-margin-top:132px;
+}
+html.movx-v31 .process-list li.v30-current>span::after{
+  box-shadow:none!important;
+}
+
+/* ---------------------------------------------------------
+   Case viewer — each case opens like an editorial feature.
+   Animation is opt-in via JS classes, therefore fail-open.
+   --------------------------------------------------------- */
+html.movx-v31 .case-viewer.open{
+  animation:none!important;
+}
+html.movx-v31 .case-viewer.v31-case-animating .case-hero__media,
+html.movx-v31 .case-viewer.v31-case-animating .case-hero__content,
+html.movx-v31 .case-viewer.v31-case-animating .case-hero__copy,
+html.movx-v31 .case-viewer.v31-case-animating .case-meta{
+  opacity:0;
+}
+html.movx-v31 .case-viewer.v31-case-animating .case-hero__media{
+  clip-path:inset(0 0 14% 0);
+  transform:translate3d(0,18px,0) scale(1.012);
+}
+html.movx-v31 .case-viewer.v31-case-animating .case-hero__content,
+html.movx-v31 .case-viewer.v31-case-animating .case-hero__copy,
+html.movx-v31 .case-viewer.v31-case-animating .case-meta{
+  transform:translate3d(0,12px,0);
+}
+html.movx-v31 .case-viewer.v31-case-visible .case-hero__media{
+  opacity:1;
+  clip-path:inset(0 0 0 0);
+  transform:translate3d(0,0,0) scale(1);
+  transition:opacity 1.05s var(--v31-ease-ui),clip-path 1.32s var(--v31-ease),transform 1.42s var(--v31-ease)!important;
+}
+html.movx-v31 .case-viewer.v31-case-visible .case-hero__content,
+html.movx-v31 .case-viewer.v31-case-visible .case-hero__copy,
+html.movx-v31 .case-viewer.v31-case-visible .case-meta{
+  opacity:1;
+  transform:translate3d(0,0,0);
+  transition:opacity .95s var(--v31-ease-ui) .1s,transform 1.12s var(--v31-ease) .1s!important;
+}
+html.movx-v31 .case-slide-frame.v31-slide-pending{
+  opacity:0;
+  clip-path:inset(0 0 9% 0);
+  transform:translate3d(0,16px,0) scale(1.008);
+}
+html.movx-v31 .case-slide-frame.v31-slide-in{
+  opacity:1;
+  clip-path:inset(0 0 0 0);
+  transform:translate3d(0,0,0) scale(1);
+  transition:opacity .95s var(--v31-ease-ui),clip-path 1.18s var(--v31-ease),transform 1.3s var(--v31-ease)!important;
+}
+html.movx-v31 .case-viewer.closing{
+  animation:none!important;
+  opacity:0;
+  transform:translate3d(0,8px,0) scale(.996);
+  transition:opacity .52s var(--v31-ease-ui),transform .62s var(--v31-ease)!important;
+}
+
+/* ---------------------------------------------------------
+   Contact — refined focus without decorative UI noise
+   --------------------------------------------------------- */
+html.movx-v31 .contact-form label::after{
+  transition:transform .9s var(--v31-ease),right .9s var(--v31-ease)!important;
+}
+html.movx-v31 .contact-form input,
+html.movx-v31 .contact-form textarea,
+html.movx-v31 .contact-form select{
+  transition:background-color .72s var(--v31-ease-ui),color .72s var(--v31-ease-ui),border-color .72s var(--v31-ease-ui)!important;
+}
+
+/* Optional native page transitions where supported; no runtime dependency. */
+@supports(view-transition-name:root){
+  html.movx-v31{view-transition-name:root}
+  ::view-transition-old(root){animation:v31-page-old .36s var(--v31-ease-ui) both}
+  ::view-transition-new(root){animation:v31-page-new .58s var(--v31-ease) both}
+  @keyframes v31-page-old{to{opacity:0;transform:translate3d(0,-4px,0)}}
+  @keyframes v31-page-new{from{opacity:0;transform:translate3d(0,7px,0)}to{opacity:1;transform:none}}
+}
+
+@media(max-width:900px){
+  html.movx-v31 .v31-media-interactive img{transform:none!important}
+  html.movx-v31 .case-viewer.v31-case-animating .case-hero__media{transform:translate3d(0,10px,0) scale(1.006)}
+  html.movx-v31 .case-slide-frame.v31-slide-pending{transform:translate3d(0,10px,0)}
+}
+
+@media(prefers-reduced-motion:reduce){
+  html.movx-v31 header a[href^="#"]::after,
+  html.movx-v31 .site-header a[href^="#"]::after,
+  html.movx-v31 .v31-media-interactive img,
+  html.movx-v31 .case-viewer *,
+  html.movx-v31 .case-slide-frame,
+  html.movx-v31 .selected-index-row__preview{
+    transition:none!important;
+    transform:none!important;
+    clip-path:none!important;
+    opacity:1!important;
+  }
+}
