@@ -24,7 +24,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Build MOVX v37 optimized editorial archive
+      - name: Build MOVX v38 selected-case QA
         shell: bash
         run: |
           set -euo pipefail
@@ -50,9 +50,7 @@ jobs:
           python3 case-order-v20.py _site/projects.js
           python3 v22-build.py _site
 
-          # v21's JS engine is intentionally retired in v37. The source ZIP already
-          # had its own RAF conveyor/ticker and v21 added a second owner for both.
-          # v37 uses one compositor/CSS owner and patches the legacy source hooks.
+          # v21 stays retired: v37 established one motion owner for marquee/ticker.
           if [ -s patches/v22-performance.css ]; then
             printf '\n\n' >> _site/styles.css
             cat patches/v22-performance.css >> _site/styles.css
@@ -68,7 +66,8 @@ jobs:
             patches/v34-quiet-loud.css \
             patches/v35-narrative-chapters.css \
             patches/v36-opening-sequence.css \
-            patches/v37-performance-editorial.css; do
+            patches/v37-performance-editorial.css \
+            patches/v38-selected-cases.css; do
             test -s "$file"
             printf '\n\n' >> _site/styles.css
             cat "$file" >> _site/styles.css
@@ -82,25 +81,26 @@ jobs:
             patches/v34-quiet-loud.js \
             patches/v35-narrative-chapters.js \
             patches/v36-opening-sequence.js \
-            patches/v37-performance-editorial.js; do
+            patches/v37-performance-editorial.js \
+            patches/v38-selected-cases.js; do
             test -s "$file"
             printf '\n\n' >> _site/script.js
             cat "$file" >> _site/script.js
           done
 
-          # Remove redundant legacy motion ownership and patch two accumulated
-          # runtime bugs after every current enhancement has been assembled.
+          # Runtime audits are intentionally applied after the complete bundle exists.
           python3 patches/v37-runtime-audit.py _site
+          python3 patches/v38-runtime-audit.py _site
 
           python3 - <<'PY'
           from pathlib import Path
           import re
           p = Path('_site/social-media.html')
           h = p.read_text(encoding='utf-8')
-          h = re.sub(r'href="styles\.css(?:\?[^\"]*)?"', 'href="styles.css?v=37-runtime"', h)
-          h = re.sub(r'src="projects\.js(?:\?[^\"]*)?"', 'src="projects.js?v=37-runtime"', h)
-          h = re.sub(r'src="i18n\.js(?:\?[^\"]*)?"', 'src="i18n.js?v=37-runtime"', h)
-          h = re.sub(r'src="script\.js(?:\?[^\"]*)?"', 'src="script.js?v=37-runtime"', h)
+          h = re.sub(r'href="styles\.css(?:\?[^\"]*)?"', 'href="styles.css?v=38-selected"', h)
+          h = re.sub(r'src="projects\.js(?:\?[^\"]*)?"', 'src="projects.js?v=38-selected"', h)
+          h = re.sub(r'src="i18n\.js(?:\?[^\"]*)?"', 'src="i18n.js?v=38-selected"', h)
+          h = re.sub(r'src="script\.js(?:\?[^\"]*)?"', 'src="script.js?v=38-selected"', h)
           p.write_text(h, encoding='utf-8')
           PY
 
@@ -120,7 +120,7 @@ jobs:
           node --check _site/script.js
           node --check _site/i18n.js
           node --check _site/projects.js
-          python3 -m py_compile patches/v37-runtime-audit.py
+          python3 -m py_compile patches/v37-runtime-audit.py patches/v38-runtime-audit.py
 
           grep -q 'id="heroTop"' _site/index.html
           grep -q 'id="loopWall"' _site/index.html
@@ -141,13 +141,19 @@ jobs:
           grep -q 'MOVX v35 — narrative chapter runtime' _site/script.js
           grep -q 'MOVX v36 — cinematic opening runtime' _site/script.js
           grep -q 'MOVX v37 — performance-led editorial archive runtime' _site/script.js
-          grep -q 'MOVX v37 — performance-led editorial archive' _site/styles.css
+          grep -q 'MOVX v38 — selected cases / interaction QA runtime' _site/script.js
+          grep -q 'MOVX v38 — selected cases / responsive QA' _site/styles.css
           grep -q 'MOVX v37 build optimization' _site/script.js
+          grep -q 'MOVX v38 build optimization' _site/script.js
           grep -q 'function initConveyorLoop(){ stopConveyorLoop(); }' _site/script.js
           grep -q "attributeFilter:\['src','class'\]" _site/script.js
           grep -q 'v37-motion-paused' _site/styles.css
           grep -q 'v37-single-motion-owner' _site/script.js
-          grep -q 'v=37-runtime' _site/index.html
+          grep -q 'v38-editorial-focus' _site/script.js
+          grep -q 'const scheduleTargets = () =>' _site/script.js
+          grep -q 'const scheduleCaseProgress = () =>' _site/script.js
+          grep -q 'role' patches/v38-selected-cases.js
+          grep -q 'v=38-selected' _site/index.html
           grep -q 'Rosa choque' _site/i18n.js
 
           # Old engines and known conflicts must stay out of the deployed bundle.
@@ -163,7 +169,7 @@ jobs:
           ! grep -q 'vendor/lenis.min.js' _site/index.html
           ! grep -q 'social-cover-art__image{opacity:0' _site/styles.css
 
-          echo "MOVX v37 validated: single motion ownership + offscreen pause + editorial territories/directory"
+          echo "MOVX v38 validated: real selected-case layout + keyboard dialog UX + scroll throttling"
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
