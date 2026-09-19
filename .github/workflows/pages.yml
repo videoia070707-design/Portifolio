@@ -62,6 +62,18 @@ jobs:
           # Correct the Belive Cashflow case sequence.
           python3 case-order-v20.py _site/projects.js
 
+          # Replace legacy/conflicting motion behavior with the resilient v21 engine.
+          if [ -s patches/v21-motion.css ]; then
+            printf '\n\n' >> _site/styles.css
+            cat patches/v21-motion.css >> _site/styles.css
+            echo "Applied MOVX v21 motion styles"
+          fi
+          if [ -s patches/v21-motion.js ]; then
+            printf '\n\n' >> _site/script.js
+            cat patches/v21-motion.js >> _site/script.js
+            echo "Applied MOVX v21 motion engine"
+          fi
+
           # Validate the real application before publishing.
           test -s _site/index.html
           test -s _site/social-media.html
@@ -80,6 +92,8 @@ jobs:
 
           grep -q 'movx-conveyor-left' _site/styles.css
           grep -q 'contact contrast' _site/styles.css
+          grep -q 'movx-motion-v21' _site/styles.css
+          grep -q 'MOVX v21 — resilient motion engine' _site/script.js
           grep -q "slides: \['assets/projects/belive-cashflow.webp'.*'assets/projects/belive-01.webp'\]" _site/projects.js
           echo "MOVX build validated and ready for GitHub Pages"
 
