@@ -1,0 +1,247 @@
+/* MOVX v42 — visual recovery + authored lower-section parallax
+   Response to live visual QA: the archive had become too sparse/fragmented and motion
+   was concentrated in work imagery instead of the editorial sections. v42 simplifies
+   the archive and moves perceptible depth to Sobre, Serviços, Processo and Contato. */
+html.movx-v42 body{
+  --v42-ease:cubic-bezier(.16,1,.3,1);
+  --v42-ui:cubic-bezier(.4,0,.2,1);
+  --v42-line:color-mix(in srgb,var(--fg) 14%,transparent);
+  --v42-line-strong:color-mix(in srgb,var(--fg) 30%,transparent);
+}
+
+/* ------------------------------------------------------------------
+   CLEANUP — remove interface-like residue that was hurting the composition.
+   ------------------------------------------------------------------ */
+html.movx-v42 .v35-chapter-status{display:none!important}
+html.movx-v42 body[data-page="social"] .v40-webgl-stage{display:none!important}
+html.movx-v42 body[data-page="social"] .projects-list{
+  background:var(--v38-wash,var(--bg))!important;
+}
+
+/* ------------------------------------------------------------------
+   ARCHIVE — dense, calm masonry instead of forced 12-column holes.
+   The artwork keeps its natural ratio; no arbitrary crop is introduced.
+   ------------------------------------------------------------------ */
+html.movx-v42 body[data-page="social"] #archiveControls{
+  padding-top:clamp(78px,7.5vw,124px)!important;
+}
+html.movx-v42 body[data-page="social"] #archiveControls .archive-head{
+  padding-bottom:clamp(28px,3vw,48px)!important;
+}
+html.movx-v42 body[data-page="social"] #filterBoard{
+  position:relative!important;
+  top:auto!important;
+  z-index:6!important;
+  margin:0 0 clamp(42px,5vw,72px)!important;
+  padding:0!important;
+  border-top:1px solid var(--v42-line-strong)!important;
+  border-bottom:1px solid var(--v42-line)!important;
+  background:transparent!important;
+  backdrop-filter:none!important;
+}
+html.movx-v42 body[data-page="social"] #filterBoard .archive-filter-row{
+  grid-template-columns:92px minmax(0,1fr)!important;
+  gap:18px!important;
+  min-height:48px!important;
+  padding:0!important;
+}
+html.movx-v42 body[data-page="social"] #filterBoard .archive-filter-row__label{
+  min-width:0;
+  padding-right:14px;
+  border-right:1px solid var(--v42-line)!important;
+}
+html.movx-v42 body[data-page="social"] #filterBoard .archive-filter-row__label strong{
+  font-size:8px!important;
+  letter-spacing:.15em!important;
+}
+html.movx-v42 body[data-page="social"] #filterBoard .archive-filters{
+  gap:clamp(18px,2.3vw,34px)!important;
+  min-width:0;
+  padding:0 2px!important;
+}
+html.movx-v42 body[data-page="social"] #filterBoard .archive-filter{
+  min-height:47px!important;
+  padding:0!important;
+  display:inline-flex!important;
+  align-items:center!important;
+  border:0!important;
+  font-size:10px!important;
+  background:transparent!important;
+}
+html.movx-v42 body[data-page="social"] #filterBoard .archive-filter-status{
+  display:flex!important;
+  justify-content:flex-end!important;
+  align-items:center!important;
+  min-height:34px!important;
+  margin:0!important;
+  padding:9px 0 8px!important;
+  border-top:1px solid var(--v42-line)!important;
+  font-family:var(--mono,ui-monospace,monospace)!important;
+  font-size:8px!important;
+  line-height:1!important;
+  letter-spacing:.16em!important;
+  text-transform:uppercase!important;
+  color:var(--muted)!important;
+}
+
+html.movx-v42 body[data-page="social"] #archiveGrid{
+  display:block!important;
+  column-count:3;
+  column-gap:clamp(16px,1.6vw,24px);
+  opacity:1!important;
+}
+html.movx-v42 body[data-page="social"] #archiveGrid .archive-card{
+  display:inline-block!important;
+  width:100%!important;
+  margin:0 0 clamp(34px,3.5vw,52px)!important;
+  break-inside:avoid;
+  -webkit-column-break-inside:avoid;
+  page-break-inside:avoid;
+  grid-column:auto!important;
+  transform:none!important;
+  content-visibility:visible!important;
+  contain:none!important;
+}
+html.movx-v42 body[data-page="social"] #archiveGrid .archive-card__media{
+  width:100%!important;
+  aspect-ratio:auto!important;
+  overflow:hidden!important;
+  background:transparent!important;
+  border:1px solid var(--v42-line)!important;
+}
+html.movx-v42 body[data-page="social"] #archiveGrid .archive-card__media img{
+  display:block!important;
+  width:100%!important;
+  height:auto!important;
+  max-height:none!important;
+  aspect-ratio:auto!important;
+  object-fit:contain!important;
+  transform:translate3d(0,0,0) scale(1)!important;
+  transition:transform 1.1s var(--v42-ease),filter .65s var(--v42-ui)!important;
+}
+html.movx-v42 body[data-page="social"] #archiveGrid .archive-card:hover .archive-card__media img,
+html.movx-v42 body[data-page="social"] #archiveGrid .archive-card:focus-within .archive-card__media img{
+  transform:translate3d(0,0,0) scale(1.012)!important;
+}
+html.movx-v42 body[data-page="social"] #archiveGrid .archive-card__caption{
+  padding:12px 0 0!important;
+  border-bottom:1px solid var(--v42-line)!important;
+  padding-bottom:15px!important;
+}
+
+/* ------------------------------------------------------------------
+   LOWER CHAPTER PARALLAX — dedicated decorative layers only.
+   Copy remains completely outside the transformed planes.
+   ------------------------------------------------------------------ */
+html.movx-v42 .about-section,
+html.movx-v42 .services-section,
+html.movx-v42 .process-section,
+html.movx-v42 .contact-section{
+  position:relative!important;
+  isolation:isolate;
+  overflow:clip!important;
+  perspective:1150px;
+  perspective-origin:50% 46%;
+}
+html.movx-v42 .about-section>.container,
+html.movx-v42 .services-section>.container,
+html.movx-v42 .process-section>.container,
+html.movx-v42 .contact-section>.container{
+  position:relative;
+  z-index:3;
+}
+html.movx-v42 .v42-parallax-layer{
+  position:absolute;
+  inset:-16% -8%;
+  z-index:1;
+  pointer-events:none;
+  overflow:hidden;
+  transform-style:preserve-3d;
+  contain:layout style;
+}
+html.movx-v42 .v42-parallax-ghost{
+  position:absolute;
+  left:var(--v42-ghost-left,-4vw);
+  top:var(--v42-ghost-top,18%);
+  margin:0;
+  white-space:nowrap;
+  font-family:var(--serif,Georgia,'Times New Roman',serif);
+  font-weight:400;
+  font-size:clamp(160px,25vw,470px);
+  line-height:.72;
+  letter-spacing:-.075em;
+  color:transparent;
+  -webkit-text-stroke:1px color-mix(in srgb,var(--fg) 17%,transparent);
+  opacity:.72;
+  transform:translate3d(var(--v42-ghost-x,0px),var(--v42-ghost-y,0px),var(--v42-ghost-z,-130px)) rotate(var(--v42-ghost-r,0deg)) scale(var(--v42-ghost-s,1));
+  transform-origin:50% 50%;
+  will-change:transform;
+}
+html.movx-v42 .v42-parallax-rule{
+  position:absolute;
+  left:var(--v42-rule-left,7%);
+  top:var(--v42-rule-top,34%);
+  width:min(72vw,980px);
+  height:1px;
+  background:linear-gradient(90deg,transparent,var(--v42-line-strong) 18%,var(--v42-line-strong) 82%,transparent);
+  opacity:.64;
+  transform:translate3d(var(--v42-rule-x,0px),var(--v42-rule-y,0px),var(--v42-rule-z,40px)) rotate(var(--v42-rule-r,0deg));
+  transform-origin:50% 50%;
+  will-change:transform;
+}
+html.movx-v42 .v42-parallax-index{
+  position:absolute;
+  right:7%;
+  top:22%;
+  font:700 clamp(38px,5vw,78px)/1 var(--mono,ui-monospace,monospace);
+  letter-spacing:-.08em;
+  color:color-mix(in srgb,var(--fg) 8%,transparent);
+  transform:translate3d(var(--v42-index-x,0px),var(--v42-index-y,0px),80px);
+  will-change:transform;
+}
+
+/* Section-specific direction keeps the system authored rather than repetitive. */
+html.movx-v42 .about-section .v42-parallax-layer{--v42-ghost-left:-9vw;--v42-ghost-top:25%;--v42-rule-left:22%;--v42-rule-top:63%}
+html.movx-v42 .services-section .v42-parallax-layer{--v42-ghost-left:18vw;--v42-ghost-top:8%;--v42-rule-left:2%;--v42-rule-top:46%}
+html.movx-v42 .process-section .v42-parallax-layer{--v42-ghost-left:-3vw;--v42-ghost-top:37%;--v42-rule-left:26%;--v42-rule-top:22%}
+html.movx-v42 .contact-section .v42-parallax-layer{--v42-ghost-left:6vw;--v42-ghost-top:18%;--v42-rule-left:10%;--v42-rule-top:70%}
+html.movx-v42 .contact-section .v42-parallax-ghost{
+  -webkit-text-stroke-color:rgba(243,238,233,.18);
+}
+html.movx-v42 .contact-section .v42-parallax-rule{
+  background:linear-gradient(90deg,transparent,rgba(243,238,233,.26) 18%,rgba(243,238,233,.26) 82%,transparent);
+}
+html.movx-v42 .contact-section .v42-parallax-index{color:rgba(243,238,233,.08)}
+
+/* Scrolling through Services/Process gets an editorial focus state, not moving text. */
+html.movx-v42 .services-list .service-row,
+html.movx-v42 .process-list li{
+  transition:opacity .55s var(--v42-ui),border-color .55s var(--v42-ui)!important;
+}
+html.movx-v42 .services-list.v42-scroll-focus .service-row{opacity:.46}
+html.movx-v42 .services-list.v42-scroll-focus .service-row.v42-reading{opacity:1}
+html.movx-v42 .services-list .service-row.v42-reading::after{transform:scaleX(1)!important;opacity:.9!important}
+html.movx-v42 .process-list li.v42-reading{opacity:1!important}
+html.movx-v42 .process-list li.v42-reading::after{transform:scaleX(1)!important;opacity:.9!important}
+
+@media(max-width:980px){
+  html.movx-v42 body[data-page="social"] #archiveGrid{column-count:2}
+  html.movx-v42 .v42-parallax-ghost{font-size:clamp(150px,34vw,350px);opacity:.5}
+  html.movx-v42 .v42-parallax-index{display:none}
+}
+@media(max-width:680px){
+  html.movx-v42 body[data-page="social"] #filterBoard .archive-filter-row{grid-template-columns:1fr!important;gap:0!important;padding:8px 0!important}
+  html.movx-v42 body[data-page="social"] #filterBoard .archive-filter-row__label{border-right:0!important;padding:0 0 7px!important}
+  html.movx-v42 body[data-page="social"] #archiveGrid{column-count:1}
+  html.movx-v42 body[data-page="social"] #archiveGrid .archive-card{margin-bottom:38px!important}
+  html.movx-v42 .v42-parallax-layer{inset:-8% -12%}
+  html.movx-v42 .v42-parallax-ghost{font-size:44vw;opacity:.28}
+  html.movx-v42 .v42-parallax-rule{width:88vw;opacity:.38}
+}
+@media(prefers-reduced-motion:reduce){
+  html.movx-v42 .v42-parallax-ghost,
+  html.movx-v42 .v42-parallax-rule,
+  html.movx-v42 .v42-parallax-index{transform:none!important;will-change:auto!important}
+  html.movx-v42 .services-list .service-row,
+  html.movx-v42 .process-list li{opacity:1!important}
+}
