@@ -24,7 +24,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Build MOVX v36 cinematic opening
+      - name: Build MOVX v37 optimized editorial archive
         shell: bash
         run: |
           set -euo pipefail
@@ -50,24 +50,9 @@ jobs:
           python3 case-order-v20.py _site/projects.js
           python3 v22-build.py _site
 
-          if [ -s patches/v21-motion.css ]; then
-            printf '\n\n' >> _site/styles.css
-            cat patches/v21-motion.css >> _site/styles.css
-          fi
-          python3 - <<'PY'
-          from pathlib import Path
-          src = Path('patches/v21-motion.js').read_text(encoding='utf-8')
-          start_token = '  /* ---------------------------------------------------------\n     Viewport motion'
-          end_token = '  /* Case viewer entrance'
-          if start_token in src and end_token in src:
-              a = src.index(start_token)
-              b = src.index(end_token)
-              src = src[:a] + src[b:]
-          Path('/tmp/v21-core.js').write_text(src, encoding='utf-8')
-          PY
-          printf '\n\n' >> _site/script.js
-          cat /tmp/v21-core.js >> _site/script.js
-
+          # v21's JS engine is intentionally retired in v37. The source ZIP already
+          # had its own RAF conveyor/ticker and v21 added a second owner for both.
+          # v37 uses one compositor/CSS owner and patches the legacy source hooks.
           if [ -s patches/v22-performance.css ]; then
             printf '\n\n' >> _site/styles.css
             cat patches/v22-performance.css >> _site/styles.css
@@ -82,7 +67,8 @@ jobs:
             patches/v33-case-editorial.css \
             patches/v34-quiet-loud.css \
             patches/v35-narrative-chapters.css \
-            patches/v36-opening-sequence.css; do
+            patches/v36-opening-sequence.css \
+            patches/v37-performance-editorial.css; do
             test -s "$file"
             printf '\n\n' >> _site/styles.css
             cat "$file" >> _site/styles.css
@@ -95,21 +81,26 @@ jobs:
             patches/v33-case-editorial.js \
             patches/v34-quiet-loud.js \
             patches/v35-narrative-chapters.js \
-            patches/v36-opening-sequence.js; do
+            patches/v36-opening-sequence.js \
+            patches/v37-performance-editorial.js; do
             test -s "$file"
             printf '\n\n' >> _site/script.js
             cat "$file" >> _site/script.js
           done
+
+          # Remove redundant legacy motion ownership and patch two accumulated
+          # runtime bugs after every current enhancement has been assembled.
+          python3 patches/v37-runtime-audit.py _site
 
           python3 - <<'PY'
           from pathlib import Path
           import re
           p = Path('_site/social-media.html')
           h = p.read_text(encoding='utf-8')
-          h = re.sub(r'href="styles\.css(?:\?[^\"]*)?"', 'href="styles.css?v=36-opening"', h)
-          h = re.sub(r'src="projects\.js(?:\?[^\"]*)?"', 'src="projects.js?v=36-opening"', h)
-          h = re.sub(r'src="i18n\.js(?:\?[^\"]*)?"', 'src="i18n.js?v=36-opening"', h)
-          h = re.sub(r'src="script\.js(?:\?[^\"]*)?"', 'src="script.js?v=36-opening"', h)
+          h = re.sub(r'href="styles\.css(?:\?[^\"]*)?"', 'href="styles.css?v=37-runtime"', h)
+          h = re.sub(r'src="projects\.js(?:\?[^\"]*)?"', 'src="projects.js?v=37-runtime"', h)
+          h = re.sub(r'src="i18n\.js(?:\?[^\"]*)?"', 'src="i18n.js?v=37-runtime"', h)
+          h = re.sub(r'src="script\.js(?:\?[^\"]*)?"', 'src="script.js?v=37-runtime"', h)
           p.write_text(h, encoding='utf-8')
           PY
 
@@ -129,9 +120,9 @@ jobs:
           node --check _site/script.js
           node --check _site/i18n.js
           node --check _site/projects.js
+          python3 -m py_compile patches/v37-runtime-audit.py
 
           grep -q 'id="heroTop"' _site/index.html
-          grep -q 'class="hero-index"' _site/index.html
           grep -q 'id="loopWall"' _site/index.html
           grep -q 'id="nicheGrid"' _site/index.html
           grep -q 'id="archiveGrid"' _site/index.html
@@ -149,13 +140,20 @@ jobs:
           grep -q 'MOVX v34 — quiet frame / loud work runtime' _site/script.js
           grep -q 'MOVX v35 — narrative chapter runtime' _site/script.js
           grep -q 'MOVX v36 — cinematic opening runtime' _site/script.js
-          grep -q 'MOVX v36 — cinematic opening sequence' _site/styles.css
-          grep -q 'v36-hero-mode' _site/styles.css
-          grep -q 'v36-cinematic-handoff' _site/script.js
-          grep -q 'animation-duration:68s' _site/styles.css
-          grep -q 'v=36-opening' _site/index.html
+          grep -q 'MOVX v37 — performance-led editorial archive runtime' _site/script.js
+          grep -q 'MOVX v37 — performance-led editorial archive' _site/styles.css
+          grep -q 'MOVX v37 build optimization' _site/script.js
+          grep -q 'function initConveyorLoop(){ stopConveyorLoop(); }' _site/script.js
+          grep -q "attributeFilter:\['src','class'\]" _site/script.js
+          grep -q 'v37-motion-paused' _site/styles.css
+          grep -q 'v37-single-motion-owner' _site/script.js
+          grep -q 'v=37-runtime' _site/index.html
           grep -q 'Rosa choque' _site/i18n.js
 
+          # Old engines and known conflicts must stay out of the deployed bundle.
+          ! grep -q 'MOVX v21 — resilient motion engine' _site/script.js
+          ! grep -q "attributeFilter:\['src','style','class'\]" _site/script.js
+          ! grep -q "'v30-theme-pop'" _site/script.js
           ! grep -q 'MOVX v25 — unified premium motion runtime' _site/script.js
           ! grep -q 'MOVX v29 — inertial editorial motion' _site/script.js
           ! grep -q 'MOVX v29 — editorial polish' _site/styles.css
@@ -165,7 +163,7 @@ jobs:
           ! grep -q 'vendor/lenis.min.js' _site/index.html
           ! grep -q 'social-cover-art__image{opacity:0' _site/styles.css
 
-          echo "MOVX v36 validated: cinematic opening + editorial rail + slower living archive"
+          echo "MOVX v37 validated: single motion ownership + offscreen pause + editorial territories/directory"
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
