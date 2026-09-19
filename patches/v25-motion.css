@@ -1,0 +1,106 @@
+/* MOVX v25 — premium motion architecture
+   One motion owner: Lenis + GSAP/ScrollTrigger. Legacy movement is disabled by build. */
+html.movx-v25{scroll-behavior:auto}
+html.movx-v25 body{--v25-ease:cubic-bezier(.16,1,.3,1);--v25-red:#9c2e24}
+html.movx-v25.lenis,html.movx-v25.lenis body{height:auto}
+html.movx-v25 .lenis.lenis-smooth{scroll-behavior:auto!important}
+html.movx-v25 .lenis.lenis-stopped{overflow:hidden}
+html.movx-v25 .lenis.lenis-smooth iframe{pointer-events:none}
+html.movx-v25 .reveal,html.movx-v25 .mask-reveal,html.movx-v25 .media-reveal{opacity:1!important;transform:none!important;clip-path:none!important;filter:none!important;transition:none!important;animation:none!important}
+html.movx-v25 .loop-track{animation:none!important;transform:none!important}
+html.movx-v25 .loop-wall:hover .loop-track{animation-play-state:running!important}
+html.movx-v25 .social-cover-art__image{animation:none!important;transform:none!important}
+
+/* HERO — 2.5D scene generated from the approved Soul of Design artwork. */
+html.movx-v25 .social-cover-art__stage{perspective:1300px;transform-style:preserve-3d;background:#080605;isolation:isolate}
+html.movx-v25 .social-cover-art__image{opacity:0!important;pointer-events:none}
+html.movx-v25 .v25-hero-scene{position:absolute;inset:-5.5%;z-index:1;transform-style:preserve-3d;overflow:hidden;will-change:transform}
+html.movx-v25 .v25-hero-layer{position:absolute;inset:0;background-image:var(--v25-hero);background-size:cover;background-position:center;background-repeat:no-repeat;will-change:transform;transform:translate3d(0,0,0);backface-visibility:hidden}
+html.movx-v25 .v25-hero-layer--base{z-index:0;filter:saturate(.94) contrast(1.025)}
+html.movx-v25 .v25-hero-layer--type{z-index:2;clip-path:polygon(0 0,56% 0,56% 100%,0 100%);filter:contrast(1.02)}
+html.movx-v25 .v25-hero-layer--crt{z-index:3;clip-path:polygon(54% 0,100% 0,100% 67%,57% 67%);filter:contrast(1.045) saturate(1.04)}
+html.movx-v25 .v25-hero-layer--lower{z-index:4;clip-path:polygon(42% 36%,100% 36%,100% 100%,42% 100%);filter:contrast(1.035)}
+html.movx-v25 .v25-hero-bloom{position:absolute;z-index:5;right:10%;top:6%;width:34%;height:58%;border-radius:50%;background:radial-gradient(circle,rgba(195,56,37,.16),rgba(195,56,37,0) 68%);filter:blur(28px);mix-blend-mode:screen;pointer-events:none;will-change:transform,opacity}
+html.movx-v25 .v25-hero-grain{position:absolute;inset:0;z-index:6;pointer-events:none;opacity:.14;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.28'/%3E%3C/svg%3E");mix-blend-mode:soft-light}
+html.movx-v25 .social-cover-art__shade{z-index:7!important;background:linear-gradient(180deg,rgba(0,0,0,.04),rgba(0,0,0,.12))!important}
+html.movx-v25 .hero-index{z-index:10;position:relative}
+html.movx-v25 .hero-index__item{overflow:hidden;position:relative;transition:background-color .7s var(--v25-ease),color .7s var(--v25-ease)}
+html.movx-v25 .hero-index__item::after{content:"";position:absolute;left:0;bottom:0;width:100%;height:1px;background:currentColor;transform:scaleX(0);transform-origin:left;transition:transform .95s var(--v25-ease);opacity:.5}
+html.movx-v25 .hero-index__item:hover::after,html.movx-v25 .hero-index__item:focus-visible::after{transform:scaleX(1)}
+
+html.movx-v25 .v25-chapter{position:relative}
+html.movx-v25 .v25-chapter::before{content:"";position:absolute;left:var(--pad);right:var(--pad);top:0;height:1px;background:var(--line);transform:scaleX(var(--v25-rule,0));transform-origin:left;pointer-events:none;z-index:5}
+
+/* Long editorial reveals. */
+html.movx-v25 [data-v25-reveal]{opacity:0;will-change:transform,opacity,clip-path}
+html.movx-v25 [data-v25-reveal="copy"]{transform:translate3d(0,24px,0)}
+html.movx-v25 [data-v25-reveal="title"]{transform:translate3d(0,34px,0);clip-path:inset(0 0 28% 0)}
+html.movx-v25 [data-v25-reveal="media"]{transform:translate3d(0,28px,0) scale(.992)}
+html.movx-v25 [data-v25-reveal].v25-in{opacity:1;transform:translate3d(0,0,0) scale(1);clip-path:inset(0 0 0 0);transition:opacity 1.45s var(--v25-ease),transform 1.55s var(--v25-ease),clip-path 1.55s var(--v25-ease)}
+
+/* LIVING ARCHIVE — 3 independent conveyor rows with subtle depth. */
+html.movx-v25 .loop-wall{perspective:1400px;gap:20px}
+html.movx-v25 .loop-row{overflow:hidden;transform-style:preserve-3d}
+html.movx-v25 .v25-conveyor-stage{width:max-content;will-change:transform;transform:translate3d(0,0,0)}
+html.movx-v25 .loop-track{display:flex!important;width:max-content!important;gap:18px!important}
+html.movx-v25 .loop-card{transform-style:preserve-3d;backface-visibility:hidden;transition:opacity .7s var(--v25-ease),filter .7s var(--v25-ease),box-shadow .9s var(--v25-ease),border-color .7s ease}
+html.movx-v25 .loop-row:nth-child(1) .loop-card:nth-child(3n+1){transform:perspective(900px) rotateY(-2deg) translateZ(4px)}
+html.movx-v25 .loop-row:nth-child(2) .loop-card:nth-child(3n+2){transform:perspective(900px) rotateY(2deg) translateZ(5px)}
+html.movx-v25 .loop-row:nth-child(3) .loop-card:nth-child(3n){transform:perspective(900px) rotateY(-1.5deg) translateZ(3px)}
+html.movx-v25 .loop-row.is-v25-hovered .loop-card{opacity:.36;filter:saturate(.78)}
+html.movx-v25 .loop-row.is-v25-hovered .loop-card:hover{opacity:1;filter:none;box-shadow:0 34px 74px rgba(0,0,0,.28);border-color:var(--line-strong)}
+
+html.movx-v25 .archive-card,html.movx-v25 .niche-card{transform-origin:center;transition:border-color .7s ease,box-shadow .9s var(--v25-ease)}
+html.movx-v25 .archive-card img,html.movx-v25 .niche-card img{transition:transform 1.35s var(--v25-ease),filter 1s var(--v25-ease)}
+html.movx-v25 .archive-card:hover img,html.movx-v25 .niche-card:hover img{transform:scale(1.025)}
+
+/* ABOUT — actual multi-plane parallax. */
+html.movx-v25 .about-section{min-height:clamp(780px,105vh,1180px);display:flex;align-items:center;isolation:isolate;overflow:hidden}
+html.movx-v25 .about-section .container{position:relative;z-index:3}
+html.movx-v25 .v25-about-word{position:absolute;left:-7vw;top:50%;z-index:0;pointer-events:none;white-space:nowrap;font-family:var(--serif);font-style:italic;font-size:clamp(220px,34vw,640px);line-height:.7;letter-spacing:-.1em;color:transparent;-webkit-text-stroke:1px color-mix(in srgb,var(--fg) 13%,transparent);opacity:.64;will-change:transform}
+html.movx-v25 .about-heading,html.movx-v25 .about-copy,html.movx-v25 .about-signature{will-change:transform}
+html.movx-v25 .about-signature{position:relative;padding-top:28px}
+html.movx-v25 .about-signature::before{content:"";position:absolute;top:0;left:0;height:1px;width:var(--v25-signature,0%);background:currentColor;opacity:.34}
+
+/* SERVICES — sticky editorial chapter. */
+html.movx-v25 .services-section{overflow:visible;padding-bottom:clamp(90px,12vw,180px)}
+html.movx-v25 .services-section .section-intro{position:sticky;top:86px;z-index:8;background:linear-gradient(var(--bg) 76%,transparent);padding-top:24px;padding-bottom:54px}
+html.movx-v25 .services-list{padding-top:24px}
+html.movx-v25 .service-row{position:relative!important;top:auto!important;min-height:clamp(170px,24vh,250px);padding:clamp(42px,6vw,78px) 0;border-top:1px solid var(--line);border-bottom:0!important;will-change:transform,opacity;transform-origin:left center;background:transparent!important;box-shadow:none!important}
+html.movx-v25 .service-row::after{content:"";position:absolute;left:0;bottom:-1px;height:2px;width:var(--v25-service-line,0%);background:var(--editorial-red);opacity:.9}
+html.movx-v25 .service-row h3{will-change:transform}
+
+/* PROCESS — sticky heading + scroll progress. */
+html.movx-v25 .process-grid{align-items:start}
+html.movx-v25 .process-title{position:sticky;top:120px;align-self:start}
+html.movx-v25 .process-list{position:relative;padding-left:34px;border-top:0}
+html.movx-v25 .process-list::before{content:"";position:absolute;left:3px;top:0;bottom:0;width:1px;background:var(--line)}
+html.movx-v25 .process-list::after{content:"";position:absolute;left:3px;top:0;width:1px;height:var(--v25-process,0%);background:var(--editorial-red)}
+html.movx-v25 .process-list li{will-change:transform,opacity;position:relative}
+html.movx-v25 .process-list li::before{content:"";position:absolute;left:-34px;top:33px;width:8px;height:8px;border-radius:50%;background:var(--bg);border:1px solid var(--line-strong);transform:scale(var(--v25-dot,.72));transition:background .5s ease,border-color .5s ease}
+html.movx-v25 .process-list li.v25-current::before,html.movx-v25 .process-list li.v25-past::before{background:var(--editorial-red);border-color:var(--editorial-red)}
+
+/* CONTACT — slow spatial exit. */
+html.movx-v25 .contact-section{isolation:isolate;overflow:hidden}
+html.movx-v25 .contact-section::before{content:"";position:absolute;right:-12vw;top:-18vw;width:48vw;height:48vw;border:1px solid currentColor;border-radius:50%;opacity:.09;transform:translate3d(var(--v25-contact-x,0),var(--v25-contact-y,0),0) scale(var(--v25-contact-scale,1));will-change:transform}
+html.movx-v25 .contact-form label{position:relative}
+html.movx-v25 .contact-form label::after{content:"";position:absolute;left:0;bottom:-1px;width:100%;height:1px;background:currentColor;transform:scaleX(0);transform-origin:left;transition:transform .9s var(--v25-ease)}
+html.movx-v25 .contact-form label:focus-within::after{transform:scaleX(1)}
+
+html.movx-v25 .case-viewer.v25-opening .case-hero__media img{will-change:transform,opacity}
+
+@media(max-width:900px){
+  html.movx-v25 .v25-hero-layer--type,html.movx-v25 .v25-hero-layer--crt,html.movx-v25 .v25-hero-layer--lower{clip-path:none;opacity:0}
+  html.movx-v25 .v25-hero-layer--base{opacity:1}
+  html.movx-v25 .about-section{min-height:auto}
+  html.movx-v25 .v25-about-word{font-size:58vw;opacity:.32}
+  html.movx-v25 .services-section .section-intro{position:relative;top:auto;background:none}
+  html.movx-v25 .process-title{position:relative;top:auto}
+  html.movx-v25 .process-list{padding-left:27px}
+  html.movx-v25 .process-list li::before{left:-28px}
+}
+@media(prefers-reduced-motion:reduce){
+  html.movx-v25 [data-v25-reveal]{opacity:1!important;transform:none!important;clip-path:none!important;transition:none!important}
+  html.movx-v25 .v25-hero-layer,html.movx-v25 .v25-hero-scene,html.movx-v25 .v25-about-word,html.movx-v25 .about-heading,html.movx-v25 .about-copy,html.movx-v25 .about-signature,html.movx-v25 .service-row,html.movx-v25 .process-list li,html.movx-v25 .contact-section::before{transform:none!important}
+  html.movx-v25 .v25-conveyor-stage{transform:none!important}
+}
