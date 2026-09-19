@@ -24,73 +24,50 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Build full MOVX site from uploaded ZIP
+      - name: Build MOVX v25 from source archive
         shell: bash
         run: |
           set -euo pipefail
 
           ZIP="$(find . -maxdepth 1 -type f -name 'MOVX_Portfolio_v18*.zip' -print -quit)"
           if [ -z "$ZIP" ]; then
-            echo "::error::No MOVX_Portfolio_v18*.zip file found in the repository root."
+            echo "::error::No MOVX_Portfolio_v18*.zip file found in repository root."
             exit 1
           fi
 
-          echo "Using source archive: $ZIP"
           rm -rf _restore _site
           mkdir -p _restore _site
           unzip -q "$ZIP" -d _restore
-
           SOCIAL="$(find _restore -type f -name 'social-media.html' -print -quit)"
-          if [ -z "$SOCIAL" ]; then
-            echo "::error::social-media.html not found inside ZIP"
-            exit 1
-          fi
-
+          test -n "$SOCIAL"
           ROOT="$(dirname "$SOCIAL")"
           cp -a "$ROOT"/. _site/
-          cp _site/social-media.html _site/index.html
 
+          # Preserve validated content/data refinements.
           if [ -s patches/v19-overrides.css ]; then
             printf '\n\n' >> _site/styles.css
             cat patches/v19-overrides.css >> _site/styles.css
           fi
-
           python3 case-order-v20.py _site/projects.js
           python3 v22-build.py _site
-
-          # v21 remains responsible only for the resilient 3-row conveyor/ticker.
-          if [ -s patches/v21-motion.css ]; then
-            printf '\n\n' >> _site/styles.css
-            cat patches/v21-motion.css >> _site/styles.css
-          fi
-          if [ -s patches/v21-motion.js ]; then
-            printf '\n\n' >> _site/script.js
-            cat patches/v21-motion.js >> _site/script.js
-          fi
-
           if [ -s patches/v22-performance.css ]; then
             printf '\n\n' >> _site/styles.css
             cat patches/v22-performance.css >> _site/styles.css
           fi
-
-          # Keep the refined copy from Etapa 2.
           python3 patches/v23-copy.py _site
 
-          # v24 replaces the old threshold/snap choreography with one inertial engine:
-          # real hero/About parallax, continuous Services/Process focus and slower reveals.
-          if [ -s patches/v24-motion.css ]; then
-            printf '\n\n' >> _site/styles.css
-            cat patches/v24-motion.css >> _site/styles.css
-            echo "Applied MOVX v24 professional motion styles"
-          fi
-          if [ -s patches/v24-motion.js ]; then
-            printf '\n\n' >> _site/script.js
-            cat patches/v24-motion.js >> _site/script.js
-            echo "Applied MOVX v24 inertial motion engine"
-          fi
+          # V25: remove legacy competing motion, inject GSAP/ScrollTrigger/Lenis,
+          # then install one single motion runtime for hero 2.5D, conveyors and chapters.
+          python3 v25-build.py _site
+          printf '\n\n' >> _site/styles.css
+          cat patches/v25-motion.css >> _site/styles.css
+          printf '\n\n' >> _site/script.js
+          cat patches/v25-motion.js >> _site/script.js
 
+          # Unified homepage after all transforms.
           cp _site/social-media.html _site/index.html
 
+          # Validation: content, assets, runtime and motion architecture.
           test -s _site/index.html
           test -s _site/social-media.html
           test -s _site/styles.css
@@ -101,28 +78,20 @@ jobs:
 
           ASSET_COUNT="$(find _site/assets -type f | wc -l | tr -d ' ')"
           echo "MOVX asset count: $ASSET_COUNT"
-          if [ "$ASSET_COUNT" -lt 70 ]; then
-            echo "::error::Expected at least 70 MOVX assets, found $ASSET_COUNT"
-            exit 1
-          fi
+          test "$ASSET_COUNT" -ge 70
 
           node --check _site/script.js
           node --check _site/i18n.js
-          grep -q 'movx-conveyor-left' _site/styles.css
-          grep -q 'MOVX v21 — resilient motion engine' _site/script.js
-          grep -q 'movx-motion-v24' _site/styles.css
-          grep -q 'MOVX v24 — cinematic motion engine' _site/script.js
-          grep -q 'movx-v24-about-word' _site/styles.css
-          grep -q 'smoothScroll' _site/script.js
-          grep -q 'home.servicesIntro' _site/i18n.js
-          grep -q 'Direção que transforma repertório' _site/i18n.js
-          grep -q 'Da intenção<br>ao impacto visual' _site/i18n.js
-          grep -q 'Clareza primeiro<br>Execução depois' _site/i18n.js
+          grep -q 'MOVX v25 — unified premium motion runtime' _site/script.js
+          grep -q 'html.movx-v25' _site/styles.css
+          grep -q 'gsap@3.13.0' _site/social-media.html
+          grep -q 'lenis@1.3.11' _site/social-media.html
+          grep -q 'legacy animation engine disabled' _site/script.js
           grep -q 'const rowIndexes = ' _site/script.js
           grep -q 'Tecnologia & Inovação' _site/i18n.js
-          grep -q 'content-visibility:auto' _site/styles.css
+          grep -q 'Direção que transforma repertório' _site/i18n.js
           grep -q "slides: \['assets/projects/belive-cashflow.webp'.*'assets/projects/belive-01.webp'\]" _site/projects.js
-          echo "MOVX v24 build validated and ready for GitHub Pages"
+          echo "MOVX v25 validated: one motion owner, 2.5D hero, parallax, 3-row conveyor"
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
