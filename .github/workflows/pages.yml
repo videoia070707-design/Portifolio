@@ -27,18 +27,12 @@ jobs:
       - name: Rebuild optimized MOVX assets
         shell: bash
         run: |
-          : > hero.webp
-          for f in .assets/hero/part-*.b64; do
-            base64 -d "$f" >> hero.webp
-          done
-
-          : > sprite.webp
-          for f in .assets/sprite/part-*.b64; do
-            base64 -d "$f" >> sprite.webp
-          done
-
+          cat .assets/hero/part-*.b64 | tr -d '\n\r' | base64 --ignore-garbage -d > hero.webp
+          cat .assets/sprite/part-*.b64 | tr -d '\n\r' | base64 --ignore-garbage -d > sprite.webp
           test -s hero.webp
           test -s sprite.webp
+          file hero.webp
+          file sprite.webp
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
