@@ -150,7 +150,7 @@ jobs:
           grep -q 'v31-nav-current' _site/script.js
           grep -q 'v31-media-interactive' _site/styles.css
           grep -q 'v31-case-visible' _site/script.js
-          grep -q 'data-v32-order' _site/script.js
+          grep -q 'v32Order' _site/script.js
           grep -q 'grid-template-columns:repeat(12,minmax(0,1fr))' _site/styles.css
           grep -q 'grid-template-columns:minmax(180px,.44fr)' _site/styles.css
           grep -q 'white-space:normal!important' _site/styles.css
