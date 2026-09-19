@@ -1,0 +1,199 @@
+/* MOVX v39 — perceptible depth motion
+   Intent: make parallax and 3D scroll unmistakable without letting text collide.
+   Depth lives on media containers and dedicated hero planes; copy remains layout-stable. */
+html.movx-v39 body{
+  --v39-ease:cubic-bezier(.16,1,.3,1);
+  --v39-ui:cubic-bezier(.4,0,.2,1);
+  --v39-depth-line:color-mix(in srgb,var(--fg) 18%,transparent);
+}
+
+/* ------------------------------------------------------------------
+   HERO — real multi-plane depth. v39 becomes the transform owner for
+   the existing image/plane stack, so the effect is stronger and clear.
+   ------------------------------------------------------------------ */
+html.movx-v39 body[data-page="social"] .social-cover-art__stage{
+  perspective:1050px!important;
+  perspective-origin:50% 46%;
+  transform-style:preserve-3d!important;
+  overflow:hidden!important;
+}
+html.movx-v39 body[data-page="social"] .social-cover-art__image{
+  transform:translate3d(var(--v39-hero-bg-x,0px),var(--v39-hero-bg-y,0px),0) scale(var(--v39-hero-bg-scale,1.065))!important;
+  transform-origin:50% 48%!important;
+  transition:none!important;
+  will-change:transform;
+  backface-visibility:hidden;
+}
+html.movx-v39 body[data-page="social"] .v28-hero-overlay{
+  inset:-5%!important;
+  overflow:visible!important;
+  transform-style:preserve-3d!important;
+  transform:translate3d(var(--v39-hero-x,0px),var(--v39-hero-y,0px),var(--v39-hero-z,38px)) rotateX(var(--v39-hero-rx,0deg)) rotateY(var(--v39-hero-ry,0deg)) scale(var(--v39-hero-scale,1.05))!important;
+  transition:none!important;
+  will-change:transform;
+}
+html.movx-v39 body[data-page="social"] .v28-hero-plane--type{
+  opacity:.31!important;
+  transform:translate3d(var(--v39-type-x,0px),var(--v39-type-y,0px),62px) rotateY(var(--v39-type-ry,0deg))!important;
+}
+html.movx-v39 body[data-page="social"] .v28-hero-plane--crt{
+  opacity:.43!important;
+  transform:translate3d(var(--v39-crt-x,0px),var(--v39-crt-y,0px),142px) rotateY(var(--v39-crt-ry,0deg)) scale(1.018)!important;
+}
+html.movx-v39 body[data-page="social"] .v28-hero-plane--lower{
+  opacity:.29!important;
+  transform:translate3d(var(--v39-lower-x,0px),var(--v39-lower-y,0px),98px) rotateX(var(--v39-lower-rx,0deg))!important;
+}
+html.movx-v39 body[data-page="social"] .v28-hero-grain{
+  transform:translate3d(var(--v39-grain-x,0px),var(--v39-grain-y,0px),168px) scale(1.035)!important;
+  opacity:.085!important;
+}
+
+/* ------------------------------------------------------------------
+   LIVING ARCHIVE — the moving wall now occupies depth as well as x.
+   Track keeps horizontal compositor ownership; row owns 3D scroll motion.
+   ------------------------------------------------------------------ */
+html.movx-v39 body[data-page="social"] #livingArchive .loop-wall{
+  perspective:1250px!important;
+  perspective-origin:50% 48%;
+  transform-style:preserve-3d;
+}
+html.movx-v39 body[data-page="social"] #livingArchive .loop-row{
+  transform-style:preserve-3d;
+  transform:translate3d(0,var(--v39-row-y,0px),var(--v39-row-z,0px)) rotateX(var(--v39-row-rx,0deg)) rotateZ(var(--v39-row-rz,0deg));
+  transform-origin:50% 50%;
+  transition:none!important;
+  will-change:transform;
+}
+html.movx-v39 body[data-page="social"] #livingArchive .loop-card{
+  backface-visibility:hidden;
+}
+
+/* ------------------------------------------------------------------
+   TERRITORIES — image planes drift at a different depth than their copy.
+   ------------------------------------------------------------------ */
+html.movx-v39 body[data-page="social"] #nicheGrid .niche-card{
+  perspective:1200px;
+}
+html.movx-v39 body[data-page="social"] #nicheGrid .niche-card__media{
+  transform:translate3d(0,var(--v39-niche-y,0px),var(--v39-niche-z,0px)) rotateX(var(--v39-niche-rx,0deg)) rotateY(var(--v39-niche-ry,0deg)) scale(var(--v39-niche-scale,1.02));
+  transform-style:preserve-3d;
+  transform-origin:50% 50%;
+  transition:none!important;
+  will-change:transform;
+  backface-visibility:hidden;
+}
+html.movx-v39 body[data-page="social"] #nicheGrid .niche-card__media img{
+  transform:translate3d(var(--v39-niche-img-x,0px),var(--v39-niche-img-y,0px),0) scale(1.08)!important;
+  transition:none!important;
+  will-change:transform;
+}
+
+/* ------------------------------------------------------------------
+   SELECTED CASES — deliberate 3D scroll choreography.
+   At viewport edges covers recede/rotate; around the reading line they
+   move toward the viewer. Copy remains sticky and completely flat.
+   ------------------------------------------------------------------ */
+html.movx-v39 body[data-page="social"] #projectsList .project-entry{
+  perspective:1150px!important;
+  perspective-origin:50% 48%;
+  overflow:visible!important;
+}
+html.movx-v39 body[data-page="social"] #projectsList .project-cover{
+  transform-style:preserve-3d!important;
+  transform-origin:50% 50%!important;
+  transform:translate3d(var(--v39-project-x,0px),var(--v39-project-y,0px),var(--v39-project-z,0px)) rotateX(var(--v39-project-rx,0deg)) rotateY(var(--v39-project-ry,0deg)) rotateZ(var(--v39-project-rz,0deg)) scale(var(--v39-project-scale,1))!important;
+  transition:none!important;
+  will-change:transform,filter;
+  backface-visibility:hidden;
+  filter:drop-shadow(0 var(--v39-project-shadow-y,22px) var(--v39-project-shadow-blur,44px) rgba(0,0,0,var(--v39-project-shadow-a,.12)));
+}
+html.movx-v39 body[data-page="social"] #projectsList .project-cover img{
+  transform:translate3d(var(--v39-project-img-x,0px),var(--v39-project-img-y,0px),0) scale(var(--v39-project-img-scale,1.085))!important;
+  transition:none!important;
+  will-change:transform;
+  backface-visibility:hidden;
+}
+html.movx-v39 body[data-page="social"] #projectsList .project-copy{
+  transform:none!important;
+}
+html.movx-v39 body[data-page="social"] #projectsList .project-entry.v39-depth-current::before{
+  transform:scaleX(1)!important;
+  opacity:1!important;
+}
+
+/* ------------------------------------------------------------------
+   CASE VIEWER — scroll through artwork like a shallow 3D exhibition.
+   v31 still owns visibility; v39 only owns the media-frame transform.
+   ------------------------------------------------------------------ */
+html.movx-v39 .case-viewer{
+  perspective:1350px;
+  perspective-origin:50% 44%;
+}
+html.movx-v39 .case-viewer .case-slides{
+  transform-style:preserve-3d;
+}
+html.movx-v39 .case-viewer .case-slide-frame{
+  transform-style:preserve-3d!important;
+  transform:translate3d(var(--v39-case-x,0px),var(--v39-case-y,0px),var(--v39-case-z,0px)) rotateX(var(--v39-case-rx,0deg)) rotateY(var(--v39-case-ry,0deg)) scale(var(--v39-case-scale,1))!important;
+  transform-origin:50% 50%!important;
+  transition:opacity .78s var(--v39-ui)!important;
+  will-change:transform,opacity;
+  backface-visibility:hidden;
+}
+html.movx-v39 .case-viewer .case-slide-frame img{
+  transform:translate3d(0,var(--v39-case-img-y,0px),0) scale(1.045)!important;
+  transition:none!important;
+  will-change:transform;
+}
+
+/* About/contact background depth can be more noticeable without moving copy. */
+html.movx-v39 .about-section::before{
+  transform:translate3d(calc(var(--v28-about-x,0px) * 1.8),calc(-50% + (var(--v28-about-y,0px) * 1.65)),0) rotate(-2deg)!important;
+}
+html.movx-v39 .contact-section::before{
+  transform:translate3d(calc(var(--v28-contact-x,0px) * 1.55),calc(var(--v28-contact-y,0px) * 1.55),0) scale(calc(var(--v28-contact-scale,1) * 1.04))!important;
+}
+
+/* Pointer capable devices get the full amplitude. Touch keeps scroll depth but softer. */
+@media(max-width:980px){
+  html.movx-v39 body[data-page="social"] #projectsList .project-cover{
+    --v39-project-rx:0deg!important;
+    --v39-project-ry:0deg!important;
+    --v39-project-rz:0deg!important;
+    --v39-project-z:0px!important;
+    filter:none!important;
+  }
+  html.movx-v39 body[data-page="social"] #nicheGrid .niche-card__media{
+    --v39-niche-rx:0deg!important;
+    --v39-niche-ry:0deg!important;
+    --v39-niche-z:0px!important;
+  }
+}
+@media(max-width:720px){
+  html.movx-v39 body[data-page="social"] .v28-hero-overlay{display:none!important}
+  html.movx-v39 body[data-page="social"] .social-cover-art__image{
+    transform:translate3d(0,var(--v39-hero-bg-y,0px),0) scale(1.055)!important;
+  }
+  html.movx-v39 .case-viewer .case-slide-frame{
+    --v39-case-rx:0deg!important;
+    --v39-case-ry:0deg!important;
+    --v39-case-z:0px!important;
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  html.movx-v39 body[data-page="social"] .social-cover-art__image,
+  html.movx-v39 body[data-page="social"] .v28-hero-overlay,
+  html.movx-v39 body[data-page="social"] .v28-hero-plane,
+  html.movx-v39 body[data-page="social"] #livingArchive .loop-row,
+  html.movx-v39 body[data-page="social"] #nicheGrid .niche-card__media,
+  html.movx-v39 body[data-page="social"] #nicheGrid .niche-card__media img,
+  html.movx-v39 body[data-page="social"] #projectsList .project-cover,
+  html.movx-v39 body[data-page="social"] #projectsList .project-cover img,
+  html.movx-v39 .case-viewer .case-slide-frame,
+  html.movx-v39 .case-viewer .case-slide-frame img{
+    transform:none!important;
+    transition:none!important;
+    filter:none!important;
+  }
+}
