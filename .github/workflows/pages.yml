@@ -23,14 +23,25 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Rebuild optimized MOVX assets
+        shell: bash
+        run: |
+          cat .assets/hero/part-*.b64 | tr -d '\n\r' | base64 -d > hero.webp
+          cat .assets/sprite/part-*.b64 | tr -d '\n\r' | base64 -d > sprite.webp
+          test -s hero.webp
+          test -s sprite.webp
+
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
         with:
           enablement: true
+
       - name: Upload site
         uses: actions/upload-pages-artifact@v3
         with:
           path: .
+
       - name: Deploy
         id: deployment
         uses: actions/deploy-pages@v4
