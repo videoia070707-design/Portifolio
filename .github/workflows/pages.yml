@@ -24,7 +24,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Build MOVX v29 editorial motion polish
+      - name: Build MOVX v30 premium editorial motion
         shell: bash
         run: |
           set -euo pipefail
@@ -51,8 +51,8 @@ jobs:
           python3 case-order-v20.py _site/projects.js
           python3 v22-build.py _site
 
-          # Keep only the proven conveyor/ticker/case portions of v21. The old 620ms
-          # viewport WAAPI block is removed so it cannot compete with the slower v29 reveals.
+          # Keep only the proven conveyor/ticker/case portions of v21. The old viewport
+          # animation block is removed so it cannot compete with the slower v30 reveals.
           if [ -s patches/v21-motion.css ]; then
             printf '\n\n' >> _site/styles.css
             cat patches/v21-motion.css >> _site/styles.css
@@ -77,32 +77,33 @@ jobs:
           fi
           python3 patches/v23-copy.py _site
 
-          # V28 provides the safe visual scaffolding only. V29 owns inertial motion and polish.
+          # V28 keeps proven decorative scaffolding. V30 owns readability, section polish,
+          # and all current continuous motion; v29 is intentionally not appended.
           test -s patches/v28-motion-safe.css
-          test -s patches/v29-polish.css
-          test -s patches/v29-motion-smooth.js
+          test -s patches/v30-polish.css
+          test -s patches/v30-motion-premium.js
           printf '\n\n' >> _site/styles.css
           cat patches/v28-motion-safe.css >> _site/styles.css
           printf '\n\n' >> _site/styles.css
-          cat patches/v29-polish.css >> _site/styles.css
+          cat patches/v30-polish.css >> _site/styles.css
           printf '\n\n' >> _site/script.js
-          cat patches/v29-motion-smooth.js >> _site/script.js
+          cat patches/v30-motion-premium.js >> _site/script.js
 
-          # Fresh requests for the reworked motion system.
+          # Fresh requests for the refined motion and process system.
           python3 - <<'PY'
           from pathlib import Path
           p = Path('_site/social-media.html')
           h = p.read_text(encoding='utf-8')
-          h = h.replace('href="styles.css"', 'href="styles.css?v=29-editorial"')
-          h = h.replace('src="projects.js"', 'src="projects.js?v=29-editorial"')
-          h = h.replace('src="i18n.js"', 'src="i18n.js?v=29-editorial"')
-          h = h.replace('src="script.js"', 'src="script.js?v=29-editorial"')
+          h = h.replace('href="styles.css"', 'href="styles.css?v=30-premium"')
+          h = h.replace('src="projects.js"', 'src="projects.js?v=30-premium"')
+          h = h.replace('src="i18n.js"', 'src="i18n.js?v=30-premium"')
+          h = h.replace('src="script.js"', 'src="script.js?v=30-premium"')
           p.write_text(h, encoding='utf-8')
           PY
 
           cp _site/social-media.html _site/index.html
 
-          # Content is primary; motion must remain fail-open.
+          # Content is primary; motion remains fail-open.
           test -s _site/index.html
           test -s _site/styles.css
           test -s _site/script.js
@@ -128,22 +129,24 @@ jobs:
           grep -q 'renderProjectList' _site/script.js
           grep -q 'MOVX v21 — resilient motion engine' _site/script.js
           grep -q 'Shared scroll impulse' _site/script.js
-          grep -q 'MOVX v29 — inertial editorial motion' _site/script.js
-          grep -q 'MOVX v29 — editorial polish' _site/styles.css
-          grep -q 'grid-template-columns:minmax(150px,.42fr)' _site/styles.css
-          grep -q 'v29-current' _site/script.js
+          grep -q 'MOVX v30 — premium editorial motion' _site/script.js
+          grep -q 'MOVX v30 — premium editorial refinement' _site/styles.css
+          grep -q 'grid-template-columns:minmax(180px,.44fr)' _site/styles.css
+          grep -q 'v30-current' _site/script.js
+          grep -q 'white-space:normal!important' _site/styles.css
           grep -q 'Tecnologia & Inovação' _site/i18n.js
           grep -q 'Direção que transforma repertório' _site/i18n.js
 
           ! grep -q 'MOVX v25 — unified premium motion runtime' _site/script.js
-          ! grep -q 'MOVX v28 — safe premium motion layer' _site/script.js
+          ! grep -q 'MOVX v29 — inertial editorial motion' _site/script.js
+          ! grep -q 'MOVX v29 — editorial polish' _site/styles.css
           ! grep -q 'Viewport motion — explicit WAAPI fallback' _site/script.js
           ! grep -q 'legacy animation engine disabled' _site/script.js
           ! grep -q 'vendor/gsap.min.js' _site/index.html
           ! grep -q 'vendor/lenis.min.js' _site/index.html
           ! grep -q 'social-cover-art__image{opacity:0' _site/styles.css
 
-          echo "MOVX v29 validated: readable editorial process + damped motion + full content"
+          echo "MOVX v30 validated: premium editorial process + collision-safe copy + damped motion"
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
