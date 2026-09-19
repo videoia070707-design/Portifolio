@@ -24,7 +24,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Build stable MOVX site
+      - name: Build MOVX v28 safe premium motion
         shell: bash
         run: |
           set -euo pipefail
@@ -43,7 +43,7 @@ jobs:
           ROOT="$(dirname "$SOCIAL")"
           cp -a "$ROOT"/. _site/
 
-          # Keep the proven design/data/copy refinements only.
+          # Keep the proven design/data/copy refinements.
           if [ -s patches/v19-overrides.css ]; then
             printf '\n\n' >> _site/styles.css
             cat patches/v19-overrides.css >> _site/styles.css
@@ -51,8 +51,7 @@ jobs:
           python3 case-order-v20.py _site/projects.js
           python3 v22-build.py _site
 
-          # Restore the last known-good independent 3-row conveyor instead of the
-          # v25/v26 GSAP/Lenis runtime that was preventing dynamic content from rendering.
+          # Stable content-independent conveyor and reveal engine.
           if [ -s patches/v21-motion.css ]; then
             printf '\n\n' >> _site/styles.css
             cat patches/v21-motion.css >> _site/styles.css
@@ -68,22 +67,29 @@ jobs:
           fi
           python3 patches/v23-copy.py _site
 
-          # Force fresh browser requests after the broken v25/v26 deployment.
+          # V28 is additive and fail-open: no third-party runtime and no content starts hidden.
+          test -s patches/v28-motion-safe.css
+          test -s patches/v28-motion-safe.js
+          printf '\n\n' >> _site/styles.css
+          cat patches/v28-motion-safe.css >> _site/styles.css
+          printf '\n\n' >> _site/script.js
+          cat patches/v28-motion-safe.js >> _site/script.js
+
+          # Force fresh browser requests after the stable recovery.
           python3 - <<'PY'
           from pathlib import Path
           p = Path('_site/social-media.html')
           h = p.read_text(encoding='utf-8')
-          h = h.replace('href="styles.css"', 'href="styles.css?v=27-stable"')
-          h = h.replace('src="projects.js"', 'src="projects.js?v=27-stable"')
-          h = h.replace('src="i18n.js"', 'src="i18n.js?v=27-stable"')
-          h = h.replace('src="script.js"', 'src="script.js?v=27-stable"')
+          h = h.replace('href="styles.css"', 'href="styles.css?v=28-safe"')
+          h = h.replace('src="projects.js"', 'src="projects.js?v=28-safe"')
+          h = h.replace('src="i18n.js"', 'src="i18n.js?v=28-safe"')
+          h = h.replace('src="script.js"', 'src="script.js?v=28-safe"')
           p.write_text(h, encoding='utf-8')
           PY
 
           cp _site/social-media.html _site/index.html
 
-          # Hard validation: dynamic mounts/data/assets must exist and the broken runtime
-          # must not leak into the deploy again.
+          # Hard validation: content mounts and data remain primary; motion is optional enhancement.
           test -s _site/index.html
           test -s _site/styles.css
           test -s _site/script.js
@@ -108,6 +114,12 @@ jobs:
           grep -q 'renderArchive' _site/script.js
           grep -q 'renderProjectList' _site/script.js
           grep -q 'MOVX v21 — resilient motion engine' _site/script.js
+          grep -q 'Shared scroll impulse' _site/script.js
+          grep -q 'MOVX v28 — safe premium motion layer' _site/script.js
+          grep -q 'html.movx-v28' _site/styles.css
+          grep -q 'v28-hero-overlay' _site/script.js
+          grep -q 'v28-about-x' _site/script.js
+          grep -q 'v28-process' _site/script.js
           grep -q 'Tecnologia & Inovação' _site/i18n.js
           grep -q 'Direção que transforma repertório' _site/i18n.js
 
@@ -115,8 +127,9 @@ jobs:
           ! grep -q 'legacy animation engine disabled' _site/script.js
           ! grep -q 'vendor/gsap.min.js' _site/index.html
           ! grep -q 'vendor/lenis.min.js' _site/index.html
+          ! grep -q 'social-cover-art__image{opacity:0' _site/styles.css
 
-          echo "MOVX v27 stable recovery validated"
+          echo "MOVX v28 validated: full content + native premium motion + fail-open architecture"
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
