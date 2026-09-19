@@ -144,7 +144,7 @@ jobs:
           grep -q 'MOVX v34 — quiet frame / loud work' _site/styles.css
           grep -q 'v34-project-accent' _site/styles.css
           grep -q 'prewarmProject' _site/script.js
-          grep -q 'v34-quiet-loud' _site/index.html
+          grep -q 'v=34-quiet-loud' _site/index.html
           grep -q 'Rosa choque' _site/i18n.js
 
           ! grep -q 'MOVX v25 — unified premium motion runtime' _site/script.js
