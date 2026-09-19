@@ -1,0 +1,25 @@
+/* MOVX v22 — faster media delivery + below-fold rendering */
+.niche-index,
+.work-archive,
+.projects-list,
+.about-section,
+.services-section,
+.process-section,
+.contact-section{
+  content-visibility:auto;
+  contain-intrinsic-size:900px;
+}
+
+.loop-card img,
+.archive-card img,
+.project-cover img,
+.niche-card img{
+  image-rendering:auto;
+  backface-visibility:hidden;
+  transform:translateZ(0);
+}
+
+/* Keep conveyor cards cheap to composite while moving. */
+.movx-motion-v21 .movx-conveyor-stage{
+  contain:layout paint style;
+}
