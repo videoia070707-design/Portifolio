@@ -1,0 +1,75 @@
+/* MOVX v23 — section choreography / parallax / softer motion */
+html.movx-motion-v23{scroll-behavior:smooth}
+html.movx-motion-v23 body{--movx-soft-ease:cubic-bezier(.16,1,.3,1);--movx-gentle-ease:cubic-bezier(.22,.8,.2,1)}
+
+/* v23 owns editorial entrances. Old reveal CSS must not snap elements. */
+.movx-motion-v23 .reveal,
+.movx-motion-v23 .mask-reveal,
+.movx-motion-v23 .media-reveal{opacity:1!important;transform:none!important;clip-path:none!important;transition:none!important}
+
+/* Hero: scroll-linked wrapper, not competing with the artwork itself. */
+.movx-motion-v23 .movx-hero-parallax-stage{position:absolute;inset:-2.5%;will-change:transform;transform:translate3d(0,0,0) scale(1.02);overflow:hidden}
+.movx-motion-v23 .movx-hero-parallax-stage>.social-cover-art__image{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;transform:none!important;animation:none!important;object-fit:cover}
+.movx-motion-v23 .social-cover-art__stage{overflow:hidden}
+.movx-motion-v23 .hero-index__item{position:relative;overflow:hidden}
+.movx-motion-v23 .hero-index__item::after{content:"";position:absolute;left:0;right:100%;bottom:0;height:1px;background:currentColor;opacity:.48;transition:right .7s var(--movx-soft-ease)}
+.movx-motion-v23 .hero-index__item:hover::after,.movx-motion-v23 .hero-index__item:focus-visible::after{right:0}
+
+/* About becomes the main editorial parallax moment. */
+.movx-motion-v23 .about-section{isolation:isolate;min-height:clamp(700px,92vh,980px);display:flex;align-items:center}
+.movx-motion-v23 .about-section .container{position:relative;z-index:2}
+.movx-motion-v23 .movx-about-soul{position:absolute;left:-.05em;right:0;top:50%;z-index:0;pointer-events:none;transform:translate3d(0,-50%,0);font-family:var(--serif);font-size:clamp(160px,28vw,510px);font-style:italic;line-height:.7;letter-spacing:-.09em;color:transparent;-webkit-text-stroke:1px color-mix(in srgb,var(--fg) 11%,transparent);opacity:.75;white-space:nowrap;will-change:transform}
+.movx-motion-v23 .about-heading,.movx-motion-v23 .about-copy,.movx-motion-v23 .about-signature{will-change:transform}
+.movx-motion-v23 .about-signature{position:relative}
+.movx-motion-v23 .about-signature::before{content:"";position:absolute;left:0;top:-1px;width:var(--movx-signature-line,0%);height:1px;background:var(--fg);opacity:.42;transition:width 1.2s var(--movx-soft-ease)}
+.movx-motion-v23 .about-section.is-motion-active .about-signature{--movx-signature-line:100%}
+
+/* Services: editorial sticky progression, not card animation. */
+.movx-motion-v23 .services-section{overflow:visible}
+.movx-motion-v23 .services-section .section-intro{position:relative;z-index:7;padding-bottom:clamp(36px,6vw,70px)}
+.movx-motion-v23 .services-list{position:relative;padding-bottom:clamp(32px,5vw,70px)}
+.movx-motion-v23 .service-row{--service-index:0;position:sticky;top:calc(88px + var(--service-index)*15px);z-index:calc(20 + var(--service-index));background:var(--bg);padding:clamp(28px,4vw,52px) 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);transform-origin:center top;will-change:transform,opacity,filter;transition:opacity .7s var(--movx-soft-ease),filter .7s var(--movx-soft-ease),background .35s ease}
+.movx-motion-v23 .service-row::after{content:"";position:absolute;left:0;bottom:-1px;height:2px;width:var(--movx-service-progress,0%);background:var(--editorial-red);transition:width .55s var(--movx-soft-ease)}
+.movx-motion-v23 .service-row.is-current{--movx-service-progress:100%;opacity:1;filter:none}
+.movx-motion-v23 .service-row.is-past{opacity:.42;filter:saturate(.6)}
+.movx-motion-v23 .service-row h3{transition:letter-spacing .55s var(--movx-soft-ease),transform .55s var(--movx-soft-ease)}
+.movx-motion-v23 .service-row.is-current h3{letter-spacing:-.065em;transform:translateX(8px)}
+
+/* Process: active timeline and focus progression. */
+.movx-motion-v23 .process-list{position:relative;padding-left:28px;border-top:0}
+.movx-motion-v23 .process-list::before{content:"";position:absolute;left:2px;top:0;bottom:0;width:1px;background:var(--line)}
+.movx-motion-v23 .process-list::after{content:"";position:absolute;left:2px;top:0;width:1px;height:var(--movx-process-progress,0%);background:var(--editorial-red);transition:height .12s linear}
+.movx-motion-v23 .process-list li{position:relative;transition:opacity .65s var(--movx-soft-ease),transform .65s var(--movx-soft-ease)}
+.movx-motion-v23 .process-list li::before{content:"";position:absolute;left:-31px;top:31px;width:7px;height:7px;border-radius:50%;background:var(--bg);border:1px solid var(--line-strong);transform:scale(.75);transition:transform .45s var(--movx-soft-ease),background .45s ease,border-color .45s ease}
+.movx-motion-v23 .process-list li.is-process-active{opacity:1;transform:translateX(7px)}
+.movx-motion-v23 .process-list li.is-process-active::before,.movx-motion-v23 .process-list li.is-process-past::before{background:var(--editorial-red);border-color:var(--editorial-red);transform:scale(1)}
+.movx-motion-v23 .process-list li.is-process-muted{opacity:.42}
+
+/* Contact closes the page with restrained line motion. */
+.movx-motion-v23 .contact-section::before{content:"";position:absolute;right:-12vw;top:-18vw;width:42vw;height:42vw;border:1px solid currentColor;border-radius:50%;opacity:.09;transform:translate3d(var(--movx-contact-x,0),var(--movx-contact-y,0),0);will-change:transform}
+.movx-motion-v23 .contact-form label{position:relative}
+.movx-motion-v23 .contact-form label::after{content:"";position:absolute;left:0;right:100%;bottom:-1px;height:1px;background:currentColor;transition:right .45s var(--movx-soft-ease)}
+.movx-motion-v23 .contact-form label:focus-within::after{right:0}
+
+/* Section handoffs: faint moving rule that connects chapters. */
+.movx-motion-v23 .movx-handoff{height:1px;position:relative;overflow:hidden;background:var(--line);margin:0 var(--pad);pointer-events:none}
+.movx-motion-v23 .movx-handoff span{position:absolute;top:0;left:-18%;width:18%;height:1px;background:var(--fg);opacity:.42;transform:translate3d(var(--movx-handoff-x,0),0,0);will-change:transform}
+
+/* Softer reveal states. JS sets only opacity/translate and lets content settle. */
+.movx-motion-v23 [data-v23-reveal]{opacity:0;transform:translate3d(0,14px,0);filter:blur(2px)}
+.movx-motion-v23 [data-v23-reveal].is-v23-in{opacity:1;transform:translate3d(0,0,0);filter:blur(0);transition:opacity 1.05s var(--movx-soft-ease),transform 1.05s var(--movx-soft-ease),filter .85s var(--movx-soft-ease)}
+.movx-motion-v23 [data-v23-reveal="title"]{transform:translate3d(0,20px,0);clip-path:inset(0 0 18% 0)}
+.movx-motion-v23 [data-v23-reveal="title"].is-v23-in{clip-path:inset(0 0 0 0);transition:opacity 1.15s var(--movx-soft-ease),transform 1.15s var(--movx-soft-ease),clip-path 1.15s var(--movx-soft-ease),filter .95s var(--movx-soft-ease)}
+
+@media(max-width:900px){
+  .movx-motion-v23 .about-section{min-height:auto}
+  .movx-motion-v23 .movx-about-soul{font-size:52vw;opacity:.45}
+  .movx-motion-v23 .service-row{position:relative;top:auto!important}
+  .movx-motion-v23 .process-list{padding-left:24px}
+  .movx-motion-v23 .process-list li::before{left:-27px}
+}
+@media(prefers-reduced-motion:reduce){
+  .movx-motion-v23 .movx-hero-parallax-stage,.movx-motion-v23 .movx-about-soul,.movx-motion-v23 .about-heading,.movx-motion-v23 .about-copy,.movx-motion-v23 .about-signature,.movx-motion-v23 .contact-section::before{transform:none!important}
+  .movx-motion-v23 [data-v23-reveal]{opacity:1!important;transform:none!important;filter:none!important;clip-path:none!important;transition:none!important}
+  .movx-motion-v23 .service-row{position:relative;top:auto!important;opacity:1!important;filter:none!important;transform:none!important}
+}
