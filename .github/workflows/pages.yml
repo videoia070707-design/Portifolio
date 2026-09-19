@@ -62,11 +62,10 @@ jobs:
           # Correct the Belive Cashflow case sequence.
           python3 case-order-v20.py _site/projects.js
 
-          # V22: unique conveyor rows, faster image loading, refined About/Services copy,
-          # and Technology & Innovation positioning instead of AI-led messaging.
+          # V22: unique conveyor rows, faster image loading and technology positioning.
           python3 v22-build.py _site
 
-          # Replace legacy/conflicting motion behavior with the resilient v21 engine.
+          # Replace legacy/conflicting conveyor behavior with the resilient v21 engine.
           if [ -s patches/v21-motion.css ]; then
             printf '\n\n' >> _site/styles.css
             cat patches/v21-motion.css >> _site/styles.css
@@ -78,12 +77,29 @@ jobs:
             echo "Applied MOVX v21 motion engine"
           fi
 
-          # V22 rendering/performance refinements come last so they win the cascade.
           if [ -s patches/v22-performance.css ]; then
             printf '\n\n' >> _site/styles.css
             cat patches/v22-performance.css >> _site/styles.css
             echo "Applied MOVX v22 performance styles"
           fi
+
+          # V23: apply the actual Etapa 2 plan — copy separation, softer reveals,
+          # hero handoff, About parallax, Services progression, Process timeline,
+          # Contact motion and section handoffs.
+          python3 patches/v23-copy.py _site
+          if [ -s patches/v23-motion.css ]; then
+            printf '\n\n' >> _site/styles.css
+            cat patches/v23-motion.css >> _site/styles.css
+            echo "Applied MOVX v23 choreography styles"
+          fi
+          if [ -s patches/v23-motion.js ]; then
+            printf '\n\n' >> _site/script.js
+            cat patches/v23-motion.js >> _site/script.js
+            echo "Applied MOVX v23 choreography engine"
+          fi
+
+          # index.html is the unified experience and must include the v23 HTML copy patch too.
+          cp _site/social-media.html _site/index.html
 
           # Validate the real application before publishing.
           test -s _site/index.html
@@ -107,13 +123,18 @@ jobs:
           grep -q 'contact contrast' _site/styles.css
           grep -q 'movx-motion-v21' _site/styles.css
           grep -q 'MOVX v21 — resilient motion engine' _site/script.js
+          grep -q 'movx-motion-v23' _site/styles.css
+          grep -q 'MOVX v23 — planned section choreography' _site/script.js
+          grep -q 'home.servicesIntro' _site/i18n.js
+          grep -q 'Direção que transforma repertório' _site/i18n.js
+          grep -q 'Da intenção<br>ao impacto visual' _site/i18n.js
+          grep -q 'Clareza primeiro<br>Execução depois' _site/i18n.js
           grep -q 'const rowIndexes = ' _site/script.js
           grep -q 'loading="${itemIndex < 2' _site/script.js
           grep -q 'Tecnologia & Inovação' _site/i18n.js
-          grep -q 'Construo linguagem' _site/i18n.js
           grep -q 'content-visibility:auto' _site/styles.css
           grep -q "slides: \['assets/projects/belive-cashflow.webp'.*'assets/projects/belive-01.webp'\]" _site/projects.js
-          echo "MOVX v22 build validated and ready for GitHub Pages"
+          echo "MOVX v23 build validated and ready for GitHub Pages"
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
