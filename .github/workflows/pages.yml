@@ -1,8 +1,6 @@
 name: Deploy MOVX to GitHub Pages
 
 on:
-  push:
-    branches: ["main"]
   workflow_dispatch:
 
 permissions:
@@ -10,58 +8,8 @@ permissions:
   pages: write
   id-token: write
 
-concurrency:
-  group: pages
-  cancel-in-progress: true
-
 jobs:
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+  hold:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Rebuild optimized MOVX assets
-        shell: bash
-        run: |
-          python3 - <<'PY'
-          import base64, glob, re, pathlib
-
-          def rebuild(pattern, output):
-              chunks = []
-              for path in sorted(glob.glob(pattern)):
-                  text = pathlib.Path(path).read_text(encoding='utf-8', errors='ignore')
-                  text = re.sub(r'[^A-Za-z0-9+/=]', '', text)
-                  chunks.append(text)
-              data = ''.join(chunks).rstrip('=')
-              data += '=' * ((4 - len(data) % 4) % 4)
-              raw = base64.b64decode(data, validate=False)
-              pathlib.Path(output).write_bytes(raw)
-              if not raw:
-                  raise SystemExit(f'{output} is empty')
-
-          rebuild('.assets/hero/part-*.b64', 'hero.webp')
-          rebuild('.assets/sprite/part-*.b64', 'sprite.webp')
-          PY
-
-          file hero.webp
-          file sprite.webp
-          test -s hero.webp
-          test -s sprite.webp
-
-      - name: Configure GitHub Pages
-        uses: actions/configure-pages@v5
-        with:
-          enablement: true
-
-      - name: Upload site
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: .
-
-      - name: Deploy
-        id: deployment
-        uses: actions/deploy-pages@v4
+      - run: echo "MOVX restore staging"
