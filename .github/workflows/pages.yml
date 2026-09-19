@@ -24,7 +24,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Build MOVX v25 from source archive
+      - name: Build MOVX v26 from source archive
         shell: bash
         run: |
           set -euo pipefail
@@ -35,13 +35,22 @@ jobs:
             exit 1
           fi
 
-          rm -rf _restore _site
+          rm -rf _restore _site node_modules
           mkdir -p _restore _site
           unzip -q "$ZIP" -d _restore
           SOCIAL="$(find _restore -type f -name 'social-media.html' -print -quit)"
           test -n "$SOCIAL"
           ROOT="$(dirname "$SOCIAL")"
           cp -a "$ROOT"/. _site/
+
+          # Vendor the motion runtime into the deployed site. The previous remote CDN tags were
+          # synchronous and could block script.js itself, which prevented projects/text/images
+          # from rendering when jsDelivr was slow or unavailable.
+          npm install --no-save --no-package-lock gsap@3.13.0 lenis@1.3.11 >/dev/null
+          mkdir -p _site/vendor
+          cp node_modules/gsap/dist/gsap.min.js _site/vendor/gsap.min.js
+          cp node_modules/gsap/dist/ScrollTrigger.min.js _site/vendor/ScrollTrigger.min.js
+          cp node_modules/lenis/dist/lenis.min.js _site/vendor/lenis.min.js
 
           # Preserve validated content/data refinements.
           if [ -s patches/v19-overrides.css ]; then
@@ -56,18 +65,16 @@ jobs:
           fi
           python3 patches/v23-copy.py _site
 
-          # V25: remove legacy competing motion, inject GSAP/ScrollTrigger/Lenis,
-          # then install one single motion runtime for hero 2.5D, conveyors and chapters.
+          # V26: one motion runtime, but dependencies are local and core content always wins.
           python3 v25-build.py _site
           printf '\n\n' >> _site/styles.css
           cat patches/v25-motion.css >> _site/styles.css
           printf '\n\n' >> _site/script.js
           cat patches/v25-motion.js >> _site/script.js
 
-          # Unified homepage after all transforms.
           cp _site/social-media.html _site/index.html
 
-          # Validation: content, assets, runtime and motion architecture.
+          # Validation: content, assets, local runtime and motion architecture.
           test -s _site/index.html
           test -s _site/social-media.html
           test -s _site/styles.css
@@ -75,6 +82,9 @@ jobs:
           test -s _site/i18n.js
           test -s _site/projects.js
           test -s _site/assets/hero/soul-of-design-hero-clean.png
+          test -s _site/vendor/gsap.min.js
+          test -s _site/vendor/ScrollTrigger.min.js
+          test -s _site/vendor/lenis.min.js
 
           ASSET_COUNT="$(find _site/assets -type f | wc -l | tr -d ' ')"
           echo "MOVX asset count: $ASSET_COUNT"
@@ -84,14 +94,17 @@ jobs:
           node --check _site/i18n.js
           grep -q 'MOVX v25 — unified premium motion runtime' _site/script.js
           grep -q 'html.movx-v25' _site/styles.css
-          grep -q 'gsap@3.13.0' _site/social-media.html
-          grep -q 'lenis@1.3.11' _site/social-media.html
+          grep -q 'vendor/gsap.min.js' _site/social-media.html
+          grep -q 'vendor/ScrollTrigger.min.js' _site/social-media.html
+          grep -q 'vendor/lenis.min.js' _site/social-media.html
+          ! grep -q 'cdn.jsdelivr.net/npm/gsap' _site/social-media.html
+          ! grep -q 'cdn.jsdelivr.net/npm/lenis' _site/social-media.html
           grep -q 'legacy animation engine disabled' _site/script.js
           grep -q 'const rowIndexes = ' _site/script.js
           grep -q 'Tecnologia & Inovação' _site/i18n.js
           grep -q 'Direção que transforma repertório' _site/i18n.js
           grep -q "slides: \['assets/projects/belive-cashflow.webp'.*'assets/projects/belive-01.webp'\]" _site/projects.js
-          echo "MOVX v25 validated: one motion owner, 2.5D hero, parallax, 3-row conveyor"
+          echo "MOVX v26 validated: local runtime + complete content + premium motion"
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
