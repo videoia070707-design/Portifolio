@@ -137,17 +137,17 @@ jobs:
             await page.goto(`${base}video-editor.html?qa-menu=${Date.now()}`,{waitUntil:'networkidle',timeout:45000});
             await page.waitForFunction(()=>document.documentElement.dataset.movxGlobalNavigation==='v69-unified',null,{timeout:15000});
             await page.click('.menu-button');
-            await page.waitForTimeout(160);
+            await page.waitForTimeout(520);
             const opened=await page.evaluate(()=>{
               const menu=document.querySelector('.mobile-menu');
               const button=document.querySelector('.menu-button');
               const cs=getComputedStyle(menu);
               return {open:menu.classList.contains('open'),body:document.body.classList.contains('v69-menu-open'),expanded:button.getAttribute('aria-expanded'),visibility:cs.visibility,opacity:parseFloat(cs.opacity||'0'),pointerEvents:cs.pointerEvents};
             });
-            if(!opened.open||!opened.body||opened.expanded!=='true'||opened.visibility!=='visible'||opened.opacity<.8||opened.pointerEvents==='none') throw new Error(`mobile menu failed to open ${JSON.stringify(opened)}`);
+            if(!opened.open||!opened.body||opened.expanded!=='true'||opened.visibility!=='visible'||opened.opacity<.95||opened.pointerEvents==='none') throw new Error(`mobile menu failed to settle open ${JSON.stringify(opened)}`);
             await page.screenshot({path:'qa-reserved/mobile-menu-open.png',fullPage:false});
             await page.click('.menu-button');
-            await page.waitForTimeout(120);
+            await page.waitForTimeout(320);
             const closed=await page.evaluate(()=>({open:document.querySelector('.mobile-menu').classList.contains('open'),body:document.body.classList.contains('v69-menu-open'),expanded:document.querySelector('.menu-button').getAttribute('aria-expanded')}));
             if(closed.open||closed.body||closed.expanded!=='false') throw new Error(`mobile menu failed to close ${JSON.stringify(closed)}`);
             if(errors.length) throw new Error(`mobile menu page errors: ${errors.join(' | ')}`);
