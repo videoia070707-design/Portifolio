@@ -1,0 +1,321 @@
+/* MOVX v43 — immersive lower-chapter narrative
+   Production gate for the researched immersive-scroll direction.
+   The lower half becomes one spatial story: Sobre -> Servicos -> Processo -> Contato.
+   Essential copy stays in the normal DOM; only dedicated scene planes move in 3D. */
+html.movx-v43 body{
+  --v43-ease:cubic-bezier(.16,1,.3,1);
+  --v43-ui:cubic-bezier(.4,0,.2,1);
+  --v43-line:color-mix(in srgb,var(--fg) 16%,transparent);
+  --v43-line-strong:color-mix(in srgb,var(--fg) 34%,transparent);
+  --v43-accent:var(--editorial-red,#9c2e24);
+}
+
+/* v43 owns lower-section depth. Retire the v42 decorative planes without
+   touching v42's archive recovery rules. */
+html.movx-v43 .v42-parallax-layer{display:none!important}
+
+html.movx-v43 .about-section,
+html.movx-v43 .services-section,
+html.movx-v43 .process-section,
+html.movx-v43 .contact-section{
+  position:relative!important;
+  isolation:isolate;
+  overflow:clip!important;
+}
+html.movx-v43 .about-section>.container,
+html.movx-v43 .services-section>.container,
+html.movx-v43 .process-section>.container,
+html.movx-v43 .contact-section>.container{
+  position:relative;
+  z-index:6;
+}
+
+/* Shared immersive stage. Each chapter gets a real perspective context but the
+   user reads ordinary HTML above it. */
+html.movx-v43 .v43-depth-stage{
+  position:absolute;
+  inset:0;
+  z-index:1;
+  pointer-events:none;
+  overflow:hidden;
+  perspective:900px;
+  perspective-origin:50% 46%;
+  transform-style:preserve-3d;
+  contain:layout style paint;
+}
+html.movx-v43 .v43-depth-world{
+  position:absolute;
+  inset:-12%;
+  transform-style:preserve-3d;
+  transform:
+    translate3d(var(--v43-world-x,0px),var(--v43-world-y,0px),var(--v43-world-z,0px))
+    rotateX(var(--v43-world-rx,0deg))
+    rotateY(var(--v43-world-ry,0deg));
+  transform-origin:50% 50%;
+  will-change:transform;
+}
+html.movx-v43 .v43-plane{
+  position:absolute;
+  left:50%;
+  top:50%;
+  transform-style:preserve-3d;
+  backface-visibility:hidden;
+  will-change:transform,opacity;
+}
+html.movx-v43 .v43-plane__type{
+  display:block;
+  white-space:nowrap;
+  font-family:var(--serif,Georgia,'Times New Roman',serif);
+  font-weight:400;
+  line-height:.72;
+  letter-spacing:-.075em;
+  color:transparent;
+  -webkit-text-stroke:1px color-mix(in srgb,var(--fg) 18%,transparent);
+}
+html.movx-v43 .v43-plane__mono{
+  font:700 clamp(58px,9vw,150px)/.8 var(--mono,ui-monospace,monospace);
+  letter-spacing:-.09em;
+  color:color-mix(in srgb,var(--fg) 12%,transparent);
+}
+html.movx-v43 .v43-plane__rule{
+  display:block;
+  width:min(54vw,820px);
+  height:1px;
+  background:linear-gradient(90deg,transparent,var(--v43-line-strong) 15%,var(--v43-line-strong) 85%,transparent);
+}
+
+/* -------------------------- SOBRE -------------------------------- */
+html.movx-v43 .about-section{min-height:clamp(820px,112vh,1240px)!important}
+html.movx-v43 .about-section .v43-depth-stage{perspective:820px}
+html.movx-v43 .about-section .v43-about-primary{
+  transform:translate3d(-52%,-48%,var(--v43-about-z1,-360px)) translateX(var(--v43-about-x1,0px)) translateY(var(--v43-about-y1,0px)) rotateZ(var(--v43-about-r1,-2deg)) scale(var(--v43-about-s1,1.12));
+  opacity:var(--v43-about-o1,.72);
+}
+html.movx-v43 .about-section .v43-about-primary .v43-plane__type{font-size:clamp(220px,34vw,650px)}
+html.movx-v43 .about-section .v43-about-brand{
+  transform:translate3d(-50%,-50%,var(--v43-about-z2,-120px)) translateX(var(--v43-about-x2,0px)) translateY(var(--v43-about-y2,0px)) rotateZ(var(--v43-about-r2,1.5deg));
+  opacity:var(--v43-about-o2,.28);
+}
+html.movx-v43 .about-section .v43-about-brand .v43-plane__type{
+  font-size:clamp(96px,15vw,260px);
+  font-family:var(--sans,Arial,sans-serif);
+  font-weight:800;
+  letter-spacing:-.07em;
+  -webkit-text-stroke-color:color-mix(in srgb,var(--fg) 13%,transparent);
+}
+html.movx-v43 .about-section .v43-about-rule{
+  transform:translate3d(-50%,-50%,var(--v43-about-z3,90px)) translateX(var(--v43-about-x3,0px)) translateY(var(--v43-about-y3,0px)) rotateZ(var(--v43-about-r3,0deg));
+  opacity:.62;
+}
+
+/* ------------------------- SERVICOS ------------------------------- */
+html.movx-v43 .services-section{min-height:clamp(980px,140vh,1500px)!important}
+html.movx-v43 .services-section .v43-depth-stage{perspective:860px}
+html.movx-v43 .v43-services-orbit{
+  position:absolute;
+  inset:0;
+  transform-style:preserve-3d;
+}
+html.movx-v43 .v43-service-marker{
+  position:absolute;
+  left:50%;
+  top:50%;
+  width:min(70vw,980px);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:34px;
+  opacity:var(--v43-service-opacity,.12);
+  transform:
+    translate3d(calc(-50% + var(--v43-service-x,0px)),calc(-50% + var(--v43-service-y,0px)),var(--v43-service-z,-480px))
+    rotateX(var(--v43-service-rx,0deg))
+    rotateY(var(--v43-service-ry,0deg))
+    scale(var(--v43-service-scale,1));
+  transform-style:preserve-3d;
+  will-change:transform,opacity;
+}
+html.movx-v43 .v43-service-marker b{
+  font:700 clamp(88px,15vw,240px)/.7 var(--mono,ui-monospace,monospace);
+  letter-spacing:-.09em;
+  color:color-mix(in srgb,var(--fg) 8%,transparent);
+}
+html.movx-v43 .v43-service-marker span{
+  flex:1;
+  height:1px;
+  background:var(--v43-line-strong);
+}
+
+/* ------------------------- PROCESSO -------------------------------
+   This is the signature gate. The real process list creates the scroll length,
+   while a sticky 3D corridor stays behind it. */
+@media(min-width:981px){
+  html.movx-v43 .process-section{
+    padding-top:0!important;
+    padding-bottom:0!important;
+  }
+  html.movx-v43 .process-section>.container{
+    padding-top:clamp(120px,12vw,180px)!important;
+    padding-bottom:clamp(120px,12vw,180px)!important;
+  }
+  html.movx-v43 .process-section .process-title{
+    position:sticky!important;
+    top:118px!important;
+    align-self:start!important;
+    z-index:8;
+  }
+  html.movx-v43 .process-section .process-list li{
+    min-height:52vh!important;
+    align-content:center!important;
+    display:grid!important;
+  }
+}
+html.movx-v43 .v43-process-stage{
+  position:sticky;
+  top:0;
+  height:100vh;
+  margin-bottom:-100vh;
+  z-index:1;
+  pointer-events:none;
+  overflow:hidden;
+  perspective:920px;
+  perspective-origin:50% 50%;
+  background:
+    radial-gradient(circle at 50% 48%,color-mix(in srgb,var(--v43-accent) 5%,transparent),transparent 44%),
+    transparent;
+}
+html.movx-v43 .v43-process-webgl{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  display:block;
+  opacity:.58;
+  filter:saturate(.72);
+}
+html.movx-v43 .v43-process-world{
+  position:absolute;
+  inset:0;
+  transform-style:preserve-3d;
+  transform:
+    translate3d(var(--v43-process-world-x,0px),var(--v43-process-world-y,0px),var(--v43-process-world-z,0px))
+    rotateX(var(--v43-process-world-rx,0deg))
+    rotateY(var(--v43-process-world-ry,0deg));
+  will-change:transform;
+}
+html.movx-v43 .v43-process-plane{
+  position:absolute;
+  left:50%;
+  top:50%;
+  width:min(66vw,940px);
+  height:min(58vh,560px);
+  border:1px solid color-mix(in srgb,var(--fg) 18%,transparent);
+  transform-style:preserve-3d;
+  backface-visibility:hidden;
+  opacity:var(--v43-process-plane-opacity,.13);
+  transform:
+    translate3d(calc(-50% + var(--v43-plane-x,0px)),calc(-50% + var(--v43-plane-y,0px)),var(--v43-plane-z,-1200px))
+    rotateX(var(--v43-plane-rx,0deg))
+    rotateY(var(--v43-plane-ry,0deg));
+  will-change:transform,opacity;
+}
+html.movx-v43 .v43-process-plane::before,
+html.movx-v43 .v43-process-plane::after{
+  content:"";
+  position:absolute;
+  background:color-mix(in srgb,var(--fg) 12%,transparent);
+}
+html.movx-v43 .v43-process-plane::before{left:50%;top:0;bottom:0;width:1px}
+html.movx-v43 .v43-process-plane::after{top:50%;left:0;right:0;height:1px}
+html.movx-v43 .v43-process-plane b{
+  position:absolute;
+  left:clamp(22px,3vw,48px);
+  top:clamp(22px,3vw,48px);
+  font:700 clamp(78px,12vw,190px)/.72 var(--mono,ui-monospace,monospace);
+  letter-spacing:-.1em;
+  color:color-mix(in srgb,var(--fg) 10%,transparent);
+}
+html.movx-v43 .v43-process-plane em{
+  position:absolute;
+  right:clamp(22px,3vw,48px);
+  bottom:clamp(22px,3vw,48px);
+  max-width:10ch;
+  text-align:right;
+  font-family:var(--serif,Georgia,serif);
+  font-size:clamp(26px,3.8vw,56px);
+  font-style:normal;
+  font-weight:400;
+  line-height:.88;
+  letter-spacing:-.055em;
+  color:color-mix(in srgb,var(--fg) 16%,transparent);
+}
+html.movx-v43 .process-list li.v43-process-current{
+  opacity:1!important;
+  border-bottom-color:var(--v43-line-strong)!important;
+}
+html.movx-v43 .process-list li.v43-process-current::after{transform:scaleX(1)!important;opacity:1!important}
+
+/* -------------------------- CONTATO ------------------------------- */
+html.movx-v43 .contact-section{min-height:clamp(860px,112vh,1200px)!important}
+html.movx-v43 .contact-section .v43-depth-stage{perspective:760px}
+html.movx-v43 .contact-section .v43-contact-title{
+  transform:translate3d(-50%,-50%,var(--v43-contact-z,-420px)) translateX(var(--v43-contact-x,0px)) translateY(var(--v43-contact-y,0px)) rotateX(var(--v43-contact-rx,0deg)) scale(var(--v43-contact-s,1.16));
+  opacity:var(--v43-contact-o,.48);
+}
+html.movx-v43 .contact-section .v43-contact-title .v43-plane__type{
+  font-size:clamp(190px,31vw,580px);
+  -webkit-text-stroke-color:rgba(243,238,233,.18);
+}
+html.movx-v43 .contact-section .v43-contact-rule{
+  transform:translate3d(-50%,-50%,var(--v43-contact-rule-z,120px)) translateX(var(--v43-contact-rule-x,0px)) translateY(var(--v43-contact-rule-y,0px)) rotateZ(var(--v43-contact-rule-r,0deg));
+}
+html.movx-v43 .contact-section .v43-contact-rule .v43-plane__rule{
+  background:linear-gradient(90deg,transparent,rgba(243,238,233,.3) 15%,rgba(243,238,233,.3) 85%,transparent);
+}
+
+/* A small read-progress rail makes the spatial chapter feel intentional, not random. */
+html.movx-v43 .v43-journey-meter{
+  position:fixed;
+  right:14px;
+  top:50%;
+  z-index:70;
+  width:1px;
+  height:118px;
+  transform:translateY(-50%);
+  background:color-mix(in srgb,var(--fg) 12%,transparent);
+  pointer-events:none;
+  opacity:0;
+  transition:opacity .45s var(--v43-ui);
+}
+html.movx-v43 .v43-journey-meter.is-live{opacity:.55}
+html.movx-v43 .v43-journey-meter::after{
+  content:"";
+  position:absolute;
+  left:0;
+  top:0;
+  width:1px;
+  height:calc(var(--v43-journey,0) * 100%);
+  background:var(--v43-accent);
+}
+
+@media(max-width:980px){
+  html.movx-v43 .v43-journey-meter{display:none}
+  html.movx-v43 .v43-depth-stage{perspective:1100px}
+  html.movx-v43 .about-section{min-height:auto!important}
+  html.movx-v43 .services-section{min-height:auto!important}
+  html.movx-v43 .contact-section{min-height:auto!important}
+  html.movx-v43 .v43-process-stage{display:none!important}
+  html.movx-v43 .process-section .process-list li{min-height:0!important}
+  html.movx-v43 .v43-service-marker{width:86vw;opacity:.08!important}
+}
+@media(max-width:680px){
+  html.movx-v43 .v43-depth-stage{opacity:.48}
+  html.movx-v43 .about-section .v43-about-primary .v43-plane__type,
+  html.movx-v43 .contact-section .v43-contact-title .v43-plane__type{font-size:52vw}
+  html.movx-v43 .v43-service-marker b{font-size:28vw}
+}
+@media(prefers-reduced-motion:reduce){
+  html.movx-v43 .v43-depth-stage,
+  html.movx-v43 .v43-process-stage,
+  html.movx-v43 .v43-journey-meter{display:none!important}
+  html.movx-v43 .process-section .process-list li{min-height:0!important;opacity:1!important}
+}
