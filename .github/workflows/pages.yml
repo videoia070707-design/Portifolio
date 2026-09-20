@@ -24,7 +24,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Build MOVX v55 process camera journey + visual QA
+      - name: Build MOVX v56 contact handoff + visual QA
         shell: bash
         run: |
           set -euo pipefail
@@ -114,6 +114,8 @@ jobs:
           cp patches/v54-native-artwork-portal.mjs _site/v54-portal.mjs
           cp patches/v55-process-camera.css _site/v55-process.css
           cp patches/v55-process-camera.mjs _site/v55-process.mjs
+          cp patches/v56-contact-handoff.css _site/v56-contact.css
+          cp patches/v56-contact-handoff.js _site/v56-contact.js
 
           python3 - <<'PY'
           from pathlib import Path
@@ -125,7 +127,7 @@ jobs:
           if not m: raise SystemExit('No <html> element found')
           attrs=m.group(1)
           cm=re.search(r'class="([^"]*)"',attrs,flags=re.I)
-          required=['movx-v42','movx-v45','movx-v46','movx-v47','movx-v48','movx-v49','movx-v52','movx-v54','movx-v55']
+          required=['movx-v42','movx-v45','movx-v46','movx-v47','movx-v48','movx-v49','movx-v52','movx-v54','movx-v55','movx-v56']
           if cm:
               classes=[c for c in cm.group(1).split() if c not in {'movx-v43','movx-v44','movx-v50','movx-v51','movx-v53'}]
               for cls in required:
@@ -134,34 +136,34 @@ jobs:
           else:
               attrs+=' class="'+' '.join(required)+'"'
           attrs=re.sub(r'\sdata-movx-build="[^"]*"','',attrs)
-          attrs+=' data-movx-build="v55-process-camera"'
+          attrs+=' data-movx-build="v56-contact-handoff"'
           h=h[:m.start()]+'<html'+attrs+'>'+h[m.end():]
 
-          version='55-process-camera'
+          version='56-contact-handoff'
           h=re.sub(r'href="styles\.css(?:\?[^\"]*)?"',f'href="styles.css?v={version}"',h)
           h=re.sub(r'src="projects\.js(?:\?[^\"]*)?"',f'src="projects.js?v={version}"',h)
           h=re.sub(r'src="i18n\.js(?:\?[^\"]*)?"',f'src="i18n.js?v={version}"',h)
           h=re.sub(r'src="script\.js(?:\?[^\"]*)?"',f'src="script.js?v={version}"',h)
 
-          extra_css=f'''  <link rel="stylesheet" href="v45-immersive.css?v={version}">\n  <link rel="stylesheet" href="v46-niche.css?v={version}">\n  <link rel="stylesheet" href="v47-territories.css?v={version}">\n  <link rel="stylesheet" href="v48-spatial.css?v={version}">\n  <link rel="stylesheet" href="v49-journey.css?v={version}">\n  <link rel="stylesheet" href="v52-architecture.css?v={version}">\n  <link rel="stylesheet" href="v54-portal.css?v={version}">\n  <link rel="stylesheet" href="v55-process.css?v={version}">\n'''
+          extra_css=f'''  <link rel="stylesheet" href="v45-immersive.css?v={version}">\n  <link rel="stylesheet" href="v46-niche.css?v={version}">\n  <link rel="stylesheet" href="v47-territories.css?v={version}">\n  <link rel="stylesheet" href="v48-spatial.css?v={version}">\n  <link rel="stylesheet" href="v49-journey.css?v={version}">\n  <link rel="stylesheet" href="v52-architecture.css?v={version}">\n  <link rel="stylesheet" href="v54-portal.css?v={version}">\n  <link rel="stylesheet" href="v55-process.css?v={version}">\n  <link rel="stylesheet" href="v56-contact.css?v={version}">\n'''
           h=h.replace('</head>',extra_css+'</head>')
-          runtime=f'''\n<script src="vendor/gsap.min.js?v={version}"></script>\n<script src="vendor/ScrollTrigger.min.js?v={version}"></script>\n<script type="module" src="v45-immersive.mjs?v={version}"></script>\n<script src="v46-niche.js?v={version}"></script>\n<script src="v47-archive-flow.js?v={version}"></script>\n<script src="v48-spatial.js?v={version}"></script>\n<script type="module" src="v49-journey.mjs?v={version}"></script>\n<script type="module" src="v52-architecture.mjs?v={version}"></script>\n<script type="module" src="v54-portal.mjs?v={version}"></script>\n<script type="module" src="v55-process.mjs?v={version}"></script>\n'''
+          runtime=f'''\n<script src="vendor/gsap.min.js?v={version}"></script>\n<script src="vendor/ScrollTrigger.min.js?v={version}"></script>\n<script type="module" src="v45-immersive.mjs?v={version}"></script>\n<script src="v46-niche.js?v={version}"></script>\n<script src="v47-archive-flow.js?v={version}"></script>\n<script src="v48-spatial.js?v={version}"></script>\n<script type="module" src="v49-journey.mjs?v={version}"></script>\n<script type="module" src="v52-architecture.mjs?v={version}"></script>\n<script type="module" src="v54-portal.mjs?v={version}"></script>\n<script type="module" src="v55-process.mjs?v={version}"></script>\n<script src="v56-contact.js?v={version}"></script>\n'''
           h=h.replace('</body>',runtime+'</body>')
           p.write_text(h,encoding='utf-8')
           PY
 
           cp _site/social-media.html _site/index.html
-          cp _site/social-media.html _site/v55.html
+          cp _site/social-media.html _site/v56.html
           cp _site/social-media.html _site/latest.html
 
           test -s _site/index.html
-          test -s _site/v55.html
-          test -s _site/v52-architecture.css
-          test -s _site/v52-architecture.mjs
+          test -s _site/v56.html
           test -s _site/v54-portal.css
           test -s _site/v54-portal.mjs
           test -s _site/v55-process.css
           test -s _site/v55-process.mjs
+          test -s _site/v56-contact.css
+          test -s _site/v56-contact.js
           test -s _site/vendor/three.module.min.js
           test -s _site/vendor/three.core.min.js
 
@@ -178,25 +180,20 @@ jobs:
           node --check _site/v52-architecture.mjs
           node --check _site/v54-portal.mjs
           node --check _site/v55-process.mjs
+          node --check _site/v56-contact.js
           node --check _site/i18n.js
           node --check _site/projects.js
           python3 -m py_compile patches/v37-runtime-audit.py patches/v38-runtime-audit.py
 
-          grep -q 'class="[^"]*movx-v55' _site/index.html
-          grep -q 'data-movx-build="v55-process-camera"' _site/index.html
-          grep -q 'v55-process.css?v=55-process-camera' _site/index.html
-          grep -q 'v55-process.mjs?v=55-process-camera' _site/index.html
-          grep -q 'v55-process-journey' _site/v55-process.css
+          grep -q 'class="[^"]*movx-v56' _site/index.html
+          grep -q 'data-movx-build="v56-contact-handoff"' _site/index.html
+          grep -q 'v56-contact.css?v=56-contact-handoff' _site/index.html
+          grep -q 'v56-contact.js?v=56-contact-handoff' _site/index.html
+          grep -q 'v56-handoff-layer' _site/v56-contact.css
+          grep -q 'dataset.v56Phase' _site/v56-contact.js
           grep -q 'function updateWebGL' _site/v55-process.mjs
-          grep -q 'dataset.v55Step' _site/v55-process.mjs
-          grep -q 'v54-portal-sequence' _site/v54-portal.css
-          grep -q 'function progress()' _site/v54-portal.mjs
           grep -q 'v54-hole' _site/v54-portal.mjs
-          grep -q 'deconstructBox' _site/v52-architecture.mjs
-          grep -q 'makeGate' _site/v52-architecture.mjs
-          grep -q 'CatmullRomCurve3' _site/v49-journey.mjs
           grep -q 'background:#080706!important' _site/v48-spatial.css
-          grep -q 'grid-template-rows:clamp(300px,29vw,410px)' _site/v47-territories.css
           grep -q 'Rosa choque' _site/i18n.js
 
           ! grep -q 'v50-artifact.mjs' _site/index.html
@@ -204,7 +201,7 @@ jobs:
           ! grep -q 'v53-portal.mjs' _site/index.html
           ! grep -q 'vendor/lenis.min.js' _site/index.html
 
-          echo "MOVX v55 validated: Process steps remain semantic DOM while camera travels through synchronized Three.js gates"
+          echo "MOVX v56 validated: Process frames collapse into a trace that draws the final Contact composition"
 
           npx playwright install --with-deps chromium >/tmp/playwright-install.log 2>&1
           python3 -m http.server 4173 --directory _site >/tmp/movx-preview-server.log 2>&1 &
@@ -217,51 +214,57 @@ jobs:
           const page=await browser.newPage({viewport:{width:1440,height:900},deviceScaleFactor:1});
           const errors=[];
           page.on('pageerror',err=>errors.push(String(err)));
-          await page.goto('http://127.0.0.1:4173/v55.html?v=55-process-camera',{waitUntil:'networkidle'});
+          await page.goto('http://127.0.0.1:4173/v56.html?v=56-contact-handoff',{waitUntil:'networkidle'});
           await page.waitForSelector('.v55-process-journey',{state:'attached',timeout:15000});
+          await page.waitForSelector('.v56-handoff-layer',{state:'attached',timeout:15000});
           await page.addStyleTag({content:'html,body{scroll-behavior:auto!important}'});
-          const snap=async(progress,path)=>{
+
+          const processSnap=async(progress,path)=>{
             await page.evaluate(p=>{
               const s=document.querySelector('.v55-process-journey');
               const top=window.scrollY+s.getBoundingClientRect().top;
               const travel=Math.max(1,s.offsetHeight-window.innerHeight);
               window.scrollTo(0,top+travel*p);
             },progress);
-            await page.waitForTimeout(1500);
-            const state=await page.evaluate(()=>{
-              const s=document.querySelector('.v55-process-journey');
-              const cs=getComputedStyle(s);
-              const current=document.querySelector('#process .process-list li.v55-current');
-              return {step:document.documentElement.dataset.v55Step||'',progress:parseFloat(cs.getPropertyValue('--v55-step-progress')||'0'),current:current?.dataset?.v55Step||'',overflow:document.documentElement.scrollWidth-window.innerWidth};
-            });
-            console.log(path,state);
+            await page.waitForTimeout(1200);
+            const state=await page.evaluate(()=>({step:document.documentElement.dataset.v55Step||'',phase:document.documentElement.dataset.v56Phase||'',overflow:document.documentElement.scrollWidth-window.innerWidth}));
             await page.screenshot({path,fullPage:false});
             return state;
           };
-          const first=await snap(.26,'_site/preview-v55-step-01.png');
-          const middle=await snap(.72,'_site/preview-v55-step-03.png');
-          const final=await snap(1.10,'_site/preview-v55-step-05.png');
-          const seen=new Set([first.step,middle.step,final.step].filter(Boolean));
-          if(seen.size<2) throw new Error('Process journey did not advance through multiple steps');
-          if(Math.max(first.progress,middle.progress,final.progress)<.6) throw new Error('Process progress never reached final half');
-          if(Math.max(first.overflow,middle.overflow,final.overflow)>2) throw new Error('Process journey introduced horizontal overflow');
+          const late=await processSnap(.91,'_site/preview-v56-collapse.png');
+          if(late.overflow>2) throw new Error('Process handoff introduced horizontal overflow');
+
+          await page.evaluate(()=>{
+            const c=document.querySelector('#contact');
+            const top=window.scrollY+c.getBoundingClientRect().top;
+            window.scrollTo(0,Math.max(0,top-window.innerHeight*.55));
+          });
+          await page.waitForTimeout(1400);
+          const contactState=await page.evaluate(()=>{
+            const c=document.querySelector('#contact');
+            const cs=getComputedStyle(c);
+            const grid=c.querySelector('.contact-grid');
+            return {phase:document.documentElement.dataset.v56Phase||'',rule:parseFloat(cs.getPropertyValue('--v56-contact-rule')||'0'),gridOpacity:parseFloat(getComputedStyle(grid).opacity||'1'),overflow:document.documentElement.scrollWidth-window.innerWidth};
+          });
+          await page.screenshot({path:'_site/preview-v56-contact-draw.png',fullPage:false});
+          if(contactState.rule<.25) throw new Error('Contact composition line did not draw');
+          if(contactState.gridOpacity<.75) throw new Error('Contact content became unreadable during handoff');
+          if(contactState.overflow>2) throw new Error('Contact handoff introduced horizontal overflow');
           if(errors.length) throw new Error('Preview page errors: '+errors.join(' | '));
 
           const mobile=await browser.newPage({viewport:{width:390,height:844},deviceScaleFactor:1});
-          await mobile.goto('http://127.0.0.1:4173/v55.html?v=55-process-camera',{waitUntil:'networkidle'});
-          await mobile.waitForSelector('.v55-process-journey',{state:'attached',timeout:15000});
-          const mobileState=await mobile.evaluate(()=>({overflow:document.documentElement.scrollWidth-window.innerWidth,rows:[...document.querySelectorAll('#process .process-list li')].map(el=>getComputedStyle(el).position)}));
-          if(mobileState.overflow>2) throw new Error('Mobile process journey introduced horizontal overflow');
-          if(mobileState.rows.some(position=>position==='absolute')) throw new Error('Mobile process rows did not return to normal flow');
-          await mobile.screenshot({path:'_site/preview-v55-mobile.png',fullPage:false});
+          await mobile.goto('http://127.0.0.1:4173/v56.html?v=56-contact-handoff',{waitUntil:'networkidle'});
+          await mobile.waitForSelector('#contact',{state:'attached',timeout:15000});
+          const mobileState=await mobile.evaluate(()=>({overflow:document.documentElement.scrollWidth-window.innerWidth,layer:getComputedStyle(document.querySelector('.v56-handoff-layer')||document.documentElement).display}));
+          if(mobileState.overflow>2) throw new Error('Mobile contact handoff introduced horizontal overflow');
+          await mobile.screenshot({path:'_site/preview-v56-mobile-contact.png',fullPage:false});
           await browser.close();
           NODE
           kill $SERVER_PID 2>/dev/null || true
           trap - EXIT
-          test -s _site/preview-v55-step-01.png
-          test -s _site/preview-v55-step-03.png
-          test -s _site/preview-v55-step-05.png
-          test -s _site/preview-v55-mobile.png
+          test -s _site/preview-v56-collapse.png
+          test -s _site/preview-v56-contact-draw.png
+          test -s _site/preview-v56-mobile-contact.png
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
