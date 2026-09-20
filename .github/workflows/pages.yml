@@ -24,7 +24,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Build MOVX v53 artwork portal + visual QA
+      - name: Build MOVX v54 native artwork portal + visual QA
         shell: bash
         run: |
           set -euo pipefail
@@ -110,8 +110,8 @@ jobs:
           cp patches/v49-journey-continuity.mjs _site/v49-journey.mjs
           cp patches/v52-process-architecture.css _site/v52-architecture.css
           cp patches/v52-process-architecture.mjs _site/v52-architecture.mjs
-          cp patches/v53-portal-through-artwork.css _site/v53-portal.css
-          cp patches/v53-portal-through-artwork.mjs _site/v53-portal.mjs
+          cp patches/v54-native-artwork-portal.css _site/v54-portal.css
+          cp patches/v54-native-artwork-portal.mjs _site/v54-portal.mjs
 
           python3 - <<'PY'
           from pathlib import Path
@@ -123,41 +123,41 @@ jobs:
           if not m: raise SystemExit('No <html> element found')
           attrs=m.group(1)
           cm=re.search(r'class="([^"]*)"',attrs,flags=re.I)
-          required=['movx-v42','movx-v45','movx-v46','movx-v47','movx-v48','movx-v49','movx-v52','movx-v53']
+          required=['movx-v42','movx-v45','movx-v46','movx-v47','movx-v48','movx-v49','movx-v52','movx-v54']
           if cm:
-              classes=[c for c in cm.group(1).split() if c not in {'movx-v43','movx-v44','movx-v50','movx-v51'}]
+              classes=[c for c in cm.group(1).split() if c not in {'movx-v43','movx-v44','movx-v50','movx-v51','movx-v53'}]
               for cls in required:
                   if cls not in classes: classes.append(cls)
               attrs=attrs[:cm.start()]+f'class="{" ".join(classes)}"'+attrs[cm.end():]
           else:
               attrs+=' class="'+' '.join(required)+'"'
           attrs=re.sub(r'\sdata-movx-build="[^"]*"','',attrs)
-          attrs+=' data-movx-build="v53-portal"'
+          attrs+=' data-movx-build="v54-native-portal"'
           h=h[:m.start()]+'<html'+attrs+'>'+h[m.end():]
 
-          version='53-portal'
+          version='54-native-portal'
           h=re.sub(r'href="styles\.css(?:\?[^\"]*)?"',f'href="styles.css?v={version}"',h)
           h=re.sub(r'src="projects\.js(?:\?[^\"]*)?"',f'src="projects.js?v={version}"',h)
           h=re.sub(r'src="i18n\.js(?:\?[^\"]*)?"',f'src="i18n.js?v={version}"',h)
           h=re.sub(r'src="script\.js(?:\?[^\"]*)?"',f'src="script.js?v={version}"',h)
 
-          extra_css=f'''  <link rel="stylesheet" href="v45-immersive.css?v={version}">\n  <link rel="stylesheet" href="v46-niche.css?v={version}">\n  <link rel="stylesheet" href="v47-territories.css?v={version}">\n  <link rel="stylesheet" href="v48-spatial.css?v={version}">\n  <link rel="stylesheet" href="v49-journey.css?v={version}">\n  <link rel="stylesheet" href="v52-architecture.css?v={version}">\n  <link rel="stylesheet" href="v53-portal.css?v={version}">\n'''
+          extra_css=f'''  <link rel="stylesheet" href="v45-immersive.css?v={version}">\n  <link rel="stylesheet" href="v46-niche.css?v={version}">\n  <link rel="stylesheet" href="v47-territories.css?v={version}">\n  <link rel="stylesheet" href="v48-spatial.css?v={version}">\n  <link rel="stylesheet" href="v49-journey.css?v={version}">\n  <link rel="stylesheet" href="v52-architecture.css?v={version}">\n  <link rel="stylesheet" href="v54-portal.css?v={version}">\n'''
           h=h.replace('</head>',extra_css+'</head>')
-          runtime=f'''\n<script src="vendor/gsap.min.js?v={version}"></script>\n<script src="vendor/ScrollTrigger.min.js?v={version}"></script>\n<script type="module" src="v45-immersive.mjs?v={version}"></script>\n<script src="v46-niche.js?v={version}"></script>\n<script src="v47-archive-flow.js?v={version}"></script>\n<script src="v48-spatial.js?v={version}"></script>\n<script type="module" src="v49-journey.mjs?v={version}"></script>\n<script type="module" src="v52-architecture.mjs?v={version}"></script>\n<script type="module" src="v53-portal.mjs?v={version}"></script>\n'''
+          runtime=f'''\n<script src="vendor/gsap.min.js?v={version}"></script>\n<script src="vendor/ScrollTrigger.min.js?v={version}"></script>\n<script type="module" src="v45-immersive.mjs?v={version}"></script>\n<script src="v46-niche.js?v={version}"></script>\n<script src="v47-archive-flow.js?v={version}"></script>\n<script src="v48-spatial.js?v={version}"></script>\n<script type="module" src="v49-journey.mjs?v={version}"></script>\n<script type="module" src="v52-architecture.mjs?v={version}"></script>\n<script type="module" src="v54-portal.mjs?v={version}"></script>\n'''
           h=h.replace('</body>',runtime+'</body>')
           p.write_text(h,encoding='utf-8')
           PY
 
           cp _site/social-media.html _site/index.html
-          cp _site/social-media.html _site/v53.html
+          cp _site/social-media.html _site/v54.html
           cp _site/social-media.html _site/latest.html
 
           test -s _site/index.html
-          test -s _site/v53.html
+          test -s _site/v54.html
           test -s _site/v52-architecture.css
           test -s _site/v52-architecture.mjs
-          test -s _site/v53-portal.css
-          test -s _site/v53-portal.mjs
+          test -s _site/v54-portal.css
+          test -s _site/v54-portal.mjs
           test -s _site/vendor/three.module.min.js
           test -s _site/vendor/three.core.min.js
 
@@ -172,18 +172,18 @@ jobs:
           node --check _site/v48-spatial.js
           node --check _site/v49-journey.mjs
           node --check _site/v52-architecture.mjs
-          node --check _site/v53-portal.mjs
+          node --check _site/v54-portal.mjs
           node --check _site/i18n.js
           node --check _site/projects.js
           python3 -m py_compile patches/v37-runtime-audit.py patches/v38-runtime-audit.py
 
-          grep -q 'class="[^"]*movx-v53' _site/index.html
-          grep -q 'data-movx-build="v53-portal"' _site/index.html
-          grep -q 'v53-portal.css?v=53-portal' _site/index.html
-          grep -q 'v53-portal.mjs?v=53-portal' _site/index.html
-          grep -q 'v53-portal-sequence' _site/v53-portal.css
-          grep -q 'makePortalMaterial' _site/v53-portal.mjs
-          grep -q 'uPortal' _site/v53-portal.mjs
+          grep -q 'class="[^"]*movx-v54' _site/index.html
+          grep -q 'data-movx-build="v54-native-portal"' _site/index.html
+          grep -q 'v54-portal.css?v=54-native-portal' _site/index.html
+          grep -q 'v54-portal.mjs?v=54-native-portal' _site/index.html
+          grep -q 'v54-portal-sequence' _site/v54-portal.css
+          grep -q 'function progress()' _site/v54-portal.mjs
+          grep -q 'v54-hole' _site/v54-portal.mjs
           grep -q 'deconstructBox' _site/v52-architecture.mjs
           grep -q 'makeGate' _site/v52-architecture.mjs
           grep -q 'CatmullRomCurve3' _site/v49-journey.mjs
@@ -193,9 +193,10 @@ jobs:
 
           ! grep -q 'v50-artifact.mjs' _site/index.html
           ! grep -q 'v51-physics.mjs' _site/index.html
+          ! grep -q 'v53-portal.mjs' _site/index.html
           ! grep -q 'vendor/lenis.min.js' _site/index.html
 
-          echo "MOVX v53 validated: real artwork expands into a shader portal, camera crosses it, and Process geometry resolves behind"
+          echo "MOVX v54 validated: native scroll drives artwork wall, portal aperture and Three.js Process corridor"
 
           npx playwright install --with-deps chromium >/tmp/playwright-install.log 2>&1
           python3 -m http.server 4173 --directory _site >/tmp/movx-preview-server.log 2>&1 &
@@ -208,31 +209,43 @@ jobs:
           const page=await browser.newPage({viewport:{width:1440,height:900},deviceScaleFactor:1});
           const errors=[];
           page.on('pageerror',err=>errors.push(String(err)));
-          await page.goto('http://127.0.0.1:4173/v53.html?v=53-portal',{waitUntil:'networkidle'});
-          await page.waitForSelector('.v53-portal-sequence',{state:'attached',timeout:15000});
+          await page.goto('http://127.0.0.1:4173/v54.html?v=54-native-portal',{waitUntil:'networkidle'});
+          await page.waitForSelector('.v54-portal-sequence',{state:'attached',timeout:15000});
           const snap=async(progress,path)=>{
             await page.evaluate(p=>{
-              const s=document.querySelector('.v53-portal-sequence');
+              const s=document.querySelector('.v54-portal-sequence');
               const top=window.scrollY+s.getBoundingClientRect().top;
               const travel=Math.max(1,s.offsetHeight-window.innerHeight);
               window.scrollTo(0,top+travel*p);
             },progress);
-            await page.waitForTimeout(1500);
+            await page.waitForTimeout(900);
+            const state=await page.evaluate(()=>{
+              const s=document.querySelector('.v54-portal-sequence');
+              const img=document.querySelector('.v54-artwork-wall img');
+              const cs=getComputedStyle(s),is=getComputedStyle(img);
+              return {p:parseFloat(cs.getPropertyValue('--v54-progress')||'0'),wall:parseFloat(cs.getPropertyValue('--v54-wall')||'0'),through:parseFloat(cs.getPropertyValue('--v54-through')||'0'),opacity:parseFloat(cs.getPropertyValue('--v54-wall-opacity')||'0'),transform:is.transform};
+            });
+            console.log(path,state);
             await page.screenshot({path,fullPage:false});
+            return state;
           };
-          await snap(.30,'_site/preview-v53-artwork-approach.png');
-          await snap(.58,'_site/preview-v53-wall.png');
-          await snap(.76,'_site/preview-v53-portal.png');
-          await snap(.90,'_site/preview-v53-process-reveal.png');
+          const approach=await snap(.24,'_site/preview-v54-artwork-approach.png');
+          const wall=await snap(.46,'_site/preview-v54-wall.png');
+          const portal=await snap(.68,'_site/preview-v54-portal.png');
+          const reveal=await snap(.91,'_site/preview-v54-process-reveal.png');
+          if(approach.p<.12) throw new Error('Native portal progress did not advance at approach');
+          if(wall.wall<.65||wall.opacity<.55) throw new Error('Artwork did not become a visible wall');
+          if(portal.through<.25) throw new Error('Portal aperture did not open');
+          if(reveal.p<.80) throw new Error('Process reveal did not reach final phase');
           if(errors.length) throw new Error('Preview page errors: '+errors.join(' | '));
           await browser.close();
           NODE
           kill $SERVER_PID 2>/dev/null || true
           trap - EXIT
-          test -s _site/preview-v53-artwork-approach.png
-          test -s _site/preview-v53-wall.png
-          test -s _site/preview-v53-portal.png
-          test -s _site/preview-v53-process-reveal.png
+          test -s _site/preview-v54-artwork-approach.png
+          test -s _site/preview-v54-wall.png
+          test -s _site/preview-v54-portal.png
+          test -s _site/preview-v54-process-reveal.png
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
