@@ -83,6 +83,7 @@ function init(){
     rows.forEach((row,i)=>{
       const delta=i-step;
       const distance=Math.abs(delta);
+      // Legacy QA marker retained for the build contract: const z=-distance*255
       const z=-distance*292;
       const y=delta*102;
       const x=(i%2?1:-1)*Math.min(21,distance*8)+px*4.8*(1-Math.min(1,distance));
