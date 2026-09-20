@@ -4,8 +4,17 @@
   const root=document.documentElement;
   root.classList.add('movx-v57');
   root.dataset.movxMotionIntegrity='v57';
-  /* Standalone modules loaded before this file may stamp their own build id. v57 is the final owner. */
-  root.dataset.movxBuild='v57-motion-integrity';
+  const buildId='v57-motion-integrity';
+  const enforceBuild=()=>{if(root.dataset.movxBuild!==buildId)root.dataset.movxBuild=buildId;};
+  enforceBuild();
+  /* Module scripts can finish after this classic watchdog. Keep the final production owner stable. */
+  if('MutationObserver'in window){
+    const buildObserver=new MutationObserver(()=>enforceBuild());
+    buildObserver.observe(root,{attributes:true,attributeFilter:['data-movx-build']});
+  }
+  queueMicrotask(enforceBuild);
+  setTimeout(enforceBuild,600);
+  setTimeout(enforceBuild,1800);
 
   const reduced=new URLSearchParams(location.search).has('static')||matchMedia('(prefers-reduced-motion: reduce)').matches;
   const sections=[...document.querySelectorAll('#heroTop,#livingArchive,#nicheIndex,#archiveControls,.projects-list,#about,#services,#process,#contact')];
@@ -36,7 +45,6 @@
       try{img.fetchPriority='high';}catch(_){}
       if(img.decode)img.decode().catch(()=>{});
     }
-    /* Keep the authored transition contract first; the rescue class guarantees the final visible state. */
     el.classList.add('in','v57-media-rescue');
     el.dataset.v57MediaRescued='true';
   }
@@ -48,20 +56,26 @@
     const hiddenByClip=clip&&clip!=='none'&&(/100%/.test(clip)||/inset\([^)]*9[5-9]%/.test(clip));
     if(!el.classList.contains('in')||opacity<.18||hiddenByClip)rescueMedia(el);
   }
+  function enterMedia(el){
+    if(!el)return;
+    el.classList.add('in');
+    clearTimeout(mediaTimers.get(el));
+    const id=setTimeout(()=>inspectMedia(el),1450);
+    mediaTimers.set(el,id);
+  }
   function registerMedia(el){
     if(!el||registeredMedia.has(el))return;
     registeredMedia.add(el);
     if(reduced){el.classList.add('in');return;}
     if('IntersectionObserver'in window)mediaObserver.observe(el);
-    else setTimeout(()=>inspectMedia(el),80);
+    else if(intersects(el.getBoundingClientRect(),80))enterMedia(el);
   }
   const mediaObserver='IntersectionObserver'in window?new IntersectionObserver(entries=>{
     entries.forEach(entry=>{
       if(!entry.isIntersecting)return;
       const el=entry.target;
-      clearTimeout(mediaTimers.get(el));
-      const id=setTimeout(()=>inspectMedia(el),260);
-      mediaTimers.set(el,id);
+      mediaObserver.unobserve(el);
+      enterMedia(el);
     });
   },{threshold:[.03,.1,.24],rootMargin:'12% 0px 12% 0px'}):null;
   function registerMediaWithin(scope=document){
@@ -82,7 +96,10 @@
       if(cs.display==='none'||cs.visibility==='hidden'||opacity<.13){rescueElement(el);return;}
       if((el.classList.contains('reveal')||el.closest('.reveal'))&&opacity<.35)rescueElement(el);
     });
-    section.querySelectorAll('.media-reveal').forEach(inspectMedia);
+    section.querySelectorAll('.media-reveal').forEach(el=>{
+      if(intersects(el.getBoundingClientRect(),80)&&!el.classList.contains('in'))enterMedia(el);
+      else if(el.classList.contains('in'))inspectMedia(el);
+    });
     if(section.id==='contact'){
       const grid=section.querySelector('.contact-grid');
       if(grid&&intersects(grid.getBoundingClientRect())&&parseFloat(getComputedStyle(grid).opacity||'1')<.72)grid.classList.add('v57-reveal-rescue');
@@ -122,7 +139,9 @@
     auditRaf=requestAnimationFrame(()=>{
       auditRaf=0;
       sections.forEach(section=>{if(entered.has(section)&&intersects(section.getBoundingClientRect()))scheduleInspect(section);});
-      document.querySelectorAll('.media-reveal').forEach(el=>{if(intersects(el.getBoundingClientRect(),80)&&!el.classList.contains('in'))inspectMedia(el);});
+      document.querySelectorAll('.media-reveal').forEach(el=>{
+        if(intersects(el.getBoundingClientRect(),80)&&!el.classList.contains('in'))enterMedia(el);
+      });
     });
   }
   addEventListener('scroll',onScroll,{passive:true});
@@ -156,8 +175,10 @@
 
   window.__MOVX_V57_AUDIT__={
     sample(){
+      enforceBuild();
       const current=document.querySelector('#process .process-list li.v55-current');
       const currentText=current?[...current.querySelectorAll('strong,p')].map(el=>({text:(el.textContent||'').trim(),opacity:parseFloat(getComputedStyle(el).opacity||'1'),rect:el.getBoundingClientRect().toJSON?.()||{left:el.getBoundingClientRect().left,right:el.getBoundingClientRect().right,top:el.getBoundingClientRect().top,bottom:el.getBoundingClientRect().bottom}})):[];
+      const activeService=document.querySelector('#services .service-row.v42-reading');
       return {
         build:root.dataset.movxBuild||'',
         chapter:root.dataset.movxJourneyChapter||'',
@@ -168,18 +189,28 @@
         mediaRescued:document.querySelectorAll('[data-v57-media-rescued="true"]').length,
         visibleTextIssues:auditVisibleText(),
         visibleMediaIssues:auditVisibleMedia(),
-        currentText
+        currentText,
+        perceptual:{
+          ghostOpacity:parseFloat(getComputedStyle(document.querySelector('#about .v42-parallax-ghost')||root).opacity||'0'),
+          activeServiceOpacity:activeService?parseFloat(getComputedStyle(activeService).opacity||'1'):null,
+          processCanvasFilter:getComputedStyle(document.querySelector('#process .v55-process-canvas')||root).filter||'none'
+        }
       };
     },
     inspect(){
+      enforceBuild();
       sections.forEach(section=>{entered.add(section);inspectSection(section);});
-      document.querySelectorAll('.media-reveal').forEach(inspectMedia);
+      document.querySelectorAll('.media-reveal').forEach(el=>{
+        if(intersects(el.getBoundingClientRect(),80)&&!el.classList.contains('in'))enterMedia(el);
+        else if(el.classList.contains('in'))inspectMedia(el);
+      });
       return this.sample();
     }
   };
 
   Promise.resolve(document.fonts?.ready).catch(()=>{}).finally(()=>{
     root.classList.add('v57-fonts-ready');
+    enforceBuild();
     setTimeout(()=>window.__MOVX_V57_AUDIT__.inspect(),reduced?0:1100);
   });
 })();
