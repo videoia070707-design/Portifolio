@@ -24,7 +24,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Build MOVX v57 motion integrity + full visual QA
+      - name: Build MOVX v74 accessible editorial release + full visual QA
         shell: bash
         run: |
           set -euo pipefail
@@ -118,6 +118,7 @@ jobs:
           cp patches/v56-contact-handoff.js _site/v56-contact.js
           cp patches/v57-motion-integrity.css _site/v57-integrity.css
           cp patches/v57-motion-integrity.js _site/v57-integrity.js
+          cp patches/v74-accessibility.js _site/v74-accessibility.js
 
           python3 - <<'PY'
           from pathlib import Path
@@ -138,10 +139,10 @@ jobs:
           else:
               attrs+=' class="'+' '.join(required)+'"'
           attrs=re.sub(r'\sdata-movx-build="[^"]*"','',attrs)
-          attrs+=' data-movx-build="v57-motion-integrity"'
+          attrs+=' data-movx-build="v74-accessible-editorial"'
           h=h[:m.start()]+'<html'+attrs+'>'+h[m.end():]
 
-          version='57-motion-integrity'
+          version='74-accessible-editorial'
           h=re.sub(r'href="styles\.css(?:\?[^\"]*)?"',f'href="styles.css?v={version}"',h)
           h=re.sub(r'src="projects\.js(?:\?[^\"]*)?"',f'src="projects.js?v={version}"',h)
           h=re.sub(r'src="i18n\.js(?:\?[^\"]*)?"',f'src="i18n.js?v={version}"',h)
@@ -149,23 +150,26 @@ jobs:
 
           extra_css=f'''  <link rel="stylesheet" href="v45-immersive.css?v={version}">\n  <link rel="stylesheet" href="v46-niche.css?v={version}">\n  <link rel="stylesheet" href="v47-territories.css?v={version}">\n  <link rel="stylesheet" href="v48-spatial.css?v={version}">\n  <link rel="stylesheet" href="v49-journey.css?v={version}">\n  <link rel="stylesheet" href="v52-architecture.css?v={version}">\n  <link rel="stylesheet" href="v54-portal.css?v={version}">\n  <link rel="stylesheet" href="v55-process.css?v={version}">\n  <link rel="stylesheet" href="v56-contact.css?v={version}">\n  <link rel="stylesheet" href="v57-integrity.css?v={version}">\n'''
           h=h.replace('</head>',extra_css+'</head>')
-          runtime=f'''\n<script src="vendor/gsap.min.js?v={version}"></script>\n<script src="vendor/ScrollTrigger.min.js?v={version}"></script>\n<script type="module" src="v45-immersive.mjs?v={version}"></script>\n<script src="v46-niche.js?v={version}"></script>\n<script src="v47-archive-flow.js?v={version}"></script>\n<script src="v48-spatial.js?v={version}"></script>\n<script type="module" src="v49-journey.mjs?v={version}"></script>\n<script type="module" src="v52-architecture.mjs?v={version}"></script>\n<script type="module" src="v54-portal.mjs?v={version}"></script>\n<script type="module" src="v55-process.mjs?v={version}"></script>\n<script src="v56-contact.js?v={version}"></script>\n<script src="v57-integrity.js?v={version}"></script>\n'''
+          runtime=f'''\n<script src="vendor/gsap.min.js?v={version}"></script>\n<script src="vendor/ScrollTrigger.min.js?v={version}"></script>\n<script type="module" src="v45-immersive.mjs?v={version}"></script>\n<script src="v46-niche.js?v={version}"></script>\n<script src="v47-archive-flow.js?v={version}"></script>\n<script src="v48-spatial.js?v={version}"></script>\n<script type="module" src="v49-journey.mjs?v={version}"></script>\n<script type="module" src="v52-architecture.mjs?v={version}"></script>\n<script type="module" src="v54-portal.mjs?v={version}"></script>\n<script type="module" src="v55-process.mjs?v={version}"></script>\n<script src="v56-contact.js?v={version}"></script>\n<script src="v57-integrity.js?v={version}"></script>\n<script src="v74-accessibility.js?v={version}"></script>\n'''
           h=h.replace('</body>',runtime+'</body>')
           p.write_text(h,encoding='utf-8')
           PY
 
           cp _site/social-media.html _site/index.html
           cp _site/social-media.html _site/v57.html
+          cp _site/social-media.html _site/v74.html
           cp _site/social-media.html _site/latest.html
 
           test -s _site/index.html
           test -s _site/v57.html
+          test -s _site/v74.html
           test -s _site/v55-process.css
           test -s _site/v55-process.mjs
           test -s _site/v56-contact.css
           test -s _site/v56-contact.js
           test -s _site/v57-integrity.css
           test -s _site/v57-integrity.js
+          test -s _site/v74-accessibility.js
           test -s _site/vendor/three.module.min.js
           test -s _site/vendor/three.core.min.js
 
@@ -184,21 +188,25 @@ jobs:
           node --check _site/v55-process.mjs
           node --check _site/v56-contact.js
           node --check _site/v57-integrity.js
+          node --check _site/v74-accessibility.js
           node --check _site/i18n.js
           node --check _site/projects.js
           python3 -m py_compile patches/v37-runtime-audit.py patches/v38-runtime-audit.py
 
           grep -q 'class="[^"]*movx-v57' _site/index.html
-          grep -q 'data-movx-build="v57-motion-integrity"' _site/index.html
-          grep -q 'v57-integrity.css?v=57-motion-integrity' _site/index.html
-          grep -q 'v57-integrity.js?v=57-motion-integrity' _site/index.html
+          grep -q 'data-movx-build="v74-accessible-editorial"' _site/index.html
+          grep -q 'v57-integrity.css?v=74-accessible-editorial' _site/index.html
+          grep -q 'v57-integrity.js?v=74-accessible-editorial' _site/index.html
+          grep -q 'v74-accessibility.js?v=74-accessible-editorial' _site/index.html
+          grep -q "buildId='v74-accessible-editorial'" _site/v57-integrity.js
+          grep -q "dataset.movxRelease='v74-accessible-editorial'" _site/v74-accessibility.js
           grep -q '__MOVX_V57_AUDIT__' _site/v57-integrity.js
           grep -q 'const z=-distance\*255' _site/v55-process.mjs
           grep -q 'dataset.v56Phase' _site/v56-contact.js
           grep -q 'Rosa choque' _site/i18n.js
           ! grep -q 'vendor/lenis.min.js' _site/index.html
 
-          echo "MOVX v57 static validation passed"
+          echo "MOVX v74 static validation passed"
 
           npx playwright install --with-deps chromium >/tmp/playwright-install.log 2>&1
           python3 -m http.server 4173 --directory _site >/tmp/movx-preview-server.log 2>&1 &
@@ -213,15 +221,17 @@ jobs:
           const page=await browser.newPage({viewport:{width:1440,height:900},deviceScaleFactor:1});
           const pageErrors=[];
           page.on('pageerror',err=>pageErrors.push(String(err)));
-          await page.goto('http://127.0.0.1:4173/v57.html?v=57-motion-integrity',{waitUntil:'networkidle'});
+          await page.goto('http://127.0.0.1:4173/v74.html?v=74-accessible-editorial',{waitUntil:'networkidle'});
           await page.waitForFunction(()=>window.__MOVX_V57_AUDIT__,null,{timeout:20000});
+          await page.waitForFunction(()=>document.documentElement.dataset.movxRelease==='v74-accessible-editorial',null,{timeout:10000});
           await page.addStyleTag({content:'html,body{scroll-behavior:auto!important}'});
-          const report={desktop:[],process:[],mobile:[],case:[],pageErrors};
+          const report={desktop:[],process:[],mobile:[],case:[],accessibility:[],pageErrors};
 
           async function sample(label){
             await page.waitForTimeout(850);
             const audit=await page.evaluate(()=>window.__MOVX_V57_AUDIT__.inspect());
             report.desktop.push({label,...audit});
+            if(audit.build!=='v74-accessible-editorial') throw new Error(`${label}: wrong release build ${audit.build}`);
             if(audit.overflow>2) throw new Error(`${label}: horizontal overflow ${audit.overflow}`);
             const clips=audit.visibleTextIssues.filter(x=>x.type==='horizontal-clip');
             if(clips.length) throw new Error(`${label}: clipped heading ${JSON.stringify(clips.slice(0,3))}`);
@@ -234,11 +244,11 @@ jobs:
               window.scrollTo(0,Math.max(0,top-window.innerHeight*offset));
             },{selector,offset});
             const audit=await sample(name);
-            await page.screenshot({path:`_site/qa-v57-${name}.png`,fullPage:false});
+            await page.screenshot({path:`_site/qa-v74-${name}.png`,fullPage:false});
             return audit;
           }
 
-          await page.screenshot({path:'_site/qa-v57-00-home.png',fullPage:false});
+          await page.screenshot({path:'_site/qa-v74-00-home.png',fullPage:false});
           await sample('00-home');
           for(const [selector,name,offset] of [
             ['#livingArchive','01-living-archive',.11],
@@ -273,7 +283,7 @@ jobs:
             if(state.audit.currentText.some(x=>x.opacity<.72)) throw new Error(`process ${p}: active text opacity too low`);
             if(state.title&&(state.title.left<-4||state.title.right>1444)) throw new Error(`process ${p}: title clipped ${JSON.stringify(state.title)}`);
             if(state.row&&(state.row.left<-4||state.row.right>1444)) throw new Error(`process ${p}: row clipped ${JSON.stringify(state.row)}`);
-            await page.screenshot({path:`_site/qa-v57-process-${String(i+1).padStart(2,'0')}.png`,fullPage:false});
+            await page.screenshot({path:`_site/qa-v74-process-${String(i+1).padStart(2,'0')}.png`,fullPage:false});
           }
 
           await sectionShot('#contact','07-contact',.08);
@@ -298,14 +308,43 @@ jobs:
           report.case.push({label:'hero',...caseState});
           if(caseState.overflow>2) throw new Error('Case hero horizontal overflow');
           if(caseState.title&&(caseState.title.left<-4||caseState.title.right>1444)) throw new Error('Case title clipped');
-          await page.screenshot({path:'_site/qa-v57-08-case-hero.png',fullPage:false});
+          await page.screenshot({path:'_site/qa-v74-08-case-hero.png',fullPage:false});
           await page.evaluate(()=>{const v=document.querySelector('#caseViewer'),info=document.querySelector('#caseInfo');v.scrollTop=Math.max(0,info.offsetTop-90);});
           await page.waitForTimeout(900);
-          await page.screenshot({path:'_site/qa-v57-09-case-info.png',fullPage:false});
+          await page.screenshot({path:'_site/qa-v74-09-case-info.png',fullPage:false});
+
+          /* Keyboard-complete case flow: focusable opener -> Enter -> dialog -> Escape -> focus restoration. */
+          await page.keyboard.press('Escape');
+          await page.waitForFunction(()=>!document.querySelector('#caseViewer').classList.contains('open'),null,{timeout:5000});
+          const keyboardOpener=page.locator('[data-open-project][role="button"][tabindex="0"]').first();
+          await keyboardOpener.waitFor({state:'visible',timeout:10000});
+          await keyboardOpener.evaluate(el=>el.dataset.v74QaOpener='1');
+          await keyboardOpener.focus();
+          await page.keyboard.press('Enter');
+          await page.waitForSelector('#caseViewer.open',{state:'visible',timeout:8000});
+          await page.waitForTimeout(220);
+          const keyboardOpen=await page.evaluate(()=>({
+            release:document.documentElement.dataset.movxRelease||'',
+            modal:document.querySelector('#caseViewer').getAttribute('aria-modal'),
+            hidden:document.querySelector('#caseViewer').getAttribute('aria-hidden'),
+            active:document.activeElement?.id||document.activeElement?.className||'',
+            openerCount:document.querySelectorAll('[data-open-project][data-v74-keyboard="true"]').length
+          }));
+          if(keyboardOpen.release!=='v74-accessible-editorial'||keyboardOpen.modal!=='true'||keyboardOpen.hidden!=='false'||keyboardOpen.openerCount<1) throw new Error('Keyboard case open failed '+JSON.stringify(keyboardOpen));
+          if(keyboardOpen.active!=='caseClose') throw new Error('Case dialog did not receive authored focus '+JSON.stringify(keyboardOpen));
+          await page.keyboard.press('Escape');
+          await page.waitForFunction(()=>!document.querySelector('#caseViewer').classList.contains('open'),null,{timeout:5000});
+          await page.waitForTimeout(80);
+          const keyboardClose=await page.evaluate(()=>({
+            hidden:document.querySelector('#caseViewer').getAttribute('aria-hidden'),
+            restored:document.activeElement?.dataset?.v74QaOpener==='1'
+          }));
+          if(keyboardClose.hidden!=='true'||!keyboardClose.restored) throw new Error('Keyboard case focus restoration failed '+JSON.stringify(keyboardClose));
+          report.accessibility.push({name:'keyboard-case-flow',open:keyboardOpen,close:keyboardClose});
 
           const mobile=await browser.newPage({viewport:{width:390,height:844},deviceScaleFactor:1});
           const mobileErrors=[]; mobile.on('pageerror',err=>mobileErrors.push(String(err)));
-          await mobile.goto('http://127.0.0.1:4173/v57.html?v=57-motion-integrity',{waitUntil:'networkidle'});
+          await mobile.goto('http://127.0.0.1:4173/v74.html?v=74-accessible-editorial',{waitUntil:'networkidle'});
           await mobile.waitForFunction(()=>window.__MOVX_V57_AUDIT__,null,{timeout:20000});
           await mobile.addStyleTag({content:'html,body{scroll-behavior:auto!important}'});
           async function mobileShot(selector,name){
@@ -314,27 +353,27 @@ jobs:
             const state=await mobile.evaluate(()=>window.__MOVX_V57_AUDIT__.inspect());
             report.mobile.push({name,...state});
             if(state.overflow>2) throw new Error(`mobile ${name}: overflow ${state.overflow}`);
-            await mobile.screenshot({path:`_site/qa-v57-mobile-${name}.png`,fullPage:false});
+            await mobile.screenshot({path:`_site/qa-v74-mobile-${name}.png`,fullPage:false});
           }
-          await mobile.screenshot({path:'_site/qa-v57-mobile-00-home.png',fullPage:false});
+          await mobile.screenshot({path:'_site/qa-v74-mobile-00-home.png',fullPage:false});
           for(const [sel,name] of [['#nicheIndex','01-territories'],['.projects-list','02-selected'],['#about','03-about'],['#services','04-services'],['#process','05-process'],['#contact','06-contact']]) await mobileShot(sel,name);
           const mobileProcess=await mobile.evaluate(()=>({rows:[...document.querySelectorAll('#process .process-list li')].map(el=>({position:getComputedStyle(el).position,opacity:parseFloat(getComputedStyle(el).opacity||'1')})),layer:document.querySelector('.v56-handoff-layer')?getComputedStyle(document.querySelector('.v56-handoff-layer')).display:'absent'}));
           if(mobileProcess.rows.some(x=>x.position==='absolute'||x.opacity<.88)) throw new Error('Mobile Process readability regression '+JSON.stringify(mobileProcess));
           if(mobileErrors.length) throw new Error('Mobile page errors: '+mobileErrors.join(' | '));
 
           if(pageErrors.length) throw new Error('Desktop page errors: '+pageErrors.join(' | '));
-          await writeFile('_site/qa-v57-report.json',JSON.stringify(report,null,2));
+          await writeFile('_site/qa-v74-report.json',JSON.stringify(report,null,2));
           await mobile.close();
           await browser.close();
           NODE
           kill $SERVER_PID 2>/dev/null || true
           trap - EXIT
-          test -s _site/qa-v57-report.json
-          test -s _site/qa-v57-00-home.png
-          test -s _site/qa-v57-process-03.png
-          test -s _site/qa-v57-07-contact.png
-          test -s _site/qa-v57-08-case-hero.png
-          test -s _site/qa-v57-mobile-06-contact.png
+          test -s _site/qa-v74-report.json
+          test -s _site/qa-v74-00-home.png
+          test -s _site/qa-v74-process-03.png
+          test -s _site/qa-v74-07-contact.png
+          test -s _site/qa-v74-08-case-hero.png
+          test -s _site/qa-v74-mobile-06-contact.png
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
