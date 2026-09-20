@@ -139,7 +139,7 @@ function initJourney(){
 
   let theme = currentTheme();
   const scene = new THREE.Scene();
-  scene.fog = new THREE.FogExp2(theme.fog,.026);
+  scene.fog = new THREE.FogExp2(theme.fog,.022);
   const camera = new THREE.PerspectiveCamera(44,1,.1,120);
   const world = new THREE.Group();
   scene.add(world);
@@ -291,11 +291,11 @@ function initJourney(){
     const pos = path.getPoint(p);
     const ahead = path.getPoint(clamp(p+.022,0,1));
     camera.position.copy(pos);
-    camera.position.x += pointer.x*.28 + velocity*.09;
-    camera.position.y += -pointer.y*.17;
-    camera.fov = 44 + Math.min(5,Math.abs(velocity)*3.6);
+    camera.position.x += pointer.x*.36 + velocity*.12;
+    camera.position.y += -pointer.y*.22;
+    camera.fov = 44 + Math.min(6.5,Math.abs(velocity)*4.2);
     camera.updateProjectionMatrix();
-    camera.lookAt(ahead.x + pointer.x*.12,ahead.y - pointer.y*.08,ahead.z);
+    camera.lookAt(ahead.x + pointer.x*.16,ahead.y - pointer.y*.11,ahead.z);
     camera.rotateZ(velocity*.0085);
 
     plates.forEach(plate=>{
@@ -303,14 +303,15 @@ function initJourney(){
       const focus = clamp(1 - distance/.16,0,1);
       const type = plate.userData.type;
       const strength = type === 'process' ? 1 : type === 'chapter' ? .72 : .55;
-      plate.userData.lineMaterial.opacity = .025 + focus*.28*strength;
-      plate.userData.accentMaterial.opacity = .018 + focus*.34*strength;
-      plate.userData.textMaterial.opacity = .02 + focus*.32*strength;
+      plate.userData.lineMaterial.opacity = .035 + focus*.34*strength;
+      plate.userData.accentMaterial.opacity = .022 + focus*.38*strength;
+      const textStrength = type === 'process' ? .12 : type === 'chapter' ? .085 : .065;
+      plate.userData.textMaterial.opacity = .006 + focus*textStrength;
       const s = .93 + focus*.12;
       plate.scale.setScalar(s);
     });
 
-    railMaterials.forEach(mat=>mat.opacity=.035 + clamp(Math.abs(velocity),0,.9)*.055);
+    railMaterials.forEach(mat=>mat.opacity=.055 + clamp(Math.abs(velocity),0,.9)*.07);
 
     const fadeIn = clamp(p/.08,0,1);
     const fadeOut = clamp((1-p)/.16,0,1);
