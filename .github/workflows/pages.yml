@@ -24,7 +24,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Build MOVX v42 visual recovery + lower parallax
+      - name: Build MOVX v43 immersive lower chapters
         shell: bash
         run: |
           set -euo pipefail
@@ -69,7 +69,8 @@ jobs:
             patches/v38-selected-cases.css \
             patches/v39-depth-motion.css \
             patches/v41-project-transitions.css \
-            patches/v42-visual-recovery.css; do
+            patches/v42-visual-recovery.css \
+            patches/v43-immersive-lower.css; do
             test -s "$file"
             printf '\n\n' >> _site/styles.css
             cat "$file" >> _site/styles.css
@@ -87,12 +88,14 @@ jobs:
             patches/v38-selected-cases.js \
             patches/v39-depth-motion.js \
             patches/v41-project-transitions.js \
-            patches/v42-lower-parallax.js; do
+            patches/v43-immersive-lower.js; do
             test -s "$file"
             printf '\n\n' >> _site/script.js
             cat "$file" >> _site/script.js
           done
 
+          # v43 is the single lower-section transform owner. v42-lower-parallax.js
+          # intentionally stays out of the final bundle to avoid double transforms.
           python3 patches/v37-runtime-audit.py _site
           python3 patches/v38-runtime-audit.py _site
 
@@ -101,10 +104,10 @@ jobs:
           import re
           p = Path('_site/social-media.html')
           h = p.read_text(encoding='utf-8')
-          h = re.sub(r'href="styles\.css(?:\?[^\"]*)?"', 'href="styles.css?v=42-recovery"', h)
-          h = re.sub(r'src="projects\.js(?:\?[^\"]*)?"', 'src="projects.js?v=42-recovery"', h)
-          h = re.sub(r'src="i18n\.js(?:\?[^\"]*)?"', 'src="i18n.js?v=42-recovery"', h)
-          h = re.sub(r'src="script\.js(?:\?[^\"]*)?"', 'src="script.js?v=42-recovery"', h)
+          h = re.sub(r'href="styles\.css(?:\?[^\"]*)?"', 'href="styles.css?v=43-immersive"', h)
+          h = re.sub(r'src="projects\.js(?:\?[^\"]*)?"', 'src="projects.js?v=43-immersive"', h)
+          h = re.sub(r'src="i18n\.js(?:\?[^\"]*)?"', 'src="i18n.js?v=43-immersive"', h)
+          h = re.sub(r'src="script\.js(?:\?[^\"]*)?"', 'src="script.js?v=43-immersive"', h)
           p.write_text(h, encoding='utf-8')
           PY
 
@@ -139,16 +142,20 @@ jobs:
 
           grep -q 'MOVX v39 — perceptible parallax + 3D scroll runtime' _site/script.js
           grep -q 'MOVX v41 — WebGL project portal + mood runtime' _site/script.js
-          grep -q 'MOVX v42 — lower-section parallax runtime' _site/script.js
-          grep -q 'MOVX v42 — visual recovery + authored lower-section parallax' _site/styles.css
-          grep -q 'v42-authored-depth' _site/script.js
+          grep -q 'MOVX v43 — immersive lower-scroll controller' _site/script.js
+          grep -q 'MOVX v43 — immersive lower-chapter narrative' _site/styles.css
+          grep -q 'v43-spatial-story' _site/script.js
+          grep -q 'v43-process-stage' _site/styles.css
+          grep -q "getContext('webgl'" _site/script.js
+          grep -q 'gl.drawArrays(gl.LINES' _site/script.js
+          grep -q 'v43-process-current' _site/script.js
+          grep -q 'v43-journey-meter' _site/styles.css
           grep -q 'column-count:3' _site/styles.css
-          grep -q 'v42-parallax-ghost' _site/styles.css
-          grep -q 'v42-scroll-focus' _site/script.js
-          grep -q 'v=42-recovery' _site/index.html
+          grep -q 'v=43-immersive' _site/index.html
           grep -q 'Rosa choque' _site/i18n.js
 
-          # v40 corridor intentionally removed after live visual QA; portal remains interaction-only.
+          # The archive recovery stays, but old lower depth and permanent WebGL corridor do not.
+          ! grep -q 'MOVX v42 — lower-section parallax runtime' _site/script.js
           ! grep -q 'MOVX v40 — native WebGL scroll corridor' _site/script.js
           ! grep -q 'MOVX v40 — native WebGL project corridor' _site/styles.css
 
@@ -165,7 +172,7 @@ jobs:
           ! grep -q 'vendor/gsap.min.js' _site/index.html
           ! grep -q 'vendor/lenis.min.js' _site/index.html
 
-          echo "MOVX v42 validated: dense archive + lower-section parallax + portal-only WebGL"
+          echo "MOVX v43 validated: archive recovery preserved + unified immersive lower chapters + real WebGL process corridor"
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
