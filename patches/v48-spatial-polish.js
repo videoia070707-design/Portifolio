@@ -150,3 +150,71 @@
   Promise.resolve(document.fonts?.ready).catch(()=>{}).finally(schedule);
   setTimeout(schedule,420);
 })();
+
+/* MOVX v59 — editorial process cleanup
+   Removes the residual dashboard/card language from Process after the spatial camera
+   is initialized. The active step reads as typography in space, not as a UI panel. */
+(() => {
+  const style = document.createElement('style');
+  style.id = 'movx-v59-editorial-process';
+  style.textContent = `
+  @media (min-width:981px){
+    html.movx-v59 #process .v55-process-journey{min-height:470vh!important}
+    html.movx-v59 #process .v55-process-hud{display:none!important}
+    html.movx-v59 #process .process-list{max-width:700px!important}
+    html.movx-v59 #process .process-list li{
+      display:grid!important;
+      grid-template-columns:58px minmax(0,1fr)!important;
+      gap:clamp(18px,2vw,30px)!important;
+      align-items:start!important;
+      min-height:clamp(188px,23vh,238px)!important;
+      padding:clamp(30px,3.8vh,42px) 0!important;
+      border:0!important;
+      background:transparent!important;
+      backdrop-filter:none!important;
+      -webkit-backdrop-filter:none!important;
+      box-shadow:none!important;
+    }
+    html.movx-v59 #process .process-list li::before,
+    html.movx-v59 #process .process-list li::after{display:none!important}
+    html.movx-v59 #process .process-list li>span{
+      position:relative!important;
+      display:block!important;
+      padding-top:8px!important;
+      font-size:10px!important;
+      line-height:1!important;
+      letter-spacing:.16em!important;
+      color:color-mix(in srgb,var(--fg) 34%,var(--muted))!important;
+    }
+    html.movx-v59 #process .process-list li>span::after{display:none!important}
+    html.movx-v59 #process .process-list li>div{
+      display:block!important;
+      padding:0!important;
+      min-width:0!important;
+    }
+    html.movx-v59 #process .process-list strong{
+      display:block!important;
+      max-width:12ch!important;
+      margin:0 0 15px!important;
+      font-family:var(--serif,Georgia,'Times New Roman',serif)!important;
+      font-size:clamp(38px,3.5vw,56px)!important;
+      font-weight:400!important;
+      line-height:.94!important;
+      letter-spacing:-.058em!important;
+      color:color-mix(in srgb,var(--fg) 72%,var(--muted))!important;
+    }
+    html.movx-v59 #process .process-list p{
+      max-width:40ch!important;
+      margin:0!important;
+      font-size:clamp(13px,1vw,15px)!important;
+      line-height:1.7!important;
+      color:color-mix(in srgb,var(--fg) 54%,var(--muted))!important;
+    }
+    html.movx-v59 #process .process-list li.v55-current>span{color:var(--editorial-red)!important}
+    html.movx-v59 #process .process-list li.v55-current strong{color:var(--fg)!important}
+    html.movx-v59 #process .process-list li.v55-current p{color:color-mix(in srgb,var(--fg) 72%,var(--muted))!important}
+    html.movx-v59 #process .v55-process-canvas{opacity:var(--v55-canvas-o,.3)!important;filter:contrast(1.02) saturate(.68)!important}
+  }
+  `;
+  document.head.appendChild(style);
+})();
