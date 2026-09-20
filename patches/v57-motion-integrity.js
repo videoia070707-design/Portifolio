@@ -1,10 +1,11 @@
 /* MOVX v57 — motion integrity watchdog
-   Detects animation states that remain hidden after entering the viewport and rescues only the stuck readable/media layer. */
+   Detects animation states that remain hidden after entering the viewport and rescues only the stuck readable/media layer.
+   The v57 audit API name remains for CI compatibility; production release identity is v74. */
 (()=>{
   const root=document.documentElement;
   root.classList.add('movx-v57');
   root.dataset.movxMotionIntegrity='v57';
-  const buildId='v57-motion-integrity';
+  const buildId='v74-accessible-editorial';
   const enforceBuild=()=>{if(root.dataset.movxBuild!==buildId)root.dataset.movxBuild=buildId;};
   enforceBuild();
   /* Module scripts can finish after this classic watchdog. Keep the final production owner stable. */
