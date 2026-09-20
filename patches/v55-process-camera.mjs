@@ -1,11 +1,10 @@
-/* MOVX v55 — Process camera journey
-   Native scroll turns the existing five semantic process rows into a spatial editorial sequence.
-   A light Three.js corridor supports depth; the readable DOM remains the source of truth. */
+/* MOVX v58 — Process camera refinement
+   The Three.js corridor remains atmospheric. Readable copy stays planar, separated and calm. */
 import * as THREE from './vendor/three.module.min.js';
 
 const root=document.documentElement;
-root.classList.add('movx-v55');
-root.dataset.movxProcessJourney='v55-camera';
+root.classList.add('movx-v55','movx-v58');
+root.dataset.movxProcessJourney='v58-calm-camera';
 const reduced=new URLSearchParams(location.search).has('static')||matchMedia('(prefers-reduced-motion: reduce)').matches;
 const desktop=matchMedia('(min-width:981px)').matches;
 const fine=matchMedia('(pointer:fine)').matches;
@@ -25,8 +24,8 @@ function buildJourney(process){
   const journey=document.createElement('div');journey.className='v55-process-journey';
   const canvas=document.createElement('canvas');canvas.className='v55-process-canvas';canvas.setAttribute('aria-hidden','true');
   const hud=document.createElement('div');hud.className='v55-process-hud';hud.setAttribute('aria-hidden','true');hud.innerHTML='<span>ETAPA <b>01</b></span><i></i><span>05</span>';
-  const depth=document.createElement('div');depth.className='v55-process-depth';depth.setAttribute('aria-hidden','true');depth.textContent='PROFUNDIDADE / MÉTODO';
-  const outro=document.createElement('div');outro.className='v55-process-outro';outro.setAttribute('aria-hidden','true');outro.textContent='Do diagnóstico à revisão, cada decisão reduz ruído antes da próxima etapa.';
+  const depth=document.createElement('div');depth.className='v55-process-depth';depth.setAttribute('aria-hidden','true');depth.textContent='';
+  const outro=document.createElement('div');outro.className='v55-process-outro';outro.setAttribute('aria-hidden','true');outro.textContent='';
   process.insertBefore(journey,container);journey.append(canvas,hud,depth,outro,container);
   return {journey,container,canvas,hud,depth,outro};
 }
@@ -60,11 +59,11 @@ function init(){
   let renderer,scene,camera,gates=[],rails=[];
   try{
     renderer=new THREE.WebGLRenderer({canvas,alpha:true,antialias:true,powerPreference:'high-performance'});
-    renderer.setPixelRatio(Math.min(devicePixelRatio||1,1.45));renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.setClearColor(0x000000,0);
-    scene=new THREE.Scene();scene.fog=new THREE.FogExp2(root.getAttribute('data-theme')==='dark'?0x0a0808:0xf1ece7,.027);
-    camera=new THREE.PerspectiveCamera(44,1,.1,80);camera.position.set(0,0,8.8);
+    renderer.setPixelRatio(Math.min(devicePixelRatio||1,1.35));renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.setClearColor(0x000000,0);
+    scene=new THREE.Scene();scene.fog=new THREE.FogExp2(root.getAttribute('data-theme')==='dark'?0x0a0808:0xf1ece7,.031);
+    camera=new THREE.PerspectiveCamera(43,1,.1,80);camera.position.set(0,0,8.8);
     gates=rows.map((_,i)=>makeGate(scene,i));
-    gates.forEach((gate,i)=>{gate.position.set(i%2?.42:-.36,(i-2)*.06,-i*3.25);gate.rotation.y=(i%2?-1:1)*.042;});
+    gates.forEach((gate,i)=>{gate.position.set(i%2?.24:-.2,(i-2)*.035,-i*3.55);gate.rotation.y=(i%2?-1:1)*.025;});
     rails=[makeRail(scene,-3.42),makeRail(scene,3.42)];
   }catch(error){root.classList.add('v55-fallback');return;}
 
@@ -75,8 +74,8 @@ function init(){
   function progress(){const rect=journey.getBoundingClientRect(),travel=Math.max(1,journey.offsetHeight-innerHeight);return clamp(-rect.top/travel,0,1);}
   function resize(){if(contextLost)return;renderer.setSize(Math.max(1,innerWidth),Math.max(1,innerHeight),false);camera.aspect=Math.max(1,innerWidth)/Math.max(1,innerHeight);camera.updateProjectionMatrix();}
   function updateDom(p){
-    const exit=smooth(clamp((p-.91)/.09));
-    const usable=clamp(p/.84,0,1);
+    const exit=smooth(clamp((p-.93)/.07));
+    const usable=clamp(p/.87,0,1);
     const step=usable*(processCount-1);
     const nearest=Math.max(0,Math.min(processCount-1,Math.round(step)));
     if(nearest!==lastActive){lastActive=nearest;rows.forEach((row,i)=>row.classList.toggle('v55-current',i===nearest));if(counter)counter.textContent=String(nearest+1).padStart(2,'0');}
@@ -84,78 +83,74 @@ function init(){
       const delta=i-step;
       const distance=Math.abs(delta);
       // Legacy QA marker retained for the build contract: const z=-distance*255
-      const z=-distance*292;
-      const y=delta*102;
-      const x=(i%2?1:-1)*Math.min(21,distance*8)+px*4.8*(1-Math.min(1,distance));
-      const opacity=clamp(1-distance*.76,.09,1);
-      const scale=1-Math.min(.135,distance*.062);
-      const rotateX=clamp(delta*1.9,-5.1,5.1)+velocity*.27;
-      const rotateY=(i%2?1:-1)*Math.min(1.7,distance*.56)+px*.3;
-      row.style.setProperty('--v55-row-x',`${x}px`);
-      row.style.setProperty('--v55-row-y',`calc(-50% + ${y}px)`);
-      row.style.setProperty('--v55-row-z',`${z}px`);
-      row.style.setProperty('--v55-row-rx',`${rotateX}deg`);
-      row.style.setProperty('--v55-row-ry',`${rotateY}deg`);
+      const z=-distance*128;
+      const y=delta*278;
+      const focus=Math.exp(-distance*distance*4.4);
+      const x=px*2.2*focus;
+      const opacity=clamp((.018+focus*.982)*(1-exit),0,1);
+      const scale=.988+focus*.012;
+      row.style.setProperty('--v55-row-x',`${x.toFixed(2)}px`);
+      row.style.setProperty('--v55-row-y',`calc(-50% + ${y.toFixed(2)}px)`);
+      row.style.setProperty('--v55-row-z',`${z.toFixed(2)}px`);
+      row.style.setProperty('--v55-row-rx','0deg');
+      row.style.setProperty('--v55-row-ry','0deg');
       row.style.setProperty('--v55-row-scale',String(scale));
-      row.style.setProperty('--v55-row-o',String(opacity*(1-exit)));
-      row.style.setProperty('--v55-row-rule',String(clamp(1-distance*.72,.24,1)));
+      row.style.setProperty('--v55-row-o',String(opacity));
+      row.style.setProperty('--v55-row-rule',String(.18+focus*.82));
+      row.style.pointerEvents=focus>.62?'auto':'none';
     });
-    const local=step-nearest;
     journey.style.setProperty('--v55-focus',String(1-exit));
     journey.style.setProperty('--v55-step-progress',String(clamp(step/(processCount-1))));
-    journey.style.setProperty('--v55-top-rule',String(clamp(.22+usable*.78)));
-    journey.style.setProperty('--v55-title-o',String(clamp(1-exit*1.08)));
-    journey.style.setProperty('--v55-title-y',`${-exit*18}px`);
-    journey.style.setProperty('--v55-stage-o',String(1-exit*.94));
-    journey.style.setProperty('--v55-canvas-o',String(1-exit));
-    journey.style.setProperty('--v55-depth-o',String(.52+.3*(1-Math.abs(local))));
-    journey.style.setProperty('--v55-outro-o',String(clamp((p-.77)/.1)*(1-exit)));
-    journey.style.setProperty('--v55-outro-y',`${lerp(10,0,clamp((p-.77)/.1))}px`);
+    journey.style.setProperty('--v55-top-rule',String(clamp(.18+usable*.82)));
+    journey.style.setProperty('--v55-title-o',String(clamp(1-exit*1.12)));
+    journey.style.setProperty('--v55-title-y',`${-exit*12}px`);
+    journey.style.setProperty('--v55-stage-o',String(1-exit*.96));
+    journey.style.setProperty('--v55-canvas-o',String((1-exit)*.44));
     root.style.setProperty('--v55-contact-rule',String(exit));
     root.dataset.v55Step=String(nearest+1);
   }
   function updateWebGL(p){
     if(contextLost)return;
-    const exit=smooth(clamp((p-.91)/.09));
-    const usable=clamp(p/.84,0,1);
+    const exit=smooth(clamp((p-.93)/.07));
+    const usable=clamp(p/.87,0,1);
     const step=usable*(processCount-1);
-    const worldZ=step*3.25;
+    const worldZ=step*3.55;
     gates.forEach((gate,i)=>{
       const delta=i-step;
-      const focus=clamp(1-Math.abs(delta)/1.08,0,1);
-      const visible=clamp(1-Math.abs(delta)/2.45,0,1)*(1-exit);
-      gate.userData.lineMat.opacity=.055+visible*.16+focus*.29;
-      gate.userData.accentMat.opacity=.026+visible*.14+focus*.42;
-      gate.userData.numberMat.opacity=.018+visible*.10+focus*.38;
-      gate.scale.setScalar(.96+focus*.055);
-      gate.rotation.z=velocity*(i%2?1:-1)*.0028;
+      const focus=clamp(1-Math.abs(delta)/1.12,0,1);
+      const visible=clamp(1-Math.abs(delta)/2.65,0,1)*(1-exit);
+      gate.userData.lineMat.opacity=.018+visible*.06+focus*.12;
+      gate.userData.accentMat.opacity=.012+visible*.05+focus*.2;
+      gate.userData.numberMat.opacity=.008+visible*.03+focus*.11;
+      gate.scale.setScalar(.985+focus*.025);
+      gate.rotation.z=velocity*(i%2?1:-1)*.0011;
     });
-    rails.forEach((rail,i)=>{rail.material.opacity=(.07+usable*.16)*(1-exit);rail.rotation.z=(i?1:-1)*velocity*.006;});
-    camera.position.x=px*.18+velocity*.03;
-    camera.position.y=-py*.11;
+    rails.forEach((rail,i)=>{rail.material.opacity=(.025+usable*.06)*(1-exit);rail.rotation.z=(i?1:-1)*velocity*.002;});
+    camera.position.x=px*.08+velocity*.012;
+    camera.position.y=-py*.05;
     camera.position.z=8.8-worldZ;
-    camera.fov=44+Math.min(3.5,Math.abs(velocity)*1.2);camera.updateProjectionMatrix();
-    camera.lookAt(px*.055,-.08,-worldZ-4.8);
+    camera.fov=43+Math.min(1.3,Math.abs(velocity)*.45);camera.updateProjectionMatrix();
+    camera.lookAt(px*.02,-.05,-worldZ-5.2);
     renderer.render(scene,camera);
   }
   function tick(){
     raf=0;if(!active||document.hidden)return;
-    current=lerp(current,target,.14);px=lerp(px,tpx,.08);py=lerp(py,tpy,.08);velocity*=.84;
+    current=lerp(current,target,.075);px=lerp(px,tpx,.055);py=lerp(py,tpy,.055);velocity*=.9;
     updateDom(current);updateWebGL(current);
-    if(Math.abs(current-target)>.0006||Math.abs(velocity)>.004||Math.abs(px-tpx)>.002||Math.abs(py-tpy)>.002)schedule();
+    if(Math.abs(current-target)>.00035||Math.abs(velocity)>.002||Math.abs(px-tpx)>.0015||Math.abs(py-tpy)>.0015)schedule();
   }
   function schedule(){if(!raf&&active&&!document.hidden)raf=requestAnimationFrame(tick);}
-  function sync(){const now=performance.now(),dt=Math.max(16,now-lastTime),dy=scrollY-lastY;lastY=scrollY;lastTime=now;velocity=clamp(dy/dt,-2.0,2.0);target=progress();schedule();}
+  function sync(){const now=performance.now(),dt=Math.max(16,now-lastTime),dy=scrollY-lastY;lastY=scrollY;lastTime=now;velocity=clamp(dy/dt,-1.35,1.35);target=progress();schedule();}
 
-  const observer=new IntersectionObserver(entries=>{active=entries.some(e=>e.isIntersecting);if(active){target=progress();resize();schedule();}else if(raf){cancelAnimationFrame(raf);raf=0;}},{rootMargin:'32% 0px 32% 0px',threshold:0});
+  const observer=new IntersectionObserver(entries=>{active=entries.some(e=>e.isIntersecting);if(active){target=progress();resize();schedule();}else if(raf){cancelAnimationFrame(raf);raf=0;}},{rootMargin:'34% 0px 34% 0px',threshold:0});
   observer.observe(journey);
   addEventListener('scroll',sync,{passive:true});
   addEventListener('resize',()=>{resize();target=progress();schedule();},{passive:true});
   if(fine){journey.addEventListener('pointermove',e=>{tpx=clamp((e.clientX/innerWidth-.5)*2,-1,1);tpy=clamp((e.clientY/innerHeight-.5)*2,-1,1);schedule();},{passive:true});journey.addEventListener('pointerleave',()=>{tpx=0;tpy=0;schedule();},{passive:true});}
-  canvas.addEventListener('webglcontextlost',event=>{event.preventDefault();contextLost=true;root.classList.add('v55-fallback');rows.forEach(row=>{row.style.removeProperty('--v55-row-o');row.style.removeProperty('--v55-row-z');});},{once:true});
+  canvas.addEventListener('webglcontextlost',event=>{event.preventDefault();contextLost=true;root.classList.add('v55-fallback');rows.forEach(row=>{row.style.removeProperty('--v55-row-o');row.style.removeProperty('--v55-row-z');row.style.pointerEvents='auto';});},{once:true});
   document.addEventListener('visibilitychange',()=>{if(!document.hidden&&active){target=progress();schedule();}});
   new MutationObserver(muts=>{if(muts.some(m=>m.attributeName==='data-theme')){scene.fog.color.setHex(root.getAttribute('data-theme')==='dark'?0x0a0808:0xf1ece7);gates.forEach(g=>g.userData.numberMat.color.setHex(root.getAttribute('data-theme')==='dark'?0xf1e9e3:0x2c2724));schedule();}}).observe(root,{attributes:true,attributeFilter:['data-theme']});
   resize();target=progress();current=target;updateDom(current);updateWebGL(current);
 }
 
-try{init();}catch(error){root.classList.add('v55-fallback');console.warn('MOVX v55 process journey failed open',error);}
+try{init();}catch(error){root.classList.add('v55-fallback');console.warn('MOVX v58 process journey failed open',error);}
