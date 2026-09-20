@@ -1,11 +1,11 @@
-/* MOVX v59 — Process choreography refinement
-   The Three.js corridor stays atmospheric while readable steps move with wider spacing,
-   slower damping and a narrower focus window so adjacent copy never competes. */
+/* MOVX v60 — open architectural Process choreography
+   Readable steps stay planar while the Three.js layer becomes an asymmetric editorial scaffold,
+   removing the last card-like frame from the Process section. */
 import * as THREE from './vendor/three.module.min.js';
 
 const root=document.documentElement;
-root.classList.add('movx-v55','movx-v58','movx-v59');
-root.dataset.movxProcessJourney='v59-soft-sequence';
+root.classList.add('movx-v55','movx-v58','movx-v59','movx-v60');
+root.dataset.movxProcessJourney='v60-open-architecture';
 const reduced=new URLSearchParams(location.search).has('static')||matchMedia('(prefers-reduced-motion: reduce)').matches;
 const desktop=matchMedia('(min-width:981px)').matches;
 const fine=matchMedia('(pointer:fine)').matches;
@@ -34,11 +34,27 @@ function makeGate(scene,index){
   const group=new THREE.Group();scene.add(group);
   const lineMat=new THREE.LineBasicMaterial({color:0x8f857f,transparent:true,opacity:0});
   const accentMat=new THREE.LineBasicMaterial({color:0xb84434,transparent:true,opacity:0});
-  const pts=[-3.15,-1.8,0,3.15,-1.8,0,3.15,-1.8,0,3.15,1.8,0,3.15,1.8,0,-3.15,1.8,0,-3.15,1.8,0,-3.15,-1.8,0];
+
+  /* Open, asymmetric editorial scaffold. No closed rectangle. */
+  const pts=[
+    -3.2,-1.72,0,-3.2,.92,0,
+    -3.2,1.72,0,-.78,1.72,0,
+    1.08,1.72,0,3.08,1.72,0,
+    3.08,1.72,0,3.08,.56,0,
+    3.08,-1.72,0,.86,-1.72,0,
+    -.88,-1.72,0,-2.18,-1.72,0
+  ];
   const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(pts,3));group.add(new THREE.LineSegments(geometry,lineMat));
-  const accentGeometry=new THREE.BufferGeometry();accentGeometry.setAttribute('position',new THREE.Float32BufferAttribute([-3.15,1.8,.02,-2.0,1.8,.02,-3.15,-1.8,.02,-3.15,-.58,.02],3));group.add(new THREE.LineSegments(accentGeometry,accentMat));
+
+  const accentPts=[
+    -3.2,1.72,.02,-2.08,1.72,.02,
+    -3.2,1.72,.02,-3.2,1.08,.02,
+    2.12,-1.72,.02,3.08,-1.72,.02
+  ];
+  const accentGeometry=new THREE.BufferGeometry();accentGeometry.setAttribute('position',new THREE.Float32BufferAttribute(accentPts,3));group.add(new THREE.LineSegments(accentGeometry,accentMat));
+
   const numberMat=new THREE.MeshBasicMaterial({map:textTexture(String(index+1).padStart(2,'0')),transparent:true,opacity:0,depthWrite:false,color:root.getAttribute('data-theme')==='dark'?0xf1e9e3:0x2c2724});
-  const number=new THREE.Mesh(new THREE.PlaneGeometry(1.28,.46),numberMat);number.position.set(2.35,1.38,.03);group.add(number);
+  const number=new THREE.Mesh(new THREE.PlaneGeometry(.96,.34),numberMat);number.position.set(2.56,1.34,.03);group.add(number);
   group.userData={lineMat,accentMat,numberMat,index};return group;
 }
 function makeRail(scene,x){
@@ -106,7 +122,7 @@ function init(){
     journey.style.setProperty('--v55-title-o',String(clamp(1-exit*1.12)));
     journey.style.setProperty('--v55-title-y',`${-exit*8}px`);
     journey.style.setProperty('--v55-stage-o',String(1-exit*.96));
-    journey.style.setProperty('--v55-canvas-o',String((1-exit)*.38));
+    journey.style.setProperty('--v55-canvas-o',String((1-exit)*.32));
     root.style.setProperty('--v55-contact-rule',String(exit));
     root.dataset.v55Step=String(nearest+1);
   }
@@ -120,18 +136,18 @@ function init(){
       const delta=i-step;
       const focus=clamp(1-Math.abs(delta)/.96,0,1);
       const visible=clamp(1-Math.abs(delta)/2.4,0,1)*(1-exit);
-      gate.userData.lineMat.opacity=.014+visible*.05+focus*.105;
-      gate.userData.accentMat.opacity=.01+visible*.04+focus*.17;
-      gate.userData.numberMat.opacity=.006+visible*.026+focus*.085;
-      gate.scale.setScalar(.99+focus*.018);
-      gate.rotation.z=velocity*(i%2?1:-1)*.00075;
+      gate.userData.lineMat.opacity=.008+visible*.032+focus*.074;
+      gate.userData.accentMat.opacity=.006+visible*.026+focus*.12;
+      gate.userData.numberMat.opacity=.004+visible*.018+focus*.052;
+      gate.scale.setScalar(.992+focus*.01);
+      gate.rotation.z=velocity*(i%2?1:-1)*.00055;
     });
-    rails.forEach((rail,i)=>{rail.material.opacity=(.02+usable*.045)*(1-exit);rail.rotation.z=(i?1:-1)*velocity*.0014;});
-    camera.position.x=px*.055+velocity*.008;
-    camera.position.y=-py*.035;
+    rails.forEach((rail,i)=>{rail.material.opacity=(.012+usable*.028)*(1-exit);rail.rotation.z=(i?1:-1)*velocity*.001;});
+    camera.position.x=px*.045+velocity*.006;
+    camera.position.y=-py*.026;
     camera.position.z=8.8-worldZ;
-    camera.fov=43+Math.min(.8,Math.abs(velocity)*.3);camera.updateProjectionMatrix();
-    camera.lookAt(px*.014,-.04,-worldZ-5.2);
+    camera.fov=43+Math.min(.65,Math.abs(velocity)*.24);camera.updateProjectionMatrix();
+    camera.lookAt(px*.01,-.04,-worldZ-5.2);
     renderer.render(scene,camera);
   }
   function tick(){
@@ -154,4 +170,4 @@ function init(){
   resize();target=progress();current=target;updateDom(current);updateWebGL(current);
 }
 
-try{init();}catch(error){root.classList.add('v55-fallback');console.warn('MOVX v59 process journey failed open',error);}
+try{init();}catch(error){root.classList.add('v55-fallback');console.warn('MOVX v60 process journey failed open',error);}
