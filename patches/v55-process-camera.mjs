@@ -75,21 +75,21 @@ function init(){
   function progress(){const rect=journey.getBoundingClientRect(),travel=Math.max(1,journey.offsetHeight-innerHeight);return clamp(-rect.top/travel,0,1);}
   function resize(){if(contextLost)return;renderer.setSize(Math.max(1,innerWidth),Math.max(1,innerHeight),false);camera.aspect=Math.max(1,innerWidth)/Math.max(1,innerHeight);camera.updateProjectionMatrix();}
   function updateDom(p){
-    const exit=smooth(clamp((p-.88)/.12));
-    const usable=clamp(p/.82,0,1);
+    const exit=smooth(clamp((p-.91)/.09));
+    const usable=clamp(p/.84,0,1);
     const step=usable*(processCount-1);
     const nearest=Math.max(0,Math.min(processCount-1,Math.round(step)));
     if(nearest!==lastActive){lastActive=nearest;rows.forEach((row,i)=>row.classList.toggle('v55-current',i===nearest));if(counter)counter.textContent=String(nearest+1).padStart(2,'0');}
     rows.forEach((row,i)=>{
       const delta=i-step;
-      const ahead=Math.max(0,delta),past=Math.max(0,-delta);
-      const z=ahead*-340+past*260;
-      const y=delta*86-past*42;
-      const x=(i%2?1:-1)*Math.min(28,ahead*9)+px*6*(1-Math.min(1,Math.abs(delta)));
-      const opacity=delta<0?clamp(1-past*1.6,0,1):clamp(1-ahead*.31,0,1);
-      const scale=1-Math.min(.12,ahead*.032)-Math.min(.08,past*.07);
-      const rotateX=clamp(delta*2.7,-6,8)+velocity*.5;
-      const rotateY=(i%2?1:-1)*Math.min(2.2,ahead*.7)+px*.35;
+      const distance=Math.abs(delta);
+      const z=-distance*255;
+      const y=delta*94;
+      const x=(i%2?1:-1)*Math.min(18,distance*7)+px*4*(1-Math.min(1,distance));
+      const opacity=clamp(1-distance*.82,0,1);
+      const scale=1-Math.min(.12,distance*.055);
+      const rotateX=clamp(delta*1.7,-4.5,4.5)+velocity*.22;
+      const rotateY=(i%2?1:-1)*Math.min(1.45,distance*.48)+px*.24;
       row.style.setProperty('--v55-row-x',`${x}px`);
       row.style.setProperty('--v55-row-y',`calc(-50% + ${y}px)`);
       row.style.setProperty('--v55-row-z',`${z}px`);
@@ -97,43 +97,43 @@ function init(){
       row.style.setProperty('--v55-row-ry',`${rotateY}deg`);
       row.style.setProperty('--v55-row-scale',String(scale));
       row.style.setProperty('--v55-row-o',String(opacity*(1-exit)));
-      row.style.setProperty('--v55-row-rule',String(clamp(1-Math.abs(delta)*.9,.2,1)));
+      row.style.setProperty('--v55-row-rule',String(clamp(1-distance*.78,.18,1)));
     });
     const local=step-nearest;
     journey.style.setProperty('--v55-focus',String(1-exit));
     journey.style.setProperty('--v55-step-progress',String(clamp(step/(processCount-1))));
     journey.style.setProperty('--v55-top-rule',String(clamp(.18+usable*.82)));
-    journey.style.setProperty('--v55-title-o',String(clamp(1-exit*1.15)));
-    journey.style.setProperty('--v55-title-y',`${-exit*28}px`);
-    journey.style.setProperty('--v55-stage-o',String(1-exit*.96));
+    journey.style.setProperty('--v55-title-o',String(clamp(1-exit*1.08)));
+    journey.style.setProperty('--v55-title-y',`${-exit*18}px`);
+    journey.style.setProperty('--v55-stage-o',String(1-exit*.94));
     journey.style.setProperty('--v55-canvas-o',String(1-exit));
-    journey.style.setProperty('--v55-depth-o',String(.42+.36*(1-Math.abs(local))));
-    journey.style.setProperty('--v55-outro-o',String(clamp((p-.73)/.11)*(1-exit)));
-    journey.style.setProperty('--v55-outro-y',`${lerp(10,0,clamp((p-.73)/.11))}px`);
+    journey.style.setProperty('--v55-depth-o',String(.42+.34*(1-Math.abs(local))));
+    journey.style.setProperty('--v55-outro-o',String(clamp((p-.77)/.1)*(1-exit)));
+    journey.style.setProperty('--v55-outro-y',`${lerp(10,0,clamp((p-.77)/.1))}px`);
     root.style.setProperty('--v55-contact-rule',String(exit));
     root.dataset.v55Step=String(nearest+1);
   }
   function updateWebGL(p){
     if(contextLost)return;
-    const exit=smooth(clamp((p-.88)/.12));
-    const usable=clamp(p/.82,0,1);
+    const exit=smooth(clamp((p-.91)/.09));
+    const usable=clamp(p/.84,0,1);
     const step=usable*(processCount-1);
     const worldZ=step*3.25;
     gates.forEach((gate,i)=>{
       const delta=i-step;
       const focus=clamp(1-Math.abs(delta)/1.08,0,1);
-      const visible=clamp(1-Math.abs(delta)/2.7,0,1)*(1-exit);
-      gate.userData.lineMat.opacity=.035+visible*.12+focus*.19;
-      gate.userData.accentMat.opacity=.018+visible*.12+focus*.28;
-      gate.userData.numberMat.opacity=.012+visible*.08+focus*.28;
+      const visible=clamp(1-Math.abs(delta)/2.45,0,1)*(1-exit);
+      gate.userData.lineMat.opacity=.026+visible*.1+focus*.2;
+      gate.userData.accentMat.opacity=.014+visible*.1+focus*.3;
+      gate.userData.numberMat.opacity=.01+visible*.07+focus*.3;
       gate.scale.setScalar(.97+focus*.035);
     });
-    rails.forEach((rail,i)=>{rail.material.opacity=(.05+usable*.13)*(1-exit);rail.rotation.z=(i?1:-1)*velocity*.006;});
-    camera.position.x=px*.18+velocity*.035;
-    camera.position.y=-py*.10;
+    rails.forEach((rail,i)=>{rail.material.opacity=(.04+usable*.11)*(1-exit);rail.rotation.z=(i?1:-1)*velocity*.004;});
+    camera.position.x=px*.14+velocity*.022;
+    camera.position.y=-py*.08;
     camera.position.z=8.8-worldZ;
-    camera.fov=44+Math.min(4,Math.abs(velocity)*1.6);camera.updateProjectionMatrix();
-    camera.lookAt(px*.06,-.08,-worldZ-4.8);
+    camera.fov=44+Math.min(2.4,Math.abs(velocity)*.9);camera.updateProjectionMatrix();
+    camera.lookAt(px*.045,-.08,-worldZ-4.8);
     renderer.render(scene,camera);
   }
   function tick(){
@@ -143,7 +143,7 @@ function init(){
     if(Math.abs(current-target)>.0006||Math.abs(velocity)>.004||Math.abs(px-tpx)>.002||Math.abs(py-tpy)>.002)schedule();
   }
   function schedule(){if(!raf&&active&&!document.hidden)raf=requestAnimationFrame(tick);}
-  function sync(){const now=performance.now(),dt=Math.max(16,now-lastTime),dy=scrollY-lastY;lastY=scrollY;lastTime=now;velocity=clamp(dy/dt,-2.4,2.4);target=progress();schedule();}
+  function sync(){const now=performance.now(),dt=Math.max(16,now-lastTime),dy=scrollY-lastY;lastY=scrollY;lastTime=now;velocity=clamp(dy/dt,-2.0,2.0);target=progress();schedule();}
 
   const observer=new IntersectionObserver(entries=>{active=entries.some(e=>e.isIntersecting);if(active){target=progress();resize();schedule();}else if(raf){cancelAnimationFrame(raf);raf=0;}},{rootMargin:'32% 0px 32% 0px',threshold:0});
   observer.observe(journey);
