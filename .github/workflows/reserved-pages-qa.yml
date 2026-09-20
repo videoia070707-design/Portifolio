@@ -1,0 +1,108 @@
+name: MOVX Reserved Pages QA
+
+on:
+  workflow_run:
+    workflows: ["Deploy MOVX Portfolio"]
+    types: [completed]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  reserved-pages-qa:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install Playwright
+        run: |
+          npm install --silent --no-progress --no-audit --no-fund --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium >/tmp/playwright-install.log 2>&1
+
+      - name: Validate reserved chapters
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p qa-reserved
+          node --input-type=module <<'NODE'
+          import { chromium } from 'playwright';
+          import { writeFile } from 'node:fs/promises';
+
+          const base='https://videoia070707-design.github.io/Portifolio/';
+          const targets=[
+            {id:'video',file:'video-editor.html',chapter:'02'},
+            {id:'ai',file:'ai-creator.html',chapter:'03'}
+          ];
+          const viewports=[
+            {id:'desktop',width:1440,height:900},
+            {id:'mobile',width:390,height:844}
+          ];
+          const browser=await chromium.launch({headless:true,args:['--use-angle=swiftshader','--enable-webgl','--ignore-gpu-blocklist']});
+          const report=[];
+
+          for(const target of targets){
+            for(const viewport of viewports){
+              const page=await browser.newPage({viewport:{width:viewport.width,height:viewport.height},deviceScaleFactor:1});
+              const errors=[];
+              page.on('pageerror',error=>errors.push(String(error)));
+              const url=`${base}${target.file}?qa=${Date.now()}`;
+              await page.goto(url,{waitUntil:'networkidle',timeout:45000});
+              await page.waitForFunction(()=>document.documentElement.classList.contains('movx-v66'),null,{timeout:15000});
+              await page.waitForTimeout(900);
+
+              const state=await page.evaluate(({id,chapter})=>{
+                const body=document.body;
+                const hero=document.querySelector('.page-hero');
+                const title=document.querySelector('.page-hero h1');
+                const rail=document.querySelector('.v66-status-rail');
+                const meta=rail?.querySelector('.page-hero__meta');
+                const empty=document.querySelector('.empty-archive');
+                const tr=title?.getBoundingClientRect();
+                const rr=rail?.getBoundingClientRect();
+                return {
+                  page:body?.dataset.page||'',
+                  chapter:hero?.dataset.v66Chapter||'',
+                  build:document.documentElement.dataset.movxReservedChapter||'',
+                  overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth,
+                  title:tr?{left:tr.left,right:tr.right,top:tr.top,bottom:tr.bottom,width:tr.width}:null,
+                  rail:rr?{top:rr.top,bottom:rr.bottom,width:rr.width}:null,
+                  metaCount:meta?.querySelectorAll('span').length||0,
+                  empty:!!empty,
+                  activeDiscipline:document.querySelector('.v65-discipline-switcher [aria-current="page"]')?.textContent?.trim()||'',
+                  expected:{id,chapter}
+                };
+              },{id:target.id,chapter:target.chapter});
+
+              if(state.page!==target.id) throw new Error(`${target.id}/${viewport.id}: wrong body page ${state.page}`);
+              if(state.chapter!==target.chapter) throw new Error(`${target.id}/${viewport.id}: wrong chapter ${state.chapter}`);
+              if(!state.build.startsWith('v66-')) throw new Error(`${target.id}/${viewport.id}: v66 runtime missing`);
+              if(state.overflow>2) throw new Error(`${target.id}/${viewport.id}: horizontal overflow ${state.overflow}`);
+              if(!state.title) throw new Error(`${target.id}/${viewport.id}: title missing`);
+              if(state.title.left<-4||state.title.right>viewport.width+4) throw new Error(`${target.id}/${viewport.id}: title clipped ${JSON.stringify(state.title)}`);
+              if(!state.rail||state.rail.width<viewport.width*.7) throw new Error(`${target.id}/${viewport.id}: status rail missing or collapsed`);
+              if(state.metaCount!==3) throw new Error(`${target.id}/${viewport.id}: expected 3 status items, got ${state.metaCount}`);
+              if(!state.empty) throw new Error(`${target.id}/${viewport.id}: reserved archive section missing`);
+              if(!state.activeDiscipline) throw new Error(`${target.id}/${viewport.id}: active discipline navigation missing`);
+              if(errors.length) throw new Error(`${target.id}/${viewport.id}: page errors ${errors.join(' | ')}`);
+
+              await page.screenshot({path:`qa-reserved/${target.id}-${viewport.id}.png`,fullPage:true});
+              report.push({target:target.id,viewport:viewport.id,url,state,errors});
+              await page.close();
+            }
+          }
+
+          await writeFile('qa-reserved/report.json',JSON.stringify(report,null,2));
+          await browser.close();
+          NODE
+
+      - name: Upload reserved-page QA
+        uses: actions/upload-artifact@v4
+        with:
+          name: movx-reserved-pages-qa
+          path: qa-reserved
+          retention-days: 7
