@@ -43,7 +43,7 @@ jobs:
             {id:'mobile',width:390,height:844}
           ];
           const browser=await chromium.launch({headless:true,args:['--use-angle=swiftshader','--enable-webgl','--ignore-gpu-blocklist']});
-          const report=[];
+          const report={pages:[],interactions:[]};
 
           for(const target of targets){
             for(const viewport of viewports){
@@ -68,6 +68,8 @@ jobs:
                   page:body?.dataset.page||'',
                   chapter:hero?.dataset.v66Chapter||'',
                   build:document.documentElement.dataset.movxReservedChapter||'',
+                  navBuild:document.documentElement.dataset.movxGlobalNavigation||'',
+                  handoffBuild:document.documentElement.dataset.movxPageHandoff||'',
                   overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth,
                   title:tr?{left:tr.left,right:tr.right,top:tr.top,bottom:tr.bottom,width:tr.width}:null,
                   rail:rr?{top:rr.top,bottom:rr.bottom,width:rr.width}:null,
@@ -81,6 +83,8 @@ jobs:
               if(state.page!==target.id) throw new Error(`${target.id}/${viewport.id}: wrong body page ${state.page}`);
               if(state.chapter!==target.chapter) throw new Error(`${target.id}/${viewport.id}: wrong chapter ${state.chapter}`);
               if(!state.build.startsWith('v66-')) throw new Error(`${target.id}/${viewport.id}: v66 runtime missing`);
+              if(state.navBuild!=='v69-unified') throw new Error(`${target.id}/${viewport.id}: v69 navigation runtime missing`);
+              if(state.handoffBuild!=='v68-editorial') throw new Error(`${target.id}/${viewport.id}: v68 handoff runtime missing`);
               if(state.overflow>2) throw new Error(`${target.id}/${viewport.id}: horizontal overflow ${state.overflow}`);
               if(!state.title) throw new Error(`${target.id}/${viewport.id}: title missing`);
               if(state.title.left<-4||state.title.right>viewport.width+4) throw new Error(`${target.id}/${viewport.id}: title clipped ${JSON.stringify(state.title)}`);
@@ -91,9 +95,64 @@ jobs:
               if(errors.length) throw new Error(`${target.id}/${viewport.id}: page errors ${errors.join(' | ')}`);
 
               await page.screenshot({path:`qa-reserved/${target.id}-${viewport.id}.png`,fullPage:true});
-              report.push({target:target.id,viewport:viewport.id,url,state,errors});
+              report.pages.push({target:target.id,viewport:viewport.id,url,state,errors});
               await page.close();
             }
+          }
+
+          /* Real late-inserted discipline navigation: Video -> AI must show the v68 handoff
+             before the 560ms navigation occurs, then land on the correct chapter. */
+          {
+            const page=await browser.newPage({viewport:{width:1440,height:900},deviceScaleFactor:1});
+            const errors=[]; page.on('pageerror',error=>errors.push(String(error)));
+            await page.goto(`${base}video-editor.html?qa-nav=${Date.now()}`,{waitUntil:'networkidle',timeout:45000});
+            await page.waitForFunction(()=>document.documentElement.dataset.movxGlobalNavigation==='v69-unified',null,{timeout:15000});
+            const selector='.v65-discipline-switcher a[href="ai-creator.html"]';
+            await page.waitForSelector(selector,{state:'visible',timeout:10000});
+            const navigation=page.waitForURL(/ai-creator\.html/,{timeout:10000});
+            await page.click(selector);
+            await page.waitForTimeout(150);
+            const handoff=await page.evaluate(()=>({
+              leaving:document.body.classList.contains('page-leaving'),
+              label:document.querySelector('.v68-curtain-label')?.textContent?.trim()||'',
+              index:document.querySelector('.v68-curtain-index')?.textContent?.trim()||'',
+              curtainTransform:getComputedStyle(document.querySelector('.page-curtain')).transform
+            }));
+            if(!handoff.leaving) throw new Error(`discipline handoff: page-leaving missing ${JSON.stringify(handoff)}`);
+            if(handoff.label!=='AI Creator'||handoff.index!=='03') throw new Error(`discipline handoff: wrong destination ${JSON.stringify(handoff)}`);
+            await navigation;
+            await page.waitForFunction(()=>document.body.dataset.page==='ai',null,{timeout:10000});
+            const landed=await page.evaluate(()=>({page:document.body.dataset.page,active:document.querySelector('.v65-discipline-switcher [aria-current="page"]')?.textContent?.trim()||''}));
+            if(landed.page!=='ai'||!landed.active.includes('AI')) throw new Error(`discipline handoff: wrong landing ${JSON.stringify(landed)}`);
+            if(errors.length) throw new Error(`discipline handoff page errors: ${errors.join(' | ')}`);
+            report.interactions.push({name:'video-to-ai',handoff,landed,errors});
+            await page.close();
+          }
+
+          /* Mobile menu must become a true full navigation plane, lock document scroll,
+             and cleanly close again without leaving stale state behind. */
+          {
+            const page=await browser.newPage({viewport:{width:390,height:844},deviceScaleFactor:1});
+            const errors=[]; page.on('pageerror',error=>errors.push(String(error)));
+            await page.goto(`${base}video-editor.html?qa-menu=${Date.now()}`,{waitUntil:'networkidle',timeout:45000});
+            await page.waitForFunction(()=>document.documentElement.dataset.movxGlobalNavigation==='v69-unified',null,{timeout:15000});
+            await page.click('.menu-button');
+            await page.waitForTimeout(160);
+            const opened=await page.evaluate(()=>{
+              const menu=document.querySelector('.mobile-menu');
+              const button=document.querySelector('.menu-button');
+              const cs=getComputedStyle(menu);
+              return {open:menu.classList.contains('open'),body:document.body.classList.contains('v69-menu-open'),expanded:button.getAttribute('aria-expanded'),visibility:cs.visibility,opacity:parseFloat(cs.opacity||'0'),pointerEvents:cs.pointerEvents};
+            });
+            if(!opened.open||!opened.body||opened.expanded!=='true'||opened.visibility!=='visible'||opened.opacity<.8||opened.pointerEvents==='none') throw new Error(`mobile menu failed to open ${JSON.stringify(opened)}`);
+            await page.screenshot({path:'qa-reserved/mobile-menu-open.png',fullPage:false});
+            await page.click('.menu-button');
+            await page.waitForTimeout(120);
+            const closed=await page.evaluate(()=>({open:document.querySelector('.mobile-menu').classList.contains('open'),body:document.body.classList.contains('v69-menu-open'),expanded:document.querySelector('.menu-button').getAttribute('aria-expanded')}));
+            if(closed.open||closed.body||closed.expanded!=='false') throw new Error(`mobile menu failed to close ${JSON.stringify(closed)}`);
+            if(errors.length) throw new Error(`mobile menu page errors: ${errors.join(' | ')}`);
+            report.interactions.push({name:'mobile-menu',opened,closed,errors});
+            await page.close();
           }
 
           await writeFile('qa-reserved/report.json',JSON.stringify(report,null,2));
