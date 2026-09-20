@@ -30,6 +30,14 @@
     const row=el.closest('#process .process-list li');
     return !row||row.classList.contains('v55-current')||innerWidth<=980;
   }
+  function triggerAuthoredReveals(scope){
+    if(!scope)return;
+    scope.querySelectorAll('.reveal,.mask-reveal').forEach(el=>{
+      if(decorative(el))return;
+      el.classList.add('in');
+      el.dataset.v57RevealTriggered='true';
+    });
+  }
   function rescueElement(el){
     if(!el||decorative(el)||!activeProcessText(el))return;
     el.classList.add('v57-text-rescue');
@@ -87,6 +95,7 @@
     if(!section||!entered.has(section))return;
     const rect=section.getBoundingClientRect();
     if(!intersects(rect))return;
+    triggerAuthoredReveals(section);
     section.querySelectorAll(readableSelector).forEach(el=>{
       if(decorative(el)||!activeProcessText(el))return;
       const r=el.getBoundingClientRect();
@@ -114,12 +123,17 @@
   if('IntersectionObserver'in window){
     const io=new IntersectionObserver(entries=>{
       entries.forEach(entry=>{
-        if(entry.isIntersecting){entered.add(entry.target);entry.target.dataset.v57Entered='true';scheduleInspect(entry.target);}
+        if(entry.isIntersecting){
+          entered.add(entry.target);
+          entry.target.dataset.v57Entered='true';
+          triggerAuthoredReveals(entry.target);
+          scheduleInspect(entry.target);
+        }
       });
     },{threshold:[.08,.22,.45],rootMargin:'4% 0px -6% 0px'});
     sections.forEach(section=>io.observe(section));
   }else{
-    sections.forEach(section=>{entered.add(section);section.dataset.v57Entered='true';inspectSection(section);});
+    sections.forEach(section=>{entered.add(section);section.dataset.v57Entered='true';triggerAuthoredReveals(section);inspectSection(section);});
   }
 
   registerMediaWithin(document);
@@ -187,6 +201,7 @@
         overflow:document.documentElement.scrollWidth-innerWidth,
         rescued:document.querySelectorAll('[data-v57-rescued="true"]').length,
         mediaRescued:document.querySelectorAll('[data-v57-media-rescued="true"]').length,
+        revealTriggered:document.querySelectorAll('[data-v57-reveal-triggered="true"]').length,
         visibleTextIssues:auditVisibleText(),
         visibleMediaIssues:auditVisibleMedia(),
         currentText,
@@ -199,7 +214,7 @@
     },
     inspect(){
       enforceBuild();
-      sections.forEach(section=>{entered.add(section);inspectSection(section);});
+      sections.forEach(section=>{entered.add(section);triggerAuthoredReveals(section);inspectSection(section);});
       document.querySelectorAll('.media-reveal').forEach(el=>{
         if(intersects(el.getBoundingClientRect(),80)&&!el.classList.contains('in'))enterMedia(el);
         else if(el.classList.contains('in'))inspectMedia(el);
