@@ -24,7 +24,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Build MOVX v46 niche recovery + v45 immersive journey
+      - name: Build MOVX v47 clean territories + v45 immersive journey
         shell: bash
         run: |
           set -euo pipefail
@@ -104,10 +104,11 @@ jobs:
           cp patches/v45-immersive-continuity.css _site/v45-immersive.css
           cp patches/v45-immersive-continuity.mjs _site/v45-immersive.mjs
 
-          # v46 is deliberately standalone and last in the cascade. It is the single
-          # owner of the Categories/Territories layout, neutralizing v32/v37/v39 residue.
+          # Category recovery layers. v47 loads after v46 and is the final visual owner.
           cp patches/v46-niche-recovery.css _site/v46-niche.css
           cp patches/v46-niche-recovery.js _site/v46-niche.js
+          cp patches/v47-clean-territories.css _site/v47-territories.css
+          cp patches/v47-archive-flow.js _site/v47-archive-flow.js
 
           python3 - <<'PY'
           from pathlib import Path
@@ -120,7 +121,7 @@ jobs:
               raise SystemExit('No <html> element found')
           attrs = m.group(1)
           class_match = re.search(r'class="([^"]*)"', attrs, flags=re.I)
-          required = ['movx-v42', 'movx-v45', 'movx-v46']
+          required = ['movx-v42', 'movx-v45', 'movx-v46', 'movx-v47']
           if class_match:
               classes = [c for c in class_match.group(1).split() if c not in {'movx-v43','movx-v44'}]
               for cls in required:
@@ -128,35 +129,37 @@ jobs:
                       classes.append(cls)
               attrs = attrs[:class_match.start()] + f'class="{" ".join(classes)}"' + attrs[class_match.end():]
           else:
-              attrs += ' class="movx-v42 movx-v45 movx-v46"'
+              attrs += ' class="movx-v42 movx-v45 movx-v46 movx-v47"'
           attrs = re.sub(r'\sdata-movx-build="[^"]*"', '', attrs)
-          attrs += ' data-movx-build="v46-niche"'
+          attrs += ' data-movx-build="v47-territories"'
           h = h[:m.start()] + '<html' + attrs + '>' + h[m.end():]
 
-          version='46-niche'
+          version='47-territories'
           h = re.sub(r'href="styles\.css(?:\?[^\"]*)?"', f'href="styles.css?v={version}"', h)
           h = re.sub(r'src="projects\.js(?:\?[^\"]*)?"', f'src="projects.js?v={version}"', h)
           h = re.sub(r'src="i18n\.js(?:\?[^\"]*)?"', f'src="i18n.js?v={version}"', h)
           h = re.sub(r'src="script\.js(?:\?[^\"]*)?"', f'src="script.js?v={version}"', h)
 
-          h = h.replace('</head>', f'''  <link rel="stylesheet" href="v45-immersive.css?v={version}">\n  <link rel="stylesheet" href="v46-niche.css?v={version}">\n</head>''')
-          runtime = f'''\n<script src="vendor/gsap.min.js?v={version}"></script>\n<script src="vendor/ScrollTrigger.min.js?v={version}"></script>\n<script type="module" src="v45-immersive.mjs?v={version}"></script>\n<script src="v46-niche.js?v={version}"></script>\n'''
+          h = h.replace('</head>', f'''  <link rel="stylesheet" href="v45-immersive.css?v={version}">\n  <link rel="stylesheet" href="v46-niche.css?v={version}">\n  <link rel="stylesheet" href="v47-territories.css?v={version}">\n</head>''')
+          runtime = f'''\n<script src="vendor/gsap.min.js?v={version}"></script>\n<script src="vendor/ScrollTrigger.min.js?v={version}"></script>\n<script type="module" src="v45-immersive.mjs?v={version}"></script>\n<script src="v46-niche.js?v={version}"></script>\n<script src="v47-archive-flow.js?v={version}"></script>\n'''
           h = h.replace('</body>', runtime + '</body>')
           p.write_text(h, encoding='utf-8')
           PY
 
           cp _site/social-media.html _site/index.html
-          cp _site/social-media.html _site/v46.html
+          cp _site/social-media.html _site/v47.html
           cp _site/social-media.html _site/latest.html
 
           test -s _site/index.html
-          test -s _site/v46.html
+          test -s _site/v47.html
           test -s _site/styles.css
           test -s _site/script.js
           test -s _site/v45-immersive.css
           test -s _site/v45-immersive.mjs
           test -s _site/v46-niche.css
           test -s _site/v46-niche.js
+          test -s _site/v47-territories.css
+          test -s _site/v47-archive-flow.js
           test -s _site/vendor/three.module.min.js
           test -s _site/vendor/gsap.min.js
           test -s _site/vendor/ScrollTrigger.min.js
@@ -171,22 +174,21 @@ jobs:
           node --check _site/script.js
           node --check _site/v45-immersive.mjs
           node --check _site/v46-niche.js
+          node --check _site/v47-archive-flow.js
           node --check _site/i18n.js
           node --check _site/projects.js
           python3 -m py_compile patches/v37-runtime-audit.py patches/v38-runtime-audit.py
 
-          grep -q 'class="[^"]*movx-v46' _site/index.html
-          grep -q 'data-movx-build="v46-niche"' _site/index.html
-          grep -q 'v45-immersive.css?v=46-niche' _site/index.html
-          grep -q 'v46-niche.css?v=46-niche' _site/index.html
-          grep -q 'v46-niche.js?v=46-niche' _site/index.html
-          grep -q 'vendor/gsap.min.js?v=46-niche' _site/index.html
-          grep -q 'vendor/ScrollTrigger.min.js?v=46-niche' _site/index.html
-          grep -q 'v45-immersive.mjs?v=46-niche' _site/index.html
-          grep -q 'grid-column:1 / span 5!important' _site/v46-niche.css
-          grep -q 'grid-column:6 / span 7!important' _site/v46-niche.css
-          grep -q 'v46-ready' _site/v46-niche.css
-          grep -q 'v46-recovered' _site/v46-niche.js
+          grep -q 'class="[^"]*movx-v47' _site/index.html
+          grep -q 'data-movx-build="v47-territories"' _site/index.html
+          grep -q 'v45-immersive.css?v=47-territories' _site/index.html
+          grep -q 'v46-niche.css?v=47-territories' _site/index.html
+          grep -q 'v47-territories.css?v=47-territories' _site/index.html
+          grep -q 'v47-archive-flow.js?v=47-territories' _site/index.html
+          grep -q 'grid-template-rows:clamp(300px,29vw,410px)' _site/v47-territories.css
+          grep -q 'grid-column:5 / span 8!important' _site/v47-territories.css
+          grep -q 'niche-card__desc' _site/v47-territories.css
+          grep -q 'v47-clean-territories' _site/v47-archive-flow.js
           grep -q 'PerspectiveCamera' _site/v45-immersive.mjs
           grep -q 'CatmullRomCurve3' _site/v45-immersive.mjs
           grep -q 'computeMilestones' _site/v45-immersive.mjs
@@ -208,7 +210,7 @@ jobs:
           ! grep -q 'MOVX v29 — inertial editorial motion' _site/script.js
           ! grep -q 'vendor/lenis.min.js' _site/index.html
 
-          echo "MOVX v46 validated: niche grid recovered + old mosaic overridden + v45 immersive camera preserved"
+          echo "MOVX v47 validated: clean categories grid + connected archive flow + v45 immersive camera preserved"
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
