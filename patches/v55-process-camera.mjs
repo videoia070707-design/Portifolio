@@ -61,10 +61,10 @@ function init(){
   try{
     renderer=new THREE.WebGLRenderer({canvas,alpha:true,antialias:true,powerPreference:'high-performance'});
     renderer.setPixelRatio(Math.min(devicePixelRatio||1,1.45));renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.setClearColor(0x000000,0);
-    scene=new THREE.Scene();scene.fog=new THREE.FogExp2(root.getAttribute('data-theme')==='dark'?0x0a0808:0xf1ece7,.029);
+    scene=new THREE.Scene();scene.fog=new THREE.FogExp2(root.getAttribute('data-theme')==='dark'?0x0a0808:0xf1ece7,.027);
     camera=new THREE.PerspectiveCamera(44,1,.1,80);camera.position.set(0,0,8.8);
     gates=rows.map((_,i)=>makeGate(scene,i));
-    gates.forEach((gate,i)=>{gate.position.set(i%2?.38:-.32,(i-2)*.05,-i*3.25);gate.rotation.y=(i%2?-1:1)*.035;});
+    gates.forEach((gate,i)=>{gate.position.set(i%2?.42:-.36,(i-2)*.06,-i*3.25);gate.rotation.y=(i%2?-1:1)*.042;});
     rails=[makeRail(scene,-3.42),makeRail(scene,3.42)];
   }catch(error){root.classList.add('v55-fallback');return;}
 
@@ -83,13 +83,13 @@ function init(){
     rows.forEach((row,i)=>{
       const delta=i-step;
       const distance=Math.abs(delta);
-      const z=-distance*255;
-      const y=delta*94;
-      const x=(i%2?1:-1)*Math.min(18,distance*7)+px*4*(1-Math.min(1,distance));
-      const opacity=clamp(1-distance*.82,0,1);
-      const scale=1-Math.min(.12,distance*.055);
-      const rotateX=clamp(delta*1.7,-4.5,4.5)+velocity*.22;
-      const rotateY=(i%2?1:-1)*Math.min(1.45,distance*.48)+px*.24;
+      const z=-distance*292;
+      const y=delta*102;
+      const x=(i%2?1:-1)*Math.min(21,distance*8)+px*4.8*(1-Math.min(1,distance));
+      const opacity=clamp(1-distance*.76,.09,1);
+      const scale=1-Math.min(.135,distance*.062);
+      const rotateX=clamp(delta*1.9,-5.1,5.1)+velocity*.27;
+      const rotateY=(i%2?1:-1)*Math.min(1.7,distance*.56)+px*.3;
       row.style.setProperty('--v55-row-x',`${x}px`);
       row.style.setProperty('--v55-row-y',`calc(-50% + ${y}px)`);
       row.style.setProperty('--v55-row-z',`${z}px`);
@@ -97,17 +97,17 @@ function init(){
       row.style.setProperty('--v55-row-ry',`${rotateY}deg`);
       row.style.setProperty('--v55-row-scale',String(scale));
       row.style.setProperty('--v55-row-o',String(opacity*(1-exit)));
-      row.style.setProperty('--v55-row-rule',String(clamp(1-distance*.78,.18,1)));
+      row.style.setProperty('--v55-row-rule',String(clamp(1-distance*.72,.24,1)));
     });
     const local=step-nearest;
     journey.style.setProperty('--v55-focus',String(1-exit));
     journey.style.setProperty('--v55-step-progress',String(clamp(step/(processCount-1))));
-    journey.style.setProperty('--v55-top-rule',String(clamp(.18+usable*.82)));
+    journey.style.setProperty('--v55-top-rule',String(clamp(.22+usable*.78)));
     journey.style.setProperty('--v55-title-o',String(clamp(1-exit*1.08)));
     journey.style.setProperty('--v55-title-y',`${-exit*18}px`);
     journey.style.setProperty('--v55-stage-o',String(1-exit*.94));
     journey.style.setProperty('--v55-canvas-o',String(1-exit));
-    journey.style.setProperty('--v55-depth-o',String(.42+.34*(1-Math.abs(local))));
+    journey.style.setProperty('--v55-depth-o',String(.52+.3*(1-Math.abs(local))));
     journey.style.setProperty('--v55-outro-o',String(clamp((p-.77)/.1)*(1-exit)));
     journey.style.setProperty('--v55-outro-y',`${lerp(10,0,clamp((p-.77)/.1))}px`);
     root.style.setProperty('--v55-contact-rule',String(exit));
@@ -123,17 +123,18 @@ function init(){
       const delta=i-step;
       const focus=clamp(1-Math.abs(delta)/1.08,0,1);
       const visible=clamp(1-Math.abs(delta)/2.45,0,1)*(1-exit);
-      gate.userData.lineMat.opacity=.026+visible*.1+focus*.2;
-      gate.userData.accentMat.opacity=.014+visible*.1+focus*.3;
-      gate.userData.numberMat.opacity=.01+visible*.07+focus*.3;
-      gate.scale.setScalar(.97+focus*.035);
+      gate.userData.lineMat.opacity=.055+visible*.16+focus*.29;
+      gate.userData.accentMat.opacity=.026+visible*.14+focus*.42;
+      gate.userData.numberMat.opacity=.018+visible*.10+focus*.38;
+      gate.scale.setScalar(.96+focus*.055);
+      gate.rotation.z=velocity*(i%2?1:-1)*.0028;
     });
-    rails.forEach((rail,i)=>{rail.material.opacity=(.04+usable*.11)*(1-exit);rail.rotation.z=(i?1:-1)*velocity*.004;});
-    camera.position.x=px*.14+velocity*.022;
-    camera.position.y=-py*.08;
+    rails.forEach((rail,i)=>{rail.material.opacity=(.07+usable*.16)*(1-exit);rail.rotation.z=(i?1:-1)*velocity*.006;});
+    camera.position.x=px*.18+velocity*.03;
+    camera.position.y=-py*.11;
     camera.position.z=8.8-worldZ;
-    camera.fov=44+Math.min(2.4,Math.abs(velocity)*.9);camera.updateProjectionMatrix();
-    camera.lookAt(px*.045,-.08,-worldZ-4.8);
+    camera.fov=44+Math.min(3.5,Math.abs(velocity)*1.2);camera.updateProjectionMatrix();
+    camera.lookAt(px*.055,-.08,-worldZ-4.8);
     renderer.render(scene,camera);
   }
   function tick(){
