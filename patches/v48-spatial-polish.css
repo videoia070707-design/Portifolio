@@ -1,13 +1,11 @@
-/* MOVX v48 — spatial polish + contact recovery
-   Fixes contact theme/readability regressions and strengthens immersive depth only
-   in the chapters where it serves the narrative: About / Services / Process / Contact. */
+/* MOVX v60 — quiet editorial lower chapters + contact recovery
+   Keeps lower-section depth perceptible without the stacked wireframe/card language
+   that made About and Services feel like generated UI. */
 html.movx-v48 body{
-  --v48-line:color-mix(in srgb,var(--fg) 14%,transparent);
-  --v48-line-strong:color-mix(in srgb,var(--fg) 34%,transparent);
+  --v48-line:color-mix(in srgb,var(--fg) 10%,transparent);
+  --v48-line-strong:color-mix(in srgb,var(--fg) 22%,transparent);
 }
 
-/* ScrollTrigger/Three.js sections must stay measurable even before entering viewport.
-   The older content-visibility:auto optimization could make their geometry stale. */
 html.movx-v48 .about-section,
 html.movx-v48 .services-section,
 html.movx-v48 .process-section,
@@ -16,37 +14,45 @@ html.movx-v48 .contact-section{
   contain-intrinsic-size:auto!important;
 }
 
-/* ABOUT — stronger depth planes, copy remains flat. */
+/* v60 keeps the older shared WebGL journey for geometry/section state only.
+   Its visible rectangular plates are retired; authored chapter motion remains elsewhere. */
+html.movx-v48.movx-v60 .v49-journey-stage{
+  opacity:0!important;
+  visibility:hidden!important;
+}
+
+/* ABOUT — keep the typographic atmosphere, remove the wireframe dominance. */
 html.movx-v48 .about-section .v45-about-word{
-  -webkit-text-stroke-color:color-mix(in srgb,var(--fg) 27%,transparent)!important;
+  -webkit-text-stroke-color:color-mix(in srgb,var(--fg) 11%,transparent)!important;
 }
 html.movx-v48 .about-section .v45-about-brand{
-  color:color-mix(in srgb,var(--fg) 10%,transparent)!important;
+  color:color-mix(in srgb,var(--fg) 3.5%,transparent)!important;
 }
-html.movx-v48 .about-section .v45-axis{opacity:.88!important}
+html.movx-v48 .about-section .v45-axis{opacity:.38!important}
 
-/* SERVICES — depth plates become visible enough to read as space, not decoration. */
+/* SERVICES — chapter markers become faint editorial notation, not interface plates. */
 html.movx-v48 .v45-service-marker b{
-  color:color-mix(in srgb,var(--fg) 12%,transparent)!important;
+  color:color-mix(in srgb,var(--fg) 4.5%,transparent)!important;
 }
 html.movx-v48 .v45-service-marker i{
-  opacity:.82!important;
-  background:color-mix(in srgb,var(--fg) 34%,transparent)!important;
+  width:min(20vw,260px)!important;
+  justify-self:start!important;
+  opacity:.34!important;
+  background:color-mix(in srgb,var(--fg) 16%,transparent)!important;
 }
 html.movx-v48 .v45-service-marker small{
-  color:color-mix(in srgb,var(--fg) 26%,transparent)!important;
+  color:color-mix(in srgb,var(--fg) 11%,transparent)!important;
 }
 
-/* PROCESS — keep the real Three.js camera scene as the single 3D owner.
-   Increase scene readability instead of adding another competing transform system. */
+/* PROCESS — v60/v55 is the single visible 3D owner. */
 html.movx-v48 .v45-process-stage{
   background:
-    radial-gradient(circle at 50% 48%,color-mix(in srgb,var(--editorial-red) 13%,transparent),transparent 44%),
-    linear-gradient(180deg,color-mix(in srgb,var(--bg) 94%,transparent),var(--bg))!important;
+    radial-gradient(circle at 50% 48%,color-mix(in srgb,var(--editorial-red) 8%,transparent),transparent 44%),
+    linear-gradient(180deg,color-mix(in srgb,var(--bg) 96%,transparent),var(--bg))!important;
 }
 html.movx-v48 .v45-process-canvas{
-  opacity:1!important;
-  filter:contrast(1.08) saturate(1.04);
+  opacity:.7!important;
+  filter:contrast(1.02) saturate(.8);
 }
 html.movx-v48 .v45-process-vignette{
   background:
@@ -54,8 +60,7 @@ html.movx-v48 .v45-process-vignette{
     radial-gradient(circle at 50% 50%,transparent 36%,color-mix(in srgb,var(--bg) 46%,transparent) 80%,var(--bg) 100%)!important;
 }
 
-/* CONTACT — final editorial landing. Always dark, regardless of site theme, so
-   form controls and the spatial MOVX layer cannot invert into illegibility. */
+/* CONTACT — stable editorial landing. */
 html.movx-v48 body[data-page="social"] .contact-section,
 html[data-theme="dark"].movx-v48 body[data-page="social"] .contact-section,
 html[data-theme="light"].movx-v48 body[data-page="social"] .contact-section{
@@ -66,24 +71,15 @@ html[data-theme="light"].movx-v48 body[data-page="social"] .contact-section{
   border-top:1px solid rgba(243,238,233,.14)!important;
   overflow:clip!important;
 }
-html.movx-v48 body[data-page="social"] .contact-section>.container{
-  position:relative;
-  z-index:8;
-}
+html.movx-v48 body[data-page="social"] .contact-section>.container{position:relative;z-index:8}
 html.movx-v48 body[data-page="social"] .contact-grid{
   display:grid!important;
   grid-template-columns:repeat(12,minmax(0,1fr))!important;
   gap:clamp(20px,2.1vw,34px)!important;
   align-items:start!important;
 }
-html.movx-v48 body[data-page="social"] .contact-copy{
-  grid-column:1 / span 7!important;
-  min-width:0!important;
-}
-html.movx-v48 body[data-page="social"] .contact-copy .kicker{
-  color:rgba(243,238,233,.6)!important;
-  opacity:1!important;
-}
+html.movx-v48 body[data-page="social"] .contact-copy{grid-column:1 / span 7!important;min-width:0!important}
+html.movx-v48 body[data-page="social"] .contact-copy .kicker{color:rgba(243,238,233,.6)!important;opacity:1!important}
 html.movx-v48 body[data-page="social"] .contact-copy h2{
   max-width:10.8ch!important;
   margin:0!important;
@@ -106,7 +102,6 @@ html.movx-v48 body[data-page="social"] .availability-dot{
   margin-top:clamp(30px,3.5vw,50px)!important;
   color:rgba(243,238,233,.72)!important;
 }
-
 html.movx-v48 body[data-page="social"] .contact-form{
   grid-column:8 / span 5!important;
   min-width:0!important;
@@ -144,17 +139,9 @@ html.movx-v48 body[data-page="social"] .contact-form textarea{
   caret-color:#f3eee9!important;
 }
 html.movx-v48 body[data-page="social"] .contact-form input::placeholder,
-html.movx-v48 body[data-page="social"] .contact-form textarea::placeholder{
-  color:rgba(243,238,233,.34)!important;
-  opacity:1!important;
-}
-html.movx-v48 body[data-page="social"] .contact-form select option{
-  color:#111!important;
-  background:#fff!important;
-}
-html.movx-v48 body[data-page="social"] .contact-form label:focus-within{
-  border-bottom-color:#f3eee9!important;
-}
+html.movx-v48 body[data-page="social"] .contact-form textarea::placeholder{color:rgba(243,238,233,.34)!important;opacity:1!important}
+html.movx-v48 body[data-page="social"] .contact-form select option{color:#111!important;background:#fff!important}
+html.movx-v48 body[data-page="social"] .contact-form label:focus-within{border-bottom-color:#f3eee9!important}
 html.movx-v48 body[data-page="social"] .contact-actions{
   display:flex!important;
   align-items:center!important;
@@ -162,39 +149,33 @@ html.movx-v48 body[data-page="social"] .contact-actions{
   margin-top:28px!important;
 }
 html.movx-v48 body[data-page="social"] .contact-actions button,
-html.movx-v48 body[data-page="social"] .contact-actions a{
-  color:#f3eee9!important;
-}
+html.movx-v48 body[data-page="social"] .contact-actions a{color:#f3eee9!important}
 
-/* Contact depth remains decorative and behind the form/copy. */
-html.movx-v48 .contact-section .v45-contact-stage{z-index:1!important;opacity:.92}
+html.movx-v48 .contact-section .v45-contact-stage{z-index:1!important;opacity:.78}
 html.movx-v48 .contact-section .v45-contact-word{
-  -webkit-text-stroke-color:rgba(243,238,233,.19)!important;
+  -webkit-text-stroke-color:rgba(243,238,233,.14)!important;
   font-size:clamp(170px,27vw,500px)!important;
 }
 html.movx-v48 .contact-section .v45-axis{
   top:72%!important;
-  background:linear-gradient(90deg,transparent,rgba(243,238,233,.3) 14%,rgba(243,238,233,.3) 86%,transparent)!important;
+  background:linear-gradient(90deg,transparent,rgba(243,238,233,.22) 14%,rgba(243,238,233,.22) 86%,transparent)!important;
 }
 
-/* Section handoff: a single editorial depth seam, never a dashboard/progress widget. */
 html.movx-v48 .v48-depth-seam{
   position:absolute;
   left:50%;
   top:0;
-  width:min(86vw,1240px);
+  width:min(82vw,1180px);
   height:1px;
   z-index:2;
   pointer-events:none;
-  background:linear-gradient(90deg,transparent,color-mix(in srgb,var(--fg) 30%,transparent),transparent);
+  background:linear-gradient(90deg,transparent,color-mix(in srgb,var(--fg) 20%,transparent),transparent);
   transform-origin:center;
   transform:translate3d(-50%,var(--v48-seam-y,0px),var(--v48-seam-z,0px)) scaleX(var(--v48-seam-s,1));
-  opacity:var(--v48-seam-o,.28);
+  opacity:var(--v48-seam-o,.18);
   will-change:transform,opacity;
 }
-html.movx-v48 .contact-section .v48-depth-seam{
-  background:linear-gradient(90deg,transparent,rgba(243,238,233,.28),transparent);
-}
+html.movx-v48 .contact-section .v48-depth-seam{background:linear-gradient(90deg,transparent,rgba(243,238,233,.2),transparent)}
 
 @media(max-width:980px){
   html.movx-v48 body[data-page="social"] .contact-grid{grid-template-columns:1fr!important;gap:34px!important}
@@ -202,12 +183,11 @@ html.movx-v48 .contact-section .v48-depth-seam{
   html.movx-v48 body[data-page="social"] .contact-form{grid-column:1!important}
   html.movx-v48 body[data-page="social"] .contact-form{padding-top:8px!important}
   html.movx-v48 .v48-depth-seam{display:none}
+  html.movx-v48 .v45-service-marker{display:none!important}
 }
 @media(max-width:620px){
   html.movx-v48 body[data-page="social"] .contact-section{padding:86px 0 72px!important}
   html.movx-v48 body[data-page="social"] .contact-copy h2{font-size:clamp(48px,14.6vw,72px)!important;max-width:9.5ch!important}
   html.movx-v48 body[data-page="social"] .contact-actions{flex-wrap:wrap!important}
 }
-@media(prefers-reduced-motion:reduce){
-  html.movx-v48 .v48-depth-seam{display:none!important}
-}
+@media(prefers-reduced-motion:reduce){html.movx-v48 .v48-depth-seam{display:none!important}}
