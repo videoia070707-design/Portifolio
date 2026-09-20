@@ -54,3 +54,83 @@ html.movx-v56 #contact.v56-contact-drawn .contact-copy h2::after{
   html.movx-v56 #contact.v56-contact-drawn .contact-form{opacity:1!important;transform:none!important}
   html.movx-v56 #contact.v56-contact-drawn .contact-copy h2::after{transform:scaleX(1)!important}
 }
+
+/* MOVX v70 — editorial contact briefing
+   Removes the last background wireframe residue and turns the form into one calm,
+   numbered sequence. No extra copy, cards or dashboard-like UI are introduced. */
+html.movx-v56 #contact .v42-parallax-layer{display:none!important}
+html.movx-v56 #contact .contact-copy p{max-width:43ch!important;color:rgba(243,238,233,.62)!important;line-height:1.72!important}
+html.movx-v56 #contact .availability-dot{margin-top:clamp(34px,4.5vw,60px)!important;color:rgba(243,238,233,.72)!important}
+html.movx-v56 #contact .contact-form{
+  display:block!important;counter-reset:movx-contact-step;border-top:1px solid rgba(243,238,233,.26)!important;
+  padding-top:0!important;background:transparent!important
+}
+html.movx-v56 #contact .contact-form label{
+  counter-increment:movx-contact-step;position:relative!important;display:grid!important;
+  grid-template-columns:34px minmax(0,1fr)!important;grid-template-rows:auto auto!important;
+  column-gap:16px!important;row-gap:10px!important;margin:0!important;padding:18px 0 20px!important;
+  border:0!important;border-bottom:1px solid rgba(243,238,233,.22)!important;background:transparent!important
+}
+html.movx-v56 #contact .contact-form label::before{
+  content:"0" counter(movx-contact-step);grid-column:1;grid-row:1 / span 2;align-self:start;padding-top:2px;
+  font:700 8px/1 var(--mono,ui-monospace,monospace);letter-spacing:.13em;color:rgba(243,238,233,.34)
+}
+html.movx-v56 #contact .contact-form label::after{
+  content:""!important;position:absolute!important;left:0!important;right:0!important;bottom:-1px!important;height:1px!important;
+  background:var(--v56-accent)!important;transform:scaleX(0)!important;transform-origin:left center!important;
+  opacity:1!important;transition:transform .72s cubic-bezier(.16,1,.3,1)!important
+}
+html.movx-v56 #contact .contact-form label:focus-within::after{transform:scaleX(1)!important}
+html.movx-v56 #contact .contact-form label>span{
+  grid-column:2!important;grid-row:1!important;margin:0!important;
+  font:700 8px/1 var(--mono,ui-monospace,monospace)!important;letter-spacing:.15em!important;
+  text-transform:uppercase!important;color:rgba(243,238,233,.52)!important
+}
+html.movx-v56 #contact .contact-form input,
+html.movx-v56 #contact .contact-form select,
+html.movx-v56 #contact .contact-form textarea{
+  grid-column:2!important;grid-row:2!important;width:100%!important;min-width:0!important;margin:0!important;padding:0!important;
+  border:0!important;outline:0!important;border-radius:0!important;background:transparent!important;color:#f3eee9!important;
+  box-shadow:none!important;font:400 clamp(20px,1.65vw,27px)/1.28 var(--sans,Arial,sans-serif)!important;
+  letter-spacing:-.025em!important
+}
+html.movx-v56 #contact .contact-form input::placeholder,
+html.movx-v56 #contact .contact-form textarea::placeholder{color:rgba(243,238,233,.26)!important}
+html.movx-v56 #contact .contact-form textarea{min-height:118px!important;resize:vertical!important}
+html.movx-v56 #contact .contact-form select{appearance:auto!important;cursor:pointer!important}
+html.movx-v56 #contact .contact-actions{
+  display:flex!important;align-items:center!important;gap:clamp(24px,3vw,46px)!important;
+  margin:0!important;padding:26px 0 0!important;border:0!important
+}
+html.movx-v56 #contact .contact-actions button,
+html.movx-v56 #contact .contact-actions a{
+  font:700 10px/1 var(--mono,ui-monospace,monospace)!important;letter-spacing:.08em!important
+}
+html.movx-v56 #contact .contact-actions button::after,
+html.movx-v56 #contact .contact-actions a::after{bottom:2px!important}
+
+@media(min-width:981px){
+  html.movx-v56 #contact .contact-grid{grid-template-columns:repeat(12,minmax(0,1fr))!important;gap:clamp(18px,2vw,32px)!important}
+  html.movx-v56 #contact .contact-copy{grid-column:1 / span 5!important;max-width:620px!important}
+  html.movx-v56 #contact .contact-form{grid-column:8 / span 5!important;align-self:start!important;margin-top:clamp(20px,2vw,34px)!important}
+}
+@media(max-width:980px){
+  html.movx-v56 #contact .contact-grid{gap:clamp(42px,8vw,70px)!important}
+  html.movx-v56 #contact .contact-form{width:100%!important;padding-top:0!important}
+}
+@media(max-width:540px){
+  html.movx-v56 #contact .contact-form label{grid-template-columns:28px minmax(0,1fr)!important;column-gap:12px!important;padding:17px 0 19px!important}
+  html.movx-v56 #contact .contact-form input,
+  html.movx-v56 #contact .contact-form select,
+  html.movx-v56 #contact .contact-form textarea{font-size:20px!important}
+  html.movx-v56 #contact .contact-form textarea{min-height:104px!important}
+  html.movx-v56 #contact .contact-actions{display:grid!important;grid-template-columns:1fr 1fr!important;gap:20px!important;padding-top:24px!important}
+  html.movx-v56 #contact .contact-actions button,
+  html.movx-v56 #contact .contact-actions a{justify-self:start!important}
+}
+@media(max-width:390px){
+  html.movx-v56 #contact .contact-actions{grid-template-columns:1fr!important;gap:14px!important}
+}
+@media(prefers-reduced-motion:reduce){
+  html.movx-v56 #contact .contact-form label::after{transition:none!important}
+}
