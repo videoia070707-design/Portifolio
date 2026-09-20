@@ -24,7 +24,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Build MOVX v44 standalone immersive production
+      - name: Build MOVX v45 synchronized immersive journey
         shell: bash
         run: |
           set -euo pipefail
@@ -92,19 +92,17 @@ jobs:
             cat "$file" >> _site/script.js
           done
 
-          # Keep legacy optimizers, but v44 immersive motion is no longer concatenated into script.js.
-          # It loads as a separate module so an older runtime exception cannot prevent it from running.
           python3 patches/v37-runtime-audit.py _site
           python3 patches/v38-runtime-audit.py _site
 
-          # Pin and localize the researched production stack.
+          # Local production stack. No runtime CDN dependency.
           npm install --silent --no-progress --no-audit --no-fund --no-save three@0.180.0 gsap@3.13.0
           mkdir -p _site/vendor
           cp node_modules/three/build/three.module.min.js _site/vendor/three.module.min.js
           cp node_modules/gsap/dist/gsap.min.js _site/vendor/gsap.min.js
           cp node_modules/gsap/dist/ScrollTrigger.min.js _site/vendor/ScrollTrigger.min.js
-          cp patches/v44-immersive-production.css _site/v44-immersive.css
-          cp patches/v44-immersive-production.mjs _site/v44-immersive.mjs
+          cp patches/v45-immersive-continuity.css _site/v45-immersive.css
+          cp patches/v45-immersive-continuity.mjs _site/v45-immersive.mjs
 
           python3 - <<'PY'
           from pathlib import Path
@@ -112,54 +110,47 @@ jobs:
 
           p = Path('_site/social-media.html')
           h = p.read_text(encoding='utf-8')
-
-          # Static build classes are intentional. Archive recovery and v44 CSS must not depend
-          # on an older JS bundle reaching a late IIFE successfully.
           m = re.search(r'<html([^>]*)>', h, flags=re.I)
           if not m:
               raise SystemExit('No <html> element found')
           attrs = m.group(1)
           class_match = re.search(r'class="([^"]*)"', attrs, flags=re.I)
-          required = ['movx-v42', 'movx-v44']
+          required = ['movx-v42', 'movx-v45']
           if class_match:
-              classes = class_match.group(1).split()
+              classes = [c for c in class_match.group(1).split() if c not in {'movx-v43','movx-v44'}]
               for cls in required:
                   if cls not in classes:
                       classes.append(cls)
               attrs = attrs[:class_match.start()] + f'class="{" ".join(classes)}"' + attrs[class_match.end():]
           else:
-              attrs += ' class="movx-v42 movx-v44"'
-          if 'data-movx-build=' not in attrs:
-              attrs += ' data-movx-build="v44-production"'
+              attrs += ' class="movx-v42 movx-v45"'
+          attrs = re.sub(r'\sdata-movx-build="[^"]*"', '', attrs)
+          attrs += ' data-movx-build="v45-immersive"'
           h = h[:m.start()] + '<html' + attrs + '>' + h[m.end():]
 
-          h = re.sub(r'href="styles\.css(?:\?[^\"]*)?"', 'href="styles.css?v=44-production"', h)
-          h = re.sub(r'src="projects\.js(?:\?[^\"]*)?"', 'src="projects.js?v=44-production"', h)
-          h = re.sub(r'src="i18n\.js(?:\?[^\"]*)?"', 'src="i18n.js?v=44-production"', h)
-          h = re.sub(r'src="script\.js(?:\?[^\"]*)?"', 'src="script.js?v=44-production"', h)
+          version='45-immersive'
+          h = re.sub(r'href="styles\.css(?:\?[^\"]*)?"', f'href="styles.css?v={version}"', h)
+          h = re.sub(r'src="projects\.js(?:\?[^\"]*)?"', f'src="projects.js?v={version}"', h)
+          h = re.sub(r'src="i18n\.js(?:\?[^\"]*)?"', f'src="i18n.js?v={version}"', h)
+          h = re.sub(r'src="script\.js(?:\?[^\"]*)?"', f'src="script.js?v={version}"', h)
 
-          immersive_css = '<link rel="stylesheet" href="v44-immersive.css?v=44-production">'
-          if immersive_css not in h:
-              h = h.replace('</head>', f'  {immersive_css}\n</head>')
-
-          immersive_runtime = '''\n<script src="vendor/gsap.min.js?v=44-production"></script>\n<script src="vendor/ScrollTrigger.min.js?v=44-production"></script>\n<script type="module" src="v44-immersive.mjs?v=44-production"></script>\n'''
-          if 'v44-immersive.mjs?v=44-production' not in h:
-              h = h.replace('</body>', immersive_runtime + '</body>')
-
+          immersive_css = f'<link rel="stylesheet" href="v45-immersive.css?v={version}">'
+          h = h.replace('</head>', f'  {immersive_css}\n</head>')
+          immersive_runtime = f'''\n<script src="vendor/gsap.min.js?v={version}"></script>\n<script src="vendor/ScrollTrigger.min.js?v={version}"></script>\n<script type="module" src="v45-immersive.mjs?v={version}"></script>\n'''
+          h = h.replace('</body>', immersive_runtime + '</body>')
           p.write_text(h, encoding='utf-8')
           PY
 
-          # Main route + version-unique route. The unique path is a cache-proof QA target.
           cp _site/social-media.html _site/index.html
-          cp _site/social-media.html _site/v44.html
+          cp _site/social-media.html _site/v45.html
           cp _site/social-media.html _site/latest.html
 
           test -s _site/index.html
-          test -s _site/v44.html
+          test -s _site/v45.html
           test -s _site/styles.css
           test -s _site/script.js
-          test -s _site/v44-immersive.css
-          test -s _site/v44-immersive.mjs
+          test -s _site/v45-immersive.css
+          test -s _site/v45-immersive.mjs
           test -s _site/vendor/three.module.min.js
           test -s _site/vendor/gsap.min.js
           test -s _site/vendor/ScrollTrigger.min.js
@@ -172,33 +163,32 @@ jobs:
           test "$ASSET_COUNT" -ge 70
 
           node --check _site/script.js
-          node --check _site/v44-immersive.mjs
+          node --check _site/v45-immersive.mjs
           node --check _site/i18n.js
           node --check _site/projects.js
           python3 -m py_compile patches/v37-runtime-audit.py patches/v38-runtime-audit.py
 
-          grep -q 'class="[^"]*movx-v44' _site/index.html
-          grep -q 'data-movx-build="v44-production"' _site/index.html
-          grep -q 'v44-immersive.css?v=44-production' _site/index.html
-          grep -q 'vendor/gsap.min.js?v=44-production' _site/index.html
-          grep -q 'vendor/ScrollTrigger.min.js?v=44-production' _site/index.html
-          grep -q 'v44-immersive.mjs?v=44-production' _site/index.html
-          grep -q 'column-count:3!important' _site/v44-immersive.css
-          grep -q 'PerspectiveCamera' _site/v44-immersive.mjs
-          grep -q 'CatmullRomCurve3' _site/v44-immersive.mjs
-          grep -q 'ScrollTrigger.create' _site/v44-immersive.mjs
-          grep -q 'v44-process-stage' _site/v44-immersive.css
-          grep -q 'v44-current' _site/v44-immersive.mjs
-          grep -q 'v=44-production' _site/index.html
+          grep -q 'class="[^"]*movx-v45' _site/index.html
+          grep -q 'data-movx-build="v45-immersive"' _site/index.html
+          grep -q 'v45-immersive.css?v=45-immersive' _site/index.html
+          grep -q 'vendor/gsap.min.js?v=45-immersive' _site/index.html
+          grep -q 'vendor/ScrollTrigger.min.js?v=45-immersive' _site/index.html
+          grep -q 'v45-immersive.mjs?v=45-immersive' _site/index.html
+          grep -q 'column-count:3!important' _site/v45-immersive.css
+          grep -q 'PerspectiveCamera' _site/v45-immersive.mjs
+          grep -q 'CatmullRomCurve3' _site/v45-immersive.mjs
+          grep -q 'computeMilestones' _site/v45-immersive.mjs
+          grep -q 'makeTextTexture' _site/v45-immersive.mjs
+          grep -q 'v45-process-stage' _site/v45-immersive.css
+          grep -q 'v45-current' _site/v45-immersive.mjs
+          grep -q 'v=45-immersive' _site/index.html
           grep -q 'Rosa choque' _site/i18n.js
 
-          # v43 lower runtime is intentionally retired; v44 standalone module owns the lower journey.
           ! grep -q 'MOVX v43 — immersive lower-scroll controller' _site/script.js
           ! grep -q 'MOVX v42 — lower-section parallax runtime' _site/script.js
           ! grep -q 'MOVX v40 — native WebGL scroll corridor' _site/script.js
           ! grep -q 'MOVX v40 — native WebGL project corridor' _site/styles.css
 
-          # Stability guards from previous architecture remain mandatory.
           grep -q 'MOVX v37 build optimization' _site/script.js
           grep -q 'MOVX v38 build optimization' _site/script.js
           grep -q 'function initConveyorLoop(){ stopConveyorLoop(); }' _site/script.js
@@ -210,7 +200,7 @@ jobs:
           ! grep -q 'MOVX v29 — inertial editorial motion' _site/script.js
           ! grep -q 'vendor/lenis.min.js' _site/index.html
 
-          echo "MOVX v44 validated: static archive recovery + cache-proof route + standalone Three.js/ScrollTrigger immersive runtime"
+          echo "MOVX v45 validated: dense archive + synchronized row-aware 3D process camera + local Three.js/ScrollTrigger"
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
