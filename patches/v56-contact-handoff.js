@@ -131,3 +131,64 @@
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>boot(),{once:true});
   else boot();
 })();
+
+/* MOVX v58 — perceptual motion audit/tuning.
+   This runs after all head styles are loaded, so the injected safeguards can tune older visual layers
+   without creating another owner for semantic copy or Process 3D transforms. */
+(()=>{
+  const root=document.documentElement;
+  root.classList.add('movx-v58-runtime');
+  root.dataset.movxPerceptual='v58';
+  if(!document.getElementById('movx-v58-perceptual-style')){
+    const style=document.createElement('style');
+    style.id='movx-v58-perceptual-style';
+    style.textContent=`
+      html.movx-v58-runtime #livingArchive .archive-head h2{color:color-mix(in srgb,var(--fg) 36%,var(--bg))!important}
+      html.movx-v58-runtime #livingArchive .archive-head>p{color:color-mix(in srgb,var(--fg) 66%,var(--bg))!important}
+      html.movx-v58-runtime .about-section .v45-about-word{-webkit-text-stroke-color:color-mix(in srgb,var(--fg) 10%,transparent)!important;filter:blur(.15px)}
+      html.movx-v58-runtime .v45-about-brand{color:color-mix(in srgb,var(--fg) 3.5%,transparent)!important}
+      html.movx-v58-runtime .about-section .v45-axis{background:linear-gradient(90deg,transparent,color-mix(in srgb,var(--fg) 30%,transparent) 16%,color-mix(in srgb,var(--editorial-red) 36%,transparent) 50%,color-mix(in srgb,var(--fg) 30%,transparent) 84%,transparent)!important}
+      html.movx-v58-runtime .v45-service-marker b{color:color-mix(in srgb,var(--fg) 4.5%,transparent)!important}
+      html.movx-v58-runtime .v45-service-marker small{color:color-mix(in srgb,var(--fg) 11%,transparent)!important}
+      html.movx-v58-runtime .v45-service-marker i{opacity:.82!important;background:color-mix(in srgb,var(--fg) 38%,transparent)!important}
+      html.movx-v58-runtime #services .services-list .service-row{opacity:.68!important;transition:opacity .34s cubic-bezier(.2,.65,.25,1),border-color .34s cubic-bezier(.2,.65,.25,1)!important}
+      html.movx-v58-runtime #services .services-list .service-row:is(.v42-reading,.v45-current,:hover,:focus-within){opacity:1!important}
+      html.movx-v58-runtime #services .service-row:is(.v42-reading,.v45-current)::after{height:2px!important;opacity:1!important;transform:scaleX(1)!important}
+      html.movx-v58-runtime #process .v55-process-canvas{filter:contrast(1.34) saturate(.98)!important}
+      html.movx-v58-runtime #process .process-list li.v55-current{box-shadow:inset 3px 0 0 color-mix(in srgb,var(--editorial-red) 86%,transparent),0 16px 54px color-mix(in srgb,var(--fg) 5%,transparent)!important}
+      html.movx-v58-runtime #process .v55-process-hud{opacity:.82!important}
+      html.movx-v58-runtime #process .v55-process-depth{opacity:.72!important}
+      html.movx-v58-runtime #contact .v56-contact-rail{opacity:.72!important}
+      html.movx-v58-runtime .v56-handoff-layer{filter:contrast(1.12) saturate(1.08)}
+      html.movx-v58-runtime :is(#about,#services,#process,#contact)>.container{position:relative;z-index:7}
+      @media(max-width:980px){
+        html.movx-v58-runtime #services .services-list .service-row{opacity:1!important}
+        html.movx-v58-runtime .v45-css-stage{opacity:.28!important}
+        html.movx-v58-runtime #process .v55-process-canvas{filter:none!important}
+      }
+      @media(prefers-reduced-motion:reduce){html.movx-v58-runtime .v45-css-stage{display:none!important}}
+    `;
+    document.head.appendChild(style);
+  }
+
+  const reduced=new URLSearchParams(location.search).has('static')||matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(reduced)return;
+  const sections=[['about',document.querySelector('#about')],['services',document.querySelector('#services')],['process',document.querySelector('#process')],['contact',document.querySelector('#contact')]].filter(([,el])=>el);
+  let raf=0;
+  const clamp=(v,a=0,b=1)=>Math.min(b,Math.max(a,v));
+  function paint(){
+    raf=0;let best=['',0];
+    sections.forEach(([name,el])=>{
+      const r=el.getBoundingClientRect();
+      const center=r.top+r.height*.5;
+      const focus=clamp(1-Math.abs(center-innerHeight*.5)/(innerHeight*.9),0,1);
+      el.style.setProperty('--v58-focus',focus.toFixed(3));
+      if(focus>best[1])best=[name,focus];
+    });
+    root.dataset.v58Chapter=best[1]>.22?best[0]:'';
+  }
+  function schedule(){if(!raf)raf=requestAnimationFrame(paint)}
+  addEventListener('scroll',schedule,{passive:true});
+  addEventListener('resize',schedule,{passive:true});
+  setTimeout(schedule,120);
+})();
