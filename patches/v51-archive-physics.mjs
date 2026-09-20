@@ -26,6 +26,10 @@ function makeSection(items){
   const section=document.createElement('section');
   section.className='v51-artifact-section';
   section.innerHTML=`<div class="v51-artifact-sticky">
+    <div class="v51-artifact-fallback" aria-hidden="true">
+      <div class="v51-fallback-case"><div class="v51-fallback-lid"><span>MOVX</span></div><div class="v51-fallback-base"></div></div>
+      ${items.map((p,i)=>`<figure class="v51-fallback-sheet" data-index="${i}"><img src="${p.cover}" alt="" loading="eager" decoding="async"><i style="--accent:${p.accent||'#9c2e24'}"></i></figure>`).join('')}
+    </div>
     <canvas class="v51-artifact-canvas" aria-hidden="true"></canvas>
     <div class="v51-artifact-vignette" aria-hidden="true"></div>
     <div class="v51-artifact-copy"><div class="v51-artifact-kicker">ARQUIVO / MATÉRIA-PRIMA</div><h2>Do trabalho ao método</h2><p>As peças saem do arquivo, ganham profundidade e se reorganizam até revelar o processo por trás da direção</p></div>
@@ -35,6 +39,47 @@ function makeSection(items){
   </div>`;
   services.insertAdjacentElement('afterend',section);
   return section;
+}
+
+function initDomFallback(section,items){
+  if(!gsap||!ScrollTrigger||!desktop||reduced) return;
+  gsap.registerPlugin(ScrollTrigger);
+  const fallback=section.querySelector('.v51-artifact-fallback');
+  const caseEl=fallback?.querySelector('.v51-fallback-case');
+  const lid=fallback?.querySelector('.v51-fallback-lid');
+  const sheets=[...(fallback?.querySelectorAll('.v51-fallback-sheet')||[])];
+  if(!fallback||!caseEl||!lid||!sheets.length) return;
+
+  const master=gsap.timeline({scrollTrigger:{trigger:section,start:'top top',end:'bottom bottom',scrub:1.02,invalidateOnRefresh:true}});
+  master.fromTo(caseEl,{x:190,y:140,z:-420,rotationX:-11,rotationY:24,rotationZ:-2.5,scale:.72,opacity:0},{x:115,y:20,z:0,rotationX:-6,rotationY:16,rotationZ:-1.2,scale:1,opacity:1,duration:.20,ease:'none'},0)
+    .fromTo(lid,{rotationY:0},{rotationY:-104,duration:.24,ease:'none'},.10)
+    .to(caseEl,{x:40,y:-20,z:-90,rotationY:9,scale:.92,duration:.22,ease:'none'},.70)
+    .to(caseEl,{y:-80,z:-360,opacity:.12,duration:.14,ease:'none'},.86);
+
+  sheets.forEach((sheet,i)=>{
+    const side=i%2?-1:1;
+    const rank=i-(sheets.length-1)/2;
+    const start=.24+i*.055;
+    const fanX=side*(245+Math.abs(rank)*58);
+    const fanY=rank*82+26;
+    const tunnelX=side*(78+Math.abs(rank)*18);
+    const tunnelY=rank*36;
+    master.fromTo(sheet,
+      {x:135,y:35,z:-170,rotationX:7,rotationY:side*3,rotationZ:rank*2.4,scale:.52,opacity:0},
+      {x:fanX,y:fanY,z:115+Math.abs(rank)*26,rotationX:-2,rotationY:side*(-11-rank*1.2),rotationZ:rank*3.5,scale:1,opacity:.98,duration:.36,ease:'none'},start
+    ).to(sheet,
+      {x:tunnelX,y:tunnelY,z:-20-i*155,rotationX:-1.5,rotationY:side*4,rotationZ:0,scale:.82,opacity:.82,duration:.18,ease:'none'},.70
+    ).to(sheet,
+      {y:tunnelY-24,z:-360-i*90,scale:.66,opacity:0,duration:.12,ease:'none'},.88
+    );
+  });
+
+  ScrollTrigger.create({trigger:section,start:'top top',end:'bottom bottom',onUpdate:self=>{
+    section.style.setProperty('--v51-progress',String(self.progress));
+    const idx=Math.min(items.length-1,Math.max(0,Math.floor(clamp((self.progress-.28)/.38)*items.length)));
+    const caption=section.querySelector('.v51-artifact-caption span');
+    if(caption&&items[idx]) caption.textContent=`${items[idx].client} — ${items[idx].title}`;
+  }});
 }
 
 function textTexture(text){
@@ -106,7 +151,9 @@ function makeArtwork(scene,project,index){
 function init(){
   const items=selectedProjects();
   const section=makeSection(items);
-  if(!section||items.length<3||!desktop||reduced||!gsap||!ScrollTrigger)return;
+  if(!section) return;
+  initDomFallback(section,items);
+  if(items.length<3||!desktop||reduced||!gsap||!ScrollTrigger)return;
   gsap.registerPlugin(ScrollTrigger);
   const canvas=section.querySelector('.v51-artifact-canvas');
   const caption=section.querySelector('.v51-artifact-caption span');
@@ -129,7 +176,7 @@ function init(){
     corridor.add(new THREE.Line(geom,railMat));
   });
 
-  let target=0,current=0,vel=0,velTarget=0,active=false,raf=0,contextLost=false,currentCaption=-1;
+  let target=0,current=0,vel=0,velTarget=0,active=false,raf=0,contextLost=false,currentCaption=-1,painted=false;
   const pointer=new THREE.Vector2(),pointerTarget=new THREE.Vector2();
 
   function resize(){
@@ -202,7 +249,7 @@ function init(){
 
     camera.position.x=pointer.x*.28+vel*.09;
     camera.position.y=-pointer.y*.17;
-    camera.position.z=11.2- corridorT*.65;
+    camera.position.z=11.2-corridorT*.65;
     camera.fov=42+Math.min(4.5,Math.abs(vel)*3.2);camera.updateProjectionMatrix();
     camera.lookAt(0,lerp(.05,-.18,corridorT),lerp(0,-2.5,corridorT));
   }
@@ -211,6 +258,7 @@ function init(){
     raf=0;if(!active||contextLost||document.hidden)return;
     current=lerp(current,target,.12);vel=lerp(vel,velTarget,.12);velTarget*=.82;pointer.lerp(pointerTarget,.08);
     update(current);renderer.render(scene,camera);
+    if(!painted){painted=true;root.classList.add('v51-webgl-painted');}
     if(Math.abs(current-target)>.0007||Math.abs(vel)>.003||Math.abs(velTarget)>.003||pointer.distanceTo(pointerTarget)>.002)schedule();
   }
   function schedule(){if(!raf&&active&&!contextLost&&!document.hidden)raf=requestAnimationFrame(paint);}
@@ -229,7 +277,7 @@ function init(){
     section.addEventListener('pointermove',e=>{pointerTarget.set(clamp((e.clientX/innerWidth-.5)*2,-1,1),clamp((e.clientY/innerHeight-.5)*2,-1,1));schedule();},{passive:true});
     section.addEventListener('pointerleave',()=>{pointerTarget.set(0,0);schedule();},{passive:true});
   }
-  canvas.addEventListener('webglcontextlost',e=>{e.preventDefault();contextLost=true;root.classList.add('v51-fallback');},{once:true});
+  canvas.addEventListener('webglcontextlost',e=>{e.preventDefault();contextLost=true;root.classList.remove('v51-webgl-painted');root.classList.add('v51-fallback');},{once:true});
   addEventListener('resize',()=>{resize();ScrollTrigger.refresh();schedule();},{passive:true});
   document.addEventListener('visibilitychange',()=>{if(!document.hidden&&active)schedule();});
   resize();trigger.refresh();requestAnimationFrame(()=>ScrollTrigger.refresh());
