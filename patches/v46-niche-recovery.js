@@ -195,3 +195,81 @@
     if('MutationObserver'in window)new MutationObserver(()=>requestAnimationFrame(registerSlides)).observe(viewer,{childList:true,subtree:true});
   }
 })();
+
+/* MOVX v64 — directory filter continuity
+   Replaces the old whole-grid flash with a staggered artwork settle after filter changes. */
+(() => {
+  'use strict';
+  const root=document.documentElement;
+  const grid=document.getElementById('archiveGrid');
+  const status=document.getElementById('archiveFilterStatus');
+  const reduced=new URLSearchParams(location.search).has('static')||matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(!grid)return;
+
+  root.classList.add('movx-v64');
+  root.dataset.movxDirectoryMotion='v64-continuous-filtering';
+
+  if(!document.getElementById('movx-v64-directory-style')){
+    const style=document.createElement('style');
+    style.id='movx-v64-directory-style';
+    style.textContent=`
+      html.movx-v64 body[data-page="social"] #archiveGrid.v37-grid-updating{opacity:1!important}
+      html.movx-v64 body[data-page="social"] #archiveGrid .archive-card{
+        transition:opacity .72s cubic-bezier(.4,0,.2,1),translate .86s cubic-bezier(.16,1,.3,1),filter .78s cubic-bezier(.4,0,.2,1)!important;
+        transition-delay:calc(var(--v64-order,0) * 38ms)!important
+      }
+      html.movx-v64 body[data-page="social"] #archiveGrid.v64-filter-settling .archive-card{
+        opacity:.28!important;translate:0 12px;filter:saturate(.88) contrast(.99)
+      }
+      html.movx-v64 body[data-page="social"] #archiveGrid.v64-filter-settling.v64-filter-ready .archive-card{
+        opacity:1!important;translate:0 0;filter:none
+      }
+      html.movx-v64 body[data-page="social"] #archiveFilterStatus{
+        transition:opacity .42s ease,translate .66s cubic-bezier(.16,1,.3,1)!important
+      }
+      html.movx-v64 body[data-page="social"] #archiveFilterStatus.v64-status-settle{opacity:.38!important;translate:0 5px}
+      html.movx-v64 body[data-page="social"] #filterBoard .archive-filter{
+        transition:opacity .48s ease,color .48s ease!important
+      }
+      html.movx-v64 body[data-page="social"] #filterBoard .archive-filter:not(.active):hover{opacity:.72}
+      @media(max-width:680px){
+        html.movx-v64 body[data-page="social"] #archiveGrid.v64-filter-settling .archive-card{translate:0 7px}
+      }
+      @media(prefers-reduced-motion:reduce){
+        html.movx-v64 body[data-page="social"] #archiveGrid .archive-card,
+        html.movx-v64 body[data-page="social"] #archiveFilterStatus{transition:none!important;translate:none!important;filter:none!important;opacity:1!important}
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  let token=0;
+  const settle=()=>{
+    const current=++token;
+    [...grid.querySelectorAll('.archive-card')].forEach((card,index)=>card.style.setProperty('--v64-order',String(Math.min(index,8))));
+    if(reduced)return;
+    grid.classList.remove('v64-filter-ready');
+    grid.classList.add('v64-filter-settling');
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{
+      if(current!==token)return;
+      grid.classList.add('v64-filter-ready');
+      setTimeout(()=>{
+        if(current!==token)return;
+        grid.classList.remove('v64-filter-settling','v64-filter-ready');
+      },1050);
+    }));
+  };
+
+  [...grid.querySelectorAll('.archive-card')].forEach((card,index)=>card.style.setProperty('--v64-order',String(Math.min(index,8))));
+  if('MutationObserver'in window){
+    new MutationObserver(mutations=>{
+      if(mutations.some(m=>m.type==='childList'))settle();
+    }).observe(grid,{childList:true});
+    if(status)new MutationObserver(()=>{
+      if(reduced)return;
+      status.classList.remove('v64-status-settle');
+      status.classList.add('v64-status-settle');
+      requestAnimationFrame(()=>requestAnimationFrame(()=>status.classList.remove('v64-status-settle')));
+    }).observe(status,{childList:true,characterData:true,subtree:true});
+  }
+})();
