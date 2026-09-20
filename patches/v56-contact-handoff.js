@@ -131,3 +131,161 @@
   function schedule(){if(!raf)raf=requestAnimationFrame(paint)}
   addEventListener('scroll',schedule,{passive:true});addEventListener('resize',schedule,{passive:true});setTimeout(schedule,120);
 })();
+
+/* MOVX v73 — editorial case reader
+   Removes the remaining boxed controls, softens case-to-case handoff and makes the
+   fixed case viewer behave like an accessible reading surface rather than a modal UI. */
+(()=>{
+  'use strict';
+  const root=document.documentElement;
+  const viewer=document.getElementById('caseViewer');
+  if(!viewer)return;
+  root.classList.add('movx-v73');
+  root.dataset.movxRelease='v73-case-reader';
+  const reduced=new URLSearchParams(location.search).has('static')||matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const top=viewer.querySelector('.case-top');
+  const topLabel=document.getElementById('caseTopLabel');
+  const prev=document.getElementById('casePrev');
+  const next=document.getElementById('caseNext');
+  const close=document.getElementById('caseClose');
+  const hero=document.getElementById('caseHero');
+  const info=document.getElementById('caseInfo');
+  const slides=document.getElementById('caseSlides');
+  let returnTarget=null;
+  let switchTimer=0;
+
+  viewer.setAttribute('role','dialog');
+  viewer.setAttribute('aria-modal','true');
+  viewer.setAttribute('aria-label','Estudo de caso MOVX');
+  viewer.tabIndex=-1;
+
+  if(!document.getElementById('movx-v73-case-reader-style')){
+    const style=document.createElement('style');
+    style.id='movx-v73-case-reader-style';
+    style.textContent=`
+      html.movx-v73 .case-top{
+        height:66px!important;background:color-mix(in srgb,var(--bg) 96%,transparent)!important;
+        border-bottom:1px solid color-mix(in srgb,var(--fg) 12%,transparent)!important;
+        backdrop-filter:blur(18px)!important;-webkit-backdrop-filter:blur(18px)!important
+      }
+      html.movx-v73 .case-top-row{height:64px!important;gap:24px!important}
+      html.movx-v73 #caseTopLabel{
+        font:650 clamp(12px,1vw,15px)/1.1 var(--sans,Arial,sans-serif)!important;
+        letter-spacing:-.02em!important;text-transform:none!important;color:var(--fg)!important
+      }
+      html.movx-v73 .case-top-actions{gap:clamp(14px,1.8vw,28px)!important}
+      html.movx-v73 :is(.case-nav-button,.case-close){
+        position:relative!important;border:0!important;background:transparent!important;color:var(--fg)!important;
+        padding:9px 0!important;border-radius:0!important;box-shadow:none!important;transform:none!important;
+        opacity:.46!important;font:700 8px/1 var(--mono,ui-monospace,monospace)!important;
+        letter-spacing:.14em!important;transition:opacity .45s cubic-bezier(.16,1,.3,1)!important
+      }
+      html.movx-v73 :is(.case-nav-button,.case-close)::after{
+        content:"";position:absolute;left:0;right:0;bottom:4px;height:1px;background:currentColor;
+        transform:scaleX(0);transform-origin:left;transition:transform .62s cubic-bezier(.16,1,.3,1)
+      }
+      html.movx-v73 :is(.case-nav-button,.case-close):is(:hover,:focus-visible){opacity:1!important;background:transparent!important;color:var(--fg)!important;transform:none!important}
+      html.movx-v73 :is(.case-nav-button,.case-close):is(:hover,:focus-visible)::after{transform:scaleX(1)}
+      html.movx-v73 .case-close{margin-left:clamp(5px,.6vw,10px)!important;opacity:.72!important}
+      html.movx-v73 .case-progress{height:1px!important;background:color-mix(in srgb,var(--fg) 8%,transparent)!important}
+      html.movx-v73 .case-progress span{background:var(--editorial-red)!important;transform-origin:left center!important}
+      html.movx-v73 .case-viewer{scrollbar-width:thin;scrollbar-color:color-mix(in srgb,var(--fg) 24%,transparent) transparent}
+      html.movx-v73 .case-viewer::-webkit-scrollbar{width:7px}
+      html.movx-v73 .case-viewer::-webkit-scrollbar-thumb{background:color-mix(in srgb,var(--fg) 22%,transparent)}
+      html.movx-v73 .case-hero,html.movx-v73 .case-body{transition:opacity .36s ease,transform .7s cubic-bezier(.16,1,.3,1),filter .36s ease}
+      html.movx-v73 .case-viewer.v73-switching .case-hero,
+      html.movx-v73 .case-viewer.v73-switching .case-body{opacity:.32;filter:blur(2px);transform:translate3d(0,7px,0)}
+      html.movx-v73 .case-study-block{border-top-color:color-mix(in srgb,var(--fg) 13%,transparent)!important}
+      html.movx-v73 .v33-case-chapter{scroll-margin-top:96px}
+      html.movx-v73 .case-slide-frame{border-color:color-mix(in srgb,var(--fg) 12%,transparent)!important;background:color-mix(in srgb,var(--panel) 96%,var(--bg))!important}
+      html.movx-v73 .case-slide-frame img{transition:transform 1.1s cubic-bezier(.16,1,.3,1)!important}
+      html.movx-v73 .case-slide-frame:hover img{transform:scale(1.006)!important}
+      html.movx-v73 .case-end{
+        margin-top:clamp(42px,6vw,82px)!important;padding-top:clamp(26px,3vw,40px)!important;
+        border-top-color:color-mix(in srgb,var(--fg) 18%,transparent)!important
+      }
+      html.movx-v73 .case-end strong{max-width:9ch!important;font-size:clamp(42px,5.7vw,82px)!important;line-height:.86!important}
+      html.movx-v73 .case-end button{
+        border:0!important;border-bottom:1px solid currentColor!important;background:transparent!important;
+        padding:0 0 5px!important;transition:opacity .4s ease!important
+      }
+      html.movx-v73 .case-end button:hover{background:transparent!important;color:var(--fg)!important;opacity:.58}
+      html.movx-v73 .v33-next-preview{overflow:hidden!important}
+      html.movx-v73 .v33-next-preview img{transition:transform 1.15s cubic-bezier(.16,1,.3,1),filter .8s ease!important}
+      html.movx-v73 .case-end:hover .v33-next-preview img{transform:scale(1.012)!important;filter:saturate(.94)}
+      @media(max-width:780px){
+        html.movx-v73 .case-top{height:58px!important}
+        html.movx-v73 .case-top-row{height:56px!important;padding-left:18px!important;padding-right:18px!important}
+        html.movx-v73 #caseTopLabel{max-width:68vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px!important}
+        html.movx-v73 .case-close{font-size:8px!important;margin-left:0!important}
+        html.movx-v73 .case-body{padding-bottom:84px!important}
+        html.movx-v73 .case-end strong{font-size:clamp(38px,12vw,62px)!important;max-width:10ch!important}
+      }
+      @media(prefers-reduced-motion:reduce){
+        html.movx-v73 .case-hero,html.movx-v73 .case-body,html.movx-v73 .v33-next-preview img{transition:none!important}
+        html.movx-v73 .case-viewer.v73-switching .case-hero,html.movx-v73 .case-viewer.v73-switching .case-body{opacity:1!important;filter:none!important;transform:none!important}
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  const openerFromEvent=target=>target?.closest?.('[data-open-project],.selected-index-row,.archive-card,.project-cover,.loop-card')||null;
+  document.addEventListener('pointerdown',event=>{
+    const opener=openerFromEvent(event.target);
+    if(opener&&!viewer.contains(opener))returnTarget=opener;
+  },true);
+  document.addEventListener('keydown',event=>{
+    if((event.key==='Enter'||event.key===' ')&&document.activeElement){
+      const opener=openerFromEvent(document.activeElement);
+      if(opener&&!viewer.contains(opener))returnTarget=opener;
+    }
+  },true);
+
+  const startSwitch=()=>{
+    if(reduced)return;
+    clearTimeout(switchTimer);
+    viewer.classList.add('v73-switching');
+    switchTimer=setTimeout(()=>viewer.classList.remove('v73-switching'),360);
+  };
+  prev?.addEventListener('click',startSwitch,true);
+  next?.addEventListener('click',startSwitch,true);
+  slides?.addEventListener('click',event=>{if(event.target.closest('[data-open-project]'))startSwitch();},true);
+
+  const contentObserver=new MutationObserver(()=>{
+    if(!viewer.classList.contains('open'))return;
+    requestAnimationFrame(()=>{
+      viewer.classList.remove('v73-switching');
+      hero?.querySelector('img')?.decode?.().catch(()=>{});
+    });
+  });
+  if(hero)contentObserver.observe(hero,{childList:true});
+
+  let wasOpen=viewer.classList.contains('open');
+  const stateObserver=new MutationObserver(()=>{
+    const isOpen=viewer.classList.contains('open');
+    if(isOpen&&!wasOpen){
+      viewer.dataset.v73State='open';
+      requestAnimationFrame(()=>close?.focus({preventScroll:true}));
+    }
+    if(!isOpen&&wasOpen){
+      viewer.dataset.v73State='closed';
+      const target=returnTarget;
+      returnTarget=null;
+      if(target&&document.contains(target))setTimeout(()=>target.focus?.({preventScroll:true}),0);
+    }
+    wasOpen=isOpen;
+  });
+  stateObserver.observe(viewer,{attributes:true,attributeFilter:['class']});
+
+  viewer.addEventListener('keydown',event=>{
+    if(event.key!=='Tab'||!viewer.classList.contains('open'))return;
+    const focusables=[...viewer.querySelectorAll('button:not([disabled]),a[href],input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])')].filter(el=>el.offsetParent!==null);
+    if(focusables.length<2)return;
+    const first=focusables[0],last=focusables[focusables.length-1];
+    if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus();}
+    else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus();}
+  });
+
+  top?.setAttribute('data-v73-navigation','editorial');
+  if(topLabel)topLabel.setAttribute('aria-live','polite');
+})();
