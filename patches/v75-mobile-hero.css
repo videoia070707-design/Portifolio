@@ -37,3 +37,44 @@
     transform:none!important;
   }
 }
+
+/* MOVX v81 — persistent mobile case navigation
+   Keeps Previous / Next / Close available while reading long case studies without
+   turning the viewer into a heavy app bar. The bar stays planar and typographic. */
+@media (max-width:720px){
+  html #caseViewer.case-viewer .case-top{
+    position:sticky!important;
+    top:0!important;
+    z-index:80!important;
+    display:block!important;
+    visibility:visible!important;
+    opacity:1!important;
+    background:color-mix(in srgb,var(--bg) 96%,transparent)!important;
+    border-bottom:1px solid color-mix(in srgb,var(--fg) 14%,transparent)!important;
+  }
+  html #caseViewer.case-viewer .case-top-row{
+    position:relative!important;
+    z-index:1!important;
+    min-height:56px!important;
+  }
+  html #caseViewer.case-viewer .case-top-actions,
+  html #caseViewer.case-viewer .case-nav-button,
+  html #caseViewer.case-viewer .case-close{
+    visibility:visible!important;
+    opacity:1!important;
+  }
+  html #caseViewer.case-viewer .case-nav-button,
+  html #caseViewer.case-viewer .case-close{
+    min-height:42px!important;
+    border:0!important;
+    background:transparent!important;
+    box-shadow:none!important;
+  }
+  html #caseViewer.case-viewer .case-nav-button:focus-visible,
+  html #caseViewer.case-viewer .case-close:focus-visible{
+    outline:0!important;
+    text-decoration:underline!important;
+    text-underline-offset:5px!important;
+    text-decoration-thickness:1px!important;
+  }
+}
