@@ -55,16 +55,24 @@
   html #caseViewer.case-viewer .case-top-row{
     position:relative!important;
     z-index:1!important;
+    display:flex!important;
+    align-items:center!important;
     min-height:56px!important;
   }
-  html #caseViewer.case-viewer .case-top-actions,
-  html #caseViewer.case-viewer .case-nav-button,
-  html #caseViewer.case-viewer .case-close{
+  html #caseViewer.case-viewer .case-top-actions{
+    display:flex!important;
+    align-items:center!important;
+    gap:clamp(14px,4vw,24px)!important;
     visibility:visible!important;
     opacity:1!important;
   }
   html #caseViewer.case-viewer .case-nav-button,
   html #caseViewer.case-viewer .case-close{
+    display:inline-flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    visibility:visible!important;
+    opacity:1!important;
     min-height:42px!important;
     border:0!important;
     background:transparent!important;
