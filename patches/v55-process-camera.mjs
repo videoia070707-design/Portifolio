@@ -75,8 +75,8 @@ function init(){
   function progress(){const rect=journey.getBoundingClientRect(),travel=Math.max(1,journey.offsetHeight-innerHeight);return clamp(-rect.top/travel,0,1);}
   function resize(){if(contextLost)return;renderer.setSize(Math.max(1,innerWidth),Math.max(1,innerHeight),false);camera.aspect=Math.max(1,innerWidth)/Math.max(1,innerHeight);camera.updateProjectionMatrix();}
   function updateDom(p){
-    const exit=smooth(clamp((p-.91)/.09));
-    const usable=clamp(p/.91,0,1);
+    const exit=smooth(clamp((p-.88)/.12));
+    const usable=clamp(p/.82,0,1);
     const step=usable*(processCount-1);
     const nearest=Math.max(0,Math.min(processCount-1,Math.round(step)));
     if(nearest!==lastActive){lastActive=nearest;rows.forEach((row,i)=>row.classList.toggle('v55-current',i===nearest));if(counter)counter.textContent=String(nearest+1).padStart(2,'0');}
@@ -108,15 +108,15 @@ function init(){
     journey.style.setProperty('--v55-stage-o',String(1-exit*.96));
     journey.style.setProperty('--v55-canvas-o',String(1-exit));
     journey.style.setProperty('--v55-depth-o',String(.42+.36*(1-Math.abs(local))));
-    journey.style.setProperty('--v55-outro-o',String(clamp((p-.79)/.11)*(1-exit)));
-    journey.style.setProperty('--v55-outro-y',`${lerp(10,0,clamp((p-.79)/.11))}px`);
+    journey.style.setProperty('--v55-outro-o',String(clamp((p-.73)/.11)*(1-exit)));
+    journey.style.setProperty('--v55-outro-y',`${lerp(10,0,clamp((p-.73)/.11))}px`);
     root.style.setProperty('--v55-contact-rule',String(exit));
     root.dataset.v55Step=String(nearest+1);
   }
   function updateWebGL(p){
     if(contextLost)return;
-    const exit=smooth(clamp((p-.91)/.09));
-    const usable=clamp(p/.91,0,1);
+    const exit=smooth(clamp((p-.88)/.12));
+    const usable=clamp(p/.82,0,1);
     const step=usable*(processCount-1);
     const worldZ=step*3.25;
     gates.forEach((gate,i)=>{
