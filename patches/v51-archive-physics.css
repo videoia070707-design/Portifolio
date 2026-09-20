@@ -20,6 +20,107 @@ html.movx-v51 .v51-artifact-sticky{
   overflow:hidden;
   isolation:isolate;
 }
+
+/* CSS-3D fallback mirrors the real WebGL choreography so the section never goes visually blank.
+   It fades away after the WebGL renderer has produced its first frame. */
+html.movx-v51 .v51-artifact-fallback{
+  position:absolute;
+  inset:0;
+  z-index:1;
+  pointer-events:none;
+  perspective:1180px;
+  perspective-origin:62% 50%;
+  transform-style:preserve-3d;
+  opacity:1;
+  transition:opacity .34s ease;
+}
+html.movx-v51.v51-webgl-painted .v51-artifact-fallback{opacity:0}
+html.movx-v51 .v51-fallback-case{
+  position:absolute;
+  left:58%;
+  top:50%;
+  width:min(410px,29vw);
+  aspect-ratio:1.62;
+  transform:translate(-50%,-50%);
+  transform-style:preserve-3d;
+  will-change:transform,opacity;
+}
+html.movx-v51 .v51-fallback-base,
+html.movx-v51 .v51-fallback-lid{
+  position:absolute;
+  inset:0;
+  border:1px solid rgba(243,238,233,.16);
+  background:linear-gradient(145deg,#1c1817 0%,#0b0a09 62%,#15110f 100%);
+  box-shadow:0 34px 85px rgba(0,0,0,.34);
+  backface-visibility:hidden;
+}
+html.movx-v51 .v51-fallback-base::before{
+  content:"";
+  position:absolute;
+  inset:9%;
+  border:1px solid rgba(243,238,233,.07);
+  background:#080706;
+}
+html.movx-v51 .v51-fallback-base::after{
+  content:"";
+  position:absolute;
+  left:7%;
+  top:8%;
+  bottom:8%;
+  width:3px;
+  background:var(--editorial-red);
+  opacity:.9;
+}
+html.movx-v51 .v51-fallback-lid{
+  transform-origin:left center;
+  transform-style:preserve-3d;
+  display:grid;
+  place-items:center;
+  background:linear-gradient(140deg,#2d2623 0%,#161211 56%,#0e0c0b 100%);
+}
+html.movx-v51 .v51-fallback-lid::after{
+  content:"";
+  position:absolute;
+  inset:8%;
+  border:1px solid rgba(243,238,233,.1);
+}
+html.movx-v51 .v51-fallback-lid span{
+  position:relative;
+  z-index:2;
+  color:#f3eee9;
+  font:800 clamp(42px,5vw,82px)/.8 var(--sans,Arial,sans-serif);
+  letter-spacing:-.075em;
+}
+html.movx-v51 .v51-fallback-sheet{
+  position:absolute;
+  left:62%;
+  top:50%;
+  width:min(310px,21.5vw);
+  margin:0;
+  transform:translate(-50%,-50%);
+  transform-style:preserve-3d;
+  transform-origin:center center;
+  will-change:transform,opacity;
+  border:1px solid rgba(243,238,233,.13);
+  background:#0b0909;
+  box-shadow:0 24px 58px rgba(0,0,0,.22);
+  overflow:visible;
+}
+html.movx-v51 .v51-fallback-sheet img{
+  display:block;
+  width:100%;
+  height:auto;
+}
+html.movx-v51 .v51-fallback-sheet i{
+  position:absolute;
+  left:0;
+  right:0;
+  bottom:-5px;
+  height:3px;
+  background:var(--accent,var(--editorial-red));
+  box-shadow:0 0 18px color-mix(in srgb,var(--accent,var(--editorial-red)) 42%,transparent);
+}
+
 html.movx-v51 .v51-artifact-canvas{
   position:absolute;
   inset:0;
@@ -131,7 +232,8 @@ html.movx-v51 .v51-mobile-artworks{display:none}
   html.movx-v51 .v51-artifact-section{min-height:auto;padding:92px 0 110px}
   html.movx-v51 .v51-artifact-sticky{position:relative;height:auto;overflow:visible}
   html.movx-v51 .v51-artifact-canvas,
-  html.movx-v51 .v51-artifact-vignette{display:none}
+  html.movx-v51 .v51-artifact-vignette,
+  html.movx-v51 .v51-artifact-fallback{display:none}
   html.movx-v51 .v51-artifact-copy{position:relative;left:auto;top:auto;width:auto;margin:0 max(24px,5vw)}
   html.movx-v51 .v51-artifact-copy h2{font-size:clamp(48px,12vw,74px);max-width:8ch}
   html.movx-v51 .v51-artifact-meta,
@@ -152,5 +254,6 @@ html.movx-v51 .v51-mobile-artworks{display:none}
 }
 @media(prefers-reduced-motion:reduce){
   html.movx-v51 .v51-artifact-canvas,
-  html.movx-v51 .v51-artifact-vignette{display:none!important}
+  html.movx-v51 .v51-artifact-vignette,
+  html.movx-v51 .v51-artifact-fallback{display:none!important}
 }
