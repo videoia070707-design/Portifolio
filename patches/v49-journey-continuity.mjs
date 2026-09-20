@@ -58,19 +58,7 @@ function buildJourneyWrapper(){
 
 function currentTheme(){
   const dark = root.getAttribute('data-theme') === 'dark';
-  return dark ? {
-    line:0xe9e3de,
-    soft:0x7d716a,
-    accent:0xa63a2c,
-    text:0xf0eae4,
-    fog:0x0b0909
-  } : {
-    line:0x2c2724,
-    soft:0x8c817a,
-    accent:0x9c2e24,
-    text:0x2c2724,
-    fog:0xf1ece7
-  };
+  return dark ? {line:0xe9e3de,soft:0x7d716a,accent:0xa63a2c,text:0xf0eae4,fog:0x0b0909} : {line:0x2c2724,soft:0x8c817a,accent:0x9c2e24,text:0x2c2724,fog:0xf1ece7};
 }
 
 function frameGeometry(w,h){
@@ -89,10 +77,7 @@ function makePlate(label,type,theme){
 
   const accentMaterial = new THREE.LineBasicMaterial({color:theme.accent,transparent:true,opacity:.1});
   const accentGeom = new THREE.BufferGeometry();
-  accentGeom.setAttribute('position',new THREE.Float32BufferAttribute([
-    -dims[0]/2,0,0,dims[0]/2,0,0,
-    0,-dims[1]/2,0,0,dims[1]/2,0
-  ],3));
+  accentGeom.setAttribute('position',new THREE.Float32BufferAttribute([-dims[0]/2,0,0,dims[0]/2,0,0,0,-dims[1]/2,0,0,dims[1]/2,0],3));
   group.add(new THREE.LineSegments(accentGeom,accentMaterial));
 
   const texture = makeTextTexture(label);
@@ -125,14 +110,8 @@ function initJourney(){
   journey.insertBefore(stage,journey.firstChild);
 
   let renderer;
-  try {
-    renderer = new THREE.WebGLRenderer({canvas,alpha:true,antialias:true,powerPreference:'high-performance'});
-  } catch (error) {
-    root.classList.add('v49-webgl-fallback');
-    stage.remove();
-    console.warn('MOVX v49: shared WebGL journey unavailable',error);
-    return;
-  }
+  try { renderer = new THREE.WebGLRenderer({canvas,alpha:true,antialias:true,powerPreference:'high-performance'}); }
+  catch (error) { root.classList.add('v49-webgl-fallback');stage.remove();console.warn('MOVX v49: shared WebGL journey unavailable',error);return; }
   renderer.setPixelRatio(Math.min(devicePixelRatio || 1,1.5));
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.setClearColor(0x000000,0);
@@ -154,18 +133,10 @@ function initJourney(){
     {node:q('h2',contact) || contact,label:'CONTATO',type:'chapter',section:contact,side:-1}
   ];
 
-  const plates = anchors.map(anchor => {
-    const plate = makePlate(anchor.label,anchor.type,theme);
-    plate.userData.anchor = anchor;
-    world.add(plate);
-    return plate;
-  });
+  const plates = anchors.map(anchor => { const plate = makePlate(anchor.label,anchor.type,theme);plate.userData.anchor = anchor;world.add(plate);return plate; });
 
   let path = null;
-  const railMaterials = [
-    new THREE.LineBasicMaterial({color:theme.soft,transparent:true,opacity:.075}),
-    new THREE.LineBasicMaterial({color:theme.soft,transparent:true,opacity:.075})
-  ];
+  const railMaterials = [new THREE.LineBasicMaterial({color:theme.soft,transparent:true,opacity:.075}),new THREE.LineBasicMaterial({color:theme.soft,transparent:true,opacity:.075})];
   const rails = [new THREE.Line(),new THREE.Line()];
   rails.forEach((line,index)=>{ line.material = railMaterials[index]; world.add(line); });
 
@@ -184,12 +155,7 @@ function initJourney(){
 
   function buildPath(){
     path = new THREE.CatmullRomCurve3([
-      new THREE.Vector3(-.2,.12,10),
-      new THREE.Vector3(.42,-.08,-4),
-      new THREE.Vector3(-.5,.16,-18),
-      new THREE.Vector3(.58,-.12,-34),
-      new THREE.Vector3(-.38,.08,-50),
-      new THREE.Vector3(.16,0,-66)
+      new THREE.Vector3(-.2,.12,10),new THREE.Vector3(.42,-.08,-4),new THREE.Vector3(-.5,.16,-18),new THREE.Vector3(.58,-.12,-34),new THREE.Vector3(-.38,.08,-50),new THREE.Vector3(.16,0,-66)
     ],false,'catmullrom',.5);
   }
   buildPath();
@@ -207,10 +173,7 @@ function initJourney(){
       for(let i=0;i<=70;i++){
         const t = i/70;
         const p = path.getPoint(t).clone();
-        p.x += side*3.15;
-        p.y += side*.34;
-        p.z -= 5.7;
-        points.push(p);
+        p.x += side*3.15;p.y += side*.34;p.z -= 5.7;points.push(p);
       }
       if (line.geometry) line.geometry.dispose();
       line.geometry = new THREE.BufferGeometry().setFromPoints(points);
@@ -237,23 +200,13 @@ function initJourney(){
 
   function resize(){
     if (contextLost) return;
-    const w = Math.max(1,innerWidth);
-    const h = Math.max(1,innerHeight);
-    renderer.setSize(w,h,false);
-    camera.aspect = w/h;
-    camera.updateProjectionMatrix();
-    layoutScene();
+    const w = Math.max(1,innerWidth),h = Math.max(1,innerHeight);
+    renderer.setSize(w,h,false);camera.aspect = w/h;camera.updateProjectionMatrix();layoutScene();
   }
 
   function updateTheme(){
-    theme = currentTheme();
-    scene.fog.color.setHex(theme.fog);
-    railMaterials.forEach(mat=>mat.color.setHex(theme.soft));
-    plates.forEach(plate=>{
-      plate.userData.lineMaterial.color.setHex(theme.line);
-      plate.userData.accentMaterial.color.setHex(theme.accent);
-      plate.userData.textMaterial.color.setHex(theme.text);
-    });
+    theme = currentTheme();scene.fog.color.setHex(theme.fog);railMaterials.forEach(mat=>mat.color.setHex(theme.soft));
+    plates.forEach(plate=>{plate.userData.lineMaterial.color.setHex(theme.line);plate.userData.accentMaterial.color.setHex(theme.accent);plate.userData.textMaterial.color.setHex(theme.text);});
     schedule();
   }
 
@@ -265,18 +218,9 @@ function initJourney(){
     sections.forEach((section,i)=>section.classList.toggle('v49-current',i===current));
     root.dataset.movxJourneyChapter = ['about','services','process','contact'][current];
 
-    let processIndex = -1;
-    let processDist = Infinity;
-    processRows.forEach((row,index)=>{
-      const rp = normalizedNodeProgress(row);
-      const d = Math.abs(p-rp);
-      if(d<processDist){processDist=d;processIndex=index;}
-    });
-    processRows.forEach((row,index)=>{
-      const on = current===2 && index===processIndex;
-      row.classList.toggle('v49-current',on);
-      row.classList.toggle('v45-current',on);
-    });
+    let processIndex = -1,processDist = Infinity;
+    processRows.forEach((row,index)=>{const rp = normalizedNodeProgress(row);const d = Math.abs(p-rp);if(d<processDist){processDist=d;processIndex=index;}});
+    processRows.forEach((row,index)=>{const on = current===2 && index===processIndex;row.classList.toggle('v49-current',on);row.classList.toggle('v45-current',on);});
   }
 
   function paint(){
@@ -302,16 +246,16 @@ function initJourney(){
       const distance = Math.abs(p - plate.userData.p);
       const focus = clamp(1 - distance/.16,0,1);
       const type = plate.userData.type;
-      const strength = type === 'process' ? 1 : type === 'chapter' ? .72 : .55;
-      plate.userData.lineMaterial.opacity = .035 + focus*.34*strength;
-      plate.userData.accentMaterial.opacity = .022 + focus*.38*strength;
-      const textStrength = type === 'process' ? .12 : type === 'chapter' ? .085 : .065;
-      plate.userData.textMaterial.opacity = .006 + focus*textStrength;
+      const strength = type === 'process' ? 1 : type === 'chapter' ? .84 : .68;
+      plate.userData.lineMaterial.opacity = .045 + focus*.40*strength;
+      plate.userData.accentMaterial.opacity = .03 + focus*.44*strength;
+      const textStrength = type === 'process' ? .10 : type === 'chapter' ? .025 : .018;
+      plate.userData.textMaterial.opacity = .002 + focus*textStrength;
       const s = .93 + focus*.12;
       plate.scale.setScalar(s);
     });
 
-    railMaterials.forEach(mat=>mat.opacity=.055 + clamp(Math.abs(velocity),0,.9)*.07);
+    railMaterials.forEach(mat=>mat.opacity=.065 + clamp(Math.abs(velocity),0,.9)*.09);
 
     const fadeIn = clamp(p/.08,0,1);
     const fadeOut = clamp((1-p)/.16,0,1);
@@ -323,15 +267,10 @@ function initJourney(){
     if (unsettled) schedule();
   }
 
-  function schedule(){
-    if (!raf && active && !document.hidden && !contextLost) raf = requestAnimationFrame(paint);
-  }
+  function schedule(){ if (!raf && active && !document.hidden && !contextLost) raf = requestAnimationFrame(paint); }
 
   const trigger = ScrollTrigger.create({
-    trigger:journey,
-    start:'top 92%',
-    end:'bottom 8%',
-    invalidateOnRefresh:true,
+    trigger:journey,start:'top 92%',end:'bottom 8%',invalidateOnRefresh:true,
     onRefresh(){resize();},
     onEnter(){active=true;stage.classList.add('v49-active');resize();schedule();},
     onEnterBack(){active=true;stage.classList.add('v49-active');resize();schedule();},
@@ -341,42 +280,20 @@ function initJourney(){
   });
 
   if (finePointer) {
-    journey.addEventListener('pointermove',event=>{
-      pointerTarget.set(
-        clamp((event.clientX/Math.max(1,innerWidth)-.5)*2,-1,1),
-        clamp((event.clientY/Math.max(1,innerHeight)-.5)*2,-1,1)
-      );
-      schedule();
-    },{passive:true});
+    journey.addEventListener('pointermove',event=>{pointerTarget.set(clamp((event.clientX/Math.max(1,innerWidth)-.5)*2,-1,1),clamp((event.clientY/Math.max(1,innerHeight)-.5)*2,-1,1));schedule();},{passive:true});
     journey.addEventListener('pointerleave',()=>{pointerTarget.set(0,0);schedule();},{passive:true});
   }
 
-  canvas.addEventListener('webglcontextlost',event=>{
-    event.preventDefault();
-    contextLost=true;
-    root.classList.add('v49-webgl-fallback');
-    stage.remove();
-  },{once:true});
+  canvas.addEventListener('webglcontextlost',event=>{event.preventDefault();contextLost=true;root.classList.add('v49-webgl-fallback');stage.remove();},{once:true});
 
   let resizeRaf=0;
-  addEventListener('resize',()=>{
-    if(resizeRaf) return;
-    resizeRaf=requestAnimationFrame(()=>{resizeRaf=0;resize();ScrollTrigger.refresh();schedule();});
-  },{passive:true});
-  document.addEventListener('visibilitychange',()=>{
-    if(document.hidden){if(raf){cancelAnimationFrame(raf);raf=0;}}
-    else if(active) schedule();
-  });
-  new MutationObserver(mutations=>{
-    if(mutations.some(m=>m.attributeName==='data-theme')) updateTheme();
-  }).observe(root,{attributes:true,attributeFilter:['data-theme']});
+  addEventListener('resize',()=>{if(resizeRaf) return;resizeRaf=requestAnimationFrame(()=>{resizeRaf=0;resize();ScrollTrigger.refresh();schedule();});},{passive:true});
+  document.addEventListener('visibilitychange',()=>{if(document.hidden){if(raf){cancelAnimationFrame(raf);raf=0;}}else if(active) schedule();});
+  new MutationObserver(mutations=>{if(mutations.some(m=>m.attributeName==='data-theme')) updateTheme();}).observe(root,{attributes:true,attributeFilter:['data-theme']});
 
   if (document.fonts?.ready) document.fonts.ready.then(()=>{resize();ScrollTrigger.refresh();schedule();}).catch(()=>{});
   requestAnimationFrame(()=>{resize();trigger.refresh();root.classList.add('v49-runtime-ready');});
 }
 
 try { initJourney(); }
-catch (error) {
-  root.classList.add('v49-runtime-fallback');
-  console.warn('MOVX v49 journey failed open:',error);
-}
+catch (error) { root.classList.add('v49-runtime-fallback');console.warn('MOVX v49 journey failed open:',error); }
