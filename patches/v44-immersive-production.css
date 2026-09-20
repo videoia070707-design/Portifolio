@@ -1,0 +1,150 @@
+/* MOVX v44 — standalone immersive production layer
+   Hardens deployment visibility and moves real immersive depth to About / Services / Process / Contact.
+   This stylesheet is loaded as its own asset so it is not blocked by older monolithic runtime failures. */
+html.movx-v44 body{
+  --v44-ease:cubic-bezier(.16,1,.3,1);
+  --v44-ui:cubic-bezier(.4,0,.2,1);
+  --v44-line:color-mix(in srgb,var(--fg) 15%,transparent);
+  --v44-line-strong:color-mix(in srgb,var(--fg) 34%,transparent);
+  --v44-accent:var(--editorial-red,#9c2e24);
+}
+
+/* Retire previous lower-scene owners. v42 archive layout stays active through the static root class. */
+html.movx-v44 .v42-parallax-layer,
+html.movx-v44 .v43-depth-stage,
+html.movx-v44 .v43-process-stage,
+html.movx-v44 .v43-journey-meter{display:none!important}
+
+/* Archive recovery is duplicated here on purpose: this layer is loaded independently
+   and must win even if older runtime classes were not applied. */
+html.movx-v44 body[data-page="social"] #filterBoard{
+  position:relative!important;top:auto!important;z-index:6!important;
+  margin:0 0 clamp(38px,4.5vw,66px)!important;padding:0!important;
+  background:transparent!important;backdrop-filter:none!important;box-shadow:none!important;
+  border-top:1px solid var(--v44-line-strong)!important;border-bottom:1px solid var(--v44-line)!important;
+}
+html.movx-v44 body[data-page="social"] #filterBoard .archive-filter-row{
+  grid-template-columns:88px minmax(0,1fr)!important;min-height:46px!important;gap:16px!important;padding:0!important;
+}
+html.movx-v44 body[data-page="social"] #filterBoard .archive-filter-status{
+  min-height:31px!important;margin:0!important;padding:8px 0 7px!important;border-top:1px solid var(--v44-line)!important;
+  font:700 8px/1 var(--mono,ui-monospace,monospace)!important;letter-spacing:.15em!important;text-transform:uppercase!important;color:var(--muted)!important;
+}
+html.movx-v44 body[data-page="social"] #archiveGrid{
+  display:block!important;column-count:3!important;column-gap:clamp(16px,1.6vw,24px)!important;opacity:1!important;
+}
+html.movx-v44 body[data-page="social"] #archiveGrid .archive-card{
+  display:inline-block!important;width:100%!important;grid-column:auto!important;break-inside:avoid!important;
+  margin:0 0 clamp(30px,3.2vw,48px)!important;transform:none!important;content-visibility:visible!important;contain:none!important;
+}
+html.movx-v44 body[data-page="social"] #archiveGrid .archive-card__media{
+  width:100%!important;aspect-ratio:auto!important;overflow:hidden!important;background:transparent!important;border:1px solid var(--v44-line)!important;
+}
+html.movx-v44 body[data-page="social"] #archiveGrid .archive-card__media img{
+  display:block!important;width:100%!important;height:auto!important;max-height:none!important;aspect-ratio:auto!important;object-fit:contain!important;
+  transform:translate3d(0,0,0) scale(1)!important;transition:transform 1.05s var(--v44-ease),filter .6s var(--v44-ui)!important;
+}
+html.movx-v44 body[data-page="social"] #archiveGrid .archive-card:hover .archive-card__media img,
+html.movx-v44 body[data-page="social"] #archiveGrid .archive-card:focus-within .archive-card__media img{transform:translate3d(0,0,0) scale(1.012)!important}
+
+/* Shared lower-chapter perspective. Only decorative scene layers move. */
+html.movx-v44 .about-section,
+html.movx-v44 .services-section,
+html.movx-v44 .process-section,
+html.movx-v44 .contact-section{
+  position:relative!important;isolation:isolate;overflow:clip!important;
+}
+html.movx-v44 .about-section>.container,
+html.movx-v44 .services-section>.container,
+html.movx-v44 .process-section>.container,
+html.movx-v44 .contact-section>.container{position:relative;z-index:6}
+
+html.movx-v44 .v44-css-stage{
+  position:absolute;inset:0;z-index:1;pointer-events:none;overflow:hidden;perspective:850px;transform-style:preserve-3d;
+}
+html.movx-v44 .v44-depth-word{
+  position:absolute;left:50%;top:50%;white-space:nowrap;margin:0;
+  font-family:var(--serif,Georgia,'Times New Roman',serif);font-weight:400;line-height:.72;letter-spacing:-.078em;
+  color:transparent;-webkit-text-stroke:1px color-mix(in srgb,var(--fg) 18%,transparent);
+  transform-style:preserve-3d;will-change:transform,opacity;
+}
+html.movx-v44 .v44-depth-rule{
+  position:absolute;left:50%;top:50%;width:min(70vw,1040px);height:1px;background:linear-gradient(90deg,transparent,var(--v44-line-strong) 16%,var(--v44-line-strong) 84%,transparent);
+  transform-origin:center;will-change:transform,opacity;
+}
+
+/* ABOUT — clear entry into spatial mode. */
+html.movx-v44 .about-section{min-height:clamp(880px,122vh,1320px)!important}
+html.movx-v44 .about-section .v44-about-word{font-size:clamp(220px,35vw,660px);transform:translate(-50%,-50%)}
+html.movx-v44 .about-section .v44-about-brand{
+  position:absolute;left:8%;bottom:14%;font:800 clamp(78px,13vw,220px)/.8 var(--sans,Arial,sans-serif);letter-spacing:-.075em;
+  color:color-mix(in srgb,var(--fg) 6%,transparent);white-space:nowrap;will-change:transform,opacity;
+}
+html.movx-v44 .about-section .v44-depth-rule{top:72%}
+
+/* SERVICES — giant chapter markers pass in depth while rows stay stable. */
+html.movx-v44 .services-section{min-height:clamp(1100px,156vh,1720px)!important}
+html.movx-v44 .v44-services-stage{perspective:780px}
+html.movx-v44 .v44-service-marker{
+  position:absolute;left:50%;top:50%;width:min(74vw,1040px);display:flex;align-items:center;gap:32px;
+  transform-style:preserve-3d;will-change:transform,opacity;
+}
+html.movx-v44 .v44-service-marker b{
+  font:700 clamp(110px,18vw,290px)/.7 var(--mono,ui-monospace,monospace);letter-spacing:-.1em;color:color-mix(in srgb,var(--fg) 7%,transparent);
+}
+html.movx-v44 .v44-service-marker i{flex:1;height:1px;background:var(--v44-line-strong);opacity:.65}
+html.movx-v44 .services-list .service-row{position:relative;z-index:7}
+
+/* PROCESS — signature 3D camera corridor. */
+html.movx-v44 .process-section{
+  padding-top:0!important;padding-bottom:0!important;min-height:430vh!important;background:var(--bg)!important;
+}
+html.movx-v44 .process-section>.container{
+  position:relative;z-index:7;padding-top:clamp(110px,10vw,165px)!important;padding-bottom:clamp(110px,10vw,165px)!important;
+}
+html.movx-v44 .v44-process-stage{
+  position:sticky;top:0;height:100vh;margin-bottom:-100vh;z-index:1;pointer-events:none;overflow:hidden;
+  background:
+    radial-gradient(circle at 50% 48%,color-mix(in srgb,var(--v44-accent) 7%,transparent),transparent 42%),
+    linear-gradient(180deg,color-mix(in srgb,var(--bg) 95%,transparent),var(--bg));
+}
+html.movx-v44 .v44-process-canvas{position:absolute;inset:0;width:100%;height:100%;display:block;opacity:.92}
+html.movx-v44 .v44-process-vignette{
+  position:absolute;inset:0;background:radial-gradient(circle at center,transparent 34%,color-mix(in srgb,var(--bg) 60%,transparent) 82%,var(--bg) 100%);pointer-events:none;
+}
+html.movx-v44 .process-grid{position:relative;z-index:8}
+html.movx-v44 .process-title{position:sticky!important;top:116px!important;align-self:start!important}
+html.movx-v44 .process-list li{
+  min-height:68vh!important;display:grid!important;align-content:center!important;opacity:.32!important;
+  transition:opacity .5s var(--v44-ui),border-color .5s var(--v44-ui)!important;
+}
+html.movx-v44 .process-list li.v44-current{opacity:1!important;border-bottom-color:var(--v44-line-strong)!important}
+html.movx-v44 .process-list li.v44-current::after{transform:scaleX(1)!important;opacity:1!important}
+
+/* CONTACT — camera settles; atmosphere collapses back to a flat editorial ending. */
+html.movx-v44 .contact-section{min-height:clamp(900px,120vh,1260px)!important}
+html.movx-v44 .contact-section .v44-contact-word{
+  font-size:clamp(190px,31vw,580px);transform:translate(-50%,-50%);-webkit-text-stroke-color:rgba(243,238,233,.18);
+}
+html.movx-v44 .contact-section .v44-depth-rule{top:68%;background:linear-gradient(90deg,transparent,rgba(243,238,233,.3) 16%,rgba(243,238,233,.3) 84%,transparent)}
+
+/* Small build sentinel: invisible but inspectable. */
+html.movx-v44 body::before{content:"";display:none}
+
+@media(max-width:980px){
+  html.movx-v44 body[data-page="social"] #archiveGrid{column-count:2!important}
+  html.movx-v44 .process-section{min-height:auto!important}
+  html.movx-v44 .v44-process-stage{display:none!important}
+  html.movx-v44 .process-list li{min-height:0!important;opacity:1!important}
+  html.movx-v44 .about-section,html.movx-v44 .services-section,html.movx-v44 .contact-section{min-height:auto!important}
+}
+@media(max-width:680px){
+  html.movx-v44 body[data-page="social"] #archiveGrid{column-count:1!important}
+  html.movx-v44 body[data-page="social"] #filterBoard .archive-filter-row{grid-template-columns:1fr!important;gap:0!important;padding:8px 0!important}
+  html.movx-v44 .v44-css-stage{opacity:.42}
+}
+@media(prefers-reduced-motion:reduce){
+  html.movx-v44 .v44-css-stage,html.movx-v44 .v44-process-stage{display:none!important}
+  html.movx-v44 .process-section{min-height:auto!important}
+  html.movx-v44 .process-list li{min-height:0!important;opacity:1!important}
+}
