@@ -212,14 +212,22 @@ jobs:
           await page.goto('http://127.0.0.1:4173/v54.html?v=54-native-portal',{waitUntil:'networkidle'});
           await page.waitForSelector('.v54-portal-sequence',{state:'attached',timeout:15000});
           await page.evaluate(()=>{document.documentElement.style.scrollBehavior='auto';document.body.style.scrollBehavior='auto';});
+          const seek=async(desired)=>{
+            for(let i=0;i<6;i++){
+              const state=await page.evaluate(p=>{
+                const s=document.querySelector('.v54-portal-sequence');
+                const travel=Math.max(1,s.offsetHeight-window.innerHeight);
+                const current=Math.max(0,Math.min(1,-s.getBoundingClientRect().top/travel));
+                window.scrollBy(0,(p-current)*travel);
+                return {current,travel};
+              },desired);
+              if(Math.abs(state.current-desired)<.012) break;
+              await page.waitForTimeout(130);
+            }
+            await page.waitForTimeout(420);
+          };
           const snap=async(progress,path)=>{
-            await page.evaluate(p=>{
-              const s=document.querySelector('.v54-portal-sequence');
-              const top=window.scrollY+s.getBoundingClientRect().top;
-              const travel=Math.max(1,s.offsetHeight-window.innerHeight);
-              window.scrollTo(0,top+travel*p);
-            },progress);
-            await page.waitForTimeout(650);
+            await seek(progress);
             const state=await page.evaluate(()=>{
               const s=document.querySelector('.v54-portal-sequence');
               const img=document.querySelector('.v54-artwork-wall img');
@@ -234,10 +242,10 @@ jobs:
           const wall=await snap(.46,'_site/preview-v54-wall.png');
           const portal=await snap(.68,'_site/preview-v54-portal.png');
           const reveal=await snap(.91,'_site/preview-v54-process-reveal.png');
-          if(approach.p<.18) throw new Error('Native portal progress did not advance at approach');
-          if(wall.p<.40||wall.wall<.85||wall.opacity<.7) throw new Error('Artwork did not become a visible wall');
-          if(portal.p<.60||portal.through<.25) throw new Error('Portal aperture did not open');
-          if(reveal.p<.84||reveal.through<.85) throw new Error('Process reveal did not reach final phase');
+          if(Math.abs(approach.p-.24)>.05) throw new Error('Native portal approach phase could not be sampled');
+          if(Math.abs(wall.p-.46)>.05||wall.wall<.85||wall.opacity<.7) throw new Error('Artwork did not become a visible wall');
+          if(Math.abs(portal.p-.68)>.05||portal.through<.25) throw new Error('Portal aperture did not open');
+          if(Math.abs(reveal.p-.91)>.06||reveal.through<.85) throw new Error('Process reveal did not reach final phase');
           if(errors.length) throw new Error('Preview page errors: '+errors.join(' | '));
           await browser.close();
           NODE
