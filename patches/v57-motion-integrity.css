@@ -6,6 +6,8 @@ html.movx-v57 body{overflow-x:hidden}
 /* Runtime rescue is deliberately narrow: only elements proven stuck by v57 JS receive it. */
 html.movx-v57 .v57-text-rescue{opacity:1!important;visibility:visible!important;filter:none!important;clip-path:none!important;-webkit-clip-path:none!important;transform:none!important}
 html.movx-v57 .v57-reveal-rescue{opacity:1!important;visibility:visible!important;filter:none!important;clip-path:none!important;-webkit-clip-path:none!important;transform:none!important}
+html.movx-v57 .v57-media-rescue{opacity:1!important;visibility:visible!important;clip-path:inset(0)!important;-webkit-clip-path:inset(0)!important}
+html.movx-v57 .v57-media-rescue>img{opacity:1!important;visibility:visible!important}
 
 /* Never let decorative parallax layers compete with readable copy. */
 html.movx-v57 .v42-parallax-layer,
@@ -135,5 +137,5 @@ html.movx-v57 :focus-visible{outline:2px solid var(--editorial-red)!important;ou
 }
 
 @media(prefers-reduced-motion:reduce){
-  html.movx-v57 .v57-text-rescue,html.movx-v57 .v57-reveal-rescue{transition:none!important}
+  html.movx-v57 .v57-text-rescue,html.movx-v57 .v57-reveal-rescue,html.movx-v57 .v57-media-rescue{transition:none!important}
 }
