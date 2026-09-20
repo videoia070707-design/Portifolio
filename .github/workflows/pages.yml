@@ -24,7 +24,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Build MOVX v48 spatial polish + contact recovery
+      - name: Build MOVX v49 continuous immersive journey
         shell: bash
         run: |
           set -euo pipefail
@@ -108,6 +108,8 @@ jobs:
           cp patches/v47-archive-flow.js _site/v47-archive-flow.js
           cp patches/v48-spatial-polish.css _site/v48-spatial.css
           cp patches/v48-spatial-polish.js _site/v48-spatial.js
+          cp patches/v49-journey-continuity.css _site/v49-journey.css
+          cp patches/v49-journey-continuity.mjs _site/v49-journey.mjs
 
           python3 - <<'PY'
           from pathlib import Path
@@ -120,7 +122,7 @@ jobs:
               raise SystemExit('No <html> element found')
           attrs = m.group(1)
           class_match = re.search(r'class="([^"]*)"', attrs, flags=re.I)
-          required = ['movx-v42','movx-v45','movx-v46','movx-v47','movx-v48']
+          required = ['movx-v42','movx-v45','movx-v46','movx-v47','movx-v48','movx-v49']
           if class_match:
               classes = [c for c in class_match.group(1).split() if c not in {'movx-v43','movx-v44'}]
               for cls in required:
@@ -130,35 +132,35 @@ jobs:
           else:
               attrs += ' class="' + ' '.join(required) + '"'
           attrs = re.sub(r'\sdata-movx-build="[^"]*"', '', attrs)
-          attrs += ' data-movx-build="v48-spatial"'
+          attrs += ' data-movx-build="v49-journey"'
           h = h[:m.start()] + '<html' + attrs + '>' + h[m.end():]
 
-          version='48-spatial'
+          version='49-journey'
           h = re.sub(r'href="styles\.css(?:\?[^\"]*)?"', f'href="styles.css?v={version}"', h)
           h = re.sub(r'src="projects\.js(?:\?[^\"]*)?"', f'src="projects.js?v={version}"', h)
           h = re.sub(r'src="i18n\.js(?:\?[^\"]*)?"', f'src="i18n.js?v={version}"', h)
           h = re.sub(r'src="script\.js(?:\?[^\"]*)?"', f'src="script.js?v={version}"', h)
 
-          extra_css = f'''  <link rel="stylesheet" href="v45-immersive.css?v={version}">\n  <link rel="stylesheet" href="v46-niche.css?v={version}">\n  <link rel="stylesheet" href="v47-territories.css?v={version}">\n  <link rel="stylesheet" href="v48-spatial.css?v={version}">\n'''
+          extra_css = f'''  <link rel="stylesheet" href="v45-immersive.css?v={version}">\n  <link rel="stylesheet" href="v46-niche.css?v={version}">\n  <link rel="stylesheet" href="v47-territories.css?v={version}">\n  <link rel="stylesheet" href="v48-spatial.css?v={version}">\n  <link rel="stylesheet" href="v49-journey.css?v={version}">\n'''
           h = h.replace('</head>', extra_css + '</head>')
-          runtime = f'''\n<script src="vendor/gsap.min.js?v={version}"></script>\n<script src="vendor/ScrollTrigger.min.js?v={version}"></script>\n<script type="module" src="v45-immersive.mjs?v={version}"></script>\n<script src="v46-niche.js?v={version}"></script>\n<script src="v47-archive-flow.js?v={version}"></script>\n<script src="v48-spatial.js?v={version}"></script>\n'''
+          runtime = f'''\n<script src="vendor/gsap.min.js?v={version}"></script>\n<script src="vendor/ScrollTrigger.min.js?v={version}"></script>\n<script type="module" src="v45-immersive.mjs?v={version}"></script>\n<script src="v46-niche.js?v={version}"></script>\n<script src="v47-archive-flow.js?v={version}"></script>\n<script src="v48-spatial.js?v={version}"></script>\n<script type="module" src="v49-journey.mjs?v={version}"></script>\n'''
           h = h.replace('</body>', runtime + '</body>')
           p.write_text(h, encoding='utf-8')
           PY
 
           cp _site/social-media.html _site/index.html
-          cp _site/social-media.html _site/v48.html
+          cp _site/social-media.html _site/v49.html
           cp _site/social-media.html _site/latest.html
 
           test -s _site/index.html
-          test -s _site/v48.html
+          test -s _site/v49.html
           test -s _site/styles.css
           test -s _site/script.js
-          test -s _site/v45-immersive.css
           test -s _site/v45-immersive.mjs
           test -s _site/v47-territories.css
           test -s _site/v48-spatial.css
-          test -s _site/v48-spatial.js
+          test -s _site/v49-journey.css
+          test -s _site/v49-journey.mjs
           test -s _site/vendor/three.module.min.js
           test -s _site/vendor/gsap.min.js
           test -s _site/vendor/ScrollTrigger.min.js
@@ -174,20 +176,20 @@ jobs:
           node --check _site/v46-niche.js
           node --check _site/v47-archive-flow.js
           node --check _site/v48-spatial.js
+          node --check _site/v49-journey.mjs
           node --check _site/i18n.js
           node --check _site/projects.js
           python3 -m py_compile patches/v37-runtime-audit.py patches/v38-runtime-audit.py
 
-          grep -q 'class="[^"]*movx-v48' _site/index.html
-          grep -q 'data-movx-build="v48-spatial"' _site/index.html
-          grep -q 'v48-spatial.css?v=48-spatial' _site/index.html
-          grep -q 'v48-spatial.js?v=48-spatial' _site/index.html
-          grep -q 'content-visibility:visible!important' _site/v48-spatial.css
+          grep -q 'class="[^"]*movx-v49' _site/index.html
+          grep -q 'data-movx-build="v49-journey"' _site/index.html
+          grep -q 'v49-journey.css?v=49-journey' _site/index.html
+          grep -q 'v49-journey.mjs?v=49-journey' _site/index.html
+          grep -q 'v49-journey-stage' _site/v49-journey.css
+          grep -q 'CatmullRomCurve3' _site/v49-journey.mjs
+          grep -q 'buildJourneyWrapper' _site/v49-journey.mjs
+          grep -q 'v49-current' _site/v49-journey.mjs
           grep -q 'background:#080706!important' _site/v48-spatial.css
-          grep -q 'v48-depth-seam' _site/v48-spatial.css
-          grep -q 'ScrollTrigger.refresh' _site/v48-spatial.js
-          grep -q 'PerspectiveCamera' _site/v45-immersive.mjs
-          grep -q 'CatmullRomCurve3' _site/v45-immersive.mjs
           grep -q 'grid-template-rows:clamp(300px,29vw,410px)' _site/v47-territories.css
           grep -q 'Rosa choque' _site/i18n.js
 
@@ -196,7 +198,7 @@ jobs:
           ! grep -q 'MOVX v40 — native WebGL scroll corridor' _site/script.js
           ! grep -q 'vendor/lenis.min.js' _site/index.html
 
-          echo "MOVX v48 validated: contact repaired + immersive sections measurable + spatial cues strengthened"
+          echo "MOVX v49 validated: shared camera journey bridges About -> Services -> Process -> Contact"
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
