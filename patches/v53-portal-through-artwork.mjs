@@ -130,10 +130,10 @@ function initFallback(sequence){
   if(!img||!preview) return;
   gsap.registerPlugin(ScrollTrigger);
   const tl=gsap.timeline({scrollTrigger:{trigger:sequence,start:'top top',end:'bottom bottom',scrub:1.05,invalidateOnRefresh:true}});
-  tl.fromTo(img,{scale:.38,rotationX:8,rotationY:-9,rotationZ:-2,opacity:0},{scale:.72,rotationX:3,rotationY:-4,rotationZ:-1,opacity:1,duration:.28,ease:'none'},0)
-    .to(img,{scale:1.22,rotationX:0,rotationY:0,rotationZ:0,duration:.28,ease:'none'},.30)
-    .to(img,{scale:1.36,rotationX:0,rotationY:0,rotationZ:0,duration:.18,ease:'none'},.58)
-    .to(img,{scale:1.48,opacity:0,duration:.16,ease:'none'},.84)
+  tl.fromTo(img,{width:'30vw',height:'48vh',scale:.74,rotationX:8,rotationY:-9,rotationZ:-2,borderWidth:12,opacity:0},{width:'42vw',height:'64vh',scale:.9,rotationX:3,rotationY:-4,rotationZ:-1,borderWidth:10,opacity:1,duration:.28,ease:'none'},0)
+    .to(img,{width:'112vw',height:'112vh',scale:1,rotationX:0,rotationY:0,rotationZ:0,borderWidth:0,duration:.32,ease:'none'},.30)
+    .to(img,{width:'116vw',height:'116vh',scale:1.01,duration:.18,ease:'none'},.58)
+    .to(img,{scale:1.04,opacity:0,duration:.16,ease:'none'},.84)
     .fromTo(preview,{opacity:0,scale:.94},{opacity:1,scale:1,duration:.26,ease:'none'},.62);
   ScrollTrigger.create({trigger:sequence,start:'top top',end:'bottom bottom',onUpdate:self=>{const through=smooth(clamp((self.progress-.57)/.26));sequence.style.setProperty('--v53-hole',`${through*48}%`);}});
 }
