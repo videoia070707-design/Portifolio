@@ -126,3 +126,119 @@
 
   root.classList.add('v48-runtime-ready','v60-runtime-ready');
 })();
+
+/* MOVX v61 — final editorial motion layer.
+   Artwork gets the motion; readable copy stays fixed in the composition. */
+(() => {
+  'use strict';
+  const root=document.documentElement;
+  const reduced=new URLSearchParams(location.search).has('static')||matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const mobile=matchMedia('(max-width:720px)').matches;
+  const q=(s,c=document)=>c.querySelector(s);
+  const qa=(s,c=document)=>[...c.querySelectorAll(s)];
+  root.classList.add('movx-v61');
+  root.dataset.movxExperience='v61-editorial-motion';
+
+  /* One-shot media reveals. Dynamic archive/project renders are registered automatically. */
+  const staged=new WeakSet();
+  const revealObserver=!reduced&&'IntersectionObserver'in window?new IntersectionObserver(entries=>{
+    entries.forEach(entry=>{
+      if(!entry.isIntersecting)return;
+      entry.target.classList.add('v61-in-view');
+      revealObserver.unobserve(entry.target);
+    });
+  },{threshold:.08,rootMargin:'9% 0px 9% 0px'}):null;
+
+  function registerStage(el,index=0){
+    if(!el||staged.has(el))return;
+    staged.add(el);
+    el.classList.add('v61-media-stage');
+    el.style.setProperty('--v61-delay',`${Math.min(index%5,4)*55}ms`);
+    const r=el.getBoundingClientRect();
+    if(reduced||mobile||(r.bottom>0&&r.top<innerHeight*.96))el.classList.add('v61-in-view');
+    else revealObserver?.observe(el);
+  }
+  function registerWithin(scope=document){
+    const nodes=[
+      ...qa('#loopWall .loop-card img',scope),
+      ...qa('#nicheGrid .niche-card__media img',scope),
+      ...qa('#archiveGrid .archive-card__media',scope),
+      ...qa('#projectsList .project-cover',scope)
+    ];
+    nodes.forEach(registerStage);
+  }
+  registerWithin(document);
+  const hosts=['#loopWall','#nicheGrid','#archiveGrid','#projectsList'].map(s=>q(s)).filter(Boolean);
+  if('MutationObserver'in window&&hosts.length){
+    const mo=new MutationObserver(()=>requestAnimationFrame(()=>registerWithin(document)));
+    hosts.forEach(host=>mo.observe(host,{childList:true,subtree:true}));
+  }
+
+  /* Shared-element case transition. It uses the real clicked artwork instead of shader distortion. */
+  const viewer=q('#caseViewer');
+  if(!viewer||reduced||mobile)return;
+  let snapshot=null;
+  let wasOpen=viewer.classList.contains('open');
+  let lastHeroRect=null;
+  let token=0;
+
+  const mediaFor=opener=>{
+    if(!opener)return null;
+    if(opener.matches?.('img'))return opener;
+    return q('img',opener)||q('img',opener.closest?.('.project-entry,.archive-card,.loop-card,.niche-card')||document);
+  };
+  function takeSnapshot(opener){
+    if(!opener||viewer.contains(opener))return;
+    const img=mediaFor(opener);if(!img)return;
+    const r=img.getBoundingClientRect();if(r.width<8||r.height<8)return;
+    snapshot={opener,img,src:img.currentSrc||img.src,rect:{left:r.left,top:r.top,width:r.width,height:r.height}};
+  }
+  document.addEventListener('pointerdown',e=>{const opener=e.target?.closest?.('[data-open-project]');if(opener&&!viewer.contains(opener))takeSnapshot(opener);},{capture:true,passive:true});
+  document.addEventListener('focusin',e=>{const opener=e.target?.closest?.('[data-open-project]');if(opener&&!viewer.contains(opener))takeSnapshot(opener);},true);
+
+  const nextFrame=()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+  function currentOpenerRect(){
+    if(!snapshot?.opener?.isConnected)return snapshot?.rect||null;
+    const img=mediaFor(snapshot.opener);const r=img?.getBoundingClientRect();
+    return r&&r.width>8&&r.height>8?{left:r.left,top:r.top,width:r.width,height:r.height}:snapshot.rect;
+  }
+  function createPortal(rect){
+    const portal=document.createElement('div');portal.className='v61-case-portal';
+    portal.style.left=`${rect.left}px`;portal.style.top=`${rect.top}px`;portal.style.width=`${rect.width}px`;portal.style.height=`${rect.height}px`;
+    const img=document.createElement('img');img.src=snapshot.src;img.alt='';portal.appendChild(img);document.body.appendChild(portal);return portal;
+  }
+  async function runTransition(direction){
+    if(!snapshot?.src)return;
+    const my=++token;
+    await nextFrame();if(my!==token)return;
+    let from,to;
+    if(direction>0){
+      from=snapshot.rect;
+      const hero=q('.case-hero__media img',viewer);const r=hero?.getBoundingClientRect();
+      if(!r||r.width<8||r.height<8)return;
+      to={left:r.left,top:r.top,width:r.width,height:r.height};lastHeroRect=to;
+    }else{
+      from=lastHeroRect||snapshot.rect;
+      to=currentOpenerRect();
+      if(!to)return;
+    }
+    const portal=createPortal(from);
+    const dx=to.left-from.left,dy=to.top-from.top,sx=to.width/from.width,sy=to.height/from.height;
+    root.classList.add('v61-case-transitioning');
+    const anim=portal.animate([
+      {transform:'translate3d(0,0,0) scale(1,1)',opacity:1,filter:'saturate(1) contrast(1)'},
+      {offset:.72,transform:`translate3d(${dx}px,${dy}px,0) scale(${sx},${sy})`,opacity:.98,filter:'saturate(.98) contrast(1)'},
+      {transform:`translate3d(${dx}px,${dy}px,0) scale(${sx},${sy})`,opacity:0,filter:'saturate(.98) contrast(1)'}
+    ],{duration:direction>0?980:820,easing:'cubic-bezier(.16,1,.3,1)',fill:'forwards'});
+    try{await anim.finished;}catch(_){}
+    if(my===token)root.classList.remove('v61-case-transitioning');
+    portal.remove();
+  }
+
+  if('MutationObserver'in window)new MutationObserver(()=>{
+    const open=viewer.classList.contains('open');
+    if(open&&!wasOpen)runTransition(1);
+    else if(!open&&wasOpen)runTransition(-1);
+    wasOpen=open;
+  }).observe(viewer,{attributes:true,attributeFilter:['class']});
+})();
