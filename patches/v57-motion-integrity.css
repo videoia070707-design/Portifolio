@@ -1,0 +1,115 @@
+/* MOVX v57 — motion integrity + readability safeguards
+   Keeps animation visible without allowing animated layers to hide, clip or overpower readable text. */
+html.movx-v57{--v57-safe-pad:max(24px,5vw);--v57-line:color-mix(in srgb,var(--fg) 12%,transparent)}
+html.movx-v57 body{overflow-x:hidden}
+
+/* Runtime rescue is deliberately narrow: only elements proven stuck by v57 JS receive it. */
+html.movx-v57 .v57-text-rescue{opacity:1!important;visibility:visible!important;filter:none!important;clip-path:none!important;-webkit-clip-path:none!important;transform:none!important}
+html.movx-v57 .v57-reveal-rescue{opacity:1!important;visibility:visible!important;filter:none!important;clip-path:none!important;-webkit-clip-path:none!important;transform:none!important}
+
+/* Never let decorative parallax layers compete with readable copy. */
+html.movx-v57 .v42-parallax-layer,
+html.movx-v57 .v49-journey-stage,
+html.movx-v57 .v52-architecture-stage,
+html.movx-v57 .v54-portal-sequence,
+html.movx-v57 .v55-process-canvas,
+html.movx-v57 .v56-handoff-layer{pointer-events:none!important}
+html.movx-v57 .v42-parallax-ghost{opacity:min(var(--v42-ghost-o,.2),.22)!important}
+html.movx-v57 .v42-parallax-index{opacity:.7}
+
+/* PROCESS: the readable layer owns hierarchy; 3D supports it instead of sitting on top of it. */
+@media(min-width:981px){
+  html.movx-v57 #process .v55-process-journey>.process-grid{
+    grid-template-columns:minmax(420px,.82fr) minmax(0,1.18fr)!important;
+    gap:clamp(42px,5vw,78px)!important;
+    padding-left:var(--v57-safe-pad)!important;
+    padding-right:var(--v57-safe-pad)!important;
+  }
+  html.movx-v57 #process .process-title{max-width:520px!important;padding-right:18px;z-index:7!important}
+  html.movx-v57 #process .process-title h2{
+    max-width:10.8ch!important;
+    font-size:clamp(52px,4.8vw,76px)!important;
+    line-height:.91!important;
+    letter-spacing:-.058em!important;
+    text-wrap:balance!important;
+    overflow:visible!important;
+  }
+  html.movx-v57 #process .process-title .kicker{max-width:30ch!important;line-height:1.28!important}
+  html.movx-v57 #process .process-list{width:100%!important;max-width:780px!important;justify-self:end!important;overflow:visible!important}
+  html.movx-v57 #process .process-list li{
+    min-height:clamp(176px,21vh,224px)!important;
+    padding:clamp(26px,3vh,38px) 0!important;
+    overflow:visible!important;
+    background:linear-gradient(90deg,color-mix(in srgb,var(--bg) 95%,transparent),color-mix(in srgb,var(--bg) 82%,transparent) 68%,transparent)!important;
+    backdrop-filter:blur(5px)!important;
+    -webkit-backdrop-filter:blur(5px)!important;
+  }
+  html.movx-v57 #process .process-list li>div{
+    grid-template-columns:minmax(165px,.42fr) minmax(230px,.58fr)!important;
+    gap:clamp(26px,3vw,46px)!important;
+    padding-right:clamp(10px,1.6vw,24px)!important;
+    box-sizing:border-box!important;
+  }
+  html.movx-v57 #process .process-list strong{
+    max-width:12ch!important;
+    font-size:clamp(26px,2.15vw,34px)!important;
+    line-height:1!important;
+    overflow:visible!important;
+  }
+  html.movx-v57 #process .process-list p{
+    max-width:44ch!important;
+    font-size:13.5px!important;
+    line-height:1.66!important;
+    overflow:visible!important;
+  }
+  html.movx-v57 #process .process-list li.v55-current{
+    box-shadow:inset 2px 0 0 color-mix(in srgb,var(--editorial-red) 72%,transparent)!important;
+  }
+  html.movx-v57 #process .process-list li.v55-current strong,
+  html.movx-v57 #process .process-list li.v55-current p{opacity:1!important}
+  html.movx-v57 #process .v55-process-hud{right:var(--v57-safe-pad)!important}
+  html.movx-v57 #process .v55-process-depth{right:var(--v57-safe-pad)!important}
+  html.movx-v57 #process .v55-process-outro{left:var(--v57-safe-pad)!important;max-width:32ch!important}
+}
+
+/* Contact stays readable throughout the handoff. */
+html.movx-v57 #contact.v56-contact-drawn .contact-grid{opacity:max(var(--v56-contact-o,1),.82)!important}
+html.movx-v57 #contact .contact-copy,
+html.movx-v57 #contact .contact-form{position:relative;z-index:3}
+html.movx-v57 #contact .contact-copy h2{overflow:visible!important;text-wrap:balance}
+html.movx-v57 #contact .v56-contact-rail{z-index:1}
+
+/* General text safety on authored sections. */
+html.movx-v57 #about :is(h2,h3,p,strong),
+html.movx-v57 #services :is(h2,h3,p,strong),
+html.movx-v57 #process :is(h2,h3,p,strong),
+html.movx-v57 #contact :is(h2,h3,p,strong){text-overflow:clip!important}
+html.movx-v57 :is(#about,#services,#process,#contact) :is(h2,h3,p,strong){overflow-wrap:normal;word-break:normal}
+
+/* Focus states must remain visible after all motion layers. */
+html.movx-v57 :focus-visible{outline:2px solid var(--editorial-red)!important;outline-offset:4px!important}
+
+@media(max-width:1180px) and (min-width:981px){
+  html.movx-v57 #process .v55-process-journey>.process-grid{grid-template-columns:minmax(340px,.72fr) minmax(0,1.28fr)!important;gap:36px!important}
+  html.movx-v57 #process .process-title h2{font-size:clamp(48px,5.1vw,64px)!important;max-width:10.4ch!important}
+  html.movx-v57 #process .process-list li>div{grid-template-columns:minmax(145px,.4fr) minmax(205px,.6fr)!important;gap:24px!important}
+  html.movx-v57 #process .process-list strong{font-size:clamp(24px,2.2vw,30px)!important}
+}
+
+@media(max-width:980px){
+  html.movx-v57 #process .process-title h2{max-width:11ch!important;font-size:clamp(48px,10vw,76px)!important;line-height:.91!important}
+  html.movx-v57 #process .process-list li{opacity:1!important}
+  html.movx-v57 #process .process-list li>div{grid-template-columns:1fr!important;gap:8px!important}
+  html.movx-v57 #process .process-list p{max-width:56ch!important}
+  html.movx-v57 #contact.v56-contact-drawn .contact-grid{opacity:1!important;transform:none!important}
+}
+
+@media(max-width:540px){
+  html.movx-v57 #process .process-title h2{font-size:clamp(44px,13vw,62px)!important;max-width:10.8ch!important}
+  html.movx-v57 #process .process-list strong{font-size:30px!important}
+  html.movx-v57 #process .process-list p{font-size:14px!important;line-height:1.62!important}
+}
+
+@media(prefers-reduced-motion:reduce){
+  html.movx-v57 .v57-text-rescue,html.movx-v57 .v57-reveal-rescue{transition:none!important}
+}
