@@ -86,3 +86,39 @@
     text-decoration-thickness:1px!important;
   }
 }
+
+/* MOVX v82 — editorial case media on mobile
+   The old fixed 70vh container created large black letterbox fields around portrait/social artwork.
+   On phones the artwork now owns its natural aspect ratio and nearly fills the reading column. */
+@media (max-width:720px){
+  html.movx-v33 #caseViewer.case-viewer .case-hero__media,
+  html.movx-v33 #caseViewer.case-viewer[data-v33-side="right"] .case-hero__media,
+  html.movx-v33 #caseViewer.case-viewer[data-v33-side="left"] .case-hero__media{
+    position:relative!important;
+    inset:auto!important;
+    width:100%!important;
+    height:auto!important;
+    min-height:0!important;
+    padding:clamp(14px,3.8vw,20px) clamp(14px,3.8vw,20px) 0!important;
+    display:block!important;
+    overflow:visible!important;
+    background:#090909!important;
+  }
+
+  html.movx-v33 #caseViewer.case-viewer .case-hero__media img{
+    display:block!important;
+    width:100%!important;
+    height:auto!important;
+    max-width:none!important;
+    max-height:none!important;
+    object-fit:contain!important;
+    object-position:center!important;
+    border:0!important;
+    box-shadow:none!important;
+    transform:none!important;
+  }
+
+  html.movx-v33 #caseViewer.case-viewer .case-hero__content{
+    padding-top:clamp(28px,7vw,38px)!important;
+  }
+}
