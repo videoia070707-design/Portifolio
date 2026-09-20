@@ -120,4 +120,16 @@ for filename, meta in pages.items():
     doc = doc.replace('</head>', head_extras + '</head>')
     path.write_text(doc, encoding='utf-8')
 
-print('MOVX v37 runtime audit applied: duplicate RAF engines removed, observer loop fixed, redundant tilt hooks disabled; v71 metadata injected')
+# 7) v72 — append the final footer layer to the generated stylesheet. Keeping this
+# in the build audit means the source ZIP can remain untouched while the release
+# still receives the current authored closing system.
+footer_patch = Path('patches/v72-footer.css')
+styles_path = root / 'styles.css'
+if footer_patch.exists() and styles_path.exists():
+    footer_css = footer_patch.read_text(encoding='utf-8')
+    styles = styles_path.read_text(encoding='utf-8')
+    if 'MOVX v72 — editorial closing system' not in styles:
+        styles = styles.rstrip() + '\n\n' + footer_css.strip() + '\n'
+        styles_path.write_text(styles, encoding='utf-8')
+
+print('MOVX build audit applied: runtime optimized; v71 metadata + v72 editorial footer injected')
