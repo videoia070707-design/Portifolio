@@ -41,7 +41,16 @@
     const frames=[...layer.querySelectorAll('.v56-frame-stack i')];
     const initial=[[-150,-78,-7],[-78,-38,-3.5],[0,0,0],[76,36,3.2],[146,76,6.4]];
     let active=false,raf=0,lastY=scrollY,lastTime=performance.now(),velocity=0;
+    const visibility=new Map([[journey,false],[contact,false]]);
 
+    function nearViewport(el){
+      const rect=el.getBoundingClientRect();
+      return rect.bottom>-innerHeight*.75&&rect.top<innerHeight*1.75;
+    }
+    function refreshActive(){
+      active=[...visibility.values()].some(Boolean)||nearViewport(journey)||nearViewport(contact);
+      return active;
+    }
     function journeyProgress(){
       const rect=journey.getBoundingClientRect();
       const travel=Math.max(1,journey.offsetHeight-innerHeight);
@@ -52,7 +61,8 @@
       return smooth(clamp((innerHeight*.98-rect.top)/(innerHeight*.9),0,1));
     }
     function paint(){
-      raf=0;if(!active||document.hidden)return;
+      raf=0;
+      if(document.hidden||!refreshActive())return;
       const jp=journeyProgress();
       const cp=contactProgress();
       const collapse=smooth(clamp((jp-.76)/.14));
@@ -99,19 +109,21 @@
       contact.style.setProperty('--v56-form-shift',`${lerp(22,0,settle)}px`);
       root.dataset.v56Phase=cp>.82?'contact':trace>.55?'draw':collapse>.4?'collapse':'process';
     }
-    function schedule(){if(!raf&&active&&!document.hidden)raf=requestAnimationFrame(paint);}
+    function schedule(){if(!raf&&!document.hidden&&refreshActive())raf=requestAnimationFrame(paint);}
     function onScroll(){
-      const now=performance.now(),dt=Math.max(16,now-lastTime),dy=scrollY-lastY;lastY=scrollY;lastTime=now;velocity=clamp(dy/dt,-2.2,2.2);schedule();
+      const now=performance.now(),dt=Math.max(16,now-lastTime),dy=scrollY-lastY;lastY=scrollY;lastTime=now;velocity=clamp(dy/dt,-2.2,2.2);refreshActive();schedule();
     }
     const observer=new IntersectionObserver(entries=>{
-      active=entries.some(entry=>entry.isIntersecting);
+      entries.forEach(entry=>visibility.set(entry.target,entry.isIntersecting));
+      refreshActive();
       if(active)schedule();else if(raf){cancelAnimationFrame(raf);raf=0;}
     },{rootMargin:'70% 0px 70% 0px',threshold:0});
     observer.observe(journey);observer.observe(contact);
     addEventListener('scroll',onScroll,{passive:true});
-    addEventListener('resize',schedule,{passive:true});
-    document.addEventListener('visibilitychange',()=>{if(!document.hidden&&active)schedule();});
-    active=true;paint();active=false;
+    addEventListener('resize',()=>{refreshActive();schedule();},{passive:true});
+    document.addEventListener('visibilitychange',()=>{if(!document.hidden){refreshActive();schedule();}});
+    refreshActive();
+    if(active){raf=requestAnimationFrame(paint);}else{active=true;paint();active=false;}
   }
 
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>boot(),{once:true});
