@@ -11,7 +11,7 @@ html.movx-v53 #process .v53-portal-sequence{
   isolation:isolate;
 }
 html.movx-v53 #process .v53-portal-sticky{position:sticky;top:0;height:100vh;overflow:hidden;isolation:isolate}
-html.movx-v53 #process .v53-portal-canvas{position:absolute;inset:0;width:100%;height:100%;display:block;z-index:3}
+html.movx-v53 #process .v53-portal-canvas{position:absolute;inset:0;width:100%;height:100%;display:block;z-index:2}
 html.movx-v53 #process .v53-portal-vignette{
   position:absolute;inset:0;z-index:4;pointer-events:none;
   background:
@@ -57,12 +57,13 @@ html.movx-v53 #process .v53-portal-copy{
 }
 html.movx-v53 #process .v53-portal-copy i{height:1px;background:color-mix(in srgb,var(--fg) 16%,transparent);overflow:hidden}
 html.movx-v53 #process .v53-portal-copy i::after{content:"";display:block;width:100%;height:100%;background:var(--editorial-red);transform-origin:left;transform:scaleX(var(--v53-progress,0))}
-html.movx-v53 #process .v53-portal-fallback{position:absolute;inset:0;z-index:2;display:grid;place-items:center;pointer-events:none;perspective:1400px;opacity:1;visibility:visible}
+html.movx-v53 #process .v53-portal-fallback{position:absolute;inset:0;z-index:3;display:grid;place-items:center;pointer-events:none;perspective:1400px;opacity:1;visibility:visible}
 html.movx-v53 #process .v53-portal-fallback img{
   width:min(34vw,470px);max-height:60vh;object-fit:cover;border:12px solid #171412;box-shadow:0 32px 80px rgba(0,0,0,.22);
-  transform-style:preserve-3d;will-change:transform,opacity,clip-path;clip-path:circle(75% at 50% 50%)
+  transform-style:preserve-3d;will-change:transform,opacity,mask-image;
+  -webkit-mask-image:radial-gradient(circle at 50% 50%,transparent 0 var(--v53-hole,0%),#000 calc(var(--v53-hole,0%) + 5%));
+  mask-image:radial-gradient(circle at 50% 50%,transparent 0 var(--v53-hole,0%),#000 calc(var(--v53-hole,0%) + 5%));
 }
-html.movx-v53.v53-portal-painted #process .v53-portal-fallback{opacity:0;visibility:hidden}
 html.movx-v53.v53-portal-fallback #process .v53-portal-canvas{display:none!important}
 html.movx-v53.v53-portal-fallback #process .v53-portal-fallback{opacity:1;visibility:visible}
 html.movx-v53 #process.v53-portal-host .process-title,
@@ -74,7 +75,7 @@ html.movx-v53 #process.v53-portal-host.v53-portal-through .process-title{opacity
   html.movx-v53 #process .v53-portal-sticky{position:relative;height:auto;overflow:visible}
   html.movx-v53 #process .v53-portal-canvas,html.movx-v53 #process .v53-portal-vignette,html.movx-v53 #process .v53-portal-copy{display:none!important}
   html.movx-v53 #process .v53-portal-fallback{position:relative;inset:auto;display:block;opacity:1!important;visibility:visible!important;perspective:none}
-  html.movx-v53 #process .v53-portal-fallback img{display:block;width:min(100%,620px);max-height:none;margin:0 auto;border-width:8px;clip-path:none!important;transform:none!important}
+  html.movx-v53 #process .v53-portal-fallback img{display:block;width:min(100%,620px);max-height:none;margin:0 auto;border-width:8px;-webkit-mask-image:none!important;mask-image:none!important;transform:none!important}
   html.movx-v53 #process .v53-process-preview{position:relative;inset:auto;opacity:1!important;transform:none!important;margin:36px 0 0}
   html.movx-v53 #process .v53-process-preview::before,html.movx-v53 #process .v53-process-preview::after,html.movx-v53 #process .v53-process-preview__rail{display:none}
   html.movx-v53 #process .v53-process-preview__eyebrow,html.movx-v53 #process .v53-process-preview__title,html.movx-v53 #process .v53-process-preview__step{position:relative;left:auto;right:auto;top:auto;bottom:auto;transform:none}
@@ -86,5 +87,5 @@ html.movx-v53 #process.v53-portal-host.v53-portal-through .process-title{opacity
   html.movx-v53 #process .v53-portal-sequence{min-height:auto;padding:72px max(24px,5vw) 90px}
   html.movx-v53 #process .v53-portal-sticky{position:relative;height:auto}
   html.movx-v53 #process .v53-portal-fallback{position:relative;opacity:1!important;visibility:visible!important}
-  html.movx-v53 #process .v53-portal-fallback img{transform:none!important;clip-path:none!important}
+  html.movx-v53 #process .v53-portal-fallback img{transform:none!important;-webkit-mask-image:none!important;mask-image:none!important}
 }
