@@ -132,4 +132,19 @@ if footer_patch.exists() and styles_path.exists():
         styles = styles.rstrip() + '\n\n' + footer_css.strip() + '\n'
         styles_path.write_text(styles, encoding='utf-8')
 
-print('MOVX build audit applied: runtime optimized; v71 metadata + v72 editorial footer injected')
+# 8) v75 — ship a dedicated mobile-hero art-direction layer with its own cache key.
+# The old CSS stack left the image at left:50% after a newer transform dropped
+# translateX(-50%), which made the mobile hero look accidentally half-empty.
+mobile_hero_patch = Path('patches/v75-mobile-hero.css')
+if mobile_hero_patch.exists():
+    target = root / 'v75-mobile-hero.css'
+    target.write_text(mobile_hero_patch.read_text(encoding='utf-8'), encoding='utf-8')
+    social = root / 'social-media.html'
+    if social.exists():
+        doc = social.read_text(encoding='utf-8')
+        marker = '<link rel="stylesheet" href="v75-mobile-hero.css?v=75-mobile-hero">'
+        if marker not in doc:
+            doc = doc.replace('</head>', marker + '\n</head>')
+            social.write_text(doc, encoding='utf-8')
+
+print('MOVX build audit applied: runtime optimized; v71 metadata + v72 footer + v75 mobile hero injected')
