@@ -120,6 +120,8 @@
     if(labelNode)labelNode.textContent=chapter.label;
   };
   setChapter(current);
+  root.__MOVX_V68_SET_CHAPTER__=setChapter;
+  root.__MOVX_V68_CHAPTER_FROM_HREF__=fromHref;
 
   document.addEventListener('click',event=>{
     const link=event.target.closest?.('a[data-transition]');
@@ -170,6 +172,146 @@
         html.movx-v68 .v68-curtain-label{grid-column:1;font-size:clamp(54px,17vw,82px);white-space:normal;max-width:7.5ch}
       }
       @media(prefers-reduced-motion:reduce){html.movx-v68 .page-curtain{display:none!important}}
+    `;
+    document.head.appendChild(style);
+  }
+})();
+
+/* MOVX v69 — unified navigation + theme polish
+   Fixes dynamically inserted discipline links so they actually use the editorial handoff,
+   upgrades the mobile menu into a full editorial navigation plane, and makes theme changes
+   reveal from the control that triggered them. */
+(() => {
+  'use strict';
+  const root=document.documentElement;
+  const body=document.body;
+  const menuButton=document.querySelector('.menu-button');
+  const mobileMenu=document.querySelector('.mobile-menu');
+  const themeButton=document.querySelector('[data-theme-toggle]');
+  const reduced=new URLSearchParams(location.search).has('static')||matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(!body)return;
+
+  root.classList.add('movx-v69');
+  root.dataset.movxGlobalNavigation='v69-unified';
+
+  const closeMenu=()=>{
+    if(!mobileMenu||!menuButton)return;
+    mobileMenu.classList.remove('open');
+    menuButton.setAttribute('aria-expanded','false');
+    body.classList.remove('v69-menu-open');
+  };
+  const syncMenu=()=>{
+    if(!mobileMenu||!menuButton)return;
+    const open=mobileMenu.classList.contains('open');
+    body.classList.toggle('v69-menu-open',open);
+    menuButton.classList.toggle('v69-menu-active',open);
+  };
+
+  if(menuButton&&mobileMenu){
+    menuButton.addEventListener('click',()=>requestAnimationFrame(syncMenu));
+    document.addEventListener('keydown',event=>{if(event.key==='Escape'&&mobileMenu.classList.contains('open'))closeMenu()});
+    mobileMenu.querySelectorAll('a').forEach(link=>{
+      const href=link.getAttribute('href')||'';
+      if(/\.html(?:#|$)/i.test(href))link.setAttribute('data-transition','');
+      link.addEventListener('click',()=>{
+        if(href.startsWith('#'))requestAnimationFrame(closeMenu);
+      });
+    });
+  }
+
+  /* Dynamic discipline links are created after the base runtime bound its static links.
+     This delegated owner gives only those late links the same 560ms curtain handoff. */
+  document.addEventListener('click',event=>{
+    const link=event.target.closest?.('.v65-discipline-switcher a[data-transition],.v65-mobile-disciplines a[data-transition],.v65-footer-disciplines a[data-transition],.mobile-menu>a[data-transition]');
+    if(!link)return;
+    const href=link.getAttribute('href');
+    if(!href||href.startsWith('http')||link.target==='_blank')return;
+    event.preventDefault();
+    if(link.getAttribute('aria-current')==='page'){
+      closeMenu();
+      return;
+    }
+    const chapter=root.__MOVX_V68_CHAPTER_FROM_HREF__?.(href);
+    if(chapter)root.__MOVX_V68_SET_CHAPTER__?.(chapter);
+    closeMenu();
+    if(reduced){location.href=href;return;}
+    body.classList.remove('page-ready');
+    body.classList.add('page-leaving');
+    setTimeout(()=>{location.href=href},560);
+  });
+
+  /* Capture the physical origin before the base theme handler starts ViewTransition. */
+  const rememberThemeOrigin=event=>{
+    if(!themeButton)return;
+    const rect=themeButton.getBoundingClientRect();
+    const x=Number.isFinite(event?.clientX)&&event.clientX>0?event.clientX:rect.left+rect.width/2;
+    const y=Number.isFinite(event?.clientY)&&event.clientY>0?event.clientY:rect.top+rect.height/2;
+    root.style.setProperty('--v69-theme-x',`${x}px`);
+    root.style.setProperty('--v69-theme-y',`${y}px`);
+  };
+  themeButton?.addEventListener('pointerdown',rememberThemeOrigin,{capture:true,passive:true});
+  themeButton?.addEventListener('click',rememberThemeOrigin,{capture:true});
+
+  if(!document.getElementById('movx-v69-global-style')){
+    const style=document.createElement('style');
+    style.id='movx-v69-global-style';
+    style.textContent=`
+      html.movx-v69 body{--v69-ease:cubic-bezier(.16,1,.3,1);--v69-theme-x:50vw;--v69-theme-y:38px}
+      html.movx-v69 body.v69-menu-open{overflow:hidden!important}
+      html.movx-v69 .menu-button{position:relative;transition:opacity .35s ease,color .35s ease}
+      html.movx-v69 .menu-button::after{
+        content:"";position:absolute;left:8px;right:8px;bottom:3px;height:1px;background:currentColor;
+        transform:scaleX(0);transform-origin:left;transition:transform .55s var(--v69-ease)
+      }
+      html.movx-v69 .menu-button.v69-menu-active::after{transform:scaleX(1)}
+
+      @media(max-width:780px){
+        html.movx-v69 .mobile-menu,
+        html.movx-v69 .mobile-menu.open{
+          display:grid!important;position:fixed!important;left:0!important;right:0!important;top:66px!important;bottom:0!important;
+          z-index:190!important;align-content:start!important;gap:0!important;overflow:auto!important;
+          padding:clamp(20px,6vw,32px) var(--pad,20px) clamp(48px,10vw,80px)!important;
+          background:color-mix(in srgb,var(--bg) 97%,transparent)!important;
+          border-bottom:0!important;border-top:1px solid var(--line)!important;
+          opacity:0!important;visibility:hidden!important;pointer-events:none!important;
+          transform:translate3d(0,-10px,0)!important;
+          transition:opacity .38s ease,transform .65s var(--v69-ease),visibility 0s linear .65s,background .45s ease,color .45s ease!important
+        }
+        html.movx-v69 .mobile-menu.open{
+          opacity:1!important;visibility:visible!important;pointer-events:auto!important;
+          transform:translate3d(0,0,0)!important;transition-delay:0s!important
+        }
+        html.movx-v69 .mobile-menu>.v65-mobile-disciplines{order:0;margin-bottom:clamp(30px,8vw,54px)!important}
+        html.movx-v69 .mobile-menu>a{
+          order:1!important;display:flex!important;align-items:baseline!important;justify-content:space-between!important;
+          min-height:0!important;padding:clamp(14px,4vw,22px) 0!important;border-bottom:1px solid var(--line)!important;
+          color:var(--fg)!important;font-family:var(--serif,Georgia,'Times New Roman',serif)!important;
+          font-size:clamp(42px,12.6vw,70px)!important;font-weight:400!important;line-height:.86!important;letter-spacing:-.06em!important;
+          opacity:1!important;transform:translate3d(0,14px,0);transition:transform .7s var(--v69-ease),opacity .45s ease!important
+        }
+        html.movx-v69 .mobile-menu.open>a{transform:translate3d(0,0,0)}
+        html.movx-v69 .mobile-menu.open>a:nth-of-type(1){transition-delay:.04s!important}
+        html.movx-v69 .mobile-menu.open>a:nth-of-type(2){transition-delay:.08s!important}
+        html.movx-v69 .mobile-menu.open>a:nth-of-type(3){transition-delay:.12s!important}
+        html.movx-v69 .mobile-menu.open>a:nth-of-type(4){transition-delay:.16s!important}
+      }
+
+      @supports(view-transition-name:root){
+        html.movx-v69{view-transition-name:root}
+        ::view-transition-old(root){animation:none!important;z-index:1}
+        ::view-transition-new(root){
+          z-index:2;animation:v69-theme-reveal .66s var(--v69-ease) both!important;
+          mix-blend-mode:normal
+        }
+        @keyframes v69-theme-reveal{
+          from{clip-path:circle(0 at var(--v69-theme-x,50vw) var(--v69-theme-y,38px))}
+          to{clip-path:circle(150vmax at var(--v69-theme-x,50vw) var(--v69-theme-y,38px))}
+        }
+      }
+      @media(prefers-reduced-motion:reduce){
+        html.movx-v69 .mobile-menu,html.movx-v69 .mobile-menu.open{transform:none!important;transition:none!important}
+        html.movx-v69 .mobile-menu>a{transform:none!important;transition:none!important}
+      }
     `;
     document.head.appendChild(style);
   }
