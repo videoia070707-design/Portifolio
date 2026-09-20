@@ -14,8 +14,25 @@ html.movx-v57 .v52-architecture-stage,
 html.movx-v57 .v54-portal-sequence,
 html.movx-v57 .v55-process-canvas,
 html.movx-v57 .v56-handoff-layer{pointer-events:none!important}
-html.movx-v57 .v42-parallax-ghost{opacity:min(var(--v42-ghost-o,.2),.22)!important}
-html.movx-v57 .v42-parallax-index{opacity:.7}
+html.movx-v57 :is(#about,#services,#process,#contact){isolation:isolate}
+html.movx-v57 :is(#about,#services,#process,#contact)>.container{position:relative;z-index:3}
+html.movx-v57 :is(#about,#services,#process,#contact) .v42-parallax-layer{z-index:0!important}
+html.movx-v57 :is(#about,#services,#process,#contact) .v42-parallax-ghost{opacity:.045!important}
+html.movx-v57 :is(#about,#services,#process,#contact) .v42-parallax-index{opacity:.16!important}
+html.movx-v57 :is(#about,#services,#process,#contact) .v42-parallax-rule{opacity:.22!important}
+
+/* The archive intro is secondary, not invisible. */
+html.movx-v57 #livingArchive .archive-head h2{color:color-mix(in srgb,var(--fg) 21%,var(--bg))!important}
+html.movx-v57 #livingArchive .archive-head>p{color:color-mix(in srgb,var(--fg) 58%,var(--bg))!important;opacity:1!important}
+html.movx-v57 #livingArchive .archive-head .kicker{color:color-mix(in srgb,var(--fg) 82%,var(--bg))!important}
+
+/* Services remain readable while focus motion still identifies the active row. */
+html.movx-v57 #services .services-list .service-row{opacity:.72!important}
+html.movx-v57 #services .services-list .service-row.v42-reading,
+html.movx-v57 #services .services-list .service-row:hover,
+html.movx-v57 #services .services-list .service-row:focus-within{opacity:1!important}
+html.movx-v57 #services .service-row h3{color:color-mix(in srgb,var(--fg) 90%,var(--muted))!important}
+html.movx-v57 #services .service-row p{color:color-mix(in srgb,var(--fg) 64%,var(--muted))!important}
 
 /* PROCESS: the readable layer owns hierarchy; 3D supports it instead of sitting on top of it. */
 @media(min-width:981px){
@@ -25,6 +42,8 @@ html.movx-v57 .v42-parallax-index{opacity:.7}
     padding-left:var(--v57-safe-pad)!important;
     padding-right:var(--v57-safe-pad)!important;
   }
+  html.movx-v57 #process .process-title,
+  html.movx-v57 #process .process-list{grid-column:auto!important}
   html.movx-v57 #process .process-title{max-width:520px!important;padding-right:18px;z-index:7!important}
   html.movx-v57 #process .process-title h2{
     max-width:10.8ch!important;
@@ -58,7 +77,7 @@ html.movx-v57 .v42-parallax-index{opacity:.7}
   }
   html.movx-v57 #process .process-list p{
     max-width:44ch!important;
-    font-size:13.5px!important;
+    font-size:14px!important;
     line-height:1.66!important;
     overflow:visible!important;
   }
@@ -97,6 +116,10 @@ html.movx-v57 :focus-visible{outline:2px solid var(--editorial-red)!important;ou
 }
 
 @media(max-width:980px){
+  html.movx-v57 :is(#about,#services,#process,#contact) .v42-parallax-ghost{opacity:.026!important}
+  html.movx-v57 #services .services-list .service-row{opacity:1!important}
+  html.movx-v57 #services .service-row h3{color:var(--fg)!important}
+  html.movx-v57 #services .service-row p{color:color-mix(in srgb,var(--fg) 66%,var(--muted))!important}
   html.movx-v57 #process .process-title h2{max-width:11ch!important;font-size:clamp(48px,10vw,76px)!important;line-height:.91!important}
   html.movx-v57 #process .process-list li{opacity:1!important}
   html.movx-v57 #process .process-list li>div{grid-template-columns:1fr!important;gap:8px!important}
@@ -105,6 +128,7 @@ html.movx-v57 :focus-visible{outline:2px solid var(--editorial-red)!important;ou
 }
 
 @media(max-width:540px){
+  html.movx-v57 #livingArchive .archive-head h2{color:color-mix(in srgb,var(--fg) 17%,var(--bg))!important}
   html.movx-v57 #process .process-title h2{font-size:clamp(44px,13vw,62px)!important;max-width:10.8ch!important}
   html.movx-v57 #process .process-list strong{font-size:30px!important}
   html.movx-v57 #process .process-list p{font-size:14px!important;line-height:1.62!important}
