@@ -191,3 +191,109 @@ html.movx-v48 .contact-section .v48-depth-seam{background:linear-gradient(90deg,
   html.movx-v48 body[data-page="social"] .contact-actions{flex-wrap:wrap!important}
 }
 @media(prefers-reduced-motion:reduce){html.movx-v48 .v48-depth-seam{display:none!important}}
+
+/* MOVX v61 — editorial motion polish.
+   Motion follows artwork and hierarchy, never the readable copy plane. */
+html.movx-v61 body{
+  --v61-ease:cubic-bezier(.16,1,.3,1);
+  --v61-ui:cubic-bezier(.4,0,.2,1);
+}
+
+/* Retire the older distorted GPU portal. v61 uses the clicked artwork itself as the transition. */
+html.movx-v61 .v41-project-transition{display:none!important}
+
+/* Media appears with a restrained photographic reveal: no flying cards, no elastic copy. */
+@media(min-width:721px) and (prefers-reduced-motion:no-preference){
+  html.movx-v61 .v61-media-stage{
+    opacity:.68;
+    clip-path:inset(2.6% 0 0 0);
+    -webkit-clip-path:inset(2.6% 0 0 0);
+    filter:saturate(.94) contrast(.99);
+    transition:
+      opacity 1.05s var(--v61-ease) var(--v61-delay,0ms),
+      clip-path 1.28s var(--v61-ease) var(--v61-delay,0ms),
+      -webkit-clip-path 1.28s var(--v61-ease) var(--v61-delay,0ms),
+      filter 1.2s var(--v61-ui) var(--v61-delay,0ms)!important;
+  }
+  html.movx-v61 .v61-media-stage.v61-in-view{
+    opacity:1;
+    clip-path:inset(0);
+    -webkit-clip-path:inset(0);
+    filter:none;
+  }
+}
+
+/* Hover is perceptible but calm. Older card tilt/dimming is explicitly neutralised. */
+html.movx-v61 body[data-page="social"] #loopWall .loop-card,
+html.movx-v61 body[data-page="social"] #archiveGrid .archive-card{transform:none!important}
+html.movx-v61 body[data-page="social"] #nicheGrid:has(.niche-card:hover)>.niche-card{opacity:.86!important}
+html.movx-v61 body[data-page="social"] #nicheGrid:has(.niche-card:hover)>.niche-card:hover{opacity:1!important}
+html.movx-v61 body[data-page="social"] #projectsList:has(.project-entry:hover) .project-entry{opacity:.82!important}
+html.movx-v61 body[data-page="social"] #projectsList:has(.project-entry:hover) .project-entry:hover{opacity:1!important}
+html.movx-v61 body[data-page="social"] #nicheGrid .niche-card__media img{
+  transition:transform 1.35s var(--v61-ease),filter .9s var(--v61-ui)!important;
+}
+html.movx-v61 body[data-page="social"] #nicheGrid .niche-card:hover .niche-card__media img,
+html.movx-v61 body[data-page="social"] #nicheGrid .niche-card:focus-within .niche-card__media img,
+html.movx-v61 body[data-page="social"] #nicheGrid .niche-card.active .niche-card__media img{transform:scale(1.014)!important}
+html.movx-v61 body[data-page="social"] #archiveGrid .archive-card__media img{
+  transition:transform 1.45s var(--v61-ease),filter .9s var(--v61-ui)!important;
+}
+html.movx-v61 body[data-page="social"] #archiveGrid .archive-card:hover .archive-card__media img,
+html.movx-v61 body[data-page="social"] #archiveGrid .archive-card:focus-within .archive-card__media img{transform:translate3d(0,0,0) scale(1.009)!important}
+html.movx-v61 body[data-page="social"] #projectsList .project-cover img{
+  transition:transform 1.55s var(--v61-ease),filter .9s var(--v61-ui),opacity .8s var(--v61-ui)!important;
+}
+html.movx-v61 body[data-page="social"] #projectsList .project-cover:hover img,
+html.movx-v61 body[data-page="social"] #projectsList .project-cover:focus-visible img{transform:translate3d(0,0,0) scale(1.01)!important}
+html.movx-v61 body[data-page="social"] #archiveGrid .archive-card__caption{
+  transition:border-color .8s var(--v61-ui),opacity .8s var(--v61-ui)!important;
+}
+html.movx-v61 body[data-page="social"] #archiveGrid .archive-card:hover .archive-card__caption,
+html.movx-v61 body[data-page="social"] #archiveGrid .archive-card:focus-within .archive-card__caption{border-bottom-color:color-mix(in srgb,var(--fg) 30%,transparent)!important}
+
+/* Shared-element case portal: the artwork travels to/from the case hero with no shader distortion. */
+html.movx-v61 .v61-case-portal{
+  position:fixed;
+  z-index:13000;
+  left:0;
+  top:0;
+  pointer-events:none;
+  overflow:hidden;
+  background:#0b0a09;
+  transform-origin:top left;
+  box-shadow:0 18px 56px rgba(0,0,0,.16);
+  contain:layout paint style;
+}
+html.movx-v61 .v61-case-portal img{
+  display:block;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  object-position:center;
+}
+html.movx-v61.v61-case-transitioning .case-viewer.open .case-hero__media img{opacity:0!important}
+html.movx-v61 .case-viewer.open .case-hero__eyebrow,
+html.movx-v61 .case-viewer.open .case-hero__title,
+html.movx-v61 .case-viewer.open .case-hero__deck{
+  animation:v61-case-copy-in .82s var(--v61-ease) both;
+}
+html.movx-v61 .case-viewer.open .case-hero__eyebrow{animation-delay:.12s}
+html.movx-v61 .case-viewer.open .case-hero__title{animation-delay:.18s}
+html.movx-v61 .case-viewer.open .case-hero__deck{animation-delay:.27s}
+html.movx-v61 .case-viewer.open .case-top{animation:v61-case-top-in .72s var(--v61-ease) .08s both}
+@keyframes v61-case-copy-in{from{opacity:0}to{opacity:1}}
+@keyframes v61-case-top-in{from{opacity:0}to{opacity:1}}
+
+@media(max-width:720px){
+  html.movx-v61 .v61-case-portal{display:none!important}
+  html.movx-v61 .v61-media-stage{opacity:1!important;clip-path:none!important;-webkit-clip-path:none!important;filter:none!important}
+}
+@media(prefers-reduced-motion:reduce){
+  html.movx-v61 .v61-case-portal{display:none!important}
+  html.movx-v61 .v61-media-stage{opacity:1!important;clip-path:none!important;-webkit-clip-path:none!important;filter:none!important;transition:none!important}
+  html.movx-v61 .case-viewer.open .case-hero__eyebrow,
+  html.movx-v61 .case-viewer.open .case-hero__title,
+  html.movx-v61 .case-viewer.open .case-hero__deck,
+  html.movx-v61 .case-viewer.open .case-top{animation:none!important}
+}
