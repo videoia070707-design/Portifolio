@@ -122,3 +122,229 @@
     padding-top:clamp(28px,7vw,38px)!important;
   }
 }
+
+/* MOVX v83 — stable editorial motion + black contrast chapters
+   v52/v54/v55 had overlapping ownership of the same transition/process area.
+   The visual ownership is now deliberately simplified: black editorial chapters,
+   planar readable content, motion only as subtle entry/settling — no blank WebGL stages. */
+
+/* Header safety around laptop widths: keep the full nav while it fits, collapse before collision. */
+@media (max-width:1360px) and (min-width:1181px){
+  html body .header-row{grid-template-columns:minmax(160px,.8fr) auto minmax(190px,.8fr)!important;gap:14px!important}
+  html body .wordmark small{display:none!important}
+  html body .nav{gap:16px!important;font-size:10px!important}
+  html body .header-actions{gap:7px!important}
+  html body .theme-toggle{min-width:auto!important;padding-inline:9px!important}
+  html body .language-switcher button{padding-inline:3px!important;font-size:8px!important}
+}
+@media (max-width:1180px) and (min-width:981px){
+  html body .header-row{grid-template-columns:1fr auto!important;height:64px!important}
+  html body .nav{display:none!important}
+  html body .menu-button{display:block!important}
+  html body .header-actions{grid-column:2!important}
+}
+
+/* Black becomes an intentional chapter color instead of the previous warm-brown wash. */
+html.movx-v57 body[data-page="social"] .v52-architecture-section,
+html.movx-v57 body[data-page="social"] #process.process-section{
+  --bg:#030303;
+  --fg:#f3eee9;
+  --muted:#9a918b;
+  --panel:#090909;
+  --line:rgba(255,255,255,.12);
+  --line-strong:rgba(255,255,255,.24);
+  background:#030303!important;
+  color:#f3eee9!important;
+}
+html.movx-v57 body[data-page="social"] .v52-architecture-section{
+  border-top:1px solid rgba(255,255,255,.10)!important;
+  border-bottom:1px solid rgba(255,255,255,.10)!important;
+}
+
+/* Deconstruction: remove the fragile empty 100vh WebGL stage.
+   The same real project images become a compact editorial composition. */
+@media (min-width:981px){
+  html.movx-v57.movx-v52 body[data-page="social"] .v52-architecture-section{
+    min-height:auto!important;
+    padding:clamp(92px,9vw,132px) 0!important;
+    overflow:hidden!important;
+  }
+  html.movx-v57.movx-v52 body[data-page="social"] .v52-architecture-section .v52-architecture-sticky{
+    position:relative!important;
+    top:auto!important;
+    height:auto!important;
+    min-height:0!important;
+    overflow:visible!important;
+    display:grid!important;
+    grid-template-columns:minmax(300px,.82fr) minmax(520px,1.18fr)!important;
+    gap:clamp(44px,6vw,96px)!important;
+    align-items:center!important;
+    padding:0 max(30px,5vw)!important;
+  }
+  html.movx-v57.movx-v52 body[data-page="social"] .v52-architecture-section :is(.v52-architecture-canvas,.v52-fallback-stage,.v52-architecture-vignette,.v52-architecture-phase,.v52-architecture-caption,.v52-architecture-meta){
+    display:none!important;
+  }
+  html.movx-v57.movx-v52 body[data-page="social"] .v52-architecture-section .v52-architecture-copy{
+    position:relative!important;
+    inset:auto!important;
+    width:auto!important;
+    max-width:470px!important;
+    opacity:1!important;
+    transform:none!important;
+    pointer-events:auto!important;
+  }
+  html.movx-v57.movx-v52 body[data-page="social"] .v52-architecture-section .v52-architecture-kicker{color:#a59a94!important}
+  html.movx-v57.movx-v52 body[data-page="social"] .v52-architecture-section .v52-architecture-copy h2{
+    color:#f3eee9!important;
+    max-width:7.6ch!important;
+    font-size:clamp(58px,5.4vw,92px)!important;
+    line-height:.88!important;
+  }
+  html.movx-v57.movx-v52 body[data-page="social"] .v52-architecture-section .v52-architecture-copy p{
+    color:#a59a94!important;
+    max-width:40ch!important;
+    font-size:14px!important;
+    line-height:1.7!important;
+  }
+  html.movx-v57.movx-v52 body[data-page="social"] .v52-architecture-section .v52-mobile-artworks{
+    display:grid!important;
+    grid-template-columns:minmax(0,1.18fr) minmax(0,.82fr)!important;
+    grid-template-rows:repeat(2,minmax(190px,1fr))!important;
+    gap:14px!important;
+    margin:0!important;
+    align-self:stretch!important;
+  }
+  html.movx-v57.movx-v52 body[data-page="social"] .v52-architecture-section .v52-mobile-artworks img{
+    display:block!important;
+    width:100%!important;
+    height:100%!important;
+    min-height:0!important;
+    object-fit:cover!important;
+    border:1px solid rgba(255,255,255,.12)!important;
+    background:#090909!important;
+    filter:saturate(.92) contrast(1.02)!important;
+    transform:translate3d(0,var(--v83-art-y,0px),0) scale(var(--v83-art-scale,1))!important;
+    transition:transform 1.1s cubic-bezier(.16,1,.3,1),filter .8s ease,opacity .8s ease!important;
+  }
+  html.movx-v57.movx-v52 body[data-page="social"] .v52-architecture-section .v52-mobile-artworks img:first-child{
+    grid-column:1!important;grid-row:1 / span 2!important;min-height:470px!important;
+  }
+  html.movx-v57.movx-v52 body[data-page="social"] .v52-architecture-section .v52-mobile-artworks img:nth-child(2){grid-column:2!important;grid-row:1!important}
+  html.movx-v57.movx-v52 body[data-page="social"] .v52-architecture-section .v52-mobile-artworks img:nth-child(3){grid-column:2!important;grid-row:2!important}
+}
+
+/* Retire the duplicated portal scene that produced the giant overlapping "Proc" frame. */
+@media (min-width:981px){
+  html.movx-v57.movx-v54 body[data-page="social"] #process.process-section .v54-portal-sequence{
+    display:none!important;
+    min-height:0!important;
+    height:0!important;
+    overflow:hidden!important;
+  }
+
+  /* Process now has one owner: a stable editorial list with subtle reveal, not a second 3D camera. */
+  html.movx-v57.movx-v55 body[data-page="social"] #process.process-section .v55-process-journey{
+    min-height:auto!important;
+    padding:clamp(98px,9vw,136px) 0!important;
+    background:#030303!important;
+    border-top:0!important;
+  }
+  html.movx-v57.movx-v55 body[data-page="social"] #process.process-section :is(.v55-process-canvas,.v55-process-hud,.v55-process-depth,.v55-process-outro){display:none!important}
+  html.movx-v57.movx-v55 body[data-page="social"] #process.process-section .v55-process-journey > .process-grid{
+    position:relative!important;
+    top:auto!important;
+    height:auto!important;
+    min-height:0!important;
+    margin-top:0!important;
+    padding:0 max(30px,5vw)!important;
+    display:grid!important;
+    grid-template-columns:minmax(290px,.72fr) minmax(520px,1.28fr)!important;
+    gap:clamp(50px,7vw,112px)!important;
+    align-items:start!important;
+    perspective:none!important;
+    overflow:visible!important;
+    opacity:1!important;
+    pointer-events:auto!important;
+  }
+  html.movx-v57.movx-v55 body[data-page="social"] #process.process-section .v55-process-journey > .process-grid::after{display:none!important}
+  html.movx-v57.movx-v55 body[data-page="social"] #process.process-section .process-title{
+    position:sticky!important;
+    top:104px!important;
+    align-self:start!important;
+    max-width:430px!important;
+    opacity:1!important;
+    transform:none!important;
+    pointer-events:auto!important;
+  }
+  html.movx-v57.movx-v55 body[data-page="social"] #process.process-section .process-title .kicker{color:#978e89!important}
+  html.movx-v57.movx-v55 body[data-page="social"] #process.process-section .process-title h2{
+    color:#f3eee9!important;
+    max-width:7.2ch!important;
+    font-size:clamp(58px,5.4vw,92px)!important;
+    line-height:.87!important;
+    letter-spacing:-.06em!important;
+  }
+  html.movx-v57.movx-v55 body[data-page="social"] #process.process-section .process-list{
+    position:relative!important;
+    min-height:0!important;
+    max-width:760px!important;
+    margin:0!important;
+    transform:none!important;
+    overflow:visible!important;
+    pointer-events:auto!important;
+  }
+  html.movx-v57.movx-v55 body[data-page="social"] #process.process-section .process-list li{
+    position:relative!important;
+    inset:auto!important;
+    min-height:0!important;
+    margin:0!important;
+    padding:clamp(28px,3vw,42px) 0!important;
+    border-top:1px solid rgba(255,255,255,.13)!important;
+    border-bottom:0!important;
+    background:transparent!important;
+    backdrop-filter:none!important;
+    -webkit-backdrop-filter:none!important;
+    box-shadow:none!important;
+    opacity:1!important;
+    transform:none!important;
+    pointer-events:auto!important;
+    transition:border-color .55s ease,opacity .7s ease!important;
+  }
+  html.movx-v57.movx-v55 body[data-page="social"] #process.process-section .process-list li:last-child{border-bottom:1px solid rgba(255,255,255,.13)!important}
+  html.movx-v57.movx-v55 body[data-page="social"] #process.process-section .process-list li > span{color:#d14b3d!important}
+  html.movx-v57.movx-v55 body[data-page="social"] #process.process-section .process-list strong{color:#f3eee9!important}
+  html.movx-v57.movx-v55 body[data-page="social"] #process.process-section .process-list p{color:#9f9691!important;max-width:48ch!important}
+  html.movx-v57.movx-v55 body[data-page="social"] #process.process-section .process-list li:hover{border-color:rgba(255,255,255,.32)!important}
+}
+
+/* v83 motion: restrained, readable and independent from WebGL. */
+html.movx-v83 body[data-page="social"] .v83-motion-item{
+  opacity:0;
+  transform:translate3d(0,22px,0);
+  transition:opacity .9s cubic-bezier(.16,1,.3,1),transform 1.05s cubic-bezier(.16,1,.3,1)!important;
+  transition-delay:calc(var(--v83-index,0) * 70ms)!important;
+}
+html.movx-v83 body[data-page="social"] .v83-motion-item.v83-in{
+  opacity:1!important;
+  transform:translate3d(0,0,0)!important;
+}
+html.movx-v83 body[data-page="social"] .v52-mobile-artworks .v83-motion-item:nth-child(1){--v83-art-y:8px;--v83-art-scale:.992}
+html.movx-v83 body[data-page="social"] .v52-mobile-artworks .v83-motion-item:nth-child(2){--v83-art-y:-5px;--v83-art-scale:.996}
+html.movx-v83 body[data-page="social"] .v52-mobile-artworks .v83-motion-item:nth-child(3){--v83-art-y:5px;--v83-art-scale:.996}
+html.movx-v83 body[data-page="social"] .v52-mobile-artworks .v83-motion-item.v83-in{--v83-art-y:0px;--v83-art-scale:1}
+
+/* Mobile keeps the same stable content flow; black contrast remains intentional. */
+@media (max-width:980px){
+  html.movx-v57 body[data-page="social"] .v52-architecture-section,
+  html.movx-v57 body[data-page="social"] #process.process-section{background:#030303!important;color:#f3eee9!important}
+  html.movx-v57.movx-v52 body[data-page="social"] .v52-architecture-section .v52-architecture-copy h2,
+  html.movx-v57.movx-v55 body[data-page="social"] #process.process-section .process-title h2,
+  html.movx-v57.movx-v55 body[data-page="social"] #process.process-section .process-list strong{color:#f3eee9!important}
+  html.movx-v57.movx-v52 body[data-page="social"] .v52-architecture-section .v52-architecture-copy p,
+  html.movx-v57.movx-v55 body[data-page="social"] #process.process-section .process-list p{color:#a39a95!important}
+  html.movx-v57.movx-v54 body[data-page="social"] #process.process-section .v54-portal-sequence{display:none!important}
+}
+
+@media (prefers-reduced-motion:reduce){
+  html.movx-v83 body[data-page="social"] .v83-motion-item{opacity:1!important;transform:none!important;transition:none!important}
+}
