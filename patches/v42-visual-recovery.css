@@ -245,3 +245,11 @@ html.movx-v42 .process-list li.v42-reading::after{transform:scaleX(1)!important;
   html.movx-v42 .services-list .service-row,
   html.movx-v42 .process-list li{opacity:1!important}
 }
+
+/* MOVX v67 — mobile header collision recovery.
+   The compact tagline is redundant below phone width and was overlapping language controls. */
+@media(max-width:620px){
+  .site-header .wordmark small{display:none!important}
+  .site-header .wordmark{gap:0!important;min-width:0!important}
+  .site-header .header-row{gap:12px!important}
+}
