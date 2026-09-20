@@ -1,0 +1,156 @@
+/* MOVX v51 — archive physics / artwork extraction
+   A portfolio-specific spatial reveal between Services and Process.
+   Real works emerge from a 3D archive case, flex under motion, then align into the Process corridor. */
+html.movx-v51 .v51-artifact-section{
+  position:relative;
+  z-index:5;
+  min-height:430vh;
+  background:
+    radial-gradient(circle at 63% 43%,color-mix(in srgb,var(--editorial-red) 10%,transparent),transparent 31%),
+    radial-gradient(circle at 26% 70%,color-mix(in srgb,var(--fg) 4%,transparent),transparent 28%),
+    var(--bg);
+  border-top:1px solid color-mix(in srgb,var(--fg) 11%,transparent);
+  border-bottom:1px solid color-mix(in srgb,var(--fg) 11%,transparent);
+  isolation:isolate;
+}
+html.movx-v51 .v51-artifact-sticky{
+  position:sticky;
+  top:0;
+  height:100vh;
+  overflow:hidden;
+  isolation:isolate;
+}
+html.movx-v51 .v51-artifact-canvas{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  display:block;
+  z-index:1;
+}
+html.movx-v51 .v51-artifact-vignette{
+  position:absolute;
+  inset:0;
+  z-index:2;
+  pointer-events:none;
+  background:
+    linear-gradient(180deg,var(--bg) 0%,transparent 13%,transparent 84%,var(--bg) 100%),
+    radial-gradient(circle at 54% 48%,transparent 38%,color-mix(in srgb,var(--bg) 42%,transparent) 82%,var(--bg) 100%);
+}
+html.movx-v51 .v51-artifact-copy{
+  position:absolute;
+  z-index:4;
+  left:max(28px,5vw);
+  top:clamp(72px,8.5vh,108px);
+  width:min(500px,35vw);
+  pointer-events:none;
+}
+html.movx-v51 .v51-artifact-kicker{
+  font:700 10px/1.2 var(--mono,ui-monospace,monospace);
+  letter-spacing:.18em;
+  text-transform:uppercase;
+  color:var(--muted);
+}
+html.movx-v51 .v51-artifact-copy h2{
+  margin:14px 0 0;
+  max-width:7ch;
+  font-family:var(--serif);
+  font-weight:400;
+  font-size:clamp(54px,6vw,98px);
+  line-height:.86;
+  letter-spacing:-.066em;
+}
+html.movx-v51 .v51-artifact-copy p{
+  margin:20px 0 0;
+  max-width:35ch;
+  color:var(--muted);
+  font-size:13px;
+  line-height:1.62;
+}
+html.movx-v51 .v51-artifact-meta{
+  position:absolute;
+  z-index:4;
+  right:max(28px,5vw);
+  bottom:clamp(38px,6vh,70px);
+  display:grid;
+  grid-template-columns:auto 86px auto;
+  gap:14px;
+  align-items:center;
+  font:700 9px/1 var(--mono,ui-monospace,monospace);
+  letter-spacing:.14em;
+  text-transform:uppercase;
+  color:var(--muted);
+}
+html.movx-v51 .v51-artifact-meta .v51-progress{
+  width:86px;
+  height:1px;
+  background:color-mix(in srgb,var(--fg) 14%,transparent);
+  overflow:hidden;
+}
+html.movx-v51 .v51-artifact-meta .v51-progress::after{
+  content:"";
+  display:block;
+  width:100%;
+  height:100%;
+  background:var(--editorial-red);
+  transform-origin:left;
+  transform:scaleX(var(--v51-progress,0));
+}
+html.movx-v51 .v51-artifact-caption{
+  position:absolute;
+  z-index:4;
+  left:max(28px,5vw);
+  bottom:clamp(38px,6vh,70px);
+  display:flex;
+  align-items:center;
+  gap:12px;
+  max-width:42vw;
+  opacity:var(--v51-caption-o,0);
+  transform:translateY(var(--v51-caption-y,8px));
+  transition:opacity .22s linear,transform .22s linear;
+  pointer-events:none;
+}
+html.movx-v51 .v51-artifact-caption::before{
+  content:"";
+  width:34px;
+  height:1px;
+  flex:0 0 auto;
+  background:var(--editorial-red);
+}
+html.movx-v51 .v51-artifact-caption span{
+  font:600 11px/1.3 var(--sans,Arial,sans-serif);
+  letter-spacing:.01em;
+  color:color-mix(in srgb,var(--fg) 74%,transparent);
+}
+html.movx-v51.v51-artifact-active .v49-journey-stage{
+  opacity:var(--v51-journey-opacity,.08)!important;
+}
+html.movx-v51 .v51-mobile-artworks{display:none}
+
+@media(max-width:980px){
+  html.movx-v51 .v51-artifact-section{min-height:auto;padding:92px 0 110px}
+  html.movx-v51 .v51-artifact-sticky{position:relative;height:auto;overflow:visible}
+  html.movx-v51 .v51-artifact-canvas,
+  html.movx-v51 .v51-artifact-vignette{display:none}
+  html.movx-v51 .v51-artifact-copy{position:relative;left:auto;top:auto;width:auto;margin:0 max(24px,5vw)}
+  html.movx-v51 .v51-artifact-copy h2{font-size:clamp(48px,12vw,74px);max-width:8ch}
+  html.movx-v51 .v51-artifact-meta,
+  html.movx-v51 .v51-artifact-caption{display:none}
+  html.movx-v51 .v51-mobile-artworks{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:10px;
+    margin:42px max(24px,5vw) 0;
+  }
+  html.movx-v51 .v51-mobile-artworks img{
+    display:block;
+    width:100%;
+    height:auto;
+    border:1px solid color-mix(in srgb,var(--fg) 12%,transparent);
+  }
+  html.movx-v51 .v51-mobile-artworks img:first-child{grid-column:1/-1}
+}
+@media(prefers-reduced-motion:reduce){
+  html.movx-v51 .v51-artifact-canvas,
+  html.movx-v51 .v51-artifact-vignette{display:none!important}
+}
