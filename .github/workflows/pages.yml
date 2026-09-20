@@ -211,6 +211,7 @@ jobs:
           page.on('pageerror',err=>errors.push(String(err)));
           await page.goto('http://127.0.0.1:4173/v54.html?v=54-native-portal',{waitUntil:'networkidle'});
           await page.waitForSelector('.v54-portal-sequence',{state:'attached',timeout:15000});
+          await page.evaluate(()=>{document.documentElement.style.scrollBehavior='auto';document.body.style.scrollBehavior='auto';});
           const snap=async(progress,path)=>{
             await page.evaluate(p=>{
               const s=document.querySelector('.v54-portal-sequence');
@@ -218,7 +219,7 @@ jobs:
               const travel=Math.max(1,s.offsetHeight-window.innerHeight);
               window.scrollTo(0,top+travel*p);
             },progress);
-            await page.waitForTimeout(900);
+            await page.waitForTimeout(650);
             const state=await page.evaluate(()=>{
               const s=document.querySelector('.v54-portal-sequence');
               const img=document.querySelector('.v54-artwork-wall img');
@@ -233,10 +234,10 @@ jobs:
           const wall=await snap(.46,'_site/preview-v54-wall.png');
           const portal=await snap(.68,'_site/preview-v54-portal.png');
           const reveal=await snap(.91,'_site/preview-v54-process-reveal.png');
-          if(approach.p<.12) throw new Error('Native portal progress did not advance at approach');
-          if(wall.wall<.65||wall.opacity<.55) throw new Error('Artwork did not become a visible wall');
-          if(portal.through<.25) throw new Error('Portal aperture did not open');
-          if(reveal.p<.80) throw new Error('Process reveal did not reach final phase');
+          if(approach.p<.18) throw new Error('Native portal progress did not advance at approach');
+          if(wall.p<.40||wall.wall<.85||wall.opacity<.7) throw new Error('Artwork did not become a visible wall');
+          if(portal.p<.60||portal.through<.25) throw new Error('Portal aperture did not open');
+          if(reveal.p<.84||reveal.through<.85) throw new Error('Process reveal did not reach final phase');
           if(errors.length) throw new Error('Preview page errors: '+errors.join(' | '));
           await browser.close();
           NODE
