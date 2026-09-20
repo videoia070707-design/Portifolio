@@ -1,0 +1,153 @@
+/* MOVX v45 — immersive continuity + process camera refinement
+   One authored spatial language for Sobre -> Servicos -> Processo -> Contato.
+   Essential copy stays in normal DOM. Decorative planes and the process scene own depth. */
+html.movx-v45 body{
+  --v45-ease:cubic-bezier(.16,1,.3,1);
+  --v45-ui:cubic-bezier(.4,0,.2,1);
+  --v45-line:color-mix(in srgb,var(--fg) 14%,transparent);
+  --v45-line-strong:color-mix(in srgb,var(--fg) 34%,transparent);
+  --v45-accent:var(--editorial-red,#9c2e24);
+}
+
+/* Retire older lower-scene owners. Archive recovery from v42 remains. */
+html.movx-v45 .v42-parallax-layer,
+html.movx-v45 .v43-depth-stage,
+html.movx-v45 .v43-process-stage,
+html.movx-v45 .v43-journey-meter,
+html.movx-v45 .v44-css-stage,
+html.movx-v45 .v44-process-stage{display:none!important}
+
+/* Hard archive guard: dense work wall, no return to the old 12-column holes. */
+html.movx-v45 body[data-page="social"] #filterBoard{
+  position:relative!important;top:auto!important;z-index:6!important;
+  margin:0 0 clamp(38px,4.5vw,66px)!important;padding:0!important;
+  background:transparent!important;backdrop-filter:none!important;box-shadow:none!important;
+  border-top:1px solid var(--v45-line-strong)!important;border-bottom:1px solid var(--v45-line)!important;
+}
+html.movx-v45 body[data-page="social"] #archiveGrid{
+  display:block!important;column-count:3!important;column-gap:clamp(16px,1.55vw,24px)!important;opacity:1!important;
+}
+html.movx-v45 body[data-page="social"] #archiveGrid .archive-card{
+  display:inline-block!important;width:100%!important;grid-column:auto!important;break-inside:avoid!important;
+  margin:0 0 clamp(30px,3.1vw,48px)!important;transform:none!important;content-visibility:visible!important;contain:none!important;
+}
+html.movx-v45 body[data-page="social"] #archiveGrid .archive-card__media{width:100%!important;aspect-ratio:auto!important;overflow:hidden!important;background:transparent!important}
+html.movx-v45 body[data-page="social"] #archiveGrid .archive-card__media img{
+  display:block!important;width:100%!important;height:auto!important;max-height:none!important;aspect-ratio:auto!important;object-fit:contain!important;
+}
+
+/* Shared lower-chapter architecture. */
+html.movx-v45 .about-section,
+html.movx-v45 .services-section,
+html.movx-v45 .process-section,
+html.movx-v45 .contact-section{
+  position:relative!important;isolation:isolate;overflow:clip!important;
+}
+html.movx-v45 .about-section>.container,
+html.movx-v45 .services-section>.container,
+html.movx-v45 .process-section>.container,
+html.movx-v45 .contact-section>.container{position:relative;z-index:7}
+
+html.movx-v45 .v45-css-stage{
+  position:absolute;inset:0;z-index:1;overflow:hidden;pointer-events:none;
+  perspective:860px;perspective-origin:50% 48%;transform-style:preserve-3d;
+}
+html.movx-v45 .v45-word{
+  position:absolute;left:50%;top:50%;white-space:nowrap;
+  font-family:var(--serif,Georgia,'Times New Roman',serif);font-weight:400;line-height:.72;letter-spacing:-.08em;
+  color:transparent;-webkit-text-stroke:1px color-mix(in srgb,var(--fg) 18%,transparent);
+  transform-style:preserve-3d;will-change:transform,opacity;
+}
+html.movx-v45 .v45-axis{
+  position:absolute;left:50%;top:50%;width:min(82vw,1180px);height:1px;
+  background:linear-gradient(90deg,transparent,var(--v45-line-strong) 15%,var(--v45-line-strong) 85%,transparent);
+  transform-origin:center;will-change:transform,opacity;
+}
+
+/* ABOUT — visible entry into spatial mode, without moving the reading copy. */
+html.movx-v45 .about-section{min-height:clamp(920px,128vh,1380px)!important}
+html.movx-v45 .about-section .v45-about-word{font-size:clamp(230px,36vw,680px)}
+html.movx-v45 .v45-about-brand{
+  position:absolute;left:7%;bottom:12%;white-space:nowrap;
+  font:800 clamp(82px,13vw,230px)/.78 var(--sans,Arial,sans-serif);letter-spacing:-.078em;
+  color:color-mix(in srgb,var(--fg) 6%,transparent);will-change:transform,opacity;
+}
+html.movx-v45 .about-section .v45-axis{top:73%}
+
+/* SERVICES — chapter markers feel like depth plates, not cards. */
+html.movx-v45 .services-section{min-height:clamp(1140px,160vh,1800px)!important}
+html.movx-v45 .v45-services-stage{perspective:800px}
+html.movx-v45 .v45-service-marker{
+  position:absolute;left:50%;top:50%;width:min(78vw,1120px);display:grid;grid-template-columns:auto 1fr;gap:34px;align-items:center;
+  transform-style:preserve-3d;will-change:transform,opacity;
+}
+html.movx-v45 .v45-service-marker b{
+  font:700 clamp(110px,18vw,300px)/.68 var(--mono,ui-monospace,monospace);letter-spacing:-.1em;
+  color:color-mix(in srgb,var(--fg) 7%,transparent);
+}
+html.movx-v45 .v45-service-marker i{height:1px;background:var(--v45-line-strong);opacity:.65}
+html.movx-v45 .v45-service-marker small{
+  grid-column:2;max-width:22ch;margin-top:-24px;
+  font:600 clamp(12px,1.15vw,16px)/1.2 var(--sans,Arial,sans-serif);letter-spacing:.02em;text-transform:uppercase;
+  color:color-mix(in srgb,var(--fg) 16%,transparent);
+}
+html.movx-v45 .services-list .service-row{position:relative;z-index:8}
+html.movx-v45 .services-list.v45-has-current .service-row{opacity:.4}
+html.movx-v45 .services-list.v45-has-current .service-row.v45-current{opacity:1}
+
+/* PROCESS — signature scene. Natural row length owns the scroll, not an arbitrary blank min-height. */
+html.movx-v45 .process-section{padding-top:0!important;padding-bottom:0!important;background:var(--bg)!important}
+html.movx-v45 .process-section>.container{
+  position:relative;z-index:8;padding-top:clamp(110px,10vw,165px)!important;padding-bottom:clamp(110px,10vw,165px)!important;
+}
+html.movx-v45 .v45-process-stage{
+  position:sticky;top:0;height:100vh;margin-bottom:-100vh;z-index:1;pointer-events:none;overflow:hidden;
+  background:
+    radial-gradient(circle at 50% 48%,color-mix(in srgb,var(--v45-accent) 8%,transparent),transparent 42%),
+    linear-gradient(180deg,color-mix(in srgb,var(--bg) 96%,transparent),var(--bg));
+}
+html.movx-v45 .v45-process-canvas{position:absolute;inset:0;width:100%;height:100%;display:block;opacity:.98}
+html.movx-v45 .v45-process-vignette{
+  position:absolute;inset:0;pointer-events:none;
+  background:
+    linear-gradient(180deg,var(--bg) 0%,transparent 18%,transparent 80%,var(--bg) 100%),
+    radial-gradient(circle at 50% 50%,transparent 30%,color-mix(in srgb,var(--bg) 62%,transparent) 78%,var(--bg) 100%);
+}
+html.movx-v45 .process-grid{position:relative;z-index:9}
+html.movx-v45 .process-title{position:sticky!important;top:116px!important;align-self:start!important}
+html.movx-v45 .process-list li{
+  min-height:76vh!important;display:grid!important;align-content:center!important;opacity:.28!important;
+  transition:opacity .52s var(--v45-ui),border-color .52s var(--v45-ui)!important;
+}
+html.movx-v45 .process-list li.v45-current{opacity:1!important;border-bottom-color:var(--v45-line-strong)!important}
+html.movx-v45 .process-list li.v45-current::after{transform:scaleX(1)!important;opacity:1!important}
+
+/* CONTACT — spatial journey resolves into a stable editorial finish. */
+html.movx-v45 .contact-section{min-height:clamp(920px,124vh,1320px)!important}
+html.movx-v45 .contact-section .v45-contact-word{
+  font-size:clamp(200px,32vw,600px);-webkit-text-stroke-color:rgba(243,238,233,.18);
+}
+html.movx-v45 .contact-section .v45-axis{top:70%;background:linear-gradient(90deg,transparent,rgba(243,238,233,.28) 15%,rgba(243,238,233,.28) 85%,transparent)}
+
+/* Theme/readiness hooks. */
+html.movx-v45.v45-runtime-ready .about-section,
+html.movx-v45.v45-runtime-ready .services-section,
+html.movx-v45.v45-runtime-ready .process-section,
+html.movx-v45.v45-runtime-ready .contact-section{--v45-runtime:1}
+
+@media(max-width:980px){
+  html.movx-v45 body[data-page="social"] #archiveGrid{column-count:2!important}
+  html.movx-v45 .v45-process-stage{display:none!important}
+  html.movx-v45 .process-list li{min-height:0!important;opacity:1!important}
+  html.movx-v45 .about-section,html.movx-v45 .services-section,html.movx-v45 .contact-section{min-height:auto!important}
+  html.movx-v45 .v45-service-marker small{display:none}
+}
+@media(max-width:680px){
+  html.movx-v45 body[data-page="social"] #archiveGrid{column-count:1!important}
+  html.movx-v45 body[data-page="social"] #filterBoard .archive-filter-row{grid-template-columns:1fr!important;gap:0!important;padding:8px 0!important}
+  html.movx-v45 .v45-css-stage{opacity:.42}
+}
+@media(prefers-reduced-motion:reduce){
+  html.movx-v45 .v45-css-stage,html.movx-v45 .v45-process-stage{display:none!important}
+  html.movx-v45 .process-list li,html.movx-v45 .service-row{min-height:0!important;opacity:1!important}
+}
