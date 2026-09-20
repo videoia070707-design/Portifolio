@@ -53,5 +53,28 @@ if old2 in script:
 elif 'const scheduleCaseProgress = () =>' not in script:
     raise SystemExit('v38 optimizer: case progress hook not found')
 
+# 3) v39 registered/ran refresh helpers before its RAF variable was initialized.
+# IntersectionObserver may synchronously trigger schedule(), producing a temporal
+# dead-zone ReferenceError and disabling the parallax/depth runtime. Initialize the
+# scheduler before any refresh/observer callback can reach it.
+refresh_calls = """    refreshProjects();
+    refreshNiches();
+    refreshCaseFrames();
+"""
+if refresh_calls in script and "    let raf = 0;\n\n    refreshProjects();" not in script:
+    script = script.replace(refresh_calls, "    let raf = 0;\n\n" + refresh_calls, 1)
+
+late_raf = """    let raf = 0;
+    let lastScrollY = scrollY;
+"""
+if late_raf in script:
+    script = script.replace(late_raf, "    let lastScrollY = scrollY;\n", 1)
+
+if 'MOVX v39 — perceptible parallax + 3D scroll runtime' in script:
+    raf_pos = script.find('    let raf = 0;')
+    refresh_pos = script.find('    refreshProjects();')
+    if raf_pos < 0 or refresh_pos < 0 or raf_pos > refresh_pos:
+        raise SystemExit('v51 optimizer: v39 RAF still initializes after refresh callbacks')
+
 script_path.write_text(script, encoding='utf-8')
-print('MOVX v38 runtime audit applied: v30 scroll reads + case progress writes are rAF-throttled')
+print('MOVX v38/v51 runtime audit applied: throttled scroll work + v39 RAF initialization repaired')
