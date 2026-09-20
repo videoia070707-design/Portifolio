@@ -1,0 +1,115 @@
+name: MOVX Directory Mobile QA
+
+on:
+  workflow_run:
+    workflows: ["Deploy MOVX Portfolio"]
+    types: [completed]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  directory-mobile-qa:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install Playwright
+        run: |
+          npm install --silent --no-progress --no-audit --no-fund --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium >/tmp/playwright-install.log 2>&1
+
+      - name: Validate Directory filters on touch layouts
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p qa-directory
+          node --input-type=module <<'NODE'
+          import { chromium } from 'playwright';
+          import { writeFile } from 'node:fs/promises';
+
+          const base='https://videoia070707-design.github.io/Portifolio/';
+          const viewports=[
+            {id:'mobile-390',width:390,height:844},
+            {id:'mobile-430',width:430,height:932}
+          ];
+          const browser=await chromium.launch({headless:true,args:['--use-angle=swiftshader','--enable-webgl','--ignore-gpu-blocklist']});
+          const report={pages:[],interactions:[]};
+
+          const inspect=async page=>page.evaluate(()=>{
+            const section=document.querySelector('#archiveControls');
+            const board=document.querySelector('#filterBoard');
+            const grid=document.querySelector('#archiveGrid');
+            const status=document.querySelector('#archiveFilterStatus');
+            const formatButtons=[...document.querySelectorAll('#archiveFilters .archive-filter')];
+            const nicheButtons=[...document.querySelectorAll('#archiveNicheFilters .archive-filter')];
+            const cards=[...grid?.querySelectorAll('.archive-card')||[]];
+            const rect=el=>{if(!el)return null;const r=el.getBoundingClientRect();return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:r.width,height:r.height};};
+            return {
+              overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth,
+              section:rect(section),board:rect(board),grid:rect(grid),
+              status:(status?.textContent||'').trim(),
+              formatCount:formatButtons.length,nicheCount:nicheButtons.length,cardCount:cards.length,
+              activeFormat:formatButtons.find(x=>x.classList.contains('active'))?.dataset.projectFilter||'',
+              activeNiche:nicheButtons.find(x=>x.classList.contains('active'))?.dataset.projectNiche||'',
+              formatStripOverflow:document.querySelector('#archiveFilters')?.scrollWidth-document.querySelector('#archiveFilters')?.clientWidth||0,
+              nicheStripOverflow:document.querySelector('#archiveNicheFilters')?.scrollWidth-document.querySelector('#archiveNicheFilters')?.clientWidth||0,
+              visibleCards:cards.filter(card=>{const r=card.getBoundingClientRect(),cs=getComputedStyle(card);return r.bottom>0&&r.top<innerHeight&&parseFloat(cs.opacity||'1')>.2&&cs.display!=='none';}).length,
+              firstCardOpacity:cards[0]?parseFloat(getComputedStyle(cards[0]).opacity||'1'):null,
+              loadedImages:cards.map(c=>c.querySelector('img')).filter(img=>img?.complete&&img.naturalWidth>0).length
+            };
+          });
+
+          for(const viewport of viewports){
+            const page=await browser.newPage({viewport:{width:viewport.width,height:viewport.height},deviceScaleFactor:1,hasTouch:true,isMobile:true});
+            const errors=[]; page.on('pageerror',error=>errors.push(String(error)));
+            await page.goto(`${base}?qa-directory=${Date.now()}`,{waitUntil:'networkidle',timeout:45000});
+            await page.waitForSelector('#archiveGrid .archive-card',{state:'attached',timeout:15000});
+            await page.evaluate(()=>{const s=document.querySelector('#archiveControls');window.scrollTo(0,Math.max(0,window.scrollY+s.getBoundingClientRect().top-68));});
+            await page.waitForTimeout(1200);
+
+            const initial=await inspect(page);
+            if(initial.overflow>2) throw new Error(`${viewport.id}: document overflow ${initial.overflow}`);
+            if(initial.formatCount<5||initial.nicheCount<2) throw new Error(`${viewport.id}: filters incomplete ${JSON.stringify(initial)}`);
+            if(initial.cardCount<6) throw new Error(`${viewport.id}: directory grid incomplete ${initial.cardCount}`);
+            if(initial.activeFormat!=='all'||initial.activeNiche!=='all') throw new Error(`${viewport.id}: wrong initial filters ${JSON.stringify(initial)}`);
+            if(errors.length) throw new Error(`${viewport.id}: page errors ${errors.join(' | ')}`);
+            await page.screenshot({path:`qa-directory/${viewport.id}-initial.png`,fullPage:false});
+
+            await page.locator('#archiveFilters [data-project-filter="carousel"]').tap();
+            await page.waitForTimeout(1250);
+            const carousel=await inspect(page);
+            if(carousel.overflow>2||carousel.activeFormat!=='carousel'||carousel.cardCount<1) throw new Error(`${viewport.id}: carousel filter failed ${JSON.stringify(carousel)}`);
+            if(carousel.firstCardOpacity!==null&&carousel.firstCardOpacity<.9) throw new Error(`${viewport.id}: filtered grid did not settle ${JSON.stringify(carousel)}`);
+            await page.screenshot({path:`qa-directory/${viewport.id}-carousel.png`,fullPage:false});
+
+            await page.locator('#archiveFilters [data-project-filter="all"]').tap();
+            await page.waitForTimeout(1000);
+            const niche=page.locator('#archiveNicheFilters [data-project-niche]:not([data-project-niche="all"])').first();
+            const nicheKey=await niche.getAttribute('data-project-niche');
+            await niche.tap();
+            await page.waitForTimeout(1250);
+            const nicheState=await inspect(page);
+            if(nicheState.overflow>2||nicheState.activeNiche!==nicheKey||nicheState.cardCount<1) throw new Error(`${viewport.id}: niche filter failed ${JSON.stringify(nicheState)}`);
+            await page.screenshot({path:`qa-directory/${viewport.id}-niche.png`,fullPage:false});
+
+            report.pages.push({viewport,initial,errors});
+            report.interactions.push({viewport:viewport.id,carousel,niche:nicheState,nicheKey});
+            await page.close();
+          }
+
+          await writeFile('qa-directory/report.json',JSON.stringify(report,null,2));
+          await browser.close();
+          NODE
+
+      - name: Upload Directory QA
+        uses: actions/upload-artifact@v4
+        with:
+          name: movx-directory-mobile-qa
+          path: qa-directory
+          retention-days: 7
