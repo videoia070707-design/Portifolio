@@ -24,7 +24,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Build MOVX v52 archive deconstruction + visual QA
+      - name: Build MOVX v53 artwork portal + visual QA
         shell: bash
         run: |
           set -euo pipefail
@@ -110,6 +110,8 @@ jobs:
           cp patches/v49-journey-continuity.mjs _site/v49-journey.mjs
           cp patches/v52-process-architecture.css _site/v52-architecture.css
           cp patches/v52-process-architecture.mjs _site/v52-architecture.mjs
+          cp patches/v53-portal-through-artwork.css _site/v53-portal.css
+          cp patches/v53-portal-through-artwork.mjs _site/v53-portal.mjs
 
           python3 - <<'PY'
           from pathlib import Path
@@ -121,7 +123,7 @@ jobs:
           if not m: raise SystemExit('No <html> element found')
           attrs=m.group(1)
           cm=re.search(r'class="([^"]*)"',attrs,flags=re.I)
-          required=['movx-v42','movx-v45','movx-v46','movx-v47','movx-v48','movx-v49','movx-v52']
+          required=['movx-v42','movx-v45','movx-v46','movx-v47','movx-v48','movx-v49','movx-v52','movx-v53']
           if cm:
               classes=[c for c in cm.group(1).split() if c not in {'movx-v43','movx-v44','movx-v50','movx-v51'}]
               for cls in required:
@@ -130,30 +132,32 @@ jobs:
           else:
               attrs+=' class="'+' '.join(required)+'"'
           attrs=re.sub(r'\sdata-movx-build="[^"]*"','',attrs)
-          attrs+=' data-movx-build="v52-architecture"'
+          attrs+=' data-movx-build="v53-portal"'
           h=h[:m.start()]+'<html'+attrs+'>'+h[m.end():]
 
-          version='52-architecture'
+          version='53-portal'
           h=re.sub(r'href="styles\.css(?:\?[^\"]*)?"',f'href="styles.css?v={version}"',h)
           h=re.sub(r'src="projects\.js(?:\?[^\"]*)?"',f'src="projects.js?v={version}"',h)
           h=re.sub(r'src="i18n\.js(?:\?[^\"]*)?"',f'src="i18n.js?v={version}"',h)
           h=re.sub(r'src="script\.js(?:\?[^\"]*)?"',f'src="script.js?v={version}"',h)
 
-          extra_css=f'''  <link rel="stylesheet" href="v45-immersive.css?v={version}">\n  <link rel="stylesheet" href="v46-niche.css?v={version}">\n  <link rel="stylesheet" href="v47-territories.css?v={version}">\n  <link rel="stylesheet" href="v48-spatial.css?v={version}">\n  <link rel="stylesheet" href="v49-journey.css?v={version}">\n  <link rel="stylesheet" href="v52-architecture.css?v={version}">\n'''
+          extra_css=f'''  <link rel="stylesheet" href="v45-immersive.css?v={version}">\n  <link rel="stylesheet" href="v46-niche.css?v={version}">\n  <link rel="stylesheet" href="v47-territories.css?v={version}">\n  <link rel="stylesheet" href="v48-spatial.css?v={version}">\n  <link rel="stylesheet" href="v49-journey.css?v={version}">\n  <link rel="stylesheet" href="v52-architecture.css?v={version}">\n  <link rel="stylesheet" href="v53-portal.css?v={version}">\n'''
           h=h.replace('</head>',extra_css+'</head>')
-          runtime=f'''\n<script src="vendor/gsap.min.js?v={version}"></script>\n<script src="vendor/ScrollTrigger.min.js?v={version}"></script>\n<script type="module" src="v45-immersive.mjs?v={version}"></script>\n<script src="v46-niche.js?v={version}"></script>\n<script src="v47-archive-flow.js?v={version}"></script>\n<script src="v48-spatial.js?v={version}"></script>\n<script type="module" src="v49-journey.mjs?v={version}"></script>\n<script type="module" src="v52-architecture.mjs?v={version}"></script>\n'''
+          runtime=f'''\n<script src="vendor/gsap.min.js?v={version}"></script>\n<script src="vendor/ScrollTrigger.min.js?v={version}"></script>\n<script type="module" src="v45-immersive.mjs?v={version}"></script>\n<script src="v46-niche.js?v={version}"></script>\n<script src="v47-archive-flow.js?v={version}"></script>\n<script src="v48-spatial.js?v={version}"></script>\n<script type="module" src="v49-journey.mjs?v={version}"></script>\n<script type="module" src="v52-architecture.mjs?v={version}"></script>\n<script type="module" src="v53-portal.mjs?v={version}"></script>\n'''
           h=h.replace('</body>',runtime+'</body>')
           p.write_text(h,encoding='utf-8')
           PY
 
           cp _site/social-media.html _site/index.html
-          cp _site/social-media.html _site/v52.html
+          cp _site/social-media.html _site/v53.html
           cp _site/social-media.html _site/latest.html
 
           test -s _site/index.html
-          test -s _site/v52.html
+          test -s _site/v53.html
           test -s _site/v52-architecture.css
           test -s _site/v52-architecture.mjs
+          test -s _site/v53-portal.css
+          test -s _site/v53-portal.mjs
           test -s _site/vendor/three.module.min.js
           test -s _site/vendor/three.core.min.js
 
@@ -168,18 +172,20 @@ jobs:
           node --check _site/v48-spatial.js
           node --check _site/v49-journey.mjs
           node --check _site/v52-architecture.mjs
+          node --check _site/v53-portal.mjs
           node --check _site/i18n.js
           node --check _site/projects.js
           python3 -m py_compile patches/v37-runtime-audit.py patches/v38-runtime-audit.py
 
-          grep -q 'class="[^"]*movx-v52' _site/index.html
-          grep -q 'data-movx-build="v52-architecture"' _site/index.html
-          grep -q 'v52-architecture.css?v=52-architecture' _site/index.html
-          grep -q 'v52-architecture.mjs?v=52-architecture' _site/index.html
-          grep -q 'v52-architecture-section' _site/v52-architecture.css
+          grep -q 'class="[^"]*movx-v53' _site/index.html
+          grep -q 'data-movx-build="v53-portal"' _site/index.html
+          grep -q 'v53-portal.css?v=53-portal' _site/index.html
+          grep -q 'v53-portal.mjs?v=53-portal' _site/index.html
+          grep -q 'v53-portal-sequence' _site/v53-portal.css
+          grep -q 'makePortalMaterial' _site/v53-portal.mjs
+          grep -q 'uPortal' _site/v53-portal.mjs
           grep -q 'deconstructBox' _site/v52-architecture.mjs
           grep -q 'makeGate' _site/v52-architecture.mjs
-          grep -q 'v52-process-current' _site/v52-architecture.mjs
           grep -q 'CatmullRomCurve3' _site/v49-journey.mjs
           grep -q 'background:#080706!important' _site/v48-spatial.css
           grep -q 'grid-template-rows:clamp(300px,29vw,410px)' _site/v47-territories.css
@@ -189,7 +195,7 @@ jobs:
           ! grep -q 'v51-physics.mjs' _site/index.html
           ! grep -q 'vendor/lenis.min.js' _site/index.html
 
-          echo "MOVX v52 validated: archive case deconstructs into rails and process gates while real work aligns into the Process corridor"
+          echo "MOVX v53 validated: real artwork expands into a shader portal, camera crosses it, and Process geometry resolves behind"
 
           npx playwright install --with-deps chromium >/tmp/playwright-install.log 2>&1
           python3 -m http.server 4173 --directory _site >/tmp/movx-preview-server.log 2>&1 &
@@ -202,29 +208,31 @@ jobs:
           const page=await browser.newPage({viewport:{width:1440,height:900},deviceScaleFactor:1});
           const errors=[];
           page.on('pageerror',err=>errors.push(String(err)));
-          await page.goto('http://127.0.0.1:4173/v52.html?v=52-architecture',{waitUntil:'networkidle'});
-          await page.waitForSelector('.v52-architecture-section',{state:'attached',timeout:15000});
+          await page.goto('http://127.0.0.1:4173/v53.html?v=53-portal',{waitUntil:'networkidle'});
+          await page.waitForSelector('.v53-portal-sequence',{state:'attached',timeout:15000});
           const snap=async(progress,path)=>{
             await page.evaluate(p=>{
-              const s=document.querySelector('.v52-architecture-section');
+              const s=document.querySelector('.v53-portal-sequence');
               const top=window.scrollY+s.getBoundingClientRect().top;
               const travel=Math.max(1,s.offsetHeight-window.innerHeight);
               window.scrollTo(0,top+travel*p);
             },progress);
-            await page.waitForTimeout(1600);
+            await page.waitForTimeout(1500);
             await page.screenshot({path,fullPage:false});
           };
-          await snap(.46,'_site/preview-v52-extraction.png');
-          await snap(.70,'_site/preview-v52-deconstruction.png');
-          await snap(.86,'_site/preview-v52-process.png');
+          await snap(.30,'_site/preview-v53-artwork-approach.png');
+          await snap(.58,'_site/preview-v53-wall.png');
+          await snap(.76,'_site/preview-v53-portal.png');
+          await snap(.90,'_site/preview-v53-process-reveal.png');
           if(errors.length) throw new Error('Preview page errors: '+errors.join(' | '));
           await browser.close();
           NODE
           kill $SERVER_PID 2>/dev/null || true
           trap - EXIT
-          test -s _site/preview-v52-extraction.png
-          test -s _site/preview-v52-deconstruction.png
-          test -s _site/preview-v52-process.png
+          test -s _site/preview-v53-artwork-approach.png
+          test -s _site/preview-v53-wall.png
+          test -s _site/preview-v53-portal.png
+          test -s _site/preview-v53-process-reveal.png
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
