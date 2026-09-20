@@ -90,27 +90,26 @@ html.movx-v39 body[data-page="social"] #nicheGrid .niche-card__media img{
 }
 
 /* ------------------------------------------------------------------
-   SELECTED CASES — deliberate 3D scroll choreography.
-   At viewport edges covers recede/rotate; around the reading line they
-   move toward the viewer. Copy remains sticky and completely flat.
+   SELECTED CASES — v61 retirement of the old perspective-card gesture.
+   Copy remains sticky and flat; covers are planar and receive only the
+   later v60/v61 CSS translate inertia + restrained hover scale.
    ------------------------------------------------------------------ */
 html.movx-v39 body[data-page="social"] #projectsList .project-entry{
-  perspective:1150px!important;
-  perspective-origin:50% 48%;
+  perspective:none!important;
   overflow:visible!important;
 }
 html.movx-v39 body[data-page="social"] #projectsList .project-cover{
-  transform-style:preserve-3d!important;
+  transform-style:flat!important;
+  transform:none!important;
   transform-origin:50% 50%!important;
-  transform:translate3d(var(--v39-project-x,0px),var(--v39-project-y,0px),var(--v39-project-z,0px)) rotateX(var(--v39-project-rx,0deg)) rotateY(var(--v39-project-ry,0deg)) rotateZ(var(--v39-project-rz,0deg)) scale(var(--v39-project-scale,1))!important;
-  transition:none!important;
-  will-change:transform,filter;
+  transition:filter .9s var(--v39-ui)!important;
+  will-change:translate,filter;
   backface-visibility:hidden;
-  filter:drop-shadow(0 var(--v39-project-shadow-y,22px) var(--v39-project-shadow-blur,44px) rgba(0,0,0,var(--v39-project-shadow-a,.12)));
+  filter:none!important;
 }
 html.movx-v39 body[data-page="social"] #projectsList .project-cover img{
-  transform:translate3d(var(--v39-project-img-x,0px),var(--v39-project-img-y,0px),0) scale(var(--v39-project-img-scale,1.085))!important;
-  transition:none!important;
+  transform:translate3d(0,0,0) scale(1)!important;
+  transition:transform 1.45s var(--v39-ease),filter .9s var(--v39-ui)!important;
   will-change:transform;
   backface-visibility:hidden;
 }
