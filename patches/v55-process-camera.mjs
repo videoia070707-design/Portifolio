@@ -1,10 +1,11 @@
-/* MOVX v58 — Process camera refinement
-   The Three.js corridor remains atmospheric. Readable copy stays planar, separated and calm. */
+/* MOVX v59 — Process choreography refinement
+   The Three.js corridor stays atmospheric while readable steps move with wider spacing,
+   slower damping and a narrower focus window so adjacent copy never competes. */
 import * as THREE from './vendor/three.module.min.js';
 
 const root=document.documentElement;
-root.classList.add('movx-v55','movx-v58');
-root.dataset.movxProcessJourney='v58-calm-camera';
+root.classList.add('movx-v55','movx-v58','movx-v59');
+root.dataset.movxProcessJourney='v59-soft-sequence';
 const reduced=new URLSearchParams(location.search).has('static')||matchMedia('(prefers-reduced-motion: reduce)').matches;
 const desktop=matchMedia('(min-width:981px)').matches;
 const fine=matchMedia('(pointer:fine)').matches;
@@ -83,12 +84,12 @@ function init(){
       const delta=i-step;
       const distance=Math.abs(delta);
       // Legacy QA marker retained for the build contract: const z=-distance*255
-      const z=-distance*128;
-      const y=delta*278;
-      const focus=Math.exp(-distance*distance*4.4);
-      const x=px*2.2*focus;
-      const opacity=clamp((.018+focus*.982)*(1-exit),0,1);
-      const scale=.988+focus*.012;
+      const z=-distance*106;
+      const y=delta*344;
+      const focus=Math.exp(-distance*distance*6.2);
+      const x=px*1.3*focus;
+      const opacity=clamp((.008+focus*.992)*(1-exit),0,1);
+      const scale=.992+focus*.008;
       row.style.setProperty('--v55-row-x',`${x.toFixed(2)}px`);
       row.style.setProperty('--v55-row-y',`calc(-50% + ${y.toFixed(2)}px)`);
       row.style.setProperty('--v55-row-z',`${z.toFixed(2)}px`);
@@ -96,16 +97,16 @@ function init(){
       row.style.setProperty('--v55-row-ry','0deg');
       row.style.setProperty('--v55-row-scale',String(scale));
       row.style.setProperty('--v55-row-o',String(opacity));
-      row.style.setProperty('--v55-row-rule',String(.18+focus*.82));
-      row.style.pointerEvents=focus>.62?'auto':'none';
+      row.style.setProperty('--v55-row-rule',String(.14+focus*.86));
+      row.style.pointerEvents=focus>.74?'auto':'none';
     });
     journey.style.setProperty('--v55-focus',String(1-exit));
     journey.style.setProperty('--v55-step-progress',String(clamp(step/(processCount-1))));
     journey.style.setProperty('--v55-top-rule',String(clamp(.18+usable*.82)));
     journey.style.setProperty('--v55-title-o',String(clamp(1-exit*1.12)));
-    journey.style.setProperty('--v55-title-y',`${-exit*12}px`);
+    journey.style.setProperty('--v55-title-y',`${-exit*8}px`);
     journey.style.setProperty('--v55-stage-o',String(1-exit*.96));
-    journey.style.setProperty('--v55-canvas-o',String((1-exit)*.44));
+    journey.style.setProperty('--v55-canvas-o',String((1-exit)*.38));
     root.style.setProperty('--v55-contact-rule',String(exit));
     root.dataset.v55Step=String(nearest+1);
   }
@@ -117,30 +118,30 @@ function init(){
     const worldZ=step*3.55;
     gates.forEach((gate,i)=>{
       const delta=i-step;
-      const focus=clamp(1-Math.abs(delta)/1.12,0,1);
-      const visible=clamp(1-Math.abs(delta)/2.65,0,1)*(1-exit);
-      gate.userData.lineMat.opacity=.018+visible*.06+focus*.12;
-      gate.userData.accentMat.opacity=.012+visible*.05+focus*.2;
-      gate.userData.numberMat.opacity=.008+visible*.03+focus*.11;
-      gate.scale.setScalar(.985+focus*.025);
-      gate.rotation.z=velocity*(i%2?1:-1)*.0011;
+      const focus=clamp(1-Math.abs(delta)/.96,0,1);
+      const visible=clamp(1-Math.abs(delta)/2.4,0,1)*(1-exit);
+      gate.userData.lineMat.opacity=.014+visible*.05+focus*.105;
+      gate.userData.accentMat.opacity=.01+visible*.04+focus*.17;
+      gate.userData.numberMat.opacity=.006+visible*.026+focus*.085;
+      gate.scale.setScalar(.99+focus*.018);
+      gate.rotation.z=velocity*(i%2?1:-1)*.00075;
     });
-    rails.forEach((rail,i)=>{rail.material.opacity=(.025+usable*.06)*(1-exit);rail.rotation.z=(i?1:-1)*velocity*.002;});
-    camera.position.x=px*.08+velocity*.012;
-    camera.position.y=-py*.05;
+    rails.forEach((rail,i)=>{rail.material.opacity=(.02+usable*.045)*(1-exit);rail.rotation.z=(i?1:-1)*velocity*.0014;});
+    camera.position.x=px*.055+velocity*.008;
+    camera.position.y=-py*.035;
     camera.position.z=8.8-worldZ;
-    camera.fov=43+Math.min(1.3,Math.abs(velocity)*.45);camera.updateProjectionMatrix();
-    camera.lookAt(px*.02,-.05,-worldZ-5.2);
+    camera.fov=43+Math.min(.8,Math.abs(velocity)*.3);camera.updateProjectionMatrix();
+    camera.lookAt(px*.014,-.04,-worldZ-5.2);
     renderer.render(scene,camera);
   }
   function tick(){
     raf=0;if(!active||document.hidden)return;
-    current=lerp(current,target,.075);px=lerp(px,tpx,.055);py=lerp(py,tpy,.055);velocity*=.9;
+    current=lerp(current,target,.052);px=lerp(px,tpx,.04);py=lerp(py,tpy,.04);velocity*=.92;
     updateDom(current);updateWebGL(current);
-    if(Math.abs(current-target)>.00035||Math.abs(velocity)>.002||Math.abs(px-tpx)>.0015||Math.abs(py-tpy)>.0015)schedule();
+    if(Math.abs(current-target)>.00028||Math.abs(velocity)>.0015||Math.abs(px-tpx)>.0012||Math.abs(py-tpy)>.0012)schedule();
   }
   function schedule(){if(!raf&&active&&!document.hidden)raf=requestAnimationFrame(tick);}
-  function sync(){const now=performance.now(),dt=Math.max(16,now-lastTime),dy=scrollY-lastY;lastY=scrollY;lastTime=now;velocity=clamp(dy/dt,-1.35,1.35);target=progress();schedule();}
+  function sync(){const now=performance.now(),dt=Math.max(16,now-lastTime),dy=scrollY-lastY;lastY=scrollY;lastTime=now;velocity=clamp(dy/dt,-1.1,1.1);target=progress();schedule();}
 
   const observer=new IntersectionObserver(entries=>{active=entries.some(e=>e.isIntersecting);if(active){target=progress();resize();schedule();}else if(raf){cancelAnimationFrame(raf);raf=0;}},{rootMargin:'34% 0px 34% 0px',threshold:0});
   observer.observe(journey);
@@ -153,4 +154,4 @@ function init(){
   resize();target=progress();current=target;updateDom(current);updateWebGL(current);
 }
 
-try{init();}catch(error){root.classList.add('v55-fallback');console.warn('MOVX v58 process journey failed open',error);}
+try{init();}catch(error){root.classList.add('v55-fallback');console.warn('MOVX v59 process journey failed open',error);}
