@@ -1,0 +1,90 @@
+/* MOVX v29 — premium refinement
+   Calm editorial motion, cleaner process composition, no hidden content dependency. */
+html.movx-v29 body{--v29-ease:cubic-bezier(.16,1,.3,1);--v29-red:var(--editorial-red,#9c2e24)}
+
+/* Prevent legacy reveal transforms from fighting the new section choreography. */
+html.movx-v29 .about-section .reveal,
+html.movx-v29 .services-section .reveal,
+html.movx-v29 .process-section .reveal,
+html.movx-v29 .contact-section .reveal{
+  opacity:1!important;
+  transform:none!important;
+  filter:none!important;
+  clip-path:none!important;
+  animation:none!important;
+}
+
+/* HERO: subtle 2.5D overlay, never hides the original artwork. */
+html.movx-v29 .social-cover-art__stage{isolation:isolate;perspective:1500px;transform-style:preserve-3d}
+html.movx-v29 .v29-hero-overlay{position:absolute;inset:-2.2%;z-index:1;pointer-events:none;overflow:hidden;will-change:transform;transform:translate3d(var(--v29-hero-x,0),var(--v29-hero-y,0),0) scale(var(--v29-hero-scale,1.015))}
+html.movx-v29 .v29-hero-plane{position:absolute;inset:0;background-image:var(--v29-hero-image);background-size:cover;background-position:center;background-repeat:no-repeat;will-change:transform;backface-visibility:hidden}
+html.movx-v29 .v29-hero-plane--type{clip-path:polygon(0 0,55% 0,55% 100%,0 100%);opacity:.18;filter:contrast(1.04);transform:translate3d(var(--v29-type-x,0),var(--v29-type-y,0),18px)}
+html.movx-v29 .v29-hero-plane--crt{clip-path:polygon(53% 0,100% 0,100% 69%,57% 69%);opacity:.28;filter:contrast(1.06) saturate(1.03);transform:translate3d(var(--v29-crt-x,0),var(--v29-crt-y,0),34px)}
+html.movx-v29 .v29-hero-plane--lower{clip-path:polygon(42% 34%,100% 34%,100% 100%,42% 100%);opacity:.16;filter:contrast(1.035);transform:translate3d(var(--v29-lower-x,0),var(--v29-lower-y,0),24px)}
+html.movx-v29 .social-cover-art__shade{z-index:2!important}
+html.movx-v29 .hero-index{position:relative;z-index:4}
+html.movx-v29 .hero-index__item::after{transition-duration:1.05s!important;transition-timing-function:var(--v29-ease)!important}
+
+/* Chapter transitions — structural, quiet and slow. */
+html.movx-v29 .v29-chapter{position:relative}
+html.movx-v29 .v29-chapter::before{content:"";position:absolute;left:var(--pad,4vw);right:var(--pad,4vw);top:0;height:1px;background:currentColor;opacity:.16;transform:scaleX(var(--v29-rule,0));transform-origin:left;pointer-events:none;z-index:5}
+
+/* ABOUT — actual editorial depth, not card-like motion. */
+html.movx-v29 .about-section{min-height:clamp(760px,100vh,1120px);display:flex;align-items:center;isolation:isolate;overflow:hidden}
+html.movx-v29 .about-section::before{content:"SOUL";position:absolute;left:-8vw;top:52%;z-index:0;white-space:nowrap;pointer-events:none;font-family:var(--serif,Georgia,serif);font-style:italic;font-size:clamp(210px,32vw,600px);line-height:.68;letter-spacing:-.1em;color:transparent;-webkit-text-stroke:1px color-mix(in srgb,var(--fg) 12%,transparent);opacity:.5;transform:translate3d(var(--v29-about-x,0),calc(-50% + var(--v29-about-y,0)),0) rotate(-1deg);will-change:transform}
+html.movx-v29 .about-section .container{position:relative;z-index:2}
+html.movx-v29 .about-heading{transform:translate3d(0,var(--v29-about-heading-y,0),0);will-change:transform}
+html.movx-v29 .about-copy{transform:translate3d(0,var(--v29-about-copy-y,0),0);will-change:transform}
+html.movx-v29 .about-signature{transform:translate3d(var(--v29-about-signature-x,0),0,0);will-change:transform}
+
+/* SERVICES — premium editorial rhythm, no fast popping. */
+html.movx-v29 .services-section{overflow:visible;padding-bottom:clamp(110px,13vw,190px)}
+@media(min-width:901px){html.movx-v29 .services-section .section-intro{position:sticky;top:84px;z-index:8;padding-top:22px;padding-bottom:48px;background:linear-gradient(var(--bg) 76%,color-mix(in srgb,var(--bg) 94%,transparent) 89%,transparent)}}
+html.movx-v29 .services-list{margin-top:72px}
+html.movx-v29 .service-row{position:relative!important;min-height:clamp(150px,21vh,220px);padding:clamp(38px,5.3vw,66px) 0!important;background:transparent!important;transition:opacity .45s ease,border-color .55s ease!important}
+html.movx-v29 .service-row::after{content:"";position:absolute;left:0;bottom:-1px;width:var(--v29-service-line,0%);height:1px;background:var(--v29-red);opacity:.78}
+html.movx-v29 .service-row h3{transform:translate3d(var(--v29-service-title-x,0),0,0);will-change:transform}
+html.movx-v29 .service-row p{max-width:540px}
+
+/* PROCESS — redesign: remove generic AI timeline/dots, restore breathing room and readable hierarchy. */
+html.movx-v29 .process-section{overflow:visible;padding-top:clamp(110px,12vw,180px);padding-bottom:clamp(120px,14vw,210px)}
+html.movx-v29 .process-grid{grid-template-columns:minmax(260px,.72fr) minmax(0,1.28fr);gap:clamp(76px,9vw,150px);align-items:start}
+@media(min-width:901px){html.movx-v29 .process-title{position:sticky;top:116px}}
+html.movx-v29 .process-title h2{max-width:520px}
+html.movx-v29 .process-list{list-style:none;margin:0;padding:0;border:0!important;counter-reset:movxstep;position:relative}
+html.movx-v29 .process-list::before,html.movx-v29 .process-list::after{display:none!important}
+html.movx-v29 .process-list li{counter-increment:movxstep;display:grid;grid-template-columns:minmax(74px,92px) minmax(0,1fr);gap:clamp(28px,4vw,56px);align-items:start;min-height:150px;padding:36px 0 34px!important;border-top:1px solid var(--line);border-bottom:0!important;position:relative;isolation:isolate;opacity:var(--v29-step-opacity,.58);transform:translate3d(var(--v29-step-x,12px),0,0);transition:border-color .55s ease;will-change:transform,opacity}
+html.movx-v29 .process-list li:last-child{border-bottom:1px solid var(--line)!important}
+html.movx-v29 .process-list li>span{position:relative;padding:4px 0 0!important;font:700 9px/1 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.16em;color:var(--muted)!important}
+html.movx-v29 .process-list li>span::after{content:"";display:block;width:28px;height:1px;background:var(--v29-red);margin-top:14px;transform:scaleX(var(--v29-step-rule,.25));transform-origin:left;opacity:.8}
+html.movx-v29 .process-list li::before{display:none!important}
+html.movx-v29 .process-list strong{font-size:clamp(30px,3.25vw,52px);line-height:.98;letter-spacing:-.055em;margin:0 0 14px;max-width:760px}
+html.movx-v29 .process-list p{font-size:clamp(14px,1.15vw,17px);line-height:1.72;max-width:650px;color:var(--muted);margin:0}
+html.movx-v29 .process-list li.v29-current{opacity:1!important;border-color:color-mix(in srgb,var(--fg) 38%,transparent)}
+html.movx-v29 .process-list li.v29-current>span{color:var(--v29-red)!important}
+
+/* CONTACT — calm spatial ending. */
+html.movx-v29 .contact-section{isolation:isolate;overflow:hidden}
+html.movx-v29 .contact-section::before{content:"";position:absolute;right:-12vw;top:-18vw;width:48vw;height:48vw;border:1px solid currentColor;border-radius:50%;opacity:.075;pointer-events:none;transform:translate3d(var(--v29-contact-x,0),var(--v29-contact-y,0),0) scale(var(--v29-contact-scale,1));will-change:transform}
+html.movx-v29 .contact-form label::after{transition-duration:1s!important;transition-timing-function:var(--v29-ease)!important}
+
+/* Hover polish — restrained and slow. */
+html.movx-v29 .archive-card img,html.movx-v29 .niche-card img,html.movx-v29 .project-cover img,html.movx-v29 .loop-card img{transition-duration:1.25s!important;transition-timing-function:var(--v29-ease)!important}
+html.movx-v29 .loop-card:hover img{transform:scale(1.035)!important}
+
+@media(max-width:900px){
+  html.movx-v29 .v29-hero-overlay{display:none}
+  html.movx-v29 .about-section{min-height:auto;display:block}
+  html.movx-v29 .about-section::before{font-size:58vw;opacity:.24}
+  html.movx-v29 .services-section .section-intro,html.movx-v29 .process-title{position:relative;top:auto;background:none}
+  html.movx-v29 .process-grid{grid-template-columns:1fr;gap:56px}
+  html.movx-v29 .process-list li{grid-template-columns:58px minmax(0,1fr);gap:22px;min-height:auto;padding:30px 0!important;opacity:1!important;transform:none!important}
+  html.movx-v29 .process-list strong{font-size:clamp(28px,8vw,42px)}
+}
+
+@media(prefers-reduced-motion:reduce){
+  html.movx-v29 .v29-hero-overlay{display:none!important}
+  html.movx-v29 .about-section::before,html.movx-v29 .about-heading,html.movx-v29 .about-copy,html.movx-v29 .about-signature,html.movx-v29 .service-row h3,html.movx-v29 .process-list li,html.movx-v29 .contact-section::before{transform:none!important}
+  html.movx-v29 .process-list li{opacity:1!important}
+  html.movx-v29 .v29-chapter::before{transform:scaleX(1)!important}
+}
