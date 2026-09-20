@@ -69,6 +69,8 @@
       const trace=smooth(clamp((jp-.86)/.11));
       const bridge=Math.max(trace,cp*.82);
       const settle=smooth(clamp((cp-.18)/.72));
+      const contactRule=Math.max(settle,trace*.92);
+      const titleRule=Math.max(smooth(clamp((cp-.26)/.46)),trace*.36);
       const fade=smooth(clamp((cp-.78)/.2));
       const layerO=clamp((smooth(clamp((jp-.69)/.08)))*(1-fade*.98),0,1);
       const copyRect=copy?.getBoundingClientRect?.()||contact.getBoundingClientRect();
@@ -101,8 +103,8 @@
         frame.style.transform=`translate3d(calc(-50% + ${tx}px),calc(-50% + ${ty}px),${lerp((index-2)*-22,0,collapse)}px) rotateZ(${rz}deg) scaleX(${sx}) scaleY(${sy})`;
       });
 
-      contact.style.setProperty('--v56-contact-rule',String(settle));
-      contact.style.setProperty('--v56-title-rule',String(smooth(clamp((cp-.26)/.46))));
+      contact.style.setProperty('--v56-contact-rule',String(contactRule));
+      contact.style.setProperty('--v56-title-rule',String(titleRule));
       contact.style.setProperty('--v56-contact-o',String(lerp(.76,1,settle)));
       contact.style.setProperty('--v56-contact-y',`${lerp(30,0,settle)}px`);
       contact.style.setProperty('--v56-copy-shift',`${lerp(-18,0,settle)}px`);
