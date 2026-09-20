@@ -136,3 +136,8 @@ html.movx-v56 #contact .contact-actions a::after{bottom:2px!important}
 @media(prefers-reduced-motion:reduce){
   html.movx-v56 #contact .contact-form label::after{transition:none!important}
 }
+
+/* MOVX v73.1 — case navigation uses its authored underline as focus affordance,
+   avoiding the old boxed focus treatment while keeping keyboard focus visible. */
+html.movx-v73 .case-top :is(.case-nav-button,.case-close):focus-visible{outline:0!important;outline-offset:0!important}
+html.movx-v73 .case-top :is(.case-nav-button,.case-close):focus-visible::after{transform:scaleX(1)!important}
