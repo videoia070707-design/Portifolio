@@ -147,4 +147,26 @@ if mobile_hero_patch.exists():
             doc = doc.replace('</head>', marker + '\n</head>')
             social.write_text(doc, encoding='utf-8')
 
-print('MOVX build audit applied: runtime optimized; v71 metadata + v72 footer + v75 mobile hero injected')
+# 9) v76 — interaction-neutral Living Archive copy. The moving wall works on hover,
+# focus, tap and keyboard, so the heading should describe the experience instead
+# of assuming a mouse. Keep all three shipped languages aligned.
+i18n_path = root / 'i18n.js'
+if i18n_path.exists():
+    i18n = i18n_path.read_text(encoding='utf-8')
+    living_replacements = {
+        'Passe o cursor para pausar<br>Abra o caso completo': 'Explore o arquivo em movimento<br>Abra o caso completo',
+        'Hover to pause<br>Open the full case': 'Explore the moving archive<br>Open the full case',
+        'Pasa el cursor para pausar<br>Abre el caso completo': 'Explora el archivo en movimiento<br>Abre el caso completo',
+    }
+    for old, new in living_replacements.items():
+        i18n = i18n.replace(old, new)
+    i18n_path.write_text(i18n, encoding='utf-8')
+
+social = root / 'social-media.html'
+if social.exists():
+    doc = social.read_text(encoding='utf-8')
+    doc = doc.replace('Passe o cursor para pausar<br/>Abra o caso completo', 'Explore o arquivo em movimento<br/>Abra o caso completo')
+    doc = doc.replace('Passe o cursor para pausar<br>Abra o caso completo', 'Explore o arquivo em movimento<br>Abra o caso completo')
+    social.write_text(doc, encoding='utf-8')
+
+print('MOVX build audit applied: runtime optimized; v71 metadata + v72 footer + v75 mobile hero + v76 archive copy injected')
