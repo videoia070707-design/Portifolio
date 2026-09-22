@@ -7,7 +7,7 @@ const fs=require('node:fs/promises');
   const page=await browser.newPage({viewport:{width:1280,height:900},reducedMotion:'no-preference'});
   const errors=[];page.on('pageerror',e=>errors.push(String(e)));
   await page.goto('http://127.0.0.1:4173/social-media.html',{waitUntil:'networkidle'});
-  await page.waitForTimeout(650);
+  await page.waitForFunction(()=>['ready','fallback'].includes(document.documentElement.dataset.v106Webgl),null,{timeout:6000});
   const initial=await page.evaluate(()=>({
     version:document.documentElement.dataset.movxV106,
     webgl:document.documentElement.dataset.v106Webgl,
