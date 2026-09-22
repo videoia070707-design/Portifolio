@@ -69,8 +69,6 @@ html.movx-v88 body[data-page="social"] #nicheIndex>.v88-fold-mark{
    No text plane receives scroll transforms.
    -------------------------------------------------------------- */
 @media(min-width:981px){
-  /* Living Archive rows enter with tiny opposing offsets and converge into one
-     stable exhibition wall. This composes with the existing conveyor transform. */
   html.movx-v88 body[data-page="social"] #livingArchive .loop-row{
     translate:var(--v88-row-x,0px) 0;
     transition:translate 1.15s var(--v88-ease),opacity 1.05s var(--v88-ui),filter 1.05s var(--v88-ui)!important;
@@ -93,8 +91,6 @@ html.movx-v88 body[data-page="social"] #nicheIndex>.v88-fold-mark{
     filter:saturate(1.015) contrast(1.014)!important;
   }
 
-  /* Territories stay planar. Only the photograph shifts a few pixels under a
-     fine pointer; labels and cards remain locked to the editorial grid. */
   html.movx-v88 body[data-page="social"] #nicheGrid .niche-card__media{
     translate:var(--v88-media-x,0px) var(--v88-media-y,0px);
     transition:translate .62s var(--v88-ease)!important;
@@ -110,16 +106,12 @@ html.movx-v88 body[data-page="social"] #nicheIndex>.v88-fold-mark{
   html.movx-v88 body[data-page="social"] #nicheGrid .niche-card:focus-within .niche-card__content{translate:0 -4px}
   html.movx-v88 body[data-page="social"] #nicheGrid .niche-card:hover .niche-card__num,
   html.movx-v88 body[data-page="social"] #nicheGrid .niche-card:focus-within .niche-card__num{color:#fff!important;opacity:1!important}
-
-  /* The existing archive heading accent becomes the handoff instead of adding
-     another frame around the section. */
   html.movx-v88 body[data-page="social"] #nicheIndex .archive-head::after{
     transition:opacity .6s var(--v88-ui)!important;
   }
   html.movx-v88 body[data-page="social"] #nicheIndex.v88-chapter-current .archive-head::after{opacity:.86!important}
 }
 
-/* Mobile keeps the mark as a quiet 2D notation and removes pointer depth. */
 @media(max-width:980px){
   html.movx-v88 .v88-fold-mark{
     width:38px;height:38px;perspective:none;
@@ -146,8 +138,6 @@ html.movx-v88 body[data-page="social"] #nicheIndex>.v88-fold-mark{
 
 /* ==================================================================
    MOVX v89 — editorial rebalance after visual QA
-   Brings artwork into the first Archive viewport and turns the fold mark
-   from generic registration corners into a small broken-M hinge.
    ================================================================== */
 @media(min-width:981px){
   html.movx-v88.movx-v86 body[data-page="social"] #livingArchive{
@@ -176,59 +166,127 @@ html.movx-v88 body[data-page="social"] #nicheIndex>.v88-fold-mark{
     margin-top:0!important;
     padding-top:2px!important;
   }
-  html.movx-v88.movx-v86 body[data-page="social"] #livingArchive .loop-wall::before{
-    top:-10px!important;
-  }
-
-  /* Broken-M hinge: the diagonal is the distinctive third stroke. */
+  html.movx-v88.movx-v86 body[data-page="social"] #livingArchive .loop-wall::before{top:-10px!important}
   html.movx-v88 .v88-fold-mark{
     width:clamp(54px,4.6vw,74px)!important;
     height:clamp(54px,4.6vw,74px)!important;
   }
   html.movx-v88 .v88-fold-mark::before{
-    content:"";
-    position:absolute;
-    left:28%;
-    top:22%;
-    width:54%;
-    height:1px;
+    content:"";position:absolute;left:28%;top:22%;width:54%;height:1px;
     background:color-mix(in srgb,var(--fg) 34%,transparent);
-    transform:rotate(48deg) scaleX(.72);
-    transform-origin:left center;
-    transition:transform .9s var(--v88-ease),background-color .55s var(--v88-ui),opacity .55s var(--v88-ui);
-    opacity:.64;
+    transform:rotate(48deg) scaleX(.72);transform-origin:left center;
+    transition:transform .9s var(--v88-ease),background-color .55s var(--v88-ui),opacity .55s var(--v88-ui);opacity:.64;
   }
   html.movx-v88 .v88-chapter-current>.v88-fold-mark::before,
   html.movx-v88 .v88-chapter-current .v88-fold-mark::before{
     transform:rotate(48deg) scaleX(1);
-    background:color-mix(in srgb,var(--v88-accent) 72%,var(--fg));
-    opacity:.9;
+    background:color-mix(in srgb,var(--v88-accent) 72%,var(--fg));opacity:.9;
   }
-
-  /* Stronger exhibition hierarchy: portrait work becomes a narrow editorial slice,
-     while the right-hand piece carries the visual weight of the first row. */
-  html.movx-v88.movx-v86 body[data-page="social"] #nicheGrid>.niche-card:nth-child(1){
-    grid-column:1 / span 5!important;
-  }
-  html.movx-v88.movx-v86 body[data-page="social"] #nicheGrid>.niche-card:nth-child(2){
-    grid-column:6 / span 2!important;
-    margin-top:clamp(58px,5.4vw,82px)!important;
-  }
-  html.movx-v88.movx-v86 body[data-page="social"] #nicheGrid>.niche-card:nth-child(3){
-    grid-column:8 / span 5!important;
-    margin-bottom:clamp(34px,3.8vw,58px)!important;
-  }
-  html.movx-v88.movx-v86 body[data-page="social"] #nicheGrid .niche-card__title{
-    text-wrap:balance!important;
-  }
+  html.movx-v88.movx-v86 body[data-page="social"] #nicheGrid>.niche-card:nth-child(1){grid-column:1 / span 5!important}
+  html.movx-v88.movx-v86 body[data-page="social"] #nicheGrid>.niche-card:nth-child(2){grid-column:6 / span 2!important;margin-top:clamp(58px,5.4vw,82px)!important}
+  html.movx-v88.movx-v86 body[data-page="social"] #nicheGrid>.niche-card:nth-child(3){grid-column:8 / span 5!important;margin-bottom:clamp(34px,3.8vw,58px)!important}
+  html.movx-v88.movx-v86 body[data-page="social"] #nicheGrid .niche-card__title{text-wrap:balance!important}
 }
 
 @media(max-width:980px){
   html.movx-v88.movx-v86 body[data-page="social"] #livingArchive .archive-head h2{
-    max-width:9ch!important;
-    font-size:clamp(48px,12vw,74px)!important;
-    line-height:.9!important;
-    letter-spacing:-.055em!important;
+    max-width:9ch!important;font-size:clamp(48px,12vw,74px)!important;line-height:.9!important;letter-spacing:-.055em!important;
   }
   html.movx-v88 .v88-fold-mark::before{display:none!important}
+}
+
+/* ==================================================================
+   MOVX v90 — second-half editorial rhythm
+   About / Services / Process / Contact share hierarchy and accent logic,
+   but each chapter keeps one dominant gesture. No new runtime required.
+   ================================================================== */
+@media(min-width:981px){
+  /* ABOUT — tighter scale, stronger relationship between statement and rationale. */
+  html.movx-v88 body[data-page="social"] #about .about-grid{
+    position:relative!important;
+    grid-template-columns:repeat(12,minmax(0,1fr))!important;
+  }
+  html.movx-v88 body[data-page="social"] #about .about-grid::before{
+    content:"";position:absolute;left:58.2%;top:5%;bottom:3%;width:1px;
+    background:linear-gradient(180deg,transparent,color-mix(in srgb,var(--fg) 14%,transparent) 14% 84%,transparent);
+    pointer-events:none;
+  }
+  html.movx-v88 body[data-page="social"] #about .about-grid::after{
+    content:"";position:absolute;left:58.2%;top:15%;width:1px;height:clamp(46px,5vw,78px);
+    background:var(--v88-accent);opacity:.58;pointer-events:none;
+  }
+  html.movx-v88 body[data-page="social"] #about .about-heading{grid-column:1 / span 6!important}
+  html.movx-v88 body[data-page="social"] #about .about-copy{grid-column:8 / span 5!important;padding-top:clamp(24px,3.2vw,48px)!important}
+  html.movx-v88 body[data-page="social"] #about .about-heading h2{
+    max-width:7.6ch!important;font-size:clamp(58px,6.45vw,104px)!important;line-height:.86!important;letter-spacing:-.064em!important;
+  }
+  html.movx-v88 body[data-page="social"] #about .about-lead{
+    max-width:16ch!important;font-size:clamp(26px,2.65vw,41px)!important;line-height:1.06!important;
+  }
+
+  /* SERVICES — the active line reads as a chapter, not a hover gimmick. */
+  html.movx-v88 body[data-page="social"] #services .section-intro h2{
+    max-width:9.4ch!important;font-size:clamp(56px,6.45vw,102px)!important;line-height:.86!important;
+  }
+  html.movx-v88 body[data-page="social"] #services .services-list{margin-top:clamp(42px,4.8vw,70px)!important}
+  html.movx-v88 body[data-page="social"] #services .service-row{
+    grid-template-columns:58px minmax(240px,.88fr) minmax(320px,1.12fr)!important;
+    padding:clamp(25px,2.7vw,40px) 0!important;
+  }
+  html.movx-v88 body[data-page="social"] #services .service-row h3{
+    font-size:clamp(32px,3.35vw,52px)!important;line-height:.94!important;
+  }
+  html.movx-v88 body[data-page="social"] #services .service-row::before{
+    content:"";position:absolute;left:0;top:50%;width:1px;height:0;background:var(--v88-accent);opacity:0;
+    translate:0 -50%;transition:height .8s var(--v88-ease),opacity .5s var(--v88-ui);
+  }
+  html.movx-v88 body[data-page="social"] #services .service-row:hover::before,
+  html.movx-v88 body[data-page="social"] #services .service-row:focus-within::before,
+  html.movx-v88 body[data-page="social"] #services .service-row.v42-reading::before{height:54%;opacity:.82}
+  html.movx-v88 body[data-page="social"] #services .service-row:hover>span,
+  html.movx-v88 body[data-page="social"] #services .service-row:focus-within>span,
+  html.movx-v88 body[data-page="social"] #services .service-row.v42-reading>span{color:var(--v88-accent)!important}
+
+  /* PROCESS — make the current step unmistakable through contrast only. */
+  html.movx-v88 body[data-page="social"] #process .process-title h2{
+    max-width:7.4ch!important;font-size:clamp(54px,5.4vw,82px)!important;line-height:.88!important;
+  }
+  html.movx-v88 body[data-page="social"] #process .process-list li{opacity:.42!important}
+  html.movx-v88 body[data-page="social"] #process .process-list li.v55-current,
+  html.movx-v88 body[data-page="social"] #process .process-list li.v35-process-active{opacity:1!important}
+  html.movx-v88 body[data-page="social"] #process .process-list li strong{transition:color .58s var(--v88-ui)!important}
+  html.movx-v88 body[data-page="social"] #process .process-list li p{opacity:.62!important;transition:opacity .58s var(--v88-ui)!important}
+  html.movx-v88 body[data-page="social"] #process .process-list li.v55-current strong,
+  html.movx-v88 body[data-page="social"] #process .process-list li.v35-process-active strong{color:#f5f0eb!important}
+  html.movx-v88 body[data-page="social"] #process .process-list li.v55-current p,
+  html.movx-v88 body[data-page="social"] #process .process-list li.v35-process-active p{opacity:.92!important}
+
+  /* CONTACT — final chapter: stronger focus, no extra boxes. */
+  html.movx-v88 body[data-page="social"] #contact{position:relative!important;background:#050505!important}
+  html.movx-v88 body[data-page="social"] #contact::before{
+    content:"";position:absolute;left:max(24px,4vw);top:0;width:clamp(54px,6vw,92px);height:1px;background:var(--v88-accent);opacity:.76;
+  }
+  html.movx-v88 body[data-page="social"] #contact .contact-copy h2{
+    max-width:7.4ch!important;font-size:clamp(62px,7vw,112px)!important;line-height:.86!important;
+  }
+  html.movx-v88 body[data-page="social"] #contact .contact-form label>span{transition:color .45s var(--v88-ui),opacity .45s var(--v88-ui)!important}
+  html.movx-v88 body[data-page="social"] #contact .contact-form label:focus-within>span{color:#d34c3f!important;opacity:1!important}
+  html.movx-v88 body[data-page="social"] #contact :is(input,select,textarea){caret-color:#d34c3f!important}
+  html.movx-v88 body[data-page="social"] #contact .contact-actions :is(button,a){transition:opacity .45s var(--v88-ui),translate .75s var(--v88-ease)!important}
+  html.movx-v88 body[data-page="social"] #contact .contact-actions :is(button,a):hover,
+  html.movx-v88 body[data-page="social"] #contact .contact-actions :is(button,a):focus-visible{translate:4px 0;opacity:1!important}
+}
+
+@media(max-width:980px){
+  html.movx-v88 body[data-page="social"] #about .about-grid::before,
+  html.movx-v88 body[data-page="social"] #about .about-grid::after,
+  html.movx-v88 body[data-page="social"] #services .service-row::before{display:none!important}
+  html.movx-v88 body[data-page="social"] #about .about-heading h2{font-size:clamp(50px,12vw,76px)!important;max-width:8.4ch!important}
+  html.movx-v88 body[data-page="social"] #services .section-intro h2{font-size:clamp(50px,11vw,72px)!important}
+  html.movx-v88 body[data-page="social"] #contact .contact-copy h2{font-size:clamp(54px,12vw,78px)!important;max-width:8ch!important}
+}
+
+@media(prefers-reduced-motion:reduce){
+  html.movx-v88 body[data-page="social"] #services .service-row::before,
+  html.movx-v88 body[data-page="social"] #contact .contact-actions :is(button,a){transition:none!important;translate:none!important}
 }
