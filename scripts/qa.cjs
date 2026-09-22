@@ -159,6 +159,19 @@ if(mobileProcess.rows.some(x=>x.position==='absolute'||x.opacity<.88)) throw new
 if(pageErrors.length) throw new Error('Desktop page errors: '+pageErrors.join(' | '));
 if(mobileErrors.length) throw new Error('Mobile page errors: '+mobileErrors.join(' | '));
 
+// Regression checks for the concrete v100 failures: duplicate owners, ghost
+// layers, and preferences changed after the page has already been initialized.
+report.lifecycle=[];
+const owners=await page.evaluate(()=>({
+  scripts:[...document.scripts].filter(s=>/v88-chapter(?:-signature)?\.js/.test(s.src)).length,
+  ghostLayers:document.querySelectorAll('.v28-hero-overlay').length
+}));
+if(owners.scripts!==1||owners.ghostLayers!==0)throw new Error('Duplicate motion/hero regression '+JSON.stringify(owners));
+await page.emulateMedia({reducedMotion:'reduce'});
+await page.waitForFunction(()=>window.MOVX_MOTION_BRIDGE.reducedMotion===true);
+await page.emulateMedia({reducedMotion:'no-preference'});
+await page.waitForFunction(()=>window.MOVX_MOTION_BRIDGE.reducedMotion===false);
+report.lifecycle.push({owners,liveReducedMotion:true});
 await writeFile('_site/qa-v93-report.json',JSON.stringify(report,null,2));
 await mobile.close();
 await browser.close();
