@@ -29,14 +29,6 @@ html.movx-v86 .v41-project-transition.v41-transition-live{
   opacity:1;
   visibility:visible;
   transition:opacity .04s linear,visibility 0s linear 0s;
-  /* Normally JS settles the shared element around 760ms. This guard only matters
-     when the case target takes several frames to mount: it prevents a stale portal
-     from lingering into the final editorial composition. */
-  animation:v87PortalSettleGuard 960ms linear both;
-}
-@keyframes v87PortalSettleGuard{
-  0%,94%{opacity:1}
-  100%{opacity:0}
 }
 html.movx-v86 .v86-project-transition__surface{
   --v86-accent:var(--v41-mood,#9c2e24);
@@ -114,8 +106,8 @@ html.movx-v86 .v41-project-transition__canvas{display:none!important}
   }
 }
 @media(prefers-reduced-motion:reduce){
-  html.movx-v86 .v41-project-transition{display:none!important;animation:none!important}
+  html.movx-v86 .v41-project-transition{display:none!important}
   html.movx-v41 body[data-page="social"] .projects-list{transition:none!important}
   html.v86-case-arriving.movx-v86 .case-viewer.open .case-hero__content{opacity:1!important;translate:none!important}
 }
-html.v86-shared-transition-reduced .v41-project-transition{display:none!important;animation:none!important}
+html.v86-shared-transition-reduced .v41-project-transition{display:none!important}
