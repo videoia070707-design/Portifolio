@@ -1,4 +1,4 @@
-/* MOVX v114.1 — isolated Process copy + final 3D field ownership
+/* MOVX v114.2 — isolated Process copy + final 3D field ownership
    Reads the real i18n/semantic source, paints one clean editorial lane, and takes
    runtime ownership of the WebGL surface so retired runtime writers cannot
    reintroduce a black half-screen or oversized visual weight. */
@@ -77,27 +77,25 @@ if(body?.dataset.page==='social'&&desktop&&!reduced){
         canvas.style.setProperty('background','transparent','important');
         canvas.style.setProperty('clip-path','inset(0 0 0 50%)','important');
         canvas.style.setProperty('-webkit-clip-path','inset(0 0 0 50%)','important');
-        canvas.style.setProperty('-webkit-mask-image','linear-gradient(90deg,transparent 0 56%,rgba(0,0,0,.06) 62%,rgba(0,0,0,.58) 74%,#000 86%)','important');
-        canvas.style.setProperty('mask-image','linear-gradient(90deg,transparent 0 56%,rgba(0,0,0,.06) 62%,rgba(0,0,0,.58) 74%,#000 86%)','important');
-        canvas.style.setProperty('transform','translate3d(18%,0,0) scale(.70)','important');
-        canvas.style.setProperty('transform-origin','93% 50%','important');
-        canvas.style.setProperty('opacity','0.58','important');
-        canvas.style.setProperty('filter','saturate(.64) contrast(.86) brightness(.98)','important');
-        canvas.style.setProperty('mix-blend-mode','screen','important');
+        canvas.style.setProperty('-webkit-mask-image','linear-gradient(90deg,transparent 0 53%,rgba(0,0,0,.12) 60%,rgba(0,0,0,.72) 73%,#000 84%)','important');
+        canvas.style.setProperty('mask-image','linear-gradient(90deg,transparent 0 53%,rgba(0,0,0,.12) 60%,rgba(0,0,0,.72) 73%,#000 84%)','important');
+        canvas.style.setProperty('transform','translate3d(17%,0,0) scale(.72)','important');
+        canvas.style.setProperty('transform-origin','92% 50%','important');
+        canvas.style.setProperty('opacity','0.46','important');
+        canvas.style.setProperty('filter','saturate(.72) contrast(.92) brightness(1.02)','important');
+        canvas.style.setProperty('mix-blend-mode','normal','important');
       }
       if(atmosphere){
-        atmosphere.style.setProperty('background','linear-gradient(90deg,var(--v111-bg) 0 54%,color-mix(in srgb,var(--v111-bg) 98%,transparent) 61%,color-mix(in srgb,var(--v111-bg) 82%,transparent) 69%,color-mix(in srgb,var(--v111-bg) 34%,transparent) 82%,transparent 94%),radial-gradient(circle at calc(82% + var(--v108-pointer-x,0) * 2%) calc(51% + var(--v108-pointer-y,0) * 2%),color-mix(in srgb,var(--v111-accent) 6%,transparent),transparent 22%)','important');
+        atmosphere.style.setProperty('background','linear-gradient(90deg,var(--v111-bg) 0 51%,color-mix(in srgb,var(--v111-bg) 98%,transparent) 58%,color-mix(in srgb,var(--v111-bg) 78%,transparent) 68%,color-mix(in srgb,var(--v111-bg) 22%,transparent) 82%,transparent 94%),radial-gradient(circle at calc(82% + var(--v108-pointer-x,0) * 2%) calc(51% + var(--v108-pointer-y,0) * 2%),color-mix(in srgb,var(--v111-accent) 7%,transparent),transparent 23%)','important');
       }
     };
 
-    /* v108 legitimately owns the Three.js camera/render loop, but its historical
-       render tick also writes canvas.style.opacity. Observe only the canvas style
-       attribute and restore the final v114 surface contract when that old writer
-       touches it. The guard compares value + priority before writing, so our own
-       correction does not create a mutation loop. */
+    /* v108 still owns the Three.js camera/render loop, but its historical render
+       tick also writes canvas.style.opacity. Observe only the canvas style and
+       restore the final v114 surface contract when that old writer touches it. */
     const fieldCanvas=q('.v108-process-canvas',journey);
     const fieldMo=fieldCanvas?new MutationObserver(()=>{
-      const opacityOwned=fieldCanvas.style.getPropertyValue('opacity')==='0.58'&&fieldCanvas.style.getPropertyPriority('opacity')==='important';
+      const opacityOwned=fieldCanvas.style.getPropertyValue('opacity')==='0.46'&&fieldCanvas.style.getPropertyPriority('opacity')==='important';
       if(!opacityOwned)polishField();
     }):null;
     fieldMo?.observe(fieldCanvas,{attributes:true,attributeFilter:['style']});
