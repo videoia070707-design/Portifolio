@@ -25,6 +25,28 @@ html[data-layout="stable"] body[data-page="social"] #projectsList .project-entry
 html[data-layout="stable"] body[data-page="social"] #projectsList .project-entry:nth-child(even) .project-copy { grid-column:2!important; }
 html[data-layout="stable"] body[data-page="social"] #projectsList .project-entry:nth-child(even) .project-cover { grid-column:1!important; }
 html[data-layout="stable"] body[data-page="social"] #projectsList .project-entry .project-cover img { display:block; position:relative!important; inset:auto!important; width:100%!important; height:auto!important; min-height:0!important; max-height:none!important; aspect-ratio:auto!important; object-fit:contain!important; object-position:center!important; transform:none!important; translate:none!important; clip-path:none!important; }
+/* v86 forced every third artwork into 16:10. Match its specificity and explicitly return every image to its real ratio. */
+html[data-layout="stable"].movx-v86 body[data-page="social"] #projectsList .project-entry:nth-child(n) .project-cover img {
+ width:100%!important;
+ height:auto!important;
+ min-height:0!important;
+ max-height:none!important;
+ aspect-ratio:auto!important;
+ object-fit:contain!important;
+ object-position:center!important;
+ transform:none!important;
+ translate:none!important;
+ scale:none!important;
+ clip-path:none!important;
+}
+/* Replace the old registration/bracket/drafting line language with whitespace + type emphasis. */
+html[data-layout="stable"] body[data-page="social"] #projectsList::after,
+html[data-layout="stable"] body[data-page="social"] #projectsList .project-entry::before,
+html[data-layout="stable"].movx-v86 body[data-page="social"] #projectsList .project-cover::before,
+html[data-layout="stable"].movx-v86.movx-v33 .case-hero__media::before,
+html[data-layout="stable"].movx-v86.movx-v33 .v33-case-chapter::before { content:none!important; display:none!important; background:none!important; box-shadow:none!important; }
+html[data-layout="stable"] body[data-page="social"] #projectsList .project-entry .project-copy h2 { transition:opacity .25s ease,color .25s ease; }
+html[data-layout="stable"] body[data-page="social"] #projectsList .project-entry:is(:hover,:focus-within) .project-copy h2 { color:var(--v38-accent,var(--editorial-red))!important; }
 /* Replace animated drafting lines with quiet typographic emphasis. */
 html[data-layout="stable"] #services .service-row::before,
 html[data-layout="stable"] #services .service-row::after { content:none!important; display:none!important; }
