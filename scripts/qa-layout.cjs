@@ -38,6 +38,50 @@ const fs=require('node:fs/promises');
      return issues.length?[{title:title.textContent,issues,ratio:r.width/r.height,expected}]:[];
     }));
     if(bad.length)throw Error(JSON.stringify({width,bad}));
+
+    const opener=page.locator('#projectsList [data-open-project]').first();
+    await opener.scrollIntoViewIfNeeded();
+    await opener.click({force:true});
+    await page.locator('#caseViewer.open').waitFor();
+    const firstCaseImage=page.locator('#caseSlides .case-slide-frame img').first();
+    await firstCaseImage.waitFor();
+    await firstCaseImage.evaluate(img=>img.decode());
+    const caseLayout=await page.evaluate(()=>{
+     const body=document.querySelector('.case-body');
+     const info=document.querySelector('.case-info');
+     const slides=document.querySelector('.case-slides');
+     const img=document.querySelector('#caseSlides .case-slide-frame img');
+     const title=document.querySelector('.case-hero__title');
+     const bodyStyle=getComputedStyle(body),imgStyle=getComputedStyle(img),titleStyle=getComputedStyle(title);
+     const r=img.getBoundingClientRect();
+     const natural=img.naturalWidth/img.naturalHeight;
+     const columns=bodyStyle.gridTemplateColumns.trim().split(/\s+/).filter(Boolean).length;
+     const infoRect=info.getBoundingClientRect(),slidesRect=slides.getBoundingClientRect();
+     return {
+      columns,
+      sideBySide:Math.abs(infoRect.top-slidesRect.top)<6&&infoRect.right<=slidesRect.left+2,
+      imgTransform:imgStyle.transform,
+      imgFit:imgStyle.objectFit,
+      ratio:r.width/r.height,
+      natural,
+      titleLine:parseFloat(titleStyle.lineHeight)/parseFloat(titleStyle.fontSize),
+      chapters:document.querySelectorAll('.case-study-block').length,
+      swatches:document.querySelectorAll('.case-swatch').length
+     };
+    });
+    const expectedColumns=width>980?2:1;
+    if(caseLayout.columns!==expectedColumns||
+       (width>980&&!caseLayout.sideBySide)||
+       caseLayout.imgTransform!=='none'||
+       caseLayout.imgFit!=='contain'||
+       Math.abs(caseLayout.ratio-caseLayout.natural)>.015||
+       caseLayout.titleLine<.96||
+       caseLayout.chapters<9||caseLayout.swatches<3){
+      throw Error(JSON.stringify({width,caseLayout}));
+    }
+    report.push({width,path,caseLayout});
+    await page.locator('#caseClose').click();
+    await page.waitForFunction(()=>!document.querySelector('#caseViewer')?.classList.contains('open'));
    }
    if(width===390){
     await page.locator('.menu-button').click();
@@ -49,5 +93,5 @@ const fs=require('node:fs/promises');
  if(errors.length)throw Error(errors.join('\n'));
  await fs.writeFile('_site/qa-layout-report.json',JSON.stringify(report,null,2));
  await browser.close();
- console.log('Layout integrity: 60 page/viewport/language combinations; original artwork ratios; four disciplines.');
+ console.log('Layout integrity: 60 page/viewport/language combinations; original artwork ratios; four disciplines; split case studies.');
 })().catch(e=>{console.error(e);process.exit(1)});
