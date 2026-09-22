@@ -1,0 +1,285 @@
+/* MOVX v110 — Process legibility lock
+   Final ownership of the desktop Process chapter: the 3D corridor lives only in
+   the right half; the title + one active step stay anchored in a calm reading lane.
+   Mobile/reduced-motion keep the semantic list in normal document flow. */
+
+@media (min-width:981px) and (prefers-reduced-motion:no-preference){
+  html.movx-v108 body[data-page="social"] #process.process-section .v55-process-journey .v108-process-canvas{
+    clip-path:inset(0 0 0 50%)!important;
+    -webkit-clip-path:inset(0 0 0 50%)!important;
+    opacity:.74!important;
+    filter:saturate(.72) contrast(.94)!important;
+  }
+
+  html.movx-v108 body[data-page="social"] #process.process-section .v108-process-atmosphere{
+    background:
+      linear-gradient(90deg,var(--v108-bg) 0 42%,color-mix(in srgb,var(--v108-bg) 96%,transparent) 50%,color-mix(in srgb,var(--v108-bg) 56%,transparent) 61%,transparent 73%),
+      radial-gradient(circle at calc(78% + var(--v108-pointer-x,0) * 3%) calc(52% + var(--v108-pointer-y,0) * 2%),color-mix(in srgb,var(--v108-accent) 8%,transparent),transparent 24%)!important;
+  }
+
+  html.movx-v108 body[data-page="social"] #process.process-section .v55-process-journey .container.process-grid{
+    position:sticky!important;
+    top:0!important;
+    height:100vh!important;
+    min-height:100vh!important;
+    max-height:100vh!important;
+    display:block!important;
+    padding-top:clamp(112px,13vh,142px)!important;
+    padding-bottom:clamp(56px,7vh,82px)!important;
+    overflow:hidden!important;
+    pointer-events:none!important;
+  }
+
+  html.movx-v108 body[data-page="social"] #process.process-section .process-title,
+  html.movx-v108 body[data-page="social"] #process.process-section .process-title.reveal,
+  html.movx-v108 body[data-page="social"] #process.process-section .process-title.v57-text-rescue,
+  html.movx-v108 body[data-page="social"] #process.process-section .process-title.v57-reveal-rescue{
+    position:relative!important;
+    top:auto!important;
+    left:auto!important;
+    width:min(430px,38vw)!important;
+    max-width:430px!important;
+    margin:0!important;
+    padding:0!important;
+    opacity:1!important;
+    visibility:visible!important;
+    filter:none!important;
+    clip-path:none!important;
+    -webkit-clip-path:none!important;
+    transform:none!important;
+    translate:none!important;
+    z-index:9!important;
+    pointer-events:auto!important;
+  }
+
+  html.movx-v108 body[data-page="social"] #process.process-section .process-title .kicker{
+    display:block!important;
+    opacity:.76!important;
+    visibility:visible!important;
+    color:color-mix(in srgb,var(--v108-ink) 68%,var(--v108-bg))!important;
+    filter:none!important;
+    transform:none!important;
+    clip-path:none!important;
+    -webkit-clip-path:none!important;
+    margin:0 0 22px!important;
+  }
+
+  html.movx-v108 body[data-page="social"] #process.process-section .process-title h2,
+  html.movx-v108 body[data-page="social"] #process.process-section .process-title h2 *{
+    display:block!important;
+    max-width:8.4ch!important;
+    margin:0!important;
+    padding:0!important;
+    opacity:1!important;
+    visibility:visible!important;
+    color:var(--v108-ink)!important;
+    -webkit-text-fill-color:var(--v108-ink)!important;
+    text-shadow:none!important;
+    mix-blend-mode:normal!important;
+    filter:none!important;
+    transform:none!important;
+    translate:none!important;
+    clip-path:none!important;
+    -webkit-clip-path:none!important;
+  }
+
+  html.movx-v108 body[data-page="social"] #process.process-section .process-title h2{
+    font-size:clamp(54px,5vw,76px)!important;
+    line-height:.9!important;
+    letter-spacing:-.058em!important;
+    text-wrap:balance!important;
+    overflow:visible!important;
+  }
+
+  /* Absolute anchoring fixes the legacy Z/row transforms that could push an
+     otherwise active step below the viewport. */
+  html.movx-v108 body[data-page="social"] #process.process-section .process-list{
+    position:absolute!important;
+    left:var(--v57-safe-pad,max(24px,5vw))!important;
+    right:auto!important;
+    top:auto!important;
+    bottom:clamp(52px,7vh,78px)!important;
+    width:min(430px,38vw)!important;
+    max-width:430px!important;
+    height:224px!important;
+    min-height:224px!important;
+    margin:0!important;
+    padding:0!important;
+    border:0!important;
+    overflow:visible!important;
+    perspective:none!important;
+    transform:none!important;
+    translate:none!important;
+    transform-style:flat!important;
+    z-index:10!important;
+    pointer-events:auto!important;
+  }
+
+  html.movx-v108 body[data-page="social"] #process.process-section .process-list::before,
+  html.movx-v108 body[data-page="social"] #process.process-section .process-list::after,
+  html.movx-v108 body[data-page="social"] #process.process-section .process-list li::before,
+  html.movx-v108 body[data-page="social"] #process.process-section .process-list li::after{
+    display:none!important;
+    content:none!important;
+  }
+
+  html.movx-v108 body[data-page="social"] #process.process-section .process-list li{
+    --v108-row-x:0px!important;
+    --v108-row-y:0px!important;
+    --v108-row-z:0px!important;
+    --v108-row-rx:0deg!important;
+    --v108-row-s:1!important;
+    --v55-row-x:0px!important;
+    --v55-row-y:0px!important;
+    --v55-row-z:0px!important;
+    --v55-row-rx:0deg!important;
+    --v55-row-ry:0deg!important;
+    --v55-row-scale:1!important;
+    position:absolute!important;
+    inset:0!important;
+    display:block!important;
+    width:100%!important;
+    height:auto!important;
+    min-height:0!important;
+    max-height:none!important;
+    margin:0!important;
+    padding:24px 0 0!important;
+    border:0!important;
+    border-top:1px solid color-mix(in srgb,var(--v108-ink) 18%,transparent)!important;
+    background:transparent!important;
+    box-shadow:none!important;
+    backdrop-filter:none!important;
+    -webkit-backdrop-filter:none!important;
+    opacity:0!important;
+    visibility:hidden!important;
+    pointer-events:none!important;
+    filter:none!important;
+    clip-path:none!important;
+    -webkit-clip-path:none!important;
+    transform:none!important;
+    translate:none!important;
+    transition:none!important;
+    overflow:visible!important;
+  }
+
+  html.movx-v108 body[data-page="social"] #process.process-section .process-list li.v108-process-active{
+    opacity:1!important;
+    visibility:visible!important;
+    pointer-events:auto!important;
+    border-top-color:color-mix(in srgb,var(--v108-accent) 62%,var(--v108-ink) 10%)!important;
+  }
+
+  html.movx-v108 body[data-page="social"] #process.process-section .process-list li.v108-process-active > span,
+  html.movx-v108 body[data-page="social"] #process.process-section .process-list li.v108-process-active > div,
+  html.movx-v108 body[data-page="social"] #process.process-section .process-list li.v108-process-active strong,
+  html.movx-v108 body[data-page="social"] #process.process-section .process-list li.v108-process-active p{
+    opacity:1!important;
+    visibility:visible!important;
+    filter:none!important;
+    transform:none!important;
+    translate:none!important;
+    clip-path:none!important;
+    -webkit-clip-path:none!important;
+    mix-blend-mode:normal!important;
+  }
+
+  html.movx-v108 body[data-page="social"] #process.process-section .process-list li.v108-process-active > span{
+    display:block!important;
+    margin:0 0 16px!important;
+    padding:0!important;
+    font:700 10px/1 var(--mono,ui-monospace,monospace)!important;
+    letter-spacing:.16em!important;
+    color:var(--v108-accent)!important;
+    -webkit-text-fill-color:var(--v108-accent)!important;
+  }
+
+  html.movx-v108 body[data-page="social"] #process.process-section .process-list li.v108-process-active > div{
+    display:block!important;
+    padding:0!important;
+  }
+
+  html.movx-v108 body[data-page="social"] #process.process-section .process-list li.v108-process-active strong{
+    display:block!important;
+    max-width:12ch!important;
+    margin:0 0 12px!important;
+    font-size:clamp(31px,2.8vw,42px)!important;
+    line-height:.98!important;
+    letter-spacing:-.045em!important;
+    color:var(--v108-ink)!important;
+    -webkit-text-fill-color:var(--v108-ink)!important;
+    text-shadow:none!important;
+  }
+
+  html.movx-v108 body[data-page="social"] #process.process-section .process-list li.v108-process-active p{
+    display:block!important;
+    max-width:38ch!important;
+    margin:0!important;
+    font-size:14px!important;
+    line-height:1.65!important;
+    color:color-mix(in srgb,var(--v108-ink) 74%,var(--v108-bg))!important;
+    -webkit-text-fill-color:color-mix(in srgb,var(--v108-ink) 74%,var(--v108-bg))!important;
+    text-shadow:none!important;
+  }
+
+  html.movx-v108 body[data-page="social"] #process.process-section .v108-process-progress{
+    z-index:11!important;
+    opacity:.46!important;
+  }
+}
+
+@media (max-width:1180px) and (min-width:981px) and (prefers-reduced-motion:no-preference){
+  html.movx-v108 body[data-page="social"] #process.process-section .process-title,
+  html.movx-v108 body[data-page="social"] #process.process-section .process-list{
+    width:min(380px,39vw)!important;
+    max-width:380px!important;
+  }
+  html.movx-v108 body[data-page="social"] #process.process-section .process-title h2{
+    font-size:clamp(50px,5.2vw,66px)!important;
+  }
+  html.movx-v108 body[data-page="social"] #process.process-section .v55-process-journey .v108-process-canvas{
+    clip-path:inset(0 0 0 52%)!important;
+    -webkit-clip-path:inset(0 0 0 52%)!important;
+  }
+}
+
+@media (max-width:980px), (prefers-reduced-motion:reduce){
+  html.movx-v108 body[data-page="social"] #process.process-section .process-title,
+  html.movx-v108 body[data-page="social"] #process.process-section .process-title h2,
+  html.movx-v108 body[data-page="social"] #process.process-section .process-title .kicker,
+  html.movx-v108 body[data-page="social"] #process.process-section .process-list li,
+  html.movx-v108 body[data-page="social"] #process.process-section .process-list li > span,
+  html.movx-v108 body[data-page="social"] #process.process-section .process-list li strong,
+  html.movx-v108 body[data-page="social"] #process.process-section .process-list li p{
+    opacity:1!important;
+    visibility:visible!important;
+    filter:none!important;
+    clip-path:none!important;
+    -webkit-clip-path:none!important;
+    transform:none!important;
+    translate:none!important;
+  }
+  html.movx-v108 body[data-page="social"] #process.process-section .process-title h2,
+  html.movx-v108 body[data-page="social"] #process.process-section .process-list li strong{
+    color:var(--fg)!important;
+    -webkit-text-fill-color:var(--fg)!important;
+  }
+  html.movx-v108 body[data-page="social"] #process.process-section .process-list{
+    position:relative!important;
+    left:auto!important;
+    right:auto!important;
+    top:auto!important;
+    bottom:auto!important;
+    width:100%!important;
+    max-width:none!important;
+    height:auto!important;
+    min-height:0!important;
+    margin:0!important;
+    transform:none!important;
+  }
+  html.movx-v108 body[data-page="social"] #process.process-section .process-list li{
+    position:relative!important;
+    inset:auto!important;
+    width:100%!important;
+    pointer-events:auto!important;
+  }
+}
