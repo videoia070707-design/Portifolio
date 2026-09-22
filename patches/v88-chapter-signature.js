@@ -1,6 +1,7 @@
-/* MOVX v88 — chapter continuity runtime
-   One rAF loop owns first-half chapter state. It drives only CSS custom properties,
-   a restrained editorial fold mark and local media translation. Copy is never transformed. */
+/* MOVX v94 — whole-page chapter continuity runtime
+   Extends the existing v88 single owner through the full social page. Scroll values
+   are damped before reaching CSS, so chapter accents settle naturally instead of
+   snapping. Text remains planar and reduced-motion stays static. */
 (() => {
   'use strict';
 
@@ -26,12 +27,51 @@
     { key:'archive', node:document.getElementById('livingArchive') },
     { key:'territories', node:document.getElementById('nicheIndex') },
     { key:'directory', node:document.getElementById('archiveControls') },
-    { key:'projects', node:document.querySelector('.projects-list') }
+    { key:'projects', node:document.querySelector('.projects-list') },
+    { key:'about', node:document.getElementById('about') },
+    { key:'services', node:document.getElementById('services') },
+    { key:'process', node:document.getElementById('process') },
+    { key:'contact', node:document.getElementById('contact') }
   ].filter(item => item.node);
   if (!chapters.length) return;
 
   root.classList.add('movx-v88');
+  /* Keep the v88 signature stable because downstream QAs use it as the owner contract.
+     v94 is exposed separately so newer builds can assert the extended behavior. */
   root.dataset.movxChapterSignature = 'v88-fold-continuity-single-owner';
+  root.dataset.movxMotion = 'v94-whole-page-damped-continuity';
+
+  if (!document.getElementById('movx-v94-motion-style')) {
+    const style = document.createElement('style');
+    style.id = 'movx-v94-motion-style';
+    style.textContent = `
+      @media (min-width:981px){
+        html.movx-v88 body[data-page="social"] #about .about-grid::after{
+          opacity:calc(.18 + var(--v88-focus,0) * .54)!important;
+          transform:scaleY(calc(.54 + var(--v88-focus,0) * .46));
+          transform-origin:50% 0;
+        }
+        html.movx-v88 body[data-page="social"] #services .service-row::before{
+          transition:height .95s var(--v88-ease),opacity .68s var(--v88-ui)!important;
+        }
+        html.movx-v88 body[data-page="social"] #process .process-list li{
+          transition:opacity .72s var(--v88-ui),filter .82s var(--v88-ui)!important;
+        }
+        html.movx-v88 body[data-page="social"] #contact::before{
+          opacity:calc(.30 + var(--v88-focus,0) * .50)!important;
+          transform:scaleX(calc(.46 + var(--v88-focus,0) * .54));
+          transform-origin:0 50%;
+        }
+      }
+      @media (max-width:980px), (prefers-reduced-motion:reduce){
+        html.movx-v88 body[data-page="social"] #about .about-grid::after,
+        html.movx-v88 body[data-page="social"] #contact::before{
+          transform:none!important;
+        }
+      }
+    `;
+    document.head.appendChild(style);
+  }
 
   const markHTML = '<i class="v88-fold-mark__rail"></i><i class="v88-fold-mark__plane"></i>';
   const markHosts = chapters.filter(item => ['archive','territories'].includes(item.key));
@@ -45,71 +85,115 @@
     node.appendChild(mark);
   });
 
+  const states = new Map(chapters.map(item => [item, {
+    progress:0, focus:0, angle:20, lift:7, enter:0,
+    targetProgress:0, targetFocus:0, targetAngle:20, targetLift:7, targetEnter:0
+  }]));
+
   let raf = 0;
   let current = null;
+  let lastTime = 0;
+  let needsMeasure = true;
 
-  function writeChapter(item, rect){
-    const node = item.node;
+  function updateTargets(item, rect) {
+    const state = states.get(item);
     const travel = Math.max(1,rect.height + innerHeight);
     const progress = clamp((innerHeight - rect.top) / travel);
     const center = rect.top + rect.height * .5;
     const focusDistance = Math.abs(center - innerHeight * .5);
     const focus = clamp(1 - focusDistance / Math.max(innerHeight * .92, rect.height * .58));
     const enter = clamp((innerHeight * .9 - rect.top) / Math.max(1,innerHeight * .72));
-    const angle = lerp(20,-14,progress);
-    const lift = lerp(7,0,focus);
 
-    node.style.setProperty('--v88-progress',progress.toFixed(4));
-    node.style.setProperty('--v88-focus',focus.toFixed(4));
-    node.style.setProperty('--v88-fold-angle',`${angle.toFixed(2)}deg`);
-    node.style.setProperty('--v88-fold-lift',`${lift.toFixed(2)}px`);
+    state.targetProgress = progress;
+    state.targetFocus = focus;
+    state.targetAngle = reduced ? 0 : lerp(20,-14,progress);
+    state.targetLift = reduced ? 0 : lerp(7,0,focus);
+    state.targetEnter = enter;
+    return {center};
+  }
+
+  function renderChapter(item, state) {
+    const node = item.node;
+    node.style.setProperty('--v88-progress',state.progress.toFixed(4));
+    node.style.setProperty('--v88-focus',state.focus.toFixed(4));
+    node.style.setProperty('--v88-fold-angle',`${state.angle.toFixed(2)}deg`);
+    node.style.setProperty('--v88-fold-lift',`${state.lift.toFixed(2)}px`);
 
     const mark = node.querySelector(':scope > .v88-fold-mark');
     if (mark) {
-      mark.style.setProperty('--v88-fold-angle',`${angle.toFixed(2)}deg`);
-      mark.style.setProperty('--v88-fold-lift',`${lift.toFixed(2)}px`);
-      mark.style.setProperty('--v88-fold-opacity',(0.20 + focus*.42).toFixed(3));
+      mark.style.setProperty('--v88-fold-angle',`${state.angle.toFixed(2)}deg`);
+      mark.style.setProperty('--v88-fold-lift',`${state.lift.toFixed(2)}px`);
+      mark.style.setProperty('--v88-fold-opacity',(0.20 + state.focus*.42).toFixed(3));
     }
 
     if (item.key === 'archive') {
       const rows = [...node.querySelectorAll('.loop-row')];
       const offsets = [-26,18,-14];
       rows.forEach((row,index) => {
-        const shift = (offsets[index] ?? ((index%2?-1:1)*12)) * (1-enter);
+        const shift = (offsets[index] ?? ((index%2?-1:1)*12)) * (1-state.enter);
         row.style.setProperty('--v88-row-x',`${shift.toFixed(2)}px`);
       });
     }
   }
 
-  function measure(){
-    raf = 0;
+  function measureTargets() {
+    needsMeasure = false;
     let best = Infinity;
     let nextCurrent = null;
 
     chapters.forEach(item => {
       const rect = item.node.getBoundingClientRect();
-      writeChapter(item,rect);
+      const {center} = updateTargets(item,rect);
       if (rect.bottom <= 0 || rect.top >= innerHeight) return;
-      const center = rect.top + rect.height*.5;
       const distance = Math.abs(center - innerHeight*.5);
       if (distance < best) { best = distance; nextCurrent = item; }
     });
 
+    const scrollRange = Math.max(1,document.documentElement.scrollHeight - innerHeight);
+    root.style.setProperty('--v94-page-progress',clamp(scrollY/scrollRange).toFixed(4));
+
     if (nextCurrent !== current) {
       current = nextCurrent;
       chapters.forEach(item => item.node.classList.toggle('v88-chapter-current',item === current));
-      if (current) root.dataset.movxCurrentChapter = current.key;
+      if (current) {
+        root.dataset.movxCurrentChapter = current.key;
+        root.dataset.movxChapterIndex = String(chapters.indexOf(current) + 1);
+      }
     }
   }
 
-  function schedule(){
-    if (!raf && !document.hidden) raf = requestAnimationFrame(measure);
+  function frame(now) {
+    raf = 0;
+    if (needsMeasure) measureTargets();
+
+    const dt = Math.min(48,Math.max(8,now-(lastTime || now-16)));
+    lastTime = now;
+    const alpha = reduced ? 1 : 1 - Math.exp(-dt / 118);
+    let moving = false;
+
+    states.forEach((state,item) => {
+      for (const key of ['progress','focus','angle','lift','enter']) {
+        const targetKey = `target${key[0].toUpperCase()}${key.slice(1)}`;
+        const before = state[key];
+        const target = state[targetKey];
+        state[key] = reduced ? target : before + (target-before) * alpha;
+        if (Math.abs(target-state[key]) > (key === 'angle' ? .04 : .0015)) moving = true;
+      }
+      renderChapter(item,state);
+    });
+
+    if ((moving || needsMeasure) && !document.hidden) raf = requestAnimationFrame(frame);
+  }
+
+  function scheduleMeasure() {
+    needsMeasure = true;
+    if (!raf && !document.hidden) raf = requestAnimationFrame(frame);
   }
 
   /* Local depth is restricted to territory photography. Project covers keep the
      established v86/v87 motion owner so selected cases never have competing input. */
   const bound = new WeakSet();
-  function bindMedia(){
+  function bindMedia() {
     if (!desktop || !fine || reduced) return;
 
     document.querySelectorAll('#nicheGrid .niche-card').forEach(card => {
@@ -132,22 +216,26 @@
   }
 
   if (reduced) {
-    chapters.forEach(item => {
-      item.node.style.setProperty('--v88-progress','1');
-      item.node.style.setProperty('--v88-focus','1');
-      item.node.style.setProperty('--v88-fold-angle','0deg');
-      item.node.style.setProperty('--v88-fold-lift','0px');
+    measureTargets();
+    states.forEach((state,item) => {
+      state.targetAngle = 0;
+      state.targetLift = 0;
+      for (const key of ['progress','focus','angle','lift','enter']) {
+        const targetKey = `target${key[0].toUpperCase()}${key.slice(1)}`;
+        state[key] = state[targetKey];
+      }
+      renderChapter(item,state);
     });
   } else {
-    measure();
-    addEventListener('scroll',schedule,{passive:true});
-    addEventListener('resize',schedule,{passive:true});
-    document.addEventListener('visibilitychange',()=>{if(!document.hidden)schedule();});
+    scheduleMeasure();
+    addEventListener('scroll',scheduleMeasure,{passive:true});
+    addEventListener('resize',scheduleMeasure,{passive:true});
+    document.addEventListener('visibilitychange',()=>{if(!document.hidden)scheduleMeasure();});
   }
 
   bindMedia();
   const dynamicHost = document.getElementById('nicheGrid');
   if (dynamicHost && 'MutationObserver' in window) {
-    new MutationObserver(() => { bindMedia(); schedule(); }).observe(dynamicHost,{childList:true,subtree:true});
+    new MutationObserver(() => { bindMedia(); scheduleMeasure(); }).observe(dynamicHost,{childList:true,subtree:true});
   }
 })();
