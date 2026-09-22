@@ -11,6 +11,16 @@
   const clamp = (v,a=0,b=1) => Math.min(b,Math.max(a,v));
   const lerp = (a,b,t) => a + (b-a)*t;
 
+  /* Compatibility correction for the current multilingual build map. Mutating the
+     source dictionary means future language switches also render the corrected copy. */
+  const esUI = window.MOVX_I18N?.ui?.es;
+  if (esUI && esUI['ai.meta3'] === 'tecnología como proceso, no como efeito') {
+    esUI['ai.meta3'] = 'tecnología como proceso, no como efecto';
+  }
+  document.querySelectorAll('[data-i18n="ai.meta3"]').forEach(node => {
+    if (node.textContent?.includes('no como efeito')) node.textContent = 'tecnología como proceso, no como efecto';
+  });
+
   const chapters = [
     { key:'hero', node:document.getElementById('heroTop') },
     { key:'archive', node:document.getElementById('livingArchive') },
