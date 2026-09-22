@@ -8,6 +8,12 @@ html.movx-v86 body{
   --v86-line:color-mix(in srgb,var(--fg) 17%,transparent);
 }
 
+/* v61 used to hide the historical v41 stage. v86 deliberately reuses that hook
+   as the single shared-artwork owner, so it must win the final cascade. */
+@media(min-width:981px) and (prefers-reduced-motion:no-preference){
+  html.movx-v86 .v41-project-transition{display:block!important}
+}
+
 /* ------------------------------------------------------------------
    SELECTED CASES — one project becomes the visual focus at a time.
    The same open-corner mark is reused in the case hero after opening.
@@ -126,6 +132,7 @@ html.movx-v86.movx-v33 .v33-case-chapter.v33-editorial-in::before{
 
 /* Mobile keeps the composition, but removes geometry-heavy choreography. */
 @media(max-width:980px){
+  html.movx-v86 .v41-project-transition{display:none!important}
   html.movx-v86.movx-v57 body[data-page="social"] #projectsList .project-cover::before{
     display:none!important;
   }
@@ -142,6 +149,7 @@ html.movx-v86.movx-v33 .v33-case-chapter.v33-editorial-in::before{
 }
 
 @media(prefers-reduced-motion:reduce){
+  html.movx-v86 .v41-project-transition{display:none!important}
   html.movx-v86.movx-v33 .case-hero__content,
   html.movx-v86.movx-v57 body[data-page="social"] #projectsList .project-cover,
   html.movx-v86.movx-v57 body[data-page="social"] #projectsList .project-cover::before{
