@@ -1,7 +1,7 @@
-/* MOVX v95 — whole-page chapter continuity + mobile archive integrity
+/* MOVX v96 — whole-page chapter continuity + normalized interaction motion
    Extends the existing v88 single owner through the full social page. Scroll values
-   are damped before reaching CSS, so chapter accents settle naturally instead of
-   snapping. Text remains planar and reduced-motion stays static. */
+   are damped before reaching CSS, while interaction microstates share one authored
+   easing language. Text remains planar and reduced-motion stays static. */
 (() => {
   'use strict';
 
@@ -37,14 +37,18 @@
 
   root.classList.add('movx-v88');
   /* Keep the v88 signature stable because downstream QAs use it as the owner contract.
-     v94 is exposed separately so newer builds can assert the extended behavior. */
+     v96 is exposed separately as the active behavior layer. */
   root.dataset.movxChapterSignature = 'v88-fold-continuity-single-owner';
-  root.dataset.movxMotion = 'v95-whole-page-damped-continuity';
+  root.dataset.movxMotion = 'v96-normalized-damped-continuity';
 
-  if (!document.getElementById('movx-v94-motion-style')) {
+  if (!document.getElementById('movx-v96-motion-style')) {
     const style = document.createElement('style');
-    style.id = 'movx-v94-motion-style';
+    style.id = 'movx-v96-motion-style';
     style.textContent = `
+      html.movx-v88 body[data-page="social"]{
+        --v96-ease:cubic-bezier(.16,1,.3,1);
+        --v96-ui:cubic-bezier(.4,0,.2,1);
+      }
       @media (min-width:981px){
         html.movx-v88 body[data-page="social"] #about .about-grid::after{
           opacity:calc(.18 + var(--v88-focus,0) * .54)!important;
@@ -62,11 +66,75 @@
           transform:scaleX(calc(.46 + var(--v88-focus,0) * .54));
           transform-origin:0 50%;
         }
+
+        /* v96: normalize formerly abrupt microstates without adding new geometry. */
+        html.movx-v88 body[data-page="social"] .archive-filter-row .archive-filter{
+          transition:
+            background-color .52s var(--v96-ui),
+            color .48s var(--v96-ui),
+            border-color .52s var(--v96-ui),
+            transform .72s var(--v96-ease),
+            box-shadow .72s var(--v96-ease)!important;
+        }
+        html.movx-v88 body[data-page="social"] .archive-filter-status{
+          transition:opacity .46s var(--v96-ui),color .52s var(--v96-ui)!important;
+        }
+        html.movx-v88 body[data-page="social"] #projectsList .project-cover img{
+          transition:transform 1.38s var(--v96-ease),filter .78s var(--v96-ui)!important;
+        }
+        html.movx-v88 body[data-page="social"] #projectsList .project-cover::after{
+          transition:opacity .58s var(--v96-ui),transform .82s var(--v96-ease)!important;
+        }
+        html.movx-v88 body[data-page="social"] #services .service-row{
+          transition:padding .72s var(--v96-ease),background-color .56s var(--v96-ui)!important;
+        }
+        html.movx-v88 body[data-page="social"] #services .service-row h3,
+        html.movx-v88 body[data-page="social"] #services .service-row p,
+        html.movx-v88 body[data-page="social"] #services .service-row>span{
+          transition:color .54s var(--v96-ui),opacity .54s var(--v96-ui)!important;
+        }
+        html.movx-v88 .case-nav-button,
+        html.movx-v88 .case-close{
+          transition:
+            background-color .48s var(--v96-ui),
+            color .46s var(--v96-ui),
+            border-color .48s var(--v96-ui),
+            transform .68s var(--v96-ease)!important;
+        }
+        html.movx-v88 .hero-index__item{
+          transition:background-color .58s var(--v96-ui),color .58s var(--v96-ui),border-color .58s var(--v96-ui)!important;
+        }
+        html.movx-v88 .hero-index__item strong{
+          transition:opacity .52s var(--v96-ui),color .52s var(--v96-ui)!important;
+        }
+      }
+      @media (max-width:980px){
+        html.movx-v88 body[data-page="social"] .archive-filter-row .archive-filter,
+        html.movx-v88 .case-nav-button,
+        html.movx-v88 .case-close{
+          transition-duration:.32s!important;
+        }
       }
       @media (max-width:980px), (prefers-reduced-motion:reduce){
         html.movx-v88 body[data-page="social"] #about .about-grid::after,
         html.movx-v88 body[data-page="social"] #contact::before{
           transform:none!important;
+        }
+      }
+      @media (prefers-reduced-motion:reduce){
+        html.movx-v88 body[data-page="social"] .archive-filter-row .archive-filter,
+        html.movx-v88 body[data-page="social"] .archive-filter-status,
+        html.movx-v88 body[data-page="social"] #projectsList .project-cover img,
+        html.movx-v88 body[data-page="social"] #projectsList .project-cover::after,
+        html.movx-v88 body[data-page="social"] #services .service-row,
+        html.movx-v88 body[data-page="social"] #services .service-row h3,
+        html.movx-v88 body[data-page="social"] #services .service-row p,
+        html.movx-v88 body[data-page="social"] #services .service-row>span,
+        html.movx-v88 .case-nav-button,
+        html.movx-v88 .case-close,
+        html.movx-v88 .hero-index__item,
+        html.movx-v88 .hero-index__item strong{
+          transition:none!important;
         }
       }
     `;
