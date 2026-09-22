@@ -18,6 +18,16 @@
   root.dataset.movxProjectPortal = 'v86-shared-artwork';
   root.dataset.movxSignatureMotion = 'v86';
 
+  /* v86 must be the final visual owner. The build packages this stylesheet,
+     and the existing v41 runtime appends it after all legacy CSS. */
+  if (!document.querySelector('link[data-movx-v86-signature]')) {
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = 'v86-signature-motion.css?v=86-signature-motion';
+    link.dataset.movxV86Signature = 'true';
+    document.head.appendChild(link);
+  }
+
   if (!viewer) return;
 
   /* --------------------------------------------------------------
