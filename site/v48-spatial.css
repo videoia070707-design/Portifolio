@@ -1,0 +1,299 @@
+/* MOVX v60 — quiet editorial lower chapters + contact recovery
+   Keeps lower-section depth perceptible without the stacked wireframe/card language
+   that made About and Services feel like generated UI. */
+html.movx-v48 body{
+  --v48-line:color-mix(in srgb,var(--fg) 10%,transparent);
+  --v48-line-strong:color-mix(in srgb,var(--fg) 22%,transparent);
+}
+
+html.movx-v48 .about-section,
+html.movx-v48 .services-section,
+html.movx-v48 .process-section,
+html.movx-v48 .contact-section{
+  content-visibility:visible!important;
+  contain-intrinsic-size:auto!important;
+}
+
+/* v60 keeps the older shared WebGL journey for geometry/section state only.
+   Its visible rectangular plates are retired; authored chapter motion remains elsewhere. */
+html.movx-v48.movx-v60 .v49-journey-stage{
+  opacity:0!important;
+  visibility:hidden!important;
+}
+
+/* ABOUT — keep the typographic atmosphere, remove the wireframe dominance. */
+html.movx-v48 .about-section .v45-about-word{
+  -webkit-text-stroke-color:color-mix(in srgb,var(--fg) 11%,transparent)!important;
+}
+html.movx-v48 .about-section .v45-about-brand{
+  color:color-mix(in srgb,var(--fg) 3.5%,transparent)!important;
+}
+html.movx-v48 .about-section .v45-axis{opacity:.38!important}
+
+/* SERVICES — chapter markers become faint editorial notation, not interface plates. */
+html.movx-v48 .v45-service-marker b{
+  color:color-mix(in srgb,var(--fg) 4.5%,transparent)!important;
+}
+html.movx-v48 .v45-service-marker i{
+  width:min(20vw,260px)!important;
+  justify-self:start!important;
+  opacity:.34!important;
+  background:color-mix(in srgb,var(--fg) 16%,transparent)!important;
+}
+html.movx-v48 .v45-service-marker small{
+  color:color-mix(in srgb,var(--fg) 11%,transparent)!important;
+}
+
+/* PROCESS — v60/v55 is the single visible 3D owner. */
+html.movx-v48 .v45-process-stage{
+  background:
+    radial-gradient(circle at 50% 48%,color-mix(in srgb,var(--editorial-red) 8%,transparent),transparent 44%),
+    linear-gradient(180deg,color-mix(in srgb,var(--bg) 96%,transparent),var(--bg))!important;
+}
+html.movx-v48 .v45-process-canvas{
+  opacity:.7!important;
+  filter:contrast(1.02) saturate(.8);
+}
+html.movx-v48 .v45-process-vignette{
+  background:
+    linear-gradient(180deg,var(--bg) 0%,transparent 14%,transparent 84%,var(--bg) 100%),
+    radial-gradient(circle at 50% 50%,transparent 36%,color-mix(in srgb,var(--bg) 46%,transparent) 80%,var(--bg) 100%)!important;
+}
+
+/* CONTACT — stable editorial landing. */
+html.movx-v48 body[data-page="social"] .contact-section,
+html[data-theme="dark"].movx-v48 body[data-page="social"] .contact-section,
+html[data-theme="light"].movx-v48 body[data-page="social"] .contact-section{
+  min-height:auto!important;
+  padding:clamp(104px,10vw,156px) 0 clamp(82px,8vw,126px)!important;
+  background:#080706!important;
+  color:#f3eee9!important;
+  border-top:1px solid rgba(243,238,233,.14)!important;
+  overflow:clip!important;
+}
+html.movx-v48 body[data-page="social"] .contact-section>.container{position:relative;z-index:8}
+html.movx-v48 body[data-page="social"] .contact-grid{
+  display:grid!important;
+  grid-template-columns:repeat(12,minmax(0,1fr))!important;
+  gap:clamp(20px,2.1vw,34px)!important;
+  align-items:start!important;
+}
+html.movx-v48 body[data-page="social"] .contact-copy{grid-column:1 / span 7!important;min-width:0!important}
+html.movx-v48 body[data-page="social"] .contact-copy .kicker{color:rgba(243,238,233,.6)!important;opacity:1!important}
+html.movx-v48 body[data-page="social"] .contact-copy h2{
+  max-width:10.8ch!important;
+  margin:0!important;
+  color:#f3eee9!important;
+  font-family:var(--serif,Georgia,'Times New Roman',serif)!important;
+  font-weight:400!important;
+  font-size:clamp(58px,7vw,108px)!important;
+  line-height:.88!important;
+  letter-spacing:-.068em!important;
+  text-wrap:balance!important;
+}
+html.movx-v48 body[data-page="social"] .contact-copy>p{
+  max-width:46ch!important;
+  margin-top:clamp(22px,2.2vw,34px)!important;
+  color:rgba(243,238,233,.67)!important;
+  opacity:1!important;
+  line-height:1.72!important;
+}
+html.movx-v48 body[data-page="social"] .availability-dot{
+  margin-top:clamp(30px,3.5vw,50px)!important;
+  color:rgba(243,238,233,.72)!important;
+}
+html.movx-v48 body[data-page="social"] .contact-form{
+  grid-column:8 / span 5!important;
+  min-width:0!important;
+  padding-top:clamp(24px,3vw,46px)!important;
+  border-top:1px solid rgba(243,238,233,.24)!important;
+  color:#f3eee9!important;
+}
+html.movx-v48 body[data-page="social"] .contact-form label,
+html[data-theme="dark"].movx-v48 body[data-page="social"] .contact-form label,
+html[data-theme="light"].movx-v48 body[data-page="social"] .contact-form label{
+  display:block!important;
+  padding:0 0 16px!important;
+  margin:0 0 22px!important;
+  border:0!important;
+  border-bottom:1px solid rgba(243,238,233,.25)!important;
+  color:#f3eee9!important;
+}
+html.movx-v48 body[data-page="social"] .contact-form label>span{
+  display:block!important;
+  margin-bottom:9px!important;
+  color:rgba(243,238,233,.58)!important;
+  opacity:1!important;
+}
+html.movx-v48 body[data-page="social"] .contact-form input,
+html.movx-v48 body[data-page="social"] .contact-form select,
+html.movx-v48 body[data-page="social"] .contact-form textarea{
+  width:100%!important;
+  border:0!important;
+  outline:0!important;
+  background:transparent!important;
+  color:#f3eee9!important;
+  -webkit-text-fill-color:#f3eee9!important;
+  padding:4px 0!important;
+  box-shadow:none!important;
+  caret-color:#f3eee9!important;
+}
+html.movx-v48 body[data-page="social"] .contact-form input::placeholder,
+html.movx-v48 body[data-page="social"] .contact-form textarea::placeholder{color:rgba(243,238,233,.34)!important;opacity:1!important}
+html.movx-v48 body[data-page="social"] .contact-form select option{color:#111!important;background:#fff!important}
+html.movx-v48 body[data-page="social"] .contact-form label:focus-within{border-bottom-color:#f3eee9!important}
+html.movx-v48 body[data-page="social"] .contact-actions{
+  display:flex!important;
+  align-items:center!important;
+  gap:clamp(22px,2.8vw,42px)!important;
+  margin-top:28px!important;
+}
+html.movx-v48 body[data-page="social"] .contact-actions button,
+html.movx-v48 body[data-page="social"] .contact-actions a{color:#f3eee9!important}
+
+html.movx-v48 .contact-section .v45-contact-stage{z-index:1!important;opacity:.78}
+html.movx-v48 .contact-section .v45-contact-word{
+  -webkit-text-stroke-color:rgba(243,238,233,.14)!important;
+  font-size:clamp(170px,27vw,500px)!important;
+}
+html.movx-v48 .contact-section .v45-axis{
+  top:72%!important;
+  background:linear-gradient(90deg,transparent,rgba(243,238,233,.22) 14%,rgba(243,238,233,.22) 86%,transparent)!important;
+}
+
+html.movx-v48 .v48-depth-seam{
+  position:absolute;
+  left:50%;
+  top:0;
+  width:min(82vw,1180px);
+  height:1px;
+  z-index:2;
+  pointer-events:none;
+  background:linear-gradient(90deg,transparent,color-mix(in srgb,var(--fg) 20%,transparent),transparent);
+  transform-origin:center;
+  transform:translate3d(-50%,var(--v48-seam-y,0px),var(--v48-seam-z,0px)) scaleX(var(--v48-seam-s,1));
+  opacity:var(--v48-seam-o,.18);
+  will-change:transform,opacity;
+}
+html.movx-v48 .contact-section .v48-depth-seam{background:linear-gradient(90deg,transparent,rgba(243,238,233,.2),transparent)}
+
+@media(max-width:980px){
+  html.movx-v48 body[data-page="social"] .contact-grid{grid-template-columns:1fr!important;gap:34px!important}
+  html.movx-v48 body[data-page="social"] .contact-copy,
+  html.movx-v48 body[data-page="social"] .contact-form{grid-column:1!important}
+  html.movx-v48 body[data-page="social"] .contact-form{padding-top:8px!important}
+  html.movx-v48 .v48-depth-seam{display:none}
+  html.movx-v48 .v45-service-marker{display:none!important}
+}
+@media(max-width:620px){
+  html.movx-v48 body[data-page="social"] .contact-section{padding:86px 0 72px!important}
+  html.movx-v48 body[data-page="social"] .contact-copy h2{font-size:clamp(48px,14.6vw,72px)!important;max-width:9.5ch!important}
+  html.movx-v48 body[data-page="social"] .contact-actions{flex-wrap:wrap!important}
+}
+@media(prefers-reduced-motion:reduce){html.movx-v48 .v48-depth-seam{display:none!important}}
+
+/* MOVX v61 — editorial motion polish.
+   Motion follows artwork and hierarchy, never the readable copy plane. */
+html.movx-v61 body{
+  --v61-ease:cubic-bezier(.16,1,.3,1);
+  --v61-ui:cubic-bezier(.4,0,.2,1);
+}
+
+/* Retire the older distorted GPU portal. v61 uses the clicked artwork itself as the transition. */
+html.movx-v61 .v41-project-transition{display:none!important}
+
+/* Media appears with a restrained photographic reveal: no flying cards, no elastic copy. */
+@media(min-width:721px) and (prefers-reduced-motion:no-preference){
+  html.movx-v61 .v61-media-stage{
+    opacity:.68;
+    clip-path:inset(2.6% 0 0 0);
+    -webkit-clip-path:inset(2.6% 0 0 0);
+    filter:saturate(.94) contrast(.99);
+    transition:
+      opacity 1.05s var(--v61-ease) var(--v61-delay,0ms),
+      clip-path 1.28s var(--v61-ease) var(--v61-delay,0ms),
+      -webkit-clip-path 1.28s var(--v61-ease) var(--v61-delay,0ms),
+      filter 1.2s var(--v61-ui) var(--v61-delay,0ms)!important;
+  }
+  html.movx-v61 .v61-media-stage.v61-in-view{
+    opacity:1;
+    clip-path:inset(0);
+    -webkit-clip-path:inset(0);
+    filter:none;
+  }
+}
+
+/* Hover is perceptible but calm. Older card tilt/dimming is explicitly neutralised. */
+html.movx-v61 body[data-page="social"] #loopWall .loop-card,
+html.movx-v61 body[data-page="social"] #archiveGrid .archive-card{transform:none!important}
+html.movx-v61 body[data-page="social"] #nicheGrid:has(.niche-card:hover)>.niche-card{opacity:.86!important}
+html.movx-v61 body[data-page="social"] #nicheGrid:has(.niche-card:hover)>.niche-card:hover{opacity:1!important}
+html.movx-v61 body[data-page="social"] #projectsList:has(.project-entry:hover) .project-entry{opacity:.82!important}
+html.movx-v61 body[data-page="social"] #projectsList:has(.project-entry:hover) .project-entry:hover{opacity:1!important}
+html.movx-v61 body[data-page="social"] #nicheGrid .niche-card__media img{
+  transition:transform 1.35s var(--v61-ease),filter .9s var(--v61-ui)!important;
+}
+html.movx-v61 body[data-page="social"] #nicheGrid .niche-card:hover .niche-card__media img,
+html.movx-v61 body[data-page="social"] #nicheGrid .niche-card:focus-within .niche-card__media img,
+html.movx-v61 body[data-page="social"] #nicheGrid .niche-card.active .niche-card__media img{transform:scale(1.014)!important}
+html.movx-v61 body[data-page="social"] #archiveGrid .archive-card__media img{
+  transition:transform 1.45s var(--v61-ease),filter .9s var(--v61-ui)!important;
+}
+html.movx-v61 body[data-page="social"] #archiveGrid .archive-card:hover .archive-card__media img,
+html.movx-v61 body[data-page="social"] #archiveGrid .archive-card:focus-within .archive-card__media img{transform:translate3d(0,0,0) scale(1.009)!important}
+html.movx-v61 body[data-page="social"] #projectsList .project-cover img{
+  transition:transform 1.55s var(--v61-ease),filter .9s var(--v61-ui),opacity .8s var(--v61-ui)!important;
+}
+html.movx-v61 body[data-page="social"] #projectsList .project-cover:hover img,
+html.movx-v61 body[data-page="social"] #projectsList .project-cover:focus-visible img{transform:translate3d(0,0,0) scale(1.01)!important}
+html.movx-v61 body[data-page="social"] #archiveGrid .archive-card__caption{
+  transition:border-color .8s var(--v61-ui),opacity .8s var(--v61-ui)!important;
+}
+html.movx-v61 body[data-page="social"] #archiveGrid .archive-card:hover .archive-card__caption,
+html.movx-v61 body[data-page="social"] #archiveGrid .archive-card:focus-within .archive-card__caption{border-bottom-color:color-mix(in srgb,var(--fg) 30%,transparent)!important}
+
+/* Shared-element case portal: the artwork travels to/from the case hero with no shader distortion. */
+html.movx-v61 .v61-case-portal{
+  position:fixed;
+  z-index:13000;
+  left:0;
+  top:0;
+  pointer-events:none;
+  overflow:hidden;
+  background:#0b0a09;
+  transform-origin:top left;
+  box-shadow:0 18px 56px rgba(0,0,0,.16);
+  contain:layout paint style;
+}
+html.movx-v61 .v61-case-portal img{
+  display:block;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  object-position:center;
+}
+html.movx-v61.v61-case-transitioning .case-viewer.open .case-hero__media img{opacity:0!important}
+html.movx-v61 .case-viewer.open .case-hero__eyebrow,
+html.movx-v61 .case-viewer.open .case-hero__title,
+html.movx-v61 .case-viewer.open .case-hero__deck{
+  animation:v61-case-copy-in .82s var(--v61-ease) both;
+}
+html.movx-v61 .case-viewer.open .case-hero__eyebrow{animation-delay:.12s}
+html.movx-v61 .case-viewer.open .case-hero__title{animation-delay:.18s}
+html.movx-v61 .case-viewer.open .case-hero__deck{animation-delay:.27s}
+html.movx-v61 .case-viewer.open .case-top{animation:v61-case-top-in .72s var(--v61-ease) .08s both}
+@keyframes v61-case-copy-in{from{opacity:0}to{opacity:1}}
+@keyframes v61-case-top-in{from{opacity:0}to{opacity:1}}
+
+@media(max-width:720px){
+  html.movx-v61 .v61-case-portal{display:none!important}
+  html.movx-v61 .v61-media-stage{opacity:1!important;clip-path:none!important;-webkit-clip-path:none!important;filter:none!important}
+}
+@media(prefers-reduced-motion:reduce){
+  html.movx-v61 .v61-case-portal{display:none!important}
+  html.movx-v61 .v61-media-stage{opacity:1!important;clip-path:none!important;-webkit-clip-path:none!important;filter:none!important;transition:none!important}
+  html.movx-v61 .case-viewer.open .case-hero__eyebrow,
+  html.movx-v61 .case-viewer.open .case-hero__title,
+  html.movx-v61 .case-viewer.open .case-hero__deck,
+  html.movx-v61 .case-viewer.open .case-top{animation:none!important}
+}

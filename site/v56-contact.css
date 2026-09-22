@@ -1,0 +1,143 @@
+/* MOVX v56 — Process → Contact drawn handoff
+   The final spatial frames collapse into a single trace, then that trace draws the
+   closing contact composition. No extra WebGL owner: v55 remains the Process 3D owner. */
+html.movx-v56 body{--v56-accent:#b84434}
+html.movx-v56 .v56-handoff-layer{
+  position:fixed;inset:0;z-index:7;pointer-events:none;overflow:hidden;
+  opacity:var(--v56-layer-o,0);will-change:opacity;
+}
+html.movx-v56 .v56-frame-stack{position:absolute;left:50%;top:50%;width:1px;height:1px;perspective:1200px;transform-style:preserve-3d}
+html.movx-v56 .v56-frame-stack i{
+  position:absolute;left:0;top:0;width:min(54vw,720px);height:min(52vh,430px);
+  border:1px solid rgba(239,232,226,.22);box-shadow:inset 2px 0 0 rgba(184,68,52,.38);
+  transform-origin:center;opacity:var(--v56-frame-o,0);will-change:transform,opacity;
+}
+html.movx-v56 .v56-trace{
+  position:absolute;left:5vw;right:5vw;top:var(--v56-line-y,50vh);height:1px;
+  background:linear-gradient(90deg,transparent 0%,rgba(239,232,226,.16) 8%,rgba(239,232,226,.24) 50%,rgba(239,232,226,.16) 92%,transparent 100%);
+  transform:scaleX(var(--v56-line-s,0));transform-origin:center;opacity:var(--v56-line-o,0);will-change:transform,opacity,top;
+}
+html.movx-v56 .v56-trace::after{content:"";position:absolute;left:0;top:0;width:100%;height:1px;background:linear-gradient(90deg,transparent,var(--v56-accent) 28%,var(--v56-accent) 72%,transparent);transform:scaleX(var(--v56-red-s,0));transform-origin:center}
+html.movx-v56 .v56-guide{position:absolute;top:var(--v56-line-y,50vh);width:1px;height:var(--v56-guide-h,0px);background:linear-gradient(180deg,rgba(239,232,226,.24),rgba(239,232,226,.06),transparent);transform:scaleY(var(--v56-guide-s,0));transform-origin:top;opacity:var(--v56-guide-o,0);will-change:transform,opacity,left,top,height}
+html.movx-v56 .v56-guide--copy{left:var(--v56-copy-x,8vw)}
+html.movx-v56 .v56-guide--form{left:var(--v56-form-x,66vw)}
+html.movx-v56 .v56-beacon{position:absolute;left:calc(var(--v56-copy-x,8vw) - 3px);top:calc(var(--v56-line-y,50vh) - 3px);width:7px;height:7px;border-radius:50%;background:var(--v56-accent);box-shadow:0 0 0 8px rgba(184,68,52,.08);opacity:var(--v56-beacon-o,0);transform:scale(var(--v56-beacon-s,.7));will-change:opacity,transform,left,top}
+
+html.movx-v56 #contact.v56-contact-drawn{position:relative;isolation:isolate}
+html.movx-v56 #contact .v56-contact-rail{
+  position:absolute;z-index:7;left:max(28px,5vw);right:max(28px,5vw);top:0;height:1px;
+  background:linear-gradient(90deg,var(--v56-accent),rgba(243,238,233,.28) 18%,rgba(243,238,233,.12) 58%,transparent 100%);
+  transform:scaleX(var(--v56-contact-rule,0));transform-origin:left center;opacity:.92;pointer-events:none
+}
+html.movx-v56 #contact.v56-contact-drawn .contact-grid{opacity:var(--v56-contact-o,1);transform:translate3d(0,var(--v56-contact-y,0px),0);will-change:transform,opacity}
+html.movx-v56 #contact.v56-contact-drawn .contact-copy{transform:translate3d(var(--v56-copy-shift,0px),0,0)!important;will-change:transform}
+html.movx-v56 #contact.v56-contact-drawn .contact-form{transform:translate3d(var(--v56-form-shift,0px),0,0)!important;will-change:transform}
+html.movx-v56 #contact.v56-contact-drawn .contact-copy h2{position:relative}
+html.movx-v56 #contact.v56-contact-drawn .contact-copy h2::after{
+  content:"";display:block;width:min(180px,36%);height:1px;margin-top:clamp(20px,2vw,30px);
+  background:linear-gradient(90deg,var(--v56-accent),rgba(243,238,233,.2));transform:scaleX(var(--v56-title-rule,0));transform-origin:left center
+}
+
+@media(max-width:980px){
+  html.movx-v56 .v56-handoff-layer{display:none!important}
+  html.movx-v56 #contact .v56-contact-rail{display:none!important}
+  html.movx-v56 #contact.v56-contact-drawn .contact-grid,
+  html.movx-v56 #contact.v56-contact-drawn .contact-copy,
+  html.movx-v56 #contact.v56-contact-drawn .contact-form{opacity:1!important;transform:none!important}
+  html.movx-v56 #contact.v56-contact-drawn .contact-copy h2::after{transform:scaleX(1)!important}
+}
+@media(prefers-reduced-motion:reduce){
+  html.movx-v56 .v56-handoff-layer{display:none!important}
+  html.movx-v56 #contact .v56-contact-rail{display:none!important}
+  html.movx-v56 #contact.v56-contact-drawn .contact-grid,
+  html.movx-v56 #contact.v56-contact-drawn .contact-copy,
+  html.movx-v56 #contact.v56-contact-drawn .contact-form{opacity:1!important;transform:none!important}
+  html.movx-v56 #contact.v56-contact-drawn .contact-copy h2::after{transform:scaleX(1)!important}
+}
+
+/* MOVX v70 — editorial contact briefing
+   Removes the last background wireframe residue and turns the form into one calm,
+   numbered sequence. No extra copy, cards or dashboard-like UI are introduced. */
+html.movx-v56 #contact .v42-parallax-layer,
+html.movx-v56 #contact .v45-contact-stage,
+html.movx-v56 #contact .v48-depth-seam{display:none!important}
+html.movx-v56 #contact .contact-copy p{max-width:43ch!important;color:rgba(243,238,233,.62)!important;line-height:1.72!important}
+html.movx-v56 #contact .availability-dot{margin-top:clamp(34px,4.5vw,60px)!important;color:rgba(243,238,233,.72)!important}
+html.movx-v56 #contact .contact-form{
+  display:block!important;counter-reset:movx-contact-step;border-top:1px solid rgba(243,238,233,.26)!important;
+  padding-top:0!important;background:transparent!important
+}
+html.movx-v56 #contact .contact-form label{
+  counter-increment:movx-contact-step;position:relative!important;display:grid!important;
+  grid-template-columns:34px minmax(0,1fr)!important;grid-template-rows:auto auto!important;
+  column-gap:16px!important;row-gap:10px!important;margin:0!important;padding:18px 0 20px!important;
+  border:0!important;border-bottom:1px solid rgba(243,238,233,.22)!important;background:transparent!important
+}
+html.movx-v56 #contact .contact-form label::before{
+  content:"0" counter(movx-contact-step);grid-column:1;grid-row:1 / span 2;align-self:start;padding-top:2px;
+  font:700 8px/1 var(--mono,ui-monospace,monospace);letter-spacing:.13em;color:rgba(243,238,233,.34)
+}
+html.movx-v56 #contact .contact-form label::after{
+  content:""!important;position:absolute!important;left:0!important;right:0!important;bottom:-1px!important;height:1px!important;
+  background:var(--v56-accent)!important;transform:scaleX(0)!important;transform-origin:left center!important;
+  opacity:1!important;transition:transform .72s cubic-bezier(.16,1,.3,1)!important
+}
+html.movx-v56 #contact .contact-form label:focus-within::after{transform:scaleX(1)!important}
+html.movx-v56 #contact .contact-form label>span{
+  grid-column:2!important;grid-row:1!important;margin:0!important;
+  font:700 8px/1 var(--mono,ui-monospace,monospace)!important;letter-spacing:.15em!important;
+  text-transform:uppercase!important;color:rgba(243,238,233,.52)!important
+}
+html.movx-v56 #contact .contact-form input,
+html.movx-v56 #contact .contact-form select,
+html.movx-v56 #contact .contact-form textarea{
+  grid-column:2!important;grid-row:2!important;width:100%!important;min-width:0!important;margin:0!important;padding:0!important;
+  border:0!important;outline:0!important;border-radius:0!important;background:transparent!important;color:#f3eee9!important;
+  box-shadow:none!important;font:400 clamp(20px,1.65vw,27px)/1.28 var(--sans,Arial,sans-serif)!important;
+  letter-spacing:-.025em!important
+}
+html.movx-v56 #contact .contact-form input::placeholder,
+html.movx-v56 #contact .contact-form textarea::placeholder{color:rgba(243,238,233,.26)!important}
+html.movx-v56 #contact .contact-form textarea{min-height:118px!important;resize:vertical!important}
+html.movx-v56 #contact .contact-form select{appearance:auto!important;cursor:pointer!important}
+html.movx-v56 #contact .contact-actions{
+  display:flex!important;align-items:center!important;gap:clamp(24px,3vw,46px)!important;
+  margin:0!important;padding:26px 0 0!important;border:0!important
+}
+html.movx-v56 #contact .contact-actions button,
+html.movx-v56 #contact .contact-actions a{
+  font:700 10px/1 var(--mono,ui-monospace,monospace)!important;letter-spacing:.08em!important
+}
+html.movx-v56 #contact .contact-actions button::after,
+html.movx-v56 #contact .contact-actions a::after{bottom:2px!important}
+
+@media(min-width:981px){
+  html.movx-v56 #contact .contact-grid{grid-template-columns:repeat(12,minmax(0,1fr))!important;gap:clamp(18px,2vw,32px)!important}
+  html.movx-v56 #contact .contact-copy{grid-column:1 / span 5!important;max-width:620px!important}
+  html.movx-v56 #contact .contact-form{grid-column:8 / span 5!important;align-self:start!important;margin-top:clamp(20px,2vw,34px)!important}
+}
+@media(max-width:980px){
+  html.movx-v56 #contact .contact-grid{gap:clamp(42px,8vw,70px)!important}
+  html.movx-v56 #contact .contact-form{width:100%!important;padding-top:0!important}
+}
+@media(max-width:540px){
+  html.movx-v56 #contact .contact-form label{grid-template-columns:28px minmax(0,1fr)!important;column-gap:12px!important;padding:17px 0 19px!important}
+  html.movx-v56 #contact .contact-form input,
+  html.movx-v56 #contact .contact-form select,
+  html.movx-v56 #contact .contact-form textarea{font-size:20px!important}
+  html.movx-v56 #contact .contact-form textarea{min-height:104px!important}
+  html.movx-v56 #contact .contact-actions{display:grid!important;grid-template-columns:1fr 1fr!important;gap:20px!important;padding-top:24px!important}
+  html.movx-v56 #contact .contact-actions button,
+  html.movx-v56 #contact .contact-actions a{justify-self:start!important}
+}
+@media(max-width:390px){
+  html.movx-v56 #contact .contact-actions{grid-template-columns:1fr!important;gap:14px!important}
+}
+@media(prefers-reduced-motion:reduce){
+  html.movx-v56 #contact .contact-form label::after{transition:none!important}
+}
+
+/* MOVX v73.1 — case navigation uses its authored underline as focus affordance,
+   avoiding the old boxed focus treatment while keeping keyboard focus visible. */
+html.movx-v73 .case-top :is(.case-nav-button,.case-close):focus-visible{outline:0!important;outline-offset:0!important}
+html.movx-v73 .case-top :is(.case-nav-button,.case-close):focus-visible::after{transform:scaleX(1)!important}

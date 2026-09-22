@@ -1,0 +1,292 @@
+/* MOVX v88 — chapter continuity + proprietary fold mark
+   A restrained editorial registration mark folds from 2D into shallow 3D while chapters pass.
+   It appears only at the Archive -> Territories handoff: punctuation, not interface chrome.
+   Copy remains planar; motion stays inside artwork. */
+html.movx-v88 body{
+  --v88-ease:cubic-bezier(.16,1,.3,1);
+  --v88-ui:cubic-bezier(.4,0,.2,1);
+  --v88-line:color-mix(in srgb,var(--fg) 17%,transparent);
+  --v88-accent:var(--editorial-red,#9c2e24);
+}
+
+/* v41/v86 is the single case-transition owner. The older v61 DOM portal still
+   exists for compatibility, but is visually retired so it can never race the
+   editorial case layout or hide the settled hero artwork. */
+html.movx-v88.movx-v61 .v61-case-portal{display:none!important}
+html.movx-v88.movx-v61.v61-case-transitioning .case-viewer.open .case-hero__media img{opacity:1!important}
+
+/* --------------------------------------------------------------
+   MOVX FOLD MARK — two open rails and no enclosed UI surface.
+   The second rail turns slightly in 3D as a chapter enters, then settles flat.
+   -------------------------------------------------------------- */
+html.movx-v88 .v88-fold-mark{
+  --v88-fold-angle:0deg;
+  --v88-fold-lift:0px;
+  --v88-fold-opacity:.22;
+  position:absolute;
+  z-index:12;
+  width:clamp(44px,4vw,62px);
+  height:clamp(44px,4vw,62px);
+  pointer-events:none;
+  perspective:720px;
+  opacity:var(--v88-fold-opacity);
+  transition:opacity .7s var(--v88-ui);
+}
+html.movx-v88 .v88-fold-mark__rail,
+html.movx-v88 .v88-fold-mark__plane{position:absolute;display:block;pointer-events:none}
+html.movx-v88 .v88-fold-mark__rail{
+  left:0;top:0;width:64%;height:64%;
+  border-left:1px solid currentColor;
+  border-top:1px solid currentColor;
+  color:color-mix(in srgb,var(--fg) 42%,transparent);
+  transform-origin:0 0;
+}
+html.movx-v88 .v88-fold-mark__plane{
+  right:2px;bottom:2px;
+  width:54%;height:54%;
+  border-right:1px solid color-mix(in srgb,var(--v88-accent) 72%,transparent);
+  border-bottom:1px solid color-mix(in srgb,var(--v88-accent) 72%,transparent);
+  background:transparent;
+  transform-origin:100% 100%;
+  transform:translate3d(0,var(--v88-fold-lift),0) rotateY(var(--v88-fold-angle));
+  transition:transform .18s linear;
+  backface-visibility:hidden;
+}
+html.movx-v88 .v88-chapter-current>.v88-fold-mark,
+html.movx-v88 .v88-chapter-current .v88-fold-mark{--v88-fold-opacity:.62}
+
+html.movx-v88 body[data-page="social"] #livingArchive,
+html.movx-v88 body[data-page="social"] #nicheIndex{position:relative}
+html.movx-v88 body[data-page="social"] #livingArchive>.v88-fold-mark{
+  right:max(24px,4vw);top:clamp(76px,7.5vw,116px)
+}
+html.movx-v88 body[data-page="social"] #nicheIndex>.v88-fold-mark{
+  right:max(24px,4vw);top:clamp(92px,8.5vw,134px)
+}
+
+/* --------------------------------------------------------------
+   HERO -> ARCHIVE -> TERRITORIES — a single motion rhythm.
+   No text plane receives scroll transforms.
+   -------------------------------------------------------------- */
+@media(min-width:981px){
+  html.movx-v88 body[data-page="social"] #livingArchive .loop-row{
+    translate:var(--v88-row-x,0px) 0;
+    transition:translate 1.15s var(--v88-ease),opacity 1.05s var(--v88-ui),filter 1.05s var(--v88-ui)!important;
+    will-change:translate;
+  }
+  html.movx-v88 body[data-page="social"] #livingArchive .loop-card{position:relative}
+  html.movx-v88 body[data-page="social"] #livingArchive .loop-card::after{
+    content:"";position:absolute;left:0;right:100%;bottom:-7px;height:1px;
+    background:var(--v88-accent);opacity:.42;pointer-events:none;
+    transition:right .78s var(--v88-ease),opacity .5s var(--v88-ui);
+  }
+  html.movx-v88 body[data-page="social"] #livingArchive .loop-card:hover::after,
+  html.movx-v88 body[data-page="social"] #livingArchive .loop-card:focus-within::after{right:46%;opacity:.78}
+  html.movx-v88 body[data-page="social"] #livingArchive .loop-card img{
+    filter:saturate(.96) contrast(1.004)!important;
+    transition:transform 1.45s var(--v88-ease),filter .72s var(--v88-ui)!important;
+  }
+  html.movx-v88 body[data-page="social"] #livingArchive .loop-card:hover img,
+  html.movx-v88 body[data-page="social"] #livingArchive .loop-card:focus-within img{
+    filter:saturate(1.015) contrast(1.014)!important;
+  }
+
+  html.movx-v88 body[data-page="social"] #nicheGrid .niche-card__media{
+    translate:var(--v88-media-x,0px) var(--v88-media-y,0px);
+    transition:translate .62s var(--v88-ease)!important;
+    will-change:translate;
+  }
+  html.movx-v88 body[data-page="social"] #nicheGrid .niche-card__content{
+    transition:translate .8s var(--v88-ease),opacity .52s var(--v88-ui)!important;
+  }
+  html.movx-v88 body[data-page="social"] #nicheGrid .niche-card__num{
+    transition:color .52s var(--v88-ui),opacity .52s var(--v88-ui)!important;
+  }
+  html.movx-v88 body[data-page="social"] #nicheGrid .niche-card:hover .niche-card__content,
+  html.movx-v88 body[data-page="social"] #nicheGrid .niche-card:focus-within .niche-card__content{translate:0 -4px}
+  html.movx-v88 body[data-page="social"] #nicheGrid .niche-card:hover .niche-card__num,
+  html.movx-v88 body[data-page="social"] #nicheGrid .niche-card:focus-within .niche-card__num{color:#fff!important;opacity:1!important}
+  html.movx-v88 body[data-page="social"] #nicheIndex .archive-head::after{
+    transition:opacity .6s var(--v88-ui)!important;
+  }
+  html.movx-v88 body[data-page="social"] #nicheIndex.v88-chapter-current .archive-head::after{opacity:.86!important}
+}
+
+@media(max-width:980px){
+  html.movx-v88 .v88-fold-mark{
+    width:38px;height:38px;perspective:none;
+    --v88-fold-angle:0deg!important;--v88-fold-lift:0px!important;opacity:.38
+  }
+  html.movx-v88 .v88-fold-mark__plane{transform:none!important}
+  html.movx-v88 body[data-page="social"] #livingArchive>.v88-fold-mark,
+  html.movx-v88 body[data-page="social"] #nicheIndex>.v88-fold-mark{right:18px;top:54px}
+  html.movx-v88 body[data-page="social"] #livingArchive .loop-row,
+  html.movx-v88 body[data-page="social"] #nicheGrid .niche-card__media{translate:none!important}
+}
+
+@media(prefers-reduced-motion:reduce){
+  html.movx-v88 .v88-fold-mark,
+  html.movx-v88 .v88-fold-mark__plane,
+  html.movx-v88 body[data-page="social"] #livingArchive .loop-row,
+  html.movx-v88 body[data-page="social"] #nicheGrid .niche-card__media{
+    transition:none!important;translate:none!important
+  }
+  html.movx-v88 .v88-fold-mark{
+    --v88-fold-angle:0deg!important;--v88-fold-lift:0px!important;opacity:.36!important
+  }
+}
+
+/* ==================================================================
+   MOVX v89 — editorial rebalance after visual QA
+   ================================================================== */
+@media(min-width:981px){
+  html.movx-v88.movx-v86 body[data-page="social"] #livingArchive{
+    padding-top:clamp(58px,5.8vw,88px)!important;
+  }
+  html.movx-v88.movx-v86 body[data-page="social"] #livingArchive .archive-head{
+    grid-template-columns:minmax(0,.92fr) minmax(300px,.46fr)!important;
+    gap:clamp(52px,7vw,112px)!important;
+    align-items:end!important;
+    padding-bottom:clamp(22px,2.4vw,36px)!important;
+  }
+  html.movx-v88.movx-v86 body[data-page="social"] #livingArchive .archive-head h2{
+    max-width:9.2ch!important;
+    font-size:clamp(58px,5.75vw,94px)!important;
+    line-height:.875!important;
+    letter-spacing:-.058em!important;
+    color:color-mix(in srgb,var(--fg) 88%,var(--bg))!important;
+    text-wrap:balance!important;
+  }
+  html.movx-v88.movx-v86 body[data-page="social"] #livingArchive .archive-head p{
+    max-width:34ch!important;
+    margin:0 0 8px!important;
+    align-self:end!important;
+  }
+  html.movx-v88.movx-v86 body[data-page="social"] #livingArchive .loop-wall{
+    margin-top:0!important;
+    padding-top:2px!important;
+  }
+  html.movx-v88.movx-v86 body[data-page="social"] #livingArchive .loop-wall::before{top:-10px!important}
+  html.movx-v88 .v88-fold-mark{
+    width:clamp(54px,4.6vw,74px)!important;
+    height:clamp(54px,4.6vw,74px)!important;
+  }
+  html.movx-v88 .v88-fold-mark::before{
+    content:"";position:absolute;left:28%;top:22%;width:54%;height:1px;
+    background:color-mix(in srgb,var(--fg) 34%,transparent);
+    transform:rotate(48deg) scaleX(.72);transform-origin:left center;
+    transition:transform .9s var(--v88-ease),background-color .55s var(--v88-ui),opacity .55s var(--v88-ui);opacity:.64;
+  }
+  html.movx-v88 .v88-chapter-current>.v88-fold-mark::before,
+  html.movx-v88 .v88-chapter-current .v88-fold-mark::before{
+    transform:rotate(48deg) scaleX(1);
+    background:color-mix(in srgb,var(--v88-accent) 72%,var(--fg));opacity:.9;
+  }
+  html.movx-v88.movx-v86 body[data-page="social"] #nicheGrid>.niche-card:nth-child(1){grid-column:1 / span 5!important}
+  html.movx-v88.movx-v86 body[data-page="social"] #nicheGrid>.niche-card:nth-child(2){grid-column:6 / span 2!important;margin-top:clamp(58px,5.4vw,82px)!important}
+  html.movx-v88.movx-v86 body[data-page="social"] #nicheGrid>.niche-card:nth-child(3){grid-column:8 / span 5!important;margin-bottom:clamp(34px,3.8vw,58px)!important}
+  html.movx-v88.movx-v86 body[data-page="social"] #nicheGrid .niche-card__title{text-wrap:balance!important}
+}
+
+@media(max-width:980px){
+  html.movx-v88.movx-v86 body[data-page="social"] #livingArchive .archive-head h2{
+    max-width:9ch!important;font-size:clamp(48px,12vw,74px)!important;line-height:.9!important;letter-spacing:-.055em!important;
+  }
+  html.movx-v88 .v88-fold-mark::before{display:none!important}
+}
+
+/* ==================================================================
+   MOVX v90 — second-half editorial rhythm
+   About / Services / Process / Contact share hierarchy and accent logic,
+   but each chapter keeps one dominant gesture. No new runtime required.
+   ================================================================== */
+@media(min-width:981px){
+  /* ABOUT — tighter scale, stronger relationship between statement and rationale. */
+  html.movx-v88 body[data-page="social"] #about .about-grid{
+    position:relative!important;
+    grid-template-columns:repeat(12,minmax(0,1fr))!important;
+  }
+  html.movx-v88 body[data-page="social"] #about .about-grid::before{
+    content:"";position:absolute;left:58.2%;top:5%;bottom:3%;width:1px;
+    background:linear-gradient(180deg,transparent,color-mix(in srgb,var(--fg) 14%,transparent) 14% 84%,transparent);
+    pointer-events:none;
+  }
+  html.movx-v88 body[data-page="social"] #about .about-grid::after{
+    content:"";position:absolute;left:58.2%;top:15%;width:1px;height:clamp(46px,5vw,78px);
+    background:var(--v88-accent);opacity:.58;pointer-events:none;
+  }
+  html.movx-v88 body[data-page="social"] #about .about-heading{grid-column:1 / span 6!important}
+  html.movx-v88 body[data-page="social"] #about .about-copy{grid-column:8 / span 5!important;padding-top:clamp(24px,3.2vw,48px)!important}
+  html.movx-v88 body[data-page="social"] #about .about-heading h2{
+    max-width:7.6ch!important;font-size:clamp(58px,6.45vw,104px)!important;line-height:.86!important;letter-spacing:-.064em!important;
+  }
+  html.movx-v88 body[data-page="social"] #about .about-lead{
+    max-width:16ch!important;font-size:clamp(26px,2.65vw,41px)!important;line-height:1.06!important;
+  }
+
+  /* SERVICES — the active line reads as a chapter, not a hover gimmick. */
+  html.movx-v88 body[data-page="social"] #services .section-intro h2{
+    max-width:9.4ch!important;font-size:clamp(56px,6.45vw,102px)!important;line-height:.86!important;
+  }
+  html.movx-v88 body[data-page="social"] #services .services-list{margin-top:clamp(42px,4.8vw,70px)!important}
+  html.movx-v88 body[data-page="social"] #services .service-row{
+    grid-template-columns:58px minmax(240px,.88fr) minmax(320px,1.12fr)!important;
+    padding:clamp(25px,2.7vw,40px) 0!important;
+  }
+  html.movx-v88 body[data-page="social"] #services .service-row h3{
+    font-size:clamp(32px,3.35vw,52px)!important;line-height:.94!important;
+  }
+  html.movx-v88 body[data-page="social"] #services .service-row::before{
+    content:"";position:absolute;left:0;top:50%;width:1px;height:0;background:var(--v88-accent);opacity:0;
+    translate:0 -50%;transition:height .8s var(--v88-ease),opacity .5s var(--v88-ui);
+  }
+  html.movx-v88 body[data-page="social"] #services .service-row:hover::before,
+  html.movx-v88 body[data-page="social"] #services .service-row:focus-within::before,
+  html.movx-v88 body[data-page="social"] #services .service-row.v42-reading::before{height:54%;opacity:.82}
+  html.movx-v88 body[data-page="social"] #services .service-row:hover>span,
+  html.movx-v88 body[data-page="social"] #services .service-row:focus-within>span,
+  html.movx-v88 body[data-page="social"] #services .service-row.v42-reading>span{color:var(--v88-accent)!important}
+
+  /* PROCESS — make the current step unmistakable through contrast only. */
+  html.movx-v88 body[data-page="social"] #process .process-title h2{
+    max-width:7.4ch!important;font-size:clamp(54px,5.4vw,82px)!important;line-height:.88!important;
+  }
+  html.movx-v88 body[data-page="social"] #process .process-list li{opacity:.42!important}
+  html.movx-v88 body[data-page="social"] #process .process-list li.v55-current,
+  html.movx-v88 body[data-page="social"] #process .process-list li.v35-process-active{opacity:1!important}
+  html.movx-v88 body[data-page="social"] #process .process-list li strong{transition:color .58s var(--v88-ui)!important}
+  html.movx-v88 body[data-page="social"] #process .process-list li p{opacity:.62!important;transition:opacity .58s var(--v88-ui)!important}
+  html.movx-v88 body[data-page="social"] #process .process-list li.v55-current strong,
+  html.movx-v88 body[data-page="social"] #process .process-list li.v35-process-active strong{color:#f5f0eb!important}
+  html.movx-v88 body[data-page="social"] #process .process-list li.v55-current p,
+  html.movx-v88 body[data-page="social"] #process .process-list li.v35-process-active p{opacity:.92!important}
+
+  /* CONTACT — final chapter: stronger focus, no extra boxes. */
+  html.movx-v88 body[data-page="social"] #contact{position:relative!important;background:#050505!important}
+  html.movx-v88 body[data-page="social"] #contact::before{
+    content:"";position:absolute;left:max(24px,4vw);top:0;width:clamp(54px,6vw,92px);height:1px;background:var(--v88-accent);opacity:.76;
+  }
+  html.movx-v88 body[data-page="social"] #contact .contact-copy h2{
+    max-width:7.4ch!important;font-size:clamp(62px,7vw,112px)!important;line-height:.86!important;
+  }
+  html.movx-v88 body[data-page="social"] #contact .contact-form label>span{transition:color .45s var(--v88-ui),opacity .45s var(--v88-ui)!important}
+  html.movx-v88 body[data-page="social"] #contact .contact-form label:focus-within>span{color:#d34c3f!important;opacity:1!important}
+  html.movx-v88 body[data-page="social"] #contact :is(input,select,textarea){caret-color:#d34c3f!important}
+  html.movx-v88 body[data-page="social"] #contact .contact-actions :is(button,a){transition:opacity .45s var(--v88-ui),translate .75s var(--v88-ease)!important}
+  html.movx-v88 body[data-page="social"] #contact .contact-actions :is(button,a):hover,
+  html.movx-v88 body[data-page="social"] #contact .contact-actions :is(button,a):focus-visible{translate:4px 0;opacity:1!important}
+}
+
+@media(max-width:980px){
+  html.movx-v88 body[data-page="social"] #about .about-grid::before,
+  html.movx-v88 body[data-page="social"] #about .about-grid::after,
+  html.movx-v88 body[data-page="social"] #services .service-row::before{display:none!important}
+  html.movx-v88 body[data-page="social"] #about .about-heading h2{font-size:clamp(50px,12vw,76px)!important;max-width:8.4ch!important}
+  html.movx-v88 body[data-page="social"] #services .section-intro h2{font-size:clamp(50px,11vw,72px)!important}
+  html.movx-v88 body[data-page="social"] #contact .contact-copy h2{font-size:clamp(54px,12vw,78px)!important;max-width:8ch!important}
+}
+
+@media(prefers-reduced-motion:reduce){
+  html.movx-v88 body[data-page="social"] #services .service-row::before,
+  html.movx-v88 body[data-page="social"] #contact .contact-actions :is(button,a){transition:none!important;translate:none!important}
+}

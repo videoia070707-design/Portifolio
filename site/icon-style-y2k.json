@@ -1,0 +1,21 @@
+{
+  "reference": "uploaded MH chrome-lime icon",
+  "style_name": "Y2K chrome-lime orbital",
+  "visual_dna": {
+    "materials": ["mirror chrome", "neon lime translucent gel", "black insets"],
+    "shapes": ["rounded inflated letterforms", "orbital ring", "soft-square monogram block", "crosshair details"],
+    "lighting": ["specular highlights", "cool blue chrome reflections", "lime inner glow", "soft bloom"],
+    "surface_effects": ["glass sheen", "polished metal edge", "subtle scanlines", "editorial noise grid"],
+    "palette": {
+      "chrome": ["#f8fbff", "#b6bfcc", "#6f7784"],
+      "lime": ["#f0ff9d", "#b3ff00", "#72ba00"],
+      "dark": ["#090b0f", "#101214"]
+    },
+    "motion": ["slow orbital drift", "floating product deck", "continuous conveyor for archive cards", "subtle tilt on hover"],
+    "translation_for_movx": [
+      "hero uses one chrome-lime monogram instead of generic glass plate",
+      "project frames become floating deck elements around the monogram",
+      "background stays editorial and restrained so the effect feels premium, not noisy"
+    ]
+  }
+}
