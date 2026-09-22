@@ -17,13 +17,14 @@ const fs=require('node:fs/promises');
       webgl:root.dataset.v107Webgl,
       section:!!section,
       sectionHeight:section?.getBoundingClientRect().height||0,
+      viewportHeight:innerHeight,
       stickyPosition:sticky?getComputedStyle(sticky).position:null,
       canvas:!!canvas,
       canvasBox:canvas?canvas.getBoundingClientRect().toJSON():null,
       overflow:root.scrollWidth-innerWidth
     };
   });
-  if(initial.version!=='scroll-sculpture'||!initial.section||initial.sectionHeight<innerHeight*1.7||initial.stickyPosition!=='sticky'||initial.overflow>2)throw Error(JSON.stringify({initial}));
+  if(initial.version!=='scroll-sculpture'||!initial.section||initial.sectionHeight<initial.viewportHeight*1.7||initial.stickyPosition!=='sticky'||initial.overflow>2)throw Error(JSON.stringify({initial}));
   if(!['ready','fallback'].includes(initial.webgl))throw Error(JSON.stringify({webgl:initial.webgl}));
 
   async function capture(name,fraction){
