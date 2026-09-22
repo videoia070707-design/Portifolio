@@ -179,54 +179,7 @@
     style.textContent=`
       html.movx-v84 body{--v84-ease:${ease};--v84-ui:cubic-bezier(.4,0,.2,1)}
 
-      /* Header: disciplines and page navigation are separate systems, never one crowded row. */
-      html.movx-v84 .site-header{isolation:isolate}
-      html.movx-v84 .header-row{
-        display:grid!important;grid-template-columns:minmax(0,1fr) auto auto!important;
-        align-items:center!important;gap:clamp(18px,2.2vw,34px)!important;min-width:0!important
-      }
-      html.movx-v84 .v65-brand-cluster{min-width:0!important;gap:clamp(18px,1.7vw,26px)!important}
-      html.movx-v84 .v65-discipline-switcher{
-        gap:clamp(14px,1.25vw,20px)!important;padding-left:clamp(16px,1.4vw,22px)!important;
-        border-left-color:color-mix(in srgb,currentColor 20%,transparent)!important
-      }
-      html.movx-v84 .v65-discipline-switcher a{
-        font-size:8px!important;letter-spacing:.12em!important;opacity:.5!important
-      }
-      html.movx-v84 .v65-discipline-switcher a[aria-current="page"]{opacity:1!important}
-      html.movx-v84 .nav--editorial{
-        gap:clamp(22px,2vw,32px)!important;padding-left:clamp(20px,1.7vw,28px)!important;
-        border-left:1px solid color-mix(in srgb,currentColor 14%,transparent)!important;white-space:nowrap!important
-      }
-      html.movx-v84 .nav--editorial a{font-size:10px!important;letter-spacing:.015em!important}
-      html.movx-v84 .header-actions{justify-self:end!important;white-space:nowrap!important}
-
-      @media(max-width:1320px) and (min-width:901px){
-        html.movx-v84 .header-row{grid-template-columns:minmax(0,1fr) auto!important;height:66px!important;gap:18px!important}
-        html.movx-v84 .nav--editorial{display:none!important}
-        html.movx-v84 .menu-button{display:inline-flex!important;align-items:center!important;justify-content:center!important}
-        html.movx-v84 .wordmark small{display:none!important}
-        html.movx-v84 .v65-full{display:inline!important}
-        html.movx-v84 .v65-short{display:none!important}
-        html.movx-v84 .header-actions{grid-column:2!important;gap:10px!important}
-      }
-      @media(max-width:1040px) and (min-width:901px){
-        html.movx-v84 .language-switcher button:not(.active){display:none!important}
-        html.movx-v84 .language-switcher{gap:0!important}
-        html.movx-v84 .theme-toggle{min-width:0!important;padding-inline:6px!important}
-      }
-      @media(max-width:900px){
-        html.movx-v84 .header-row{display:flex!important;height:64px!important;gap:14px!important}
-        html.movx-v84 .v65-discipline-switcher,html.movx-v84 .nav--editorial{display:none!important}
-        html.movx-v84 .v65-brand-cluster{display:block!important;flex:1 1 auto!important}
-        html.movx-v84 .header-actions{margin-left:auto!important;gap:9px!important}
-        html.movx-v84 .menu-button{display:inline-flex!important}
-        html.movx-v84 .wordmark small{display:none!important}
-      }
-      @media(max-width:620px){
-        html.movx-v84 .language-switcher{display:none!important}
-        html.movx-v84 .theme-toggle .theme-label{display:none!important}
-      }
+      /* Header layout is owned by layout-integrity.css. */
 
       /* Opening map: consistent numbering and quieter, clearer click targets. */
       html.movx-v84 body[data-page="social"] .hero-index{background:#050505!important;color:#f1ece7!important;border-color:rgba(255,255,255,.11)!important}

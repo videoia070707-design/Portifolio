@@ -13,7 +13,7 @@ html[data-layout="stable"] .v65-short { display:none!important; }
 html[data-layout="stable"] .v65-footer-disciplines { flex-wrap:wrap; }
 html[data-layout="stable"] :is(section[id],.project-entry) { scroll-margin-top:calc(var(--movx-header-height) + 24px); }
 /* Typography must accommodate accents, descenders and localized copy. */
-html[data-layout="stable"] body :is(.project-copy h2,.project-copy h3,.project-subtitle,.page-hero h1,.section-intro h2,.case-hero__title,.case-hero__deck,.empty-archive h2,#about h2,#services h2,#services h3,#process h2) { line-height:1.08!important; letter-spacing:-.025em!important; }
+html[data-layout="stable"].movx-v65 body[data-page] :is(.project-copy h2,.project-copy h3,.project-subtitle,.page-hero h1,.section-intro h2,.case-hero__title,.case-hero__deck,.empty-archive h2,#about h2,#services h2,#services .service-row h3,#process h2) { line-height:1.08!important; letter-spacing:-.025em!important; }
 html[data-layout="stable"] .page-hero h1 .mask-reveal { overflow:visible!important; }
 html[data-layout="stable"] .page-hero h1 { max-width:100%!important; }
 html[data-layout="stable"] body[data-page="social"] #projectsList .project-entry .project-copy h2 { font-size:clamp(38px,4.5vw,72px)!important; max-width:100%!important; overflow-wrap:normal; }
@@ -63,3 +63,12 @@ html[data-layout="stable"] .web-services { padding-top:80px; padding-bottom:80px
 
 html[data-layout="stable"] body[data-page="social"] #projectsList .project-entry .project-copy h2,
 html[data-layout="stable"] body[data-page="social"] #projectsList .project-entry .project-subtitle { line-height:1.08!important; letter-spacing:-.025em!important; }
+
+html[data-layout="stable"] body[data-page="web"] .footer-big { font-family:Georgia,serif; font-size:clamp(44px,8vw,112px); font-weight:400; line-height:1.1; letter-spacing:-.025em; }
+
+@media(max-width:980px) {
+ html[data-layout="stable"] .header-actions { gap:8px!important; }
+ html[data-layout="stable"] .language-switcher { display:flex!important; gap:6px!important; }
+ html[data-layout="stable"] .language-switcher button { display:block!important; }
+ html[data-layout="stable"] .mobile-menu { top:64px; max-height:calc(100dvh - 64px); overflow-y:auto; }
+}
