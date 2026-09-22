@@ -88,13 +88,17 @@ const distance=(a,b)=>a&&b?Math.sqrt(a.reduce((sum,v,i)=>sum+(v-b[i])**2,0)):0;
   const mobile=await browser.newPage({viewport:{width:390,height:844},reducedMotion:'no-preference'});
   await mobile.goto('http://127.0.0.1:4173/social-media.html',{waitUntil:'networkidle'});
   await mobile.waitForFunction(()=>['mobile-flow','reduced-flow'].includes(document.documentElement.dataset.movxV111),null,{timeout:9000});
-  const m=await mobile.evaluate(()=>({
-    copy:getComputedStyle(document.querySelector('.v111-process-copy')||document.body).display,
-    sourceTitle:parseFloat(getComputedStyle(document.querySelector('#process .process-title')).opacity||'0'),
-    rows:[...document.querySelectorAll('#process .process-list>li')].filter(row=>getComputedStyle(row).visibility!=='hidden').length,
-    overflow:document.documentElement.scrollWidth-innerWidth
-  }));
-  if(m.copy!=='none'&&document.querySelector?.('.v111-process-copy')){} // no-op in Node scope is intentionally avoided below
+  const m=await mobile.evaluate(()=>{
+    const copy=document.querySelector('.v111-process-copy');
+    return {
+      copyExists:!!copy,
+      copyDisplay:copy?getComputedStyle(copy).display:null,
+      sourceTitle:parseFloat(getComputedStyle(document.querySelector('#process .process-title')).opacity||'0'),
+      rows:[...document.querySelectorAll('#process .process-list>li')].filter(row=>getComputedStyle(row).visibility!=='hidden').length,
+      overflow:document.documentElement.scrollWidth-innerWidth
+    };
+  });
+  if(m.copyExists&&m.copyDisplay!=='none')throw Error(JSON.stringify({mobileCopy:m}));
   if(m.sourceTitle<.95||m.rows<5||m.overflow>2)throw Error(JSON.stringify({mobile:m}));
   report.push({mobile:m});
 
