@@ -38,11 +38,12 @@ jobs:
           node scripts/qa-v106.cjs
           node scripts/qa-v107.cjs
           node scripts/qa-v108.cjs
+          node scripts/qa-v109.cjs
       - name: Save validation evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: movx-v108-validation
+          name: movx-v109-validation
           path: _site/qa-*
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
