@@ -1,28 +1,20 @@
-/* MOVX v41 — WebGL project portal + project mood
-   Adds one signature transition and contextual atmosphere without moving copy. */
+/* MOVX v86 — shared artwork project transition
+   Keeps the proven v41 hook/class names for compatibility, but replaces the
+   old WebGL/glitch portal with a quiet editorial shared-element composition. */
 html.movx-v41 body{
   --v41-mood:var(--editorial-red,#9c2e24);
   --v41-ease:cubic-bezier(.16,1,.3,1);
 }
 
-/* The selected-cases chapter now shifts atmosphere with the active artwork. */
+/* Contextual mood is deliberately restrained: it supports the active artwork
+   without turning the Selected Cases chapter into a themed card surface. */
 html.movx-v41 body[data-page="social"] .projects-list{
-  background-color:color-mix(in srgb,var(--v41-mood) 5.5%,var(--v38-wash,var(--bg)))!important;
-  transition:background-color .95s var(--v41-ease)!important;
-}
-html.movx-v41 body[data-page="social"] .v40-webgl-stage::before{
-  border-color:color-mix(in srgb,var(--v41-mood) 32%,var(--v40-scene-line))!important;
-  transition:border-color .85s var(--v41-ease);
-}
-html.movx-v41 body[data-page="social"] .v40-webgl-stage::after{
-  background:
-    linear-gradient(90deg,transparent 49.92%,color-mix(in srgb,var(--v41-mood) 24%,var(--v40-scene-line)) 50%,transparent 50.08%),
-    linear-gradient(180deg,transparent 49.92%,color-mix(in srgb,var(--v41-mood) 20%,var(--v40-scene-line)) 50%,transparent 50.08%)!important;
-  transition:opacity .8s var(--v41-ease);
+  background-color:color-mix(in srgb,var(--v41-mood) 3.2%,var(--v38-wash,var(--bg)))!important;
+  transition:background-color 1.1s var(--v41-ease)!important;
 }
 
-/* WebGL portal — fixed above DOM only during the short project transition. */
-html.movx-v41 .v41-project-transition{
+/* Shared-element stage. Only the artwork is animated; the site remains underneath. */
+html.movx-v86 .v41-project-transition{
   position:fixed;
   inset:0;
   z-index:12000;
@@ -31,48 +23,78 @@ html.movx-v41 .v41-project-transition{
   visibility:hidden;
   overflow:hidden;
   contain:strict;
-  transition:opacity .12s linear,visibility 0s linear .14s;
+  transition:opacity .08s linear,visibility 0s linear .1s;
 }
-html.movx-v41 .v41-project-transition.v41-transition-live{
+html.movx-v86 .v41-project-transition.v41-transition-live{
   opacity:1;
   visibility:visible;
-  transition:opacity .06s linear,visibility 0s linear 0s;
+  transition:opacity .04s linear,visibility 0s linear 0s;
 }
-html.movx-v41 .v41-project-transition__canvas{
+html.movx-v86 .v86-project-transition__surface{
+  --v86-accent:var(--v41-mood,#9c2e24);
+  position:absolute;
+  overflow:hidden;
+  background:#090909;
+  transform-origin:0 0;
+  box-shadow:0 24px 78px rgba(0,0,0,.18);
+  will-change:transform,left,top,width,height;
+}
+html.movx-v86 .v86-project-transition__image{
+  position:absolute;
+  inset:0;
   display:block;
   width:100%;
   height:100%;
+  max-width:none;
+  max-height:none;
+  transform:none!important;
+  filter:none!important;
+  border:0!important;
+  box-shadow:none!important;
+  will-change:opacity;
 }
+html.movx-v86 .v86-project-transition__image--cover{object-fit:cover}
+html.movx-v86 .v86-project-transition__image--contain{object-fit:contain}
 
-/* A tiny flash of project color makes the portal feel intentional, not like a screenshot zoom. */
-html.movx-v41 .v41-project-transition::after{
+/* The same open-corner registration mark exists on list artwork and case hero.
+   It provides continuity without drawing another rectangular UI frame. */
+html.movx-v86 .v86-project-transition__surface::before,
+html.movx-v86 .v86-project-transition__surface::after{
   content:"";
   position:absolute;
-  inset:0;
+  z-index:4;
+  width:clamp(46px,6vw,92px);
+  height:clamp(46px,6vw,92px);
   pointer-events:none;
-  background:radial-gradient(circle at 50% 50%,color-mix(in srgb,var(--v41-mood) 18%,transparent),transparent 62%);
-  opacity:0;
-  transition:opacity .25s ease;
+  opacity:.9;
 }
-html.movx-v41 .v41-project-transition.v41-transition-live::after{opacity:.48}
+html.movx-v86 .v86-project-transition__surface::before{
+  left:0;top:0;
+  border-left:1px solid var(--v86-accent);
+  border-top:1px solid var(--v86-accent);
+}
+html.movx-v86 .v86-project-transition__surface::after{
+  right:0;bottom:0;
+  border-right:1px solid var(--v86-accent);
+  border-bottom:1px solid var(--v86-accent);
+}
 
-/* During the portal, suppress only decorative hover emphasis; layout/copy stay still. */
-html.v41-transition-running body[data-page="social"] #projectsList .project-entry{
+html.v86-transition-running body[data-page="social"] #projectsList .project-entry,
+html.v86-transition-running .case-hero__content{
   transition:none!important;
 }
-html.v41-transition-running body[data-page="social"] #projectsList .project-cover::after{
-  opacity:0!important;
-}
 
-@media(max-width:720px){
-  html.movx-v41 .v41-project-transition{display:none!important}
+/* Legacy canvas is never part of the v86 transition. */
+html.movx-v86 .v41-project-transition__canvas{display:none!important}
+
+@media(max-width:980px){
+  html.movx-v86 .v41-project-transition{display:none!important}
   html.movx-v41 body[data-page="social"] .projects-list{
     background-color:var(--v38-wash,var(--bg))!important;
   }
 }
 @media(prefers-reduced-motion:reduce){
-  html.movx-v41 .v41-project-transition{display:none!important}
+  html.movx-v86 .v41-project-transition{display:none!important}
   html.movx-v41 body[data-page="social"] .projects-list{transition:none!important}
 }
-html.v41-portal-fallback .v41-project-transition,
-html.v41-portal-reduced .v41-project-transition{display:none!important}
+html.v86-shared-transition-reduced .v41-project-transition{display:none!important}
