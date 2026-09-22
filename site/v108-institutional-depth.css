@@ -1,0 +1,308 @@
+/* MOVX v108 — institutional depth system
+   Purposeful 3D across About -> Services -> Process -> Contact.
+   Artwork/cases remain untouched; readable DOM content stays above the scene. */
+
+html.movx-v108{
+  --v108-accent:var(--editorial-red,#d86658);
+  --v108-ink:var(--fg,#f2ece5);
+  --v108-bg:var(--bg,#0b0908);
+  --v108-ease:cubic-bezier(.16,1,.3,1);
+}
+
+html.movx-v108 body[data-page="social"] :is(#about,#services,#process,#contact){
+  position:relative!important;
+  isolation:isolate;
+  overflow:clip;
+}
+html.movx-v108 body[data-page="social"] :is(#about,#services,#process,#contact)>.container,
+html.movx-v108 body[data-page="social"] #process .v55-process-journey>.process-grid{
+  position:relative;
+  z-index:4;
+}
+
+/* ABOUT — editorial room, not a floating-card composition. */
+.v108-about-depth{
+  position:absolute;
+  inset:0;
+  z-index:0;
+  pointer-events:none;
+  perspective:1500px;
+  perspective-origin:72% 44%;
+  overflow:hidden;
+}
+.v108-about-depth__word,
+.v108-about-depth__slab,
+.v108-about-depth__ring{
+  position:absolute;
+  transform-style:preserve-3d;
+  will-change:transform,opacity;
+}
+.v108-about-depth__word{
+  right:clamp(-44px,1vw,18px);
+  top:14%;
+  font:700 clamp(92px,16vw,250px)/.72 var(--sans,Arial,sans-serif);
+  letter-spacing:-.09em;
+  color:transparent;
+  -webkit-text-stroke:1px color-mix(in srgb,var(--v108-ink) 15%,transparent);
+  white-space:nowrap;
+  opacity:calc(.16 + var(--v108-about-progress,0) * .08);
+  transform:translate3d(calc(var(--v108-about-progress,0) * -7vw),calc(var(--v108-about-progress,0) * 30px),-220px) rotateY(calc(-22deg + var(--v108-about-progress,0) * 17deg));
+}
+.v108-about-depth__slab{
+  right:8vw;
+  bottom:12%;
+  width:clamp(190px,24vw,380px);
+  aspect-ratio:1.55;
+  border:1px solid color-mix(in srgb,var(--v108-ink) 15%,transparent);
+  background:linear-gradient(145deg,color-mix(in srgb,var(--v108-bg) 89%,var(--v108-ink)),color-mix(in srgb,var(--v108-accent) 12%,var(--v108-bg)));
+  box-shadow:0 45px 100px color-mix(in srgb,#000 20%,transparent);
+  opacity:.58;
+  transform:translate3d(calc(var(--v108-about-progress,0) * -28px),calc((.5 - var(--v108-about-progress,0)) * 70px),70px) rotateX(calc(62deg - var(--v108-about-progress,0) * 30deg)) rotateZ(-14deg);
+}
+.v108-about-depth__ring{
+  right:4vw;
+  top:24%;
+  width:clamp(180px,25vw,390px);
+  aspect-ratio:1;
+  border:1px solid color-mix(in srgb,var(--v108-accent) 36%,transparent);
+  border-radius:50%;
+  opacity:.46;
+  transform:translate3d(0,calc(var(--v108-about-progress,0) * -34px),110px) rotateX(calc(68deg - var(--v108-about-progress,0) * 17deg)) rotateZ(calc(-22deg + var(--v108-about-progress,0) * 52deg));
+}
+
+/* SERVICES — giant indices move through depth while service copy stays planar. */
+.v108-services-depth{
+  position:absolute;
+  inset:0;
+  z-index:0;
+  pointer-events:none;
+  perspective:1700px;
+  perspective-origin:78% 50%;
+  overflow:hidden;
+}
+.v108-services-depth__index{
+  position:absolute;
+  right:clamp(-20px,3vw,48px);
+  top:50%;
+  width:min(34vw,440px);
+  text-align:right;
+  font:700 clamp(120px,22vw,340px)/.62 var(--sans,Arial,sans-serif);
+  letter-spacing:-.095em;
+  color:transparent;
+  -webkit-text-stroke:1px color-mix(in srgb,var(--v108-ink) 15%,transparent);
+  transform-style:preserve-3d;
+  will-change:transform,opacity;
+  opacity:var(--v108-service-o,.08);
+  transform:translate3d(0,var(--v108-service-y,0px),var(--v108-service-z,-700px)) rotateY(var(--v108-service-ry,-20deg)) scale(var(--v108-service-s,.82));
+}
+.v108-services-depth__index.is-near{
+  -webkit-text-stroke-color:color-mix(in srgb,var(--v108-accent) 48%,transparent);
+  text-shadow:0 18px 70px color-mix(in srgb,var(--v108-accent) 11%,transparent);
+}
+html.movx-v108 body[data-page="social"] #services .service-row{
+  position:relative;
+  z-index:3;
+}
+html.movx-v108 body[data-page="social"] #services .service-row.v108-service-active h3{
+  color:var(--v108-accent)!important;
+}
+
+/* PROCESS — actual 3D corridor. The semantic list remains the readable UI. */
+html.movx-v108.movx-v57 body[data-page="social"] #process .v55-process-journey{
+  position:relative!important;
+  min-height:500svh!important;
+  background:
+    radial-gradient(circle at 72% 48%,color-mix(in srgb,var(--v108-accent) 8%,transparent),transparent 28%),
+    linear-gradient(180deg,var(--v108-bg),color-mix(in srgb,var(--v108-bg) 97%,var(--v108-ink)) 52%,var(--v108-bg))!important;
+  isolation:isolate;
+  overflow:clip;
+}
+.v108-process-canvas{
+  position:sticky;
+  top:0;
+  z-index:0;
+  display:block;
+  width:100%;
+  height:100svh;
+  min-height:640px;
+  pointer-events:none;
+  opacity:var(--v108-process-canvas-o,.95);
+}
+.v108-process-atmosphere{
+  position:sticky;
+  top:0;
+  z-index:1;
+  height:100svh;
+  margin-top:-100svh;
+  pointer-events:none;
+  background:
+    radial-gradient(circle at calc(70% + var(--v108-pointer-x,0) * 4%) calc(52% + var(--v108-pointer-y,0) * 3%),color-mix(in srgb,var(--v108-accent) 10%,transparent),transparent 26%),
+    linear-gradient(90deg,color-mix(in srgb,var(--v108-bg) 96%,transparent) 0 31%,transparent 58%);
+}
+html.movx-v108.movx-v57 body[data-page="social"] #process .v55-process-journey>.process-grid{
+  position:sticky!important;
+  top:0!important;
+  height:100svh!important;
+  min-height:640px!important;
+  margin-top:-100svh!important;
+  padding-top:clamp(96px,11vh,128px)!important;
+  padding-bottom:clamp(58px,7vh,84px)!important;
+  display:grid!important;
+  grid-template-columns:minmax(320px,.72fr) minmax(0,1.28fr)!important;
+  gap:clamp(56px,7vw,116px)!important;
+  align-items:stretch!important;
+  overflow:hidden!important;
+  perspective:1600px;
+  pointer-events:none;
+}
+html.movx-v108 body[data-page="social"] #process .process-title{
+  align-self:start;
+  z-index:5!important;
+  pointer-events:auto;
+}
+html.movx-v108 body[data-page="social"] #process .process-list{
+  position:relative!important;
+  z-index:6!important;
+  min-height:100%;
+  margin:0!important;
+  padding:0!important;
+  border:0!important;
+  overflow:visible!important;
+  transform-style:preserve-3d;
+  pointer-events:auto;
+}
+html.movx-v108 body[data-page="social"] #process .process-list li{
+  position:absolute!important;
+  left:0;
+  right:0;
+  top:50%;
+  min-height:clamp(190px,23vh,244px)!important;
+  margin:0!important;
+  padding:clamp(28px,3.5vh,42px) 0!important;
+  border-top:1px solid color-mix(in srgb,var(--v108-ink) 12%,transparent)!important;
+  border-bottom:1px solid color-mix(in srgb,var(--v108-ink) 8%,transparent)!important;
+  background:linear-gradient(90deg,color-mix(in srgb,var(--v108-bg) 90%,transparent),color-mix(in srgb,var(--v108-bg) 68%,transparent) 72%,transparent)!important;
+  backdrop-filter:blur(4px)!important;
+  -webkit-backdrop-filter:blur(4px)!important;
+  opacity:var(--v108-row-o,0)!important;
+  transform:translate3d(var(--v108-row-x,0px),calc(-50% + var(--v108-row-y,0px)),var(--v108-row-z,-520px)) rotateX(var(--v108-row-rx,0deg)) scale(var(--v108-row-s,.86))!important;
+  transform-style:preserve-3d;
+  transform-origin:50% 50%;
+  will-change:transform,opacity;
+  transition:none!important;
+}
+html.movx-v108 body[data-page="social"] #process .process-list li.v108-process-active{
+  border-color:color-mix(in srgb,var(--v108-accent) 45%,var(--v108-ink) 8%)!important;
+  background:linear-gradient(90deg,color-mix(in srgb,var(--v108-accent) 6%,var(--v108-bg)),color-mix(in srgb,var(--v108-bg) 72%,transparent) 72%,transparent)!important;
+  box-shadow:inset 2px 0 0 color-mix(in srgb,var(--v108-accent) 72%,transparent)!important;
+}
+html.movx-v108 body[data-page="social"] #process .process-list li.v108-process-active>span,
+html.movx-v108 body[data-page="social"] #process .process-list li.v108-process-active strong{
+  color:var(--v108-accent)!important;
+}
+.v108-process-progress{
+  position:absolute;
+  z-index:7;
+  right:max(24px,4vw);
+  top:clamp(92px,10vh,118px);
+  display:flex;
+  align-items:center;
+  gap:12px;
+  pointer-events:none;
+  font:700 9px/1 var(--mono,ui-monospace,monospace);
+  letter-spacing:.15em;
+  text-transform:uppercase;
+  color:color-mix(in srgb,var(--v108-ink) 48%,transparent);
+}
+.v108-process-progress i{
+  position:relative;
+  width:90px;
+  height:1px;
+  background:color-mix(in srgb,var(--v108-ink) 12%,transparent);
+  overflow:hidden;
+}
+.v108-process-progress i::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:var(--v108-accent);
+  transform:scaleX(var(--v108-process-progress,0));
+  transform-origin:left center;
+}
+
+/* CONTACT — the corridor resolves into a clean X, then leaves the form alone. */
+.v108-contact-depth{
+  position:absolute;
+  inset:0;
+  z-index:0;
+  pointer-events:none;
+  perspective:1500px;
+  overflow:hidden;
+}
+.v108-contact-depth__x{
+  position:absolute;
+  right:clamp(-60px,5vw,80px);
+  top:50%;
+  width:clamp(260px,34vw,560px);
+  aspect-ratio:1;
+  transform-style:preserve-3d;
+  transform:translate3d(0,-50%,calc(-220px + var(--v108-contact-progress,0) * 260px)) rotateY(calc(-26deg + var(--v108-contact-progress,0) * 24deg)) rotateZ(calc(18deg - var(--v108-contact-progress,0) * 10deg));
+  opacity:calc(.16 + var(--v108-contact-progress,0) * .34);
+}
+.v108-contact-depth__x::before,
+.v108-contact-depth__x::after{
+  content:"";
+  position:absolute;
+  left:50%;top:50%;
+  width:14%;height:92%;
+  border-radius:999px;
+  transform-origin:50% 50%;
+  background:linear-gradient(180deg,color-mix(in srgb,var(--v108-ink) 12%,transparent),var(--v108-accent) 48%,color-mix(in srgb,var(--v108-ink) 28%,transparent));
+  box-shadow:0 40px 90px color-mix(in srgb,#000 20%,transparent);
+}
+.v108-contact-depth__x::before{transform:translate(-50%,-50%) rotate(43deg) translateZ(60px)}
+.v108-contact-depth__x::after{transform:translate(-50%,-50%) rotate(-43deg) translateZ(-30px)}
+
+@media(max-width:1180px) and (min-width:981px){
+  .v108-about-depth__word{right:-70px;font-size:clamp(86px,15vw,190px)}
+  .v108-services-depth__index{right:-44px;width:36vw}
+  html.movx-v108.movx-v57 body[data-page="social"] #process .v55-process-journey>.process-grid{
+    grid-template-columns:minmax(300px,.68fr) minmax(0,1.32fr)!important;
+    gap:42px!important;
+  }
+}
+
+@media(max-width:980px){
+  .v108-about-depth{opacity:.48}
+  .v108-about-depth__word{right:-100px;top:20%;font-size:clamp(80px,22vw,150px)}
+  .v108-about-depth__slab{right:-70px;width:240px;opacity:.34}
+  .v108-about-depth__ring{right:-80px;width:250px;opacity:.28}
+  .v108-services-depth__index{right:-84px;width:240px;font-size:170px;opacity:.11!important}
+  .v108-process-canvas,.v108-process-atmosphere,.v108-process-progress{display:none!important}
+  html.movx-v108.movx-v57 body[data-page="social"] #process .v55-process-journey{min-height:auto!important;background:var(--v108-bg)!important}
+  html.movx-v108.movx-v57 body[data-page="social"] #process .v55-process-journey>.process-grid{
+    position:relative!important;top:auto!important;height:auto!important;min-height:0!important;margin-top:0!important;
+    display:grid!important;grid-template-columns:1fr!important;gap:44px!important;overflow:visible!important;perspective:none!important;pointer-events:auto!important
+  }
+  html.movx-v108 body[data-page="social"] #process .process-list{min-height:0!important;transform:none!important}
+  html.movx-v108 body[data-page="social"] #process .process-list li{
+    position:relative!important;left:auto!important;right:auto!important;top:auto!important;min-height:0!important;
+    opacity:1!important;transform:none!important;background:transparent!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;box-shadow:none!important
+  }
+  .v108-contact-depth__x{right:-130px;width:330px;opacity:.18}
+}
+
+@media(max-width:600px){
+  .v108-about-depth__word{right:-120px;opacity:.12}
+  .v108-about-depth__slab{display:none}
+  .v108-services-depth{opacity:.56}
+  .v108-contact-depth__x{right:-170px;width:300px}
+}
+
+@media(prefers-reduced-motion:reduce){
+  .v108-process-canvas,.v108-process-atmosphere,.v108-process-progress{display:none!important}
+  html.movx-v108.movx-v57 body[data-page="social"] #process .v55-process-journey{min-height:auto!important;background:var(--v108-bg)!important}
+  html.movx-v108.movx-v57 body[data-page="social"] #process .v55-process-journey>.process-grid{position:relative!important;top:auto!important;height:auto!important;min-height:0!important;margin-top:0!important;overflow:visible!important;perspective:none!important;pointer-events:auto!important}
+  html.movx-v108 body[data-page="social"] #process .process-list li{position:relative!important;top:auto!important;opacity:1!important;transform:none!important;background:transparent!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+  .v108-about-depth__word,.v108-about-depth__slab,.v108-about-depth__ring,.v108-services-depth__index,.v108-contact-depth__x{transform:none!important;transition:none!important}
+}
