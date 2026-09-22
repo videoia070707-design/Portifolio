@@ -56,6 +56,7 @@
   let wasOpen = viewer.classList.contains('open');
   let transitionToken = 0;
   let activeAnimations = [];
+  let heroStateRaf = 0;
 
   const mediaFor = opener => {
     if (!opener) return null;
@@ -64,7 +65,12 @@
   };
   const copyRect = rect => ({ left:rect.left, top:rect.top, width:rect.width, height:rect.height });
   const validRect = rect => !!rect && rect.width > 4 && rect.height > 4;
-  const visibleRect = rect => validRect(rect) && rect.bottom > 0 && rect.top < innerHeight && rect.right > 0 && rect.left < innerWidth;
+  const visibleRect = rect => {
+    if (!validRect(rect)) return false;
+    const right = Number.isFinite(rect.right) ? rect.right : rect.left + rect.width;
+    const bottom = Number.isFinite(rect.bottom) ? rect.bottom : rect.top + rect.height;
+    return bottom > 0 && rect.top < innerHeight && right > 0 && rect.left < innerWidth;
+  };
 
   const accentFor = opener => {
     const entry = opener?.closest?.('.project-entry');
@@ -88,7 +94,8 @@
       slug:opener.getAttribute('data-open-project') || opener.closest('[data-open-project]')?.getAttribute('data-open-project') || '',
       accent:accentFor(opener),
       heroRect:null,
-      heroImg:null
+      heroImg:null,
+      heroVisible:false
     };
   };
 
@@ -173,6 +180,22 @@
     return media && img && validRect(rect) ? { media, img, rect:copyRect(rect) } : null;
   };
 
+  const syncHeroState = () => {
+    heroStateRaf = 0;
+    if (!snapshot || !viewer.classList.contains('open')) return;
+    const target = targetForOpen();
+    if (!target) {
+      snapshot.heroVisible = false;
+      return;
+    }
+    snapshot.heroRect = target.rect;
+    snapshot.heroImg = target.img;
+    snapshot.heroVisible = visibleRect(target.rect);
+  };
+  const scheduleHeroState = () => {
+    if (!heroStateRaf) heroStateRaf = requestAnimationFrame(syncHeroState);
+  };
+
   const waitForOpenTarget = (token, attempt = 0) => {
     if (token !== transitionToken || !viewer.classList.contains('open')) return;
     const target = targetForOpen();
@@ -211,6 +234,7 @@
     target.img.classList.add('v86-portal-target-hidden');
     snapshot.heroRect = copyRect(to);
     snapshot.heroImg = target.img;
+    snapshot.heroVisible = visibleRect(to);
 
     stage.dataset.direction = 'open';
     stage.classList.add('v41-transition-live');
@@ -236,6 +260,7 @@
     hideStage();
     requestAnimationFrame(() => root.classList.remove('v86-case-arriving'));
     root.dataset.movxProjectTransition = 'settled';
+    scheduleHeroState();
   }
 
   const refreshSourceRect = () => {
@@ -251,7 +276,10 @@
   const runCloseMorph = token => {
     const destination = refreshSourceRect();
     const from = snapshot?.heroRect;
-    if (!snapshot || !destination || !validRect(from) || !setSource() || !surface?.animate) {
+    /* If the case hero is no longer in the viewport, inventing a morph from its
+       old position would break spatial continuity. In that situation the normal
+       close is cleaner and more truthful. */
+    if (!snapshot || !snapshot.heroVisible || !visibleRect(from) || !destination || !setSource() || !surface?.animate) {
       finishClose(token); return;
     }
     cancelAnimations();
@@ -311,12 +339,6 @@
     }).observe(viewer,{attributes:true,attributeFilter:['class']});
   }
 
-  addEventListener('resize',() => {
-    if (!viewer.classList.contains('open') || !snapshot) return;
-    const target = targetForOpen();
-    if (target) {
-      snapshot.heroRect = target.rect;
-      snapshot.heroImg = target.img;
-    }
-  },{passive:true});
+  viewer.addEventListener('scroll',scheduleHeroState,{passive:true});
+  addEventListener('resize',scheduleHeroState,{passive:true});
 })();
