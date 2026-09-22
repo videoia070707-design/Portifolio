@@ -72,3 +72,171 @@ html[data-layout="stable"] body[data-page="web"] .footer-big { font-family:Georg
  html[data-layout="stable"] .language-switcher button { display:block!important; }
  html[data-layout="stable"] .mobile-menu { top:64px; max-height:calc(100dvh - 64px); overflow-y:auto; }
 }
+
+/* Case studies: restore the readable art + explanation split. */
+html[data-layout="stable"].movx-v33 .case-body {
+ display:grid!important;
+ grid-template-columns:minmax(300px,.42fr) minmax(0,.58fr)!important;
+ gap:clamp(40px,6vw,88px)!important;
+ align-items:start!important;
+ padding-top:clamp(48px,6vw,84px)!important;
+ padding-bottom:clamp(84px,9vw,132px)!important;
+ overflow:visible!important;
+}
+html[data-layout="stable"].movx-v33 .case-info {
+ position:relative!important;
+ top:auto!important;
+ height:auto!important;
+ max-width:620px!important;
+ min-width:0!important;
+ padding:0!important;
+ margin:0!important;
+}
+html[data-layout="stable"].movx-v33 .v33-case-intro {
+ display:block!important;
+ padding:0 0 34px!important;
+ border-bottom:1px solid var(--line)!important;
+}
+html[data-layout="stable"].movx-v33 .v33-case-intro :is(.case-kicker,h2,.case-lead,.case-description,.project-tags,.case-facts) {
+ grid-column:auto!important;
+ grid-row:auto!important;
+}
+html[data-layout="stable"].movx-v33 .v33-case-intro>h2 {
+ display:block!important;
+ font-size:clamp(42px,4.2vw,68px)!important;
+ line-height:1.02!important;
+ letter-spacing:-.035em!important;
+ margin:16px 0 18px!important;
+ max-width:12ch!important;
+ overflow:visible!important;
+}
+html[data-layout="stable"].movx-v33 .v33-case-intro .case-lead {
+ max-width:32ch!important;
+ font-size:clamp(22px,2.1vw,32px)!important;
+ line-height:1.16!important;
+ letter-spacing:-.025em!important;
+ margin:0 0 18px!important;
+ color:var(--fg)!important;
+}
+html[data-layout="stable"].movx-v33 .v33-case-intro .case-description {
+ max-width:56ch!important;
+ margin:0 0 22px!important;
+ font-size:14px!important;
+ line-height:1.7!important;
+}
+html[data-layout="stable"].movx-v33 .case-facts {
+ display:grid!important;
+ grid-template-columns:repeat(2,minmax(0,1fr))!important;
+ gap:0 18px!important;
+ margin-top:24px!important;
+}
+html[data-layout="stable"].movx-v33 .v33-case-chapters { display:block!important; }
+html[data-layout="stable"].movx-v33 .v33-case-chapter {
+ display:block!important;
+ padding:28px 0 0!important;
+ margin:0!important;
+ border:0!important;
+}
+html[data-layout="stable"].movx-v33 .v33-case-chapter .case-chapter-label {
+ margin:0 0 18px!important;
+ padding:0!important;
+ border:0!important;
+}
+html[data-layout="stable"].movx-v33 .v33-case-chapter .case-chapter-label::after { content:none!important; display:none!important; }
+html[data-layout="stable"].movx-v33 .v33-chapter-body { display:block!important; grid-template-columns:none!important; }
+html[data-layout="stable"].movx-v33 .v33-case-chapter .case-study-block {
+ display:block!important;
+ grid-column:auto!important;
+ padding:18px 0!important;
+ margin:0!important;
+ border-top:1px solid var(--line)!important;
+}
+html[data-layout="stable"].movx-v33 .case-study-block strong { display:block!important; margin-bottom:8px!important; }
+html[data-layout="stable"].movx-v33 .case-study-block p,
+html[data-layout="stable"].movx-v33 .case-study-block li { font-size:14px!important; line-height:1.65!important; }
+html[data-layout="stable"].movx-v33 .case-swatches--labeled { grid-template-columns:repeat(3,minmax(0,1fr))!important; gap:10px!important; }
+html[data-layout="stable"].movx-v33 .case-study-note {
+ margin-top:28px!important;
+ padding:24px 0 0!important;
+ border-top:1px solid var(--line)!important;
+}
+html[data-layout="stable"].movx-v33 .case-slides {
+ display:grid!important;
+ grid-template-columns:1fr!important;
+ gap:clamp(28px,4vw,52px)!important;
+ padding-top:0!important;
+ align-items:start!important;
+ justify-items:stretch!important;
+ perspective:none!important;
+ transform:none!important;
+}
+html[data-layout="stable"].movx-v33 .case-slides figure,
+html[data-layout="stable"].movx-v33 .case-viewer[data-v33-layout] .case-slides figure:nth-of-type(n) {
+ grid-column:1!important;
+ width:100%!important;
+ max-width:none!important;
+ margin:0!important;
+ padding:0!important;
+ transform:none!important;
+ translate:none!important;
+}
+html[data-layout="stable"] .case-viewer .case-slide-frame {
+ margin-top:10px!important;
+ overflow:visible!important;
+ transform:none!important;
+ translate:none!important;
+ rotate:none!important;
+ perspective:none!important;
+ transition:none!important;
+ will-change:auto!important;
+}
+html[data-layout="stable"] .case-viewer .case-slide-frame img {
+ display:block!important;
+ width:100%!important;
+ height:auto!important;
+ max-height:none!important;
+ object-fit:contain!important;
+ object-position:center!important;
+ transform:none!important;
+ translate:none!important;
+ scale:none!important;
+ filter:none!important;
+ clip-path:none!important;
+ transition:none!important;
+ border:1px solid var(--line)!important;
+ background:transparent!important;
+}
+html[data-layout="stable"].movx-v33 .case-hero__title {
+ font-size:clamp(48px,6.2vw,98px)!important;
+ line-height:1!important;
+ letter-spacing:-.045em!important;
+ max-width:10ch!important;
+ overflow:visible!important;
+ text-wrap:balance;
+}
+html[data-layout="stable"].movx-v33 .case-hero__deck { line-height:1.45!important; }
+html[data-layout="stable"].movx-v33 .v33-next-preview { display:none!important; }
+html[data-layout="stable"].movx-v33 .case-end {
+ display:grid!important;
+ grid-template-columns:minmax(0,1fr) auto!important;
+ gap:20px!important;
+ align-items:end!important;
+ margin-top:24px!important;
+ padding-top:30px!important;
+ border-top:1px solid var(--line)!important;
+}
+html[data-layout="stable"].movx-v33 .case-end strong { grid-column:1!important; }
+html[data-layout="stable"].movx-v33 .case-end button { grid-column:2!important; justify-self:end!important; }
+
+@media(max-width:980px) {
+ html[data-layout="stable"].movx-v33 .case-body {
+  grid-template-columns:1fr!important;
+  gap:48px!important;
+  padding-top:40px!important;
+ }
+ html[data-layout="stable"].movx-v33 .case-info { max-width:none!important; }
+ html[data-layout="stable"].movx-v33 .case-swatches--labeled { grid-template-columns:repeat(2,minmax(0,1fr))!important; }
+ html[data-layout="stable"].movx-v33 .case-end { grid-template-columns:1fr!important; }
+ html[data-layout="stable"].movx-v33 .case-end strong,
+ html[data-layout="stable"].movx-v33 .case-end button { grid-column:1!important; justify-self:start!important; }
+}
