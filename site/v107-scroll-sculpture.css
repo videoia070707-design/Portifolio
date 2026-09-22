@@ -1,0 +1,151 @@
+/* MOVX v107 — visible dimensional scroll chapter
+   A deliberate 3D interlude between the hero and the archive.
+   Scroll remains native; the sticky stage only visualizes progress. */
+
+html.movx-v107{
+  --v107-ink:#efe7dd;
+  --v107-bg:#12100f;
+  --v107-accent:#e36b5c;
+  --v107-ease:cubic-bezier(.16,1,.3,1);
+}
+
+.v107-dimensional-story{
+  position:relative;
+  height:235svh;
+  min-height:1500px;
+  background:var(--v107-bg);
+  color:var(--v107-ink);
+  overflow:clip;
+  isolation:isolate;
+}
+.v107-dimensional-story__sticky{
+  position:sticky;
+  top:0;
+  height:100svh;
+  min-height:640px;
+  overflow:hidden;
+  display:grid;
+  place-items:center;
+  perspective:1400px;
+}
+.v107-dimensional-story__sticky::before,
+.v107-dimensional-story__sticky::after{
+  content:"";
+  position:absolute;
+  pointer-events:none;
+  z-index:1;
+}
+.v107-dimensional-story__sticky::before{
+  width:min(70vw,980px);
+  aspect-ratio:1;
+  border:1px solid rgba(239,231,221,.13);
+  border-radius:50%;
+  left:50%;top:50%;
+  transform:translate(-50%,-50%) scale(calc(.82 + var(--v107-progress,0) * .24));
+  opacity:calc(.22 + var(--v107-progress,0) * .24);
+}
+.v107-dimensional-story__sticky::after{
+  width:1px;
+  height:130%;
+  left:50%;top:-15%;
+  background:linear-gradient(transparent,rgba(227,107,92,.28),transparent);
+  transform:rotate(calc(-18deg + var(--v107-progress,0) * 36deg));
+  transform-origin:50% 50%;
+  opacity:.75;
+}
+
+.v107-dimensional-story__canvas{
+  position:absolute;
+  inset:0;
+  width:100%;height:100%;
+  display:block;
+  z-index:3;
+  pointer-events:none;
+}
+.v107-dimensional-story__glow{
+  position:absolute;
+  inset:-15%;
+  z-index:0;
+  pointer-events:none;
+  background:
+    radial-gradient(circle at calc(50% + var(--v107-pointer-x,0) * 6%) calc(48% + var(--v107-pointer-y,0) * 5%),rgba(227,107,92,.20),transparent 29%),
+    radial-gradient(circle at 50% 52%,rgba(239,231,221,.055),transparent 34%);
+  filter:blur(12px);
+  transform:scale(calc(.92 + var(--v107-progress,0) * .14));
+}
+.v107-dimensional-story__chrome{
+  position:absolute;
+  inset:0;
+  z-index:4;
+  pointer-events:none;
+  opacity:.8;
+}
+.v107-dimensional-story__chrome::before,
+.v107-dimensional-story__chrome::after{
+  content:"";
+  position:absolute;
+  width:11px;height:11px;
+  border-color:rgba(239,231,221,.34);
+}
+.v107-dimensional-story__chrome::before{
+  left:clamp(22px,4vw,64px);top:clamp(22px,4vw,64px);
+  border-left:1px solid;border-top:1px solid;
+}
+.v107-dimensional-story__chrome::after{
+  right:clamp(22px,4vw,64px);bottom:clamp(22px,4vw,64px);
+  border-right:1px solid;border-bottom:1px solid;
+}
+
+.v107-dimensional-story__fallback{
+  display:none;
+  position:relative;
+  z-index:3;
+  width:min(76vw,760px);
+  aspect-ratio:1.45;
+  transform-style:preserve-3d;
+  transform:rotateX(-10deg) rotateY(-22deg);
+}
+.v107-dimensional-story__fallback span{
+  position:absolute;
+  left:50%;top:50%;
+  width:54%;height:10%;
+  border-radius:999px;
+  background:linear-gradient(90deg,#2b2725,#f0e8de 38%,#df6659 72%,#5b302c);
+  box-shadow:0 32px 70px rgba(0,0,0,.35);
+  transform-style:preserve-3d;
+}
+.v107-dimensional-story__fallback span:nth-child(1){transform:translate(-50%,-50%) rotate(42deg) translateZ(80px)}
+.v107-dimensional-story__fallback span:nth-child(2){transform:translate(-50%,-50%) rotate(-42deg) translateZ(10px)}
+.v107-dimensional-story__fallback span:nth-child(3){width:36%;height:36%;border:2px solid rgba(239,231,221,.42);background:transparent;box-shadow:none;transform:translate(-50%,-50%) translateZ(-70px) rotateX(68deg)}
+
+html[data-v107-webgl="ready"] .v107-dimensional-story__fallback{display:none}
+html[data-v107-webgl="fallback"] .v107-dimensional-story__fallback,
+html.v107-reduced .v107-dimensional-story__fallback{display:block}
+
+/* The hero sculpture from v106 was intentionally conservative. V107 makes
+   the depth cue more legible while keeping text/artwork untouched. */
+html.movx-v107 .v106-page-sculpture{opacity:.84}
+html.movx-v107 .v106-chapter-sculpture{opacity:.5}
+html.movx-v107 body[data-page="social"] #process .v106-chapter-sculpture{opacity:.42}
+html.movx-v107 body[data-page="social"] #contact .v106-chapter-sculpture{opacity:.34}
+
+@media(max-width:980px){
+  .v107-dimensional-story{height:190svh;min-height:1180px}
+  .v107-dimensional-story__sticky{min-height:580px}
+}
+@media(max-width:720px){
+  .v107-dimensional-story{height:118svh;min-height:760px}
+  .v107-dimensional-story__sticky{min-height:560px}
+  .v107-dimensional-story__canvas{display:none}
+  .v107-dimensional-story__fallback{display:block;width:min(90vw,540px)}
+  .v107-dimensional-story__sticky::before{width:92vw}
+}
+@media(prefers-reduced-motion:reduce){
+  .v107-dimensional-story{height:82svh;min-height:620px}
+  .v107-dimensional-story__sticky{position:relative;height:82svh}
+  .v107-dimensional-story__canvas{display:none!important}
+  .v107-dimensional-story__fallback{display:block!important;transform:rotateX(-8deg) rotateY(-16deg)}
+  .v107-dimensional-story__sticky::before,
+  .v107-dimensional-story__sticky::after,
+  .v107-dimensional-story__glow{transform:none!important;transition:none!important}
+}
