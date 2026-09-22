@@ -1,0 +1,53 @@
+const {chromium}=require('playwright');
+const fs=require('node:fs/promises');
+(async()=>{
+ const browser=await chromium.launch({headless:true});
+ const report=[];
+ const page=await browser.newPage({reducedMotion:'reduce'});
+ const errors=[];page.on('pageerror',e=>errors.push(String(e)));
+ for(const width of [390,768,1024,1280,1440]){
+  await page.setViewportSize({width,height:900});
+  for(const path of ['social-media.html','video-editor.html','ai-creator.html','ui-ux.html']){
+   await page.goto('http://127.0.0.1:4173/'+path,{waitUntil:'networkidle'});
+   await page.locator('.v65-footer-disciplines a').last().waitFor();
+   for(const lang of ['pt','en','es']){
+    await page.locator('.language-switcher [data-lang="'+lang+'"]').click();
+    const data=await page.evaluate(()=>{
+     const visible=e=>e.getBoundingClientRect().width>0&&getComputedStyle(e).display!=='none';
+     const box=e=>{const r=e.getBoundingClientRect();return {label:e.textContent.trim(),x:r.x,y:r.y,right:r.right,bottom:r.bottom}};
+     const nodes=[...document.querySelectorAll('.header-row .wordmark,.header-row > .nav a,.header-row .header-actions > *,.v65-discipline-switcher a')].filter(visible).map(box);
+     const collisions=[];for(let i=0;i<nodes.length;i++)for(let j=i+1;j<nodes.length;j++){const a=nodes[i],b=nodes[j];if(Math.min(a.right,b.right)-Math.max(a.x,b.x)>1&&Math.min(a.bottom,b.bottom)-Math.max(a.y,b.y)>1)collisions.push([a.label,b.label]);}
+     return {collisions,overflow:document.documentElement.scrollWidth-innerWidth,links:document.querySelectorAll('.v65-footer-disciplines a').length,web:document.querySelectorAll('a[href="ui-ux.html"]').length,title:document.querySelector('h1')?.textContent};
+    });
+    if(data.collisions.length||data.overflow>2||data.links!==4||data.web<3)throw Error(JSON.stringify({width,path,lang,...data}));
+    report.push({width,path,lang,...data});
+   }
+   if(path==='social-media.html'){
+    const covers=page.locator('#projectsList .project-cover img');
+    for(let i=0;i<await covers.count();i++){
+     await covers.nth(i).scrollIntoViewIfNeeded();
+     await covers.nth(i).evaluate(img=>img.decode());
+    }
+    const bad=await page.evaluate(()=>[...document.querySelectorAll('#projectsList .project-entry')].flatMap(entry=>{
+     const img=entry.querySelector('.project-cover img'),title=entry.querySelector('h2');
+     const r=img.getBoundingClientRect(),s=getComputedStyle(img),ts=getComputedStyle(title);
+     const expected=img.naturalWidth/img.naturalHeight;
+     const issues=[];
+     if(Math.abs(r.width/r.height-expected)>.015||s.objectFit!=='contain'||s.transform!=='none')issues.push('artwork crop');
+     if(parseFloat(ts.lineHeight)/parseFloat(ts.fontSize)<1.02||parseFloat(ts.letterSpacing)/parseFloat(ts.fontSize)<-.031)issues.push('tight title');
+     return issues.length?[{title:title.textContent,issues,ratio:r.width/r.height,expected}]:[];
+    }));
+    if(bad.length)throw Error(JSON.stringify({width,bad}));
+   }
+   if(width===390){
+    await page.locator('.menu-button').click();
+    await page.locator('.v65-mobile-disciplines a[href="ui-ux.html"]').waitFor({state:'visible'});
+   }
+   await page.screenshot({path:`_site/qa-layout-${path}-${width}.png`});
+  }
+ }
+ if(errors.length)throw Error(errors.join('\n'));
+ await fs.writeFile('_site/qa-layout-report.json',JSON.stringify(report,null,2));
+ await browser.close();
+ console.log('Layout integrity: 60 page/viewport/language combinations; original artwork ratios; four disciplines.');
+})().catch(e=>{console.error(e);process.exit(1)});

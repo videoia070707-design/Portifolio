@@ -6,7 +6,7 @@
   const root=document.documentElement;
   const viewer=document.getElementById('caseViewer');
   root.classList.add('movx-v74','movx-v78');
-  root.dataset.movxRelease='v101-artwork-story';
+  root.dataset.movxRelease='v102-layout-integrity';
   root.dataset.movxDialogFocus='v78-deterministic';
 
   const naturalInteractive=el=>el.matches('a[href],button,input,select,textarea,summary,[contenteditable="true"]');

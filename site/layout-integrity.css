@@ -1,0 +1,62 @@
+/* Stable layout boundaries shared by all portfolio chapters. */
+html[data-layout="stable"] { --movx-header-height:110px; scroll-padding-top:calc(var(--movx-header-height) + 24px); }
+html[data-layout="stable"] .site-header { position:sticky!important; top:0!important; }
+html[data-layout="stable"] .header-row { display:grid!important; grid-template-columns:auto minmax(0,1fr) auto!important; grid-template-rows:64px 44px; height:auto!important; gap:0 24px!important; align-items:center; }
+html[data-layout="stable"] .v65-brand-cluster { display:contents!important; }
+html[data-layout="stable"] .wordmark { grid-column:1; grid-row:1; }
+html[data-layout="stable"] .header-row > .nav { grid-column:2; grid-row:1; justify-self:center; gap:clamp(16px,2vw,28px)!important; }
+html[data-layout="stable"] .header-actions { grid-column:3; grid-row:1; }
+html[data-layout="stable"] .v65-discipline-switcher { grid-column:1 / -1; grid-row:2; justify-self:start; display:flex!important; gap:32px!important; border:0!important; padding:0!important; }
+html[data-layout="stable"] .v65-discipline-switcher a { font-size:11px!important; line-height:1.3!important; letter-spacing:.06em!important; padding:10px 0!important; }
+html[data-layout="stable"] .v65-full { display:inline!important; }
+html[data-layout="stable"] .v65-short { display:none!important; }
+html[data-layout="stable"] .v65-footer-disciplines { flex-wrap:wrap; }
+html[data-layout="stable"] :is(section[id],.project-entry) { scroll-margin-top:calc(var(--movx-header-height) + 24px); }
+/* Typography must accommodate accents, descenders and localized copy. */
+html[data-layout="stable"] body :is(.project-copy h2,.project-copy h3,.project-subtitle,.page-hero h1,.section-intro h2,.case-hero__title,.case-hero__deck,.empty-archive h2,#about h2,#services h2,#services h3,#process h2) { line-height:1.08!important; letter-spacing:-.025em!important; }
+html[data-layout="stable"] .page-hero h1 .mask-reveal { overflow:visible!important; }
+html[data-layout="stable"] .page-hero h1 { max-width:100%!important; }
+html[data-layout="stable"] .project-copy h2 { font-size:clamp(38px,4.5vw,72px)!important; max-width:100%!important; overflow-wrap:normal; }
+html[data-layout="stable"] .project-copy :is(h3,.project-subtitle) { margin-top:20px; }
+/* The artwork itself determines the media height. No portrait-to-landscape crop. */
+html[data-layout="stable"] body[data-page="social"] #projectsList .project-entry { display:grid!important; grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important; grid-template-rows:auto!important; gap:clamp(32px,6vw,88px)!important; align-items:center!important; min-height:0!important; }
+html[data-layout="stable"] body[data-page="social"] #projectsList .project-entry .project-copy { grid-column:1!important; grid-row:1!important; position:relative!important; top:auto!important; order:initial!important; max-width:100%!important; min-width:0; justify-self:stretch!important; align-self:center!important; transform:none!important; translate:none!important; }
+html[data-layout="stable"] body[data-page="social"] #projectsList .project-entry .project-cover { grid-column:2!important; grid-row:1!important; order:initial!important; margin:0!important; width:100%!important; max-width:580px!important; min-height:0!important; height:auto!important; aspect-ratio:auto!important; justify-self:center!important; transform:none!important; translate:none!important; clip-path:none!important; }
+html[data-layout="stable"] body[data-page="social"] #projectsList .project-entry:nth-child(even) .project-copy { grid-column:2!important; }
+html[data-layout="stable"] body[data-page="social"] #projectsList .project-entry:nth-child(even) .project-cover { grid-column:1!important; }
+html[data-layout="stable"] body[data-page="social"] #projectsList .project-entry .project-cover img { display:block; position:relative!important; inset:auto!important; width:100%!important; height:auto!important; min-height:0!important; max-height:none!important; aspect-ratio:auto!important; object-fit:contain!important; object-position:center!important; transform:none!important; translate:none!important; clip-path:none!important; }
+/* Replace animated drafting lines with quiet typographic emphasis. */
+html[data-layout="stable"] #services .service-row::before,
+html[data-layout="stable"] #services .service-row::after { content:none!important; display:none!important; }
+html[data-layout="stable"] :is(.v88-fold-mark,.v56-contact-rail,.v56-handoff-layer,.v56-trace,.v45-service-marker) { display:none!important; }
+html[data-layout="stable"] #services .service-row { transform:none!important; border-left:0!important; }
+html[data-layout="stable"] #services .service-row h3 { transition:color .25s ease; }
+html[data-layout="stable"] #services .service-row:is(:hover,:focus-within,.v42-reading) h3 { color:var(--editorial-red)!important; }
+/* Fourth discipline: real services, without fabricated case studies. */
+html[data-layout="stable"] .web-hero { padding:clamp(64px,8vw,112px) 0!important; }
+html[data-layout="stable"] .web-hero h1 { font-size:clamp(48px,7vw,104px)!important; margin-top:24px; }
+html[data-layout="stable"] .web-services { padding-top:80px; padding-bottom:80px; }
+.web-services > h2 { font:400 clamp(32px,4vw,56px)/1.12 Georgia,serif; letter-spacing:-.025em; max-width:20ch; margin:0 0 48px; }
+.web-service-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:40px; }
+.web-service-grid article { border-top:1px solid var(--line); padding-top:24px; }
+.web-service-grid article > span { font:11px/1.4 var(--mono,monospace); color:var(--muted); }
+.web-service-grid h3 { font:400 28px/1.15 Georgia,serif; margin:20px 0; }
+.web-service-grid p,.web-contact p { color:var(--muted); font-size:16px; line-height:1.7; }
+.web-contact { margin-top:72px; padding-top:32px; border-top:1px solid var(--line); }
+.web-contact a { display:inline-block; padding:12px 0; text-decoration:underline; text-underline-offset:6px; font-size:20px; }
+@media(max-width:1100px) and (min-width:981px) { html[data-layout="stable"] .wordmark small { display:none; } }
+@media(max-width:980px) {
+ html[data-layout="stable"] { --movx-header-height:64px; }
+ html[data-layout="stable"] .header-row { grid-template-columns:minmax(0,1fr) auto!important; grid-template-rows:64px; gap:12px!important; }
+ html[data-layout="stable"] .header-actions { grid-column:2; }
+ html[data-layout="stable"] .header-row > .nav,html[data-layout="stable"] .v65-discipline-switcher { display:none!important; }
+ html[data-layout="stable"] .wordmark small { display:none!important; }
+ html[data-layout="stable"] .mobile-menu .v65-mobile-disciplines { grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px 20px; }
+ html[data-layout="stable"] .mobile-menu .v65-mobile-disciplines a { font-size:12px!important; line-height:1.5!important; padding:12px 0!important; }
+ html[data-layout="stable"] body[data-page="social"] #projectsList .project-entry { grid-template-columns:minmax(0,1fr)!important; gap:28px!important; }
+ html[data-layout="stable"] body[data-page="social"] #projectsList .project-entry .project-copy { grid-column:1!important; grid-row:1!important; }
+ html[data-layout="stable"] body[data-page="social"] #projectsList .project-entry .project-cover { grid-column:1!important; grid-row:2!important; }
+ html[data-layout="stable"] .project-copy h2 { font-size:clamp(36px,7vw,60px)!important; }
+ .web-service-grid { grid-template-columns:1fr; gap:32px; }
+}
+@media(prefers-reduced-motion:reduce) { html[data-layout="stable"] #services .service-row h3 { transition:none; } }

@@ -2,7 +2,7 @@ const { chromium } = require('playwright');
 const { writeFile } = require('node:fs/promises');
 (async()=>{
 
-const release='v101-artwork-story';
+const release='v102-layout-integrity';
 const browser=await chromium.launch({headless:true,args:['--use-angle=swiftshader','--enable-webgl','--ignore-gpu-blocklist']});
 const page=await browser.newPage({viewport:{width:1440,height:900},deviceScaleFactor:1});
 const pageErrors=[];
@@ -28,7 +28,7 @@ for(const cls of ['movx-v84','movx-v85','movx-v86','movx-v87','movx-v88']){
   if(!signature.classes.includes(cls)) throw new Error(`Missing production class ${cls}`);
 }
 if(signature.build!==release||signature.release!==release) throw new Error('Release identity mismatch '+JSON.stringify(signature));
-if(signature.foldMarks<2) throw new Error('v88 fold signature did not mount');
+if(signature.foldMarks!==0) throw new Error('Retired fold decoration mounted');
 for(const sheet of ['v85-reference.css','v86-signature.css','v87-editorial.css','v88-chapter.css']){
   if(!signature.styles.some(x=>x.includes(sheet))) throw new Error(`Missing production stylesheet ${sheet}`);
 }

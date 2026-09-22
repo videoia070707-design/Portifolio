@@ -159,17 +159,7 @@
     document.head.appendChild(style);
   }
 
-  const markHTML = '<i class="v88-fold-mark__rail"></i><i class="v88-fold-mark__plane"></i>';
-  const markHosts = chapters.filter(item => ['archive','territories'].includes(item.key));
-  markHosts.forEach(({node,key}) => {
-    if (node.querySelector(':scope > .v88-fold-mark')) return;
-    const mark = document.createElement('span');
-    mark.className = 'v88-fold-mark';
-    mark.dataset.v88Chapter = key;
-    mark.setAttribute('aria-hidden','true');
-    mark.innerHTML = markHTML;
-    node.appendChild(mark);
-  });
+  // Decorative fold frames retired: chapter progress remains available to subscribers.
 
   const states = new Map(chapters.map(item => [item, {
     progress:0, focus:0, angle:20, lift:7, enter:0,

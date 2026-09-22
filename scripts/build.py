@@ -29,4 +29,4 @@ for f in out.glob('*.html'):
 for f in [*out.glob('*.js'),*out.glob('*.mjs')]:
  subprocess.run(['node','--check',str(f)],check=True,capture_output=True)
 if missing:raise SystemExit('Missing references: '+str(missing))
-print(json.dumps({'release':'v101-artwork-story','assets':len(list((out/'assets').rglob('*.*'))),'missing':missing}))
+print(json.dumps({'release':'v102-layout-integrity','assets':len(list((out/'assets').rglob('*.*'))),'missing':missing}))

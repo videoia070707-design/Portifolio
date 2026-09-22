@@ -1881,7 +1881,8 @@
   const disciplines=[
     {id:'social',no:'01',label:'Social Media',short:'SM',href:'social-media.html'},
     {id:'video',no:'02',label:'Video Editor',short:'VE',href:'video-editor.html'},
-    {id:'ai',no:'03',label:'AI Creator',short:'AI',href:'ai-creator.html'}
+    {id:'ai',no:'03',label:'AI Creator',short:'AI',href:'ai-creator.html'},
+    {id:'web',no:'04',label:'UI/UX & Websites',short:'WEB',href:'ui-ux.html'}
   ];
 
   const linkMarkup=(item,compact=false)=>{
@@ -2319,10 +2320,12 @@
     social:{index:'01',label:'Social Media'},
     video:{index:'02',label:'Video Editor'},
     ai:{index:'03',label:'AI Creator'},
+    web:{index:'04',label:'UI/UX & Websites'},
     home:{index:'00',label:'MOVX'}
   };
   const fromHref=href=>{
     const value=(href||'').toLowerCase();
+    if(value.includes('ui-ux'))return chapters.web;
     if(value.includes('video-editor'))return chapters.video;
     if(value.includes('ai-creator'))return chapters.ai;
     if(value.includes('social-media')||value.includes('index')||value.includes('latest')||value.includes('v57'))return chapters.social;

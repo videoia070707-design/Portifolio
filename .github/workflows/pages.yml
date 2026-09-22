@@ -34,6 +34,7 @@ jobs:
           SERVER_PID=$!
           trap 'kill $SERVER_PID 2>/dev/null || true' EXIT
           npm run qa
+          node scripts/qa-layout.cjs
       - name: Save validation evidence
         if: always()
         uses: actions/upload-artifact@v4
