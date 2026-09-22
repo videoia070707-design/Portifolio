@@ -1,7 +1,7 @@
-/* MOVX v96 — whole-page chapter continuity + normalized interaction motion
-   Extends the existing v88 single owner through the full social page. Scroll values
-   are damped before reaching CSS, while interaction microstates share one authored
-   easing language. Text remains planar and reduced-motion stays static. */
+/* MOVX v97 — adaptive damping + stable chapter handoff
+   Preserves the v88/v96 production contract while refining the motion owner itself.
+   Scroll response now adapts to input velocity and chapter switching uses hysteresis,
+   reducing dry snaps without moving text or changing the authored composition. */
 (() => {
   'use strict';
 
@@ -36,10 +36,11 @@
   if (!chapters.length) return;
 
   root.classList.add('movx-v88');
-  /* Keep the v88 signature stable because downstream QAs use it as the owner contract.
-     v96 is exposed separately as the active behavior layer. */
+  /* Keep the v88/v96 signatures stable because downstream QAs use them as contracts.
+     v97 is exposed independently so production checks remain backwards compatible. */
   root.dataset.movxChapterSignature = 'v88-fold-continuity-single-owner';
   root.dataset.movxMotion = 'v96-normalized-damped-continuity';
+  root.dataset.movxMotionDetail = 'v97-adaptive-damping-hysteresis';
 
   if (!document.getElementById('movx-v96-motion-style')) {
     const style = document.createElement('style');
@@ -162,6 +163,18 @@
   let current = null;
   let lastTime = 0;
   let needsMeasure = true;
+  let lastScrollY = scrollY;
+  let lastScrollStamp = performance.now();
+  let velocity = 0;
+  let targetVelocity = 0;
+
+  function updateVelocity(now = performance.now()) {
+    const y = scrollY;
+    const dt = Math.max(8,now-lastScrollStamp);
+    targetVelocity = ((y-lastScrollY)/dt) * 1000;
+    lastScrollY = y;
+    lastScrollStamp = now;
+  }
 
   function updateTargets(item, rect) {
     const state = states.get(item);
@@ -208,17 +221,26 @@
     needsMeasure = false;
     let best = Infinity;
     let nextCurrent = null;
+    let currentDistance = Infinity;
 
     chapters.forEach(item => {
       const rect = item.node.getBoundingClientRect();
       const {center} = updateTargets(item,rect);
       if (rect.bottom <= 0 || rect.top >= innerHeight) return;
       const distance = Math.abs(center - innerHeight*.5);
+      if (item === current) currentDistance = distance;
       if (distance < best) { best = distance; nextCurrent = item; }
     });
 
     const scrollRange = Math.max(1,document.documentElement.scrollHeight - innerHeight);
     root.style.setProperty('--v94-page-progress',clamp(scrollY/scrollRange).toFixed(4));
+
+    /* v97: avoid chapter ownership flicker around the viewport midpoint. A new
+       chapter must beat the current one by a small margin before ownership moves. */
+    const handoffMargin = clamp(innerHeight * .038, 24, 48);
+    if (current && nextCurrent && nextCurrent !== current && Number.isFinite(currentDistance)) {
+      if (best + handoffMargin >= currentDistance) nextCurrent = current;
+    }
 
     if (nextCurrent !== current) {
       current = nextCurrent;
@@ -236,8 +258,18 @@
 
     const dt = Math.min(48,Math.max(8,now-(lastTime || now-16)));
     lastTime = now;
-    const alpha = reduced ? 1 : 1 - Math.exp(-dt / 118);
-    let moving = false;
+
+    /* v97 adaptive damping: slow/settling input gets a longer, softer tail while
+       fast scroll catches up sooner. This prevents both snapping and rubber-band lag. */
+    const velocityAlpha = reduced ? 1 : 1 - Math.exp(-dt / 92);
+    velocity += (targetVelocity-velocity) * velocityAlpha;
+    targetVelocity *= Math.exp(-dt / 170);
+    const energy = reduced ? 0 : clamp(Math.abs(velocity) / 1500);
+    const tau = reduced ? 1 : lerp(152,86,energy);
+    const alpha = reduced ? 1 : 1 - Math.exp(-dt / tau);
+    root.style.setProperty('--v97-motion-energy',energy.toFixed(4));
+
+    let moving = Math.abs(targetVelocity) > .2 || Math.abs(velocity) > .2;
 
     states.forEach((state,item) => {
       for (const key of ['progress','focus','angle','lift','enter']) {
@@ -253,7 +285,8 @@
     if ((moving || needsMeasure) && !document.hidden) raf = requestAnimationFrame(frame);
   }
 
-  function scheduleMeasure() {
+  function scheduleMeasure(event) {
+    if (event?.type === 'scroll') updateVelocity();
     needsMeasure = true;
     if (!raf && !document.hidden) raf = requestAnimationFrame(frame);
   }
