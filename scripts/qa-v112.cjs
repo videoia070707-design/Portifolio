@@ -45,7 +45,10 @@ const fs=require('node:fs/promises');
     if(state.title.includes('primeiroExecução')||state.titleLines<2)failures.push('intentional-title-break');
     if(state.titleWhiteSpace!=='pre-line')failures.push('title-whitespace');
     if(state.canvasTransform==='none')failures.push('canvas-scale-position');
-    if(state.canvasOpacity<.5)failures.push('canvas-visible');
+    // v114.2 deliberately softens the final WebGL field to 0.46 so the 3D remains
+    // visible without overpowering the editorial copy lane. Keep this legacy gate
+    // aligned with the current visual owner instead of forcing the retired >= .50 rule.
+    if(state.canvasOpacity<.42)failures.push('canvas-visible');
     if(!state.canvasClip.includes('50%'))failures.push('canvas-right-field');
     if(!state.canvasMask||state.canvasMask==='none')failures.push('canvas-soft-mask');
     if(!state.stepTitle||!state.stepText)failures.push('step-copy');
