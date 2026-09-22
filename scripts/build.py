@@ -3,7 +3,7 @@ from pathlib import Path, PurePosixPath
 import shutil, zipfile, re, subprocess, json
 root=Path(__file__).resolve().parents[1]
 out=root/'_site'
-release='v107-visible-3d-scroll'
+release='v108-institutional-depth'
 if out.exists():shutil.rmtree(out)
 shutil.copytree(root/'site',out,ignore=shutil.ignore_patterns('assets','vendor'))
 # Cache-bust authoritative stability layers. Build-only guards and the current
@@ -19,10 +19,14 @@ for html in out.glob('*.html'):
   text=text.replace('</head>',f'<link rel="stylesheet" href="v106-dimensional.css?v={release}">\n</head>')
  if 'v107-scroll-sculpture.css' not in text:
   text=text.replace('</head>',f'<link rel="stylesheet" href="v107-scroll-sculpture.css?v={release}">\n</head>')
+ if 'v108-institutional-depth.css' not in text:
+  text=text.replace('</head>',f'<link rel="stylesheet" href="v108-institutional-depth.css?v={release}">\n</head>')
  if 'v106-dimensional.mjs' not in text:
   text=text.replace('</body>',f'<script type="module" src="v106-dimensional.mjs?v={release}"></script>\n</body>')
  if 'v107-scroll-sculpture.mjs' not in text:
   text=text.replace('</body>',f'<script type="module" src="v107-scroll-sculpture.mjs?v={release}"></script>\n</body>')
+ if 'v108-institutional-depth.mjs' not in text:
+  text=text.replace('</body>',f'<script type="module" src="v108-institutional-depth.mjs?v={release}"></script>\n</body>')
  html.write_text(text)
 archive=next(root.glob('MOVX_Portfolio_v18*.zip'))
 with zipfile.ZipFile(archive) as z:
