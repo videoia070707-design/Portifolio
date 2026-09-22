@@ -3,7 +3,7 @@ from pathlib import Path, PurePosixPath
 import shutil, zipfile, re, subprocess, json
 root=Path(__file__).resolve().parents[1]
 out=root/'_site'
-release='v108-institutional-depth'
+release='v108.1-institutional-depth'
 if out.exists():shutil.rmtree(out)
 shutil.copytree(root/'site',out,ignore=shutil.ignore_patterns('assets','vendor'))
 # Cache-bust authoritative stability layers. Build-only guards and the current
@@ -21,6 +21,8 @@ for html in out.glob('*.html'):
   text=text.replace('</head>',f'<link rel="stylesheet" href="v107-scroll-sculpture.css?v={release}">\n</head>')
  if 'v108-institutional-depth.css' not in text:
   text=text.replace('</head>',f'<link rel="stylesheet" href="v108-institutional-depth.css?v={release}">\n</head>')
+ if 'v108-process-structure.css' not in text:
+  text=text.replace('</head>',f'<link rel="stylesheet" href="v108-process-structure.css?v={release}">\n</head>')
  if 'v106-dimensional.mjs' not in text:
   text=text.replace('</body>',f'<script type="module" src="v106-dimensional.mjs?v={release}"></script>\n</body>')
  if 'v107-scroll-sculpture.mjs' not in text:
