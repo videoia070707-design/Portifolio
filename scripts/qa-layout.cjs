@@ -53,7 +53,10 @@ const fs=require('node:fs/promises');
      const slides=document.querySelector('.case-slides');
      const img=document.querySelector('#caseSlides .case-slide-frame img');
      const title=document.querySelector('.case-hero__title');
+     const hero=document.querySelector('.case-hero');
+     const rationale=document.querySelector('.case-study-note p');
      const bodyStyle=getComputedStyle(body),imgStyle=getComputedStyle(img),titleStyle=getComputedStyle(title);
+     const rationaleStyle=rationale?getComputedStyle(rationale):null;
      const r=img.getBoundingClientRect();
      const natural=img.naturalWidth/img.naturalHeight;
      const columns=bodyStyle.gridTemplateColumns.trim().split(/\s+/).filter(Boolean).length;
@@ -65,7 +68,11 @@ const fs=require('node:fs/promises');
       imgFit:imgStyle.objectFit,
       ratio:r.width/r.height,
       natural,
-      titleLine:parseFloat(titleStyle.lineHeight)/parseFloat(titleStyle.fontSize)
+      titleLine:parseFloat(titleStyle.lineHeight)/parseFloat(titleStyle.fontSize),
+      titleSize:parseFloat(titleStyle.fontSize),
+      heroHeight:hero.getBoundingClientRect().height,
+      rationaleSize:rationaleStyle?parseFloat(rationaleStyle.fontSize):0,
+      rationaleLine:rationaleStyle?parseFloat(rationaleStyle.lineHeight)/parseFloat(rationaleStyle.fontSize):0
      };
     });
     const expectedColumns=width>980?2:1;
@@ -74,7 +81,11 @@ const fs=require('node:fs/promises');
        caseLayout.imgTransform!=='none'||
        caseLayout.imgFit!=='contain'||
        Math.abs(caseLayout.ratio-caseLayout.natural)>.015||
-       caseLayout.titleLine<.96){
+       caseLayout.titleLine<.96||
+       (width>980&&caseLayout.heroHeight>650)||
+       (width>980&&caseLayout.titleSize>90)||
+       caseLayout.rationaleSize>17||
+       caseLayout.rationaleLine<1.5){
       throw Error(JSON.stringify({width,caseLayout}));
     }
     report.push({width,path,caseLayout});
@@ -91,5 +102,5 @@ const fs=require('node:fs/promises');
  if(errors.length)throw Error(errors.join('\n'));
  await fs.writeFile('_site/qa-layout-report.json',JSON.stringify(report,null,2));
  await browser.close();
- console.log('Layout integrity: 60 page/viewport/language combinations; original artwork ratios; four disciplines; split case studies.');
+ console.log('Layout integrity: 60 page/viewport/language combinations; original artwork ratios; four disciplines; compact split case studies.');
 })().catch(e=>{console.error(e);process.exit(1)});

@@ -1,0 +1,22 @@
+/* MOVX v104 — final case-title specificity guard.
+   Loaded as the last stylesheet by the build so legacy v86/v87 rules cannot enlarge
+   the title after the compact case layout has been established. */
+@media (min-width:981px) {
+  html[data-layout="stable"].movx-v86.movx-v87.movx-v33 body[data-page="social"].case-open .case-viewer .case-hero__title {
+    font-size:clamp(48px,5.7vw,84px)!important;
+    line-height:.96!important;
+    letter-spacing:-.04em!important;
+    max-width:12ch!important;
+    overflow:visible!important;
+    text-wrap:balance!important;
+  }
+}
+
+@media (max-width:980px) {
+  html[data-layout="stable"].movx-v33 body[data-page="social"].case-open .case-viewer .case-hero__title {
+    font-size:clamp(44px,12vw,64px)!important;
+    line-height:1!important;
+    letter-spacing:-.035em!important;
+    max-width:11ch!important;
+  }
+}

@@ -3,8 +3,16 @@ from pathlib import Path, PurePosixPath
 import shutil, zipfile, re, subprocess, json
 root=Path(__file__).resolve().parents[1]
 out=root/'_site'
+release='v104-case-clarity-1'
 if out.exists():shutil.rmtree(out)
 shutil.copytree(root/'site',out,ignore=shutil.ignore_patterns('assets','vendor'))
+# Cache-bust the authoritative layout layer and load the final case guard last.
+for html in out.glob('*.html'):
+ text=html.read_text()
+ text=re.sub(r'layout-integrity\.css\?v=[^\"\']+',f'layout-integrity.css?v={release}',text)
+ if 'v104-case-clarity.css' not in text:
+  text=text.replace('</head>',f'<link rel="stylesheet" href="v104-case-clarity.css?v={release}">\n</head>')
+ html.write_text(text)
 archive=next(root.glob('MOVX_Portfolio_v18*.zip'))
 with zipfile.ZipFile(archive) as z:
  for info in z.infolist():
@@ -29,4 +37,4 @@ for f in out.glob('*.html'):
 for f in [*out.glob('*.js'),*out.glob('*.mjs')]:
  subprocess.run(['node','--check',str(f)],check=True,capture_output=True)
 if missing:raise SystemExit('Missing references: '+str(missing))
-print(json.dumps({'release':'v102-layout-integrity','assets':len(list((out/'assets').rglob('*.*'))),'missing':missing}))
+print(json.dumps({'release':release,'assets':len(list((out/'assets').rglob('*.*'))),'missing':missing}))
