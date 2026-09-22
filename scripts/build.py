@@ -3,7 +3,7 @@ from pathlib import Path, PurePosixPath
 import shutil, zipfile, re, subprocess, json
 root=Path(__file__).resolve().parents[1]
 out=root/'_site'
-release='v114-1-process-field-lock'
+release='v114-2-visible-process-field'
 if out.exists():shutil.rmtree(out)
 shutil.copytree(root/'site',out,ignore=shutil.ignore_patterns('assets','vendor'))
 # Cache-bust authoritative stability layers. Build-only guards and the current
