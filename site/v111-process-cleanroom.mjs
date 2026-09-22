@@ -1,7 +1,7 @@
-/* MOVX v114 — isolated Process copy + final 3D field ownership
+/* MOVX v114.1 — isolated Process copy + final 3D field ownership
    Reads the real i18n/semantic source, paints one clean editorial lane, and takes
-   runtime ownership of the WebGL surface so retired CSS cannot reintroduce a black
-   half-screen or oversized visual weight. */
+   runtime ownership of the WebGL surface so retired runtime writers cannot
+   reintroduce a black half-screen or oversized visual weight. */
 
 const root=document.documentElement;
 const body=document.body;
@@ -90,6 +90,18 @@ if(body?.dataset.page==='social'&&desktop&&!reduced){
       }
     };
 
+    /* v108 legitimately owns the Three.js camera/render loop, but its historical
+       render tick also writes canvas.style.opacity. Observe only the canvas style
+       attribute and restore the final v114 surface contract when that old writer
+       touches it. The guard compares value + priority before writing, so our own
+       correction does not create a mutation loop. */
+    const fieldCanvas=q('.v108-process-canvas',journey);
+    const fieldMo=fieldCanvas?new MutationObserver(()=>{
+      const opacityOwned=fieldCanvas.style.getPropertyValue('opacity')==='0.58'&&fieldCanvas.style.getPropertyPriority('opacity')==='important';
+      if(!opacityOwned)polishField();
+    }):null;
+    fieldMo?.observe(fieldCanvas,{attributes:true,attributeFilter:['style']});
+
     let active=-1;
     const setStep=(idx,animate=true)=>{
       idx=clamp(idx,0,sourceRows.length-1)|0;
@@ -145,7 +157,12 @@ if(body?.dataset.page==='social'&&desktop&&!reduced){
     addEventListener('scroll',schedule,{passive:true});
     addEventListener('resize',schedule,{passive:true});
     window.MOVX_MOTION_BRIDGE?.subscribe?.(schedule);
-    addEventListener('pagehide',()=>{mo.disconnect();removeEventListener('scroll',schedule);removeEventListener('resize',schedule);},{once:true});
+    addEventListener('pagehide',()=>{
+      mo.disconnect();
+      fieldMo?.disconnect();
+      removeEventListener('scroll',schedule);
+      removeEventListener('resize',schedule);
+    },{once:true});
 
     suppressLegacyPaint();
     polishField();
