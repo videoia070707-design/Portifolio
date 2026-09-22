@@ -1,31 +1,38 @@
-/* MOVX v91 — static editorial archive deconstruction
-   The v52 section remains because its authored DOM is part of the current site,
-   but its historical GSAP/WebGL choreography is no longer visible after v83+.
-   Production now builds only the semantic editorial composition. */
-
+/* MOVX v101 — artwork-driven chapter, sharing the single motion clock. */
 const root=document.documentElement;
 root.classList.add('movx-v52','v52-fallback','v91-runtime-retired');
-root.dataset.movxProcessArchitecture='v91-static-editorial';
-
-function selectedProjects(){
-  const all=Array.isArray(window.MOVX_PROJECTS)?window.MOVX_PROJECTS:[];
-  const wanted=['motionhub','hardwork-thermo-plus','voltara-operacoes','belive-cashflow'];
-  return wanted.map(slug=>all.find(p=>p.slug===slug)).filter(Boolean);
+root.dataset.movxProcessArchitecture='v101-artwork-story';
+const services=document.querySelector('#services');
+const all=window.MOVX_PROJECTS||[];
+const works=['motionhub','hardwork-thermo-plus','voltara-operacoes'].map(slug=>all.find(p=>p.slug===slug)).filter(Boolean);
+const escape=value=>String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const copy={
+ pt:['DIREÇÃO EM PRÁTICA','Uma direção<br>Vários universos','Marca, imagem e composição em três projetos do arquivo','Abrir caso'],
+ en:['ART DIRECTION IN PRACTICE','One approach<br>Different worlds','Brand, imagery and composition across three selected projects','Open case'],
+ es:['DIRECCIÓN EN PRÁCTICA','Una dirección<br>Varios universos','Marca, imagen y composición en tres proyectos del archivo','Abrir caso']
+};
+if(services&&works.length&&!document.querySelector('#studioStudy')){
+ const section=document.createElement('section');
+ section.id='studioStudy';section.className='v52-architecture-section';section.setAttribute('aria-labelledby','studioTitle');
+ section.innerHTML=`<div class="container studio-layout"><header class="studio-copy"><div class="studio-kicker"></div><h2 id="studioTitle"></h2><p></p></header><div class="studio-gallery">${works.map((p,i)=>`<button type="button" class="studio-work" data-open-project="${escape(p.slug)}" style="--work-index:${i}"><img src="${escape(p.cover)}" width="800" height="1000" alt="${escape(p.client+' — '+p.title)}" loading="lazy" decoding="async"><span>${escape(p.client)}</span></button>`).join('')}</div></div>`;
+ services.insertAdjacentElement('afterend',section);
+ const localize=()=>{
+  const lang=(root.lang||'pt').slice(0,2);const c=copy[lang]||copy.pt;
+  section.querySelector('.studio-kicker').textContent=c[0];
+  section.querySelector('h2').innerHTML=c[1];section.querySelector('.studio-copy p').textContent=c[2];
+  section.querySelectorAll('button').forEach((button,i)=>button.setAttribute('aria-label',`${c[3]} ${works[i].client} — ${works[i].title}`));
+ };
+ localize();
+ const languageObserver=new MutationObserver(localize);languageObserver.observe(root,{attributes:true,attributeFilter:['lang']});
+ const bridge=window.MOVX_MOTION_BRIDGE;
+ bridge?.registerStage('workshop',section);
+ const desktop=matchMedia('(min-width:981px)');
+ bridge?.subscribe(snapshot=>{
+  const state=snapshot.stages.find(s=>s.key==='workshop');if(!state)return;
+  const enabled=desktop.matches&&!snapshot.reducedMotion;
+  // Only the artwork planes move. Heading and captions retain their reading geometry.
+  const depth=enabled?Math.max(0,Math.min(1,(.65-state.progress)*2.4)):0;
+  section.style.setProperty('--studio-depth',depth.toFixed(4));
+  section.dataset.motion=enabled?'spatial':'static';
+ });
 }
-function escapeHTML(value=''){
-  return String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-}
-function makeSection(items){
-  const services=document.querySelector('.services-section');
-  if(!services||document.querySelector('.v52-architecture-section'))return document.querySelector('.v52-architecture-section');
-  const section=document.createElement('section');
-  section.className='v52-architecture-section v52-runtime-retired';
-  section.innerHTML=`<div class="v52-architecture-sticky">
-    <div class="v52-architecture-copy"><div class="v52-architecture-kicker">ARQUIVO / DECONSTRUÇÃO</div><h2>O trabalho vira sistema</h2><p>As peças deixam o arquivo e a própria caixa se transforma na estrutura espacial do processo</p></div>
-    <div class="v52-mobile-artworks">${items.slice(0,3).map(p=>`<img src="${escapeHTML(p.cover)}" alt="${escapeHTML(p.client)} — ${escapeHTML(p.title)}" loading="lazy" decoding="async">`).join('')}</div>
-  </div>`;
-  services.insertAdjacentElement('afterend',section);
-  return section;
-}
-
-makeSection(selectedProjects());

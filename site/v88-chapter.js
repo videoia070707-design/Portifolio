@@ -229,6 +229,16 @@
     get reducedMotion() { return reduced; },
     getSnapshot:getBridgeSnapshot,
     getStageNode:key => chapters.find(item => item.key === key)?.node || null,
+    registerStage(key,node) {
+      if (!node || chapters.some(item=>item.key===key)) return () => {};
+      const item={key,node};
+      const next=chapters.findIndex(other=>node.compareDocumentPosition(other.node)&Node.DOCUMENT_POSITION_FOLLOWING);
+      chapters.splice(next<0?chapters.length:next,0,item);
+      states.set(item,{progress:0,focus:0,angle:20,lift:7,enter:0,targetProgress:0,targetFocus:0,targetAngle:20,targetLift:7,targetEnter:0});
+      chapters.forEach((chapter,index)=>{chapter.node.dataset.movxStage=chapter.key;chapter.node.dataset.movxStageIndex=String(index+1)});
+      geometryObserver.observe(node);scheduleMeasure();
+      return ()=>{geometryObserver.unobserve(node);states.delete(item);const index=chapters.indexOf(item);if(index>=0)chapters.splice(index,1);scheduleMeasure()};
+    },
     subscribe(listener) {
       if (typeof listener !== 'function') return () => {};
       bridgeSubscribers.add(listener);

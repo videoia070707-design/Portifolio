@@ -5,7 +5,7 @@
   const root=document.documentElement;
   root.classList.add('movx-v57');
   root.dataset.movxMotionIntegrity='v57';
-  const buildId='v100-canonical-motion';
+  const buildId='v101-artwork-story';
   const enforceBuild=()=>{if(root.dataset.movxBuild!==buildId)root.dataset.movxBuild=buildId;};
   enforceBuild();
   /* Module scripts can finish after this classic watchdog. Keep the final production owner stable. */

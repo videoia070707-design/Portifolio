@@ -2,12 +2,12 @@ const { chromium } = require('playwright');
 const { writeFile } = require('node:fs/promises');
 (async()=>{
 
-const release='v100-canonical-motion';
+const release='v101-artwork-story';
 const browser=await chromium.launch({headless:true,args:['--use-angle=swiftshader','--enable-webgl','--ignore-gpu-blocklist']});
 const page=await browser.newPage({viewport:{width:1440,height:900},deviceScaleFactor:1});
 const pageErrors=[];
 page.on('pageerror',err=>pageErrors.push(String(err)));
-await page.goto('http://127.0.0.1:4173/v93.html?v=100-canonical-motion',{waitUntil:'networkidle'});
+await page.goto('http://127.0.0.1:4173/v93.html?v=101-artwork-story',{waitUntil:'networkidle'});
 await page.waitForFunction(()=>window.__MOVX_V57_AUDIT__,null,{timeout:20000});
 await page.waitForFunction(r=>document.documentElement.dataset.movxRelease===r,release,{timeout:10000});
 await page.waitForFunction(()=>document.documentElement.dataset.movxChapterSignature==='v88-fold-continuity-single-owner',null,{timeout:10000});
@@ -123,7 +123,7 @@ report.accessibility.push({name:'keyboard-case-flow',open:keyboardOpen,close:key
 const mobile=await browser.newPage({viewport:{width:390,height:844},deviceScaleFactor:1});
 const mobileErrors=[];
 mobile.on('pageerror',err=>mobileErrors.push(String(err)));
-await mobile.goto('http://127.0.0.1:4173/v93.html?v=100-canonical-motion',{waitUntil:'networkidle'});
+await mobile.goto('http://127.0.0.1:4173/v93.html?v=101-artwork-story',{waitUntil:'networkidle'});
 await mobile.waitForFunction(()=>window.__MOVX_V57_AUDIT__,null,{timeout:20000});
 await mobile.waitForFunction(r=>document.documentElement.dataset.movxRelease===r,release,{timeout:10000});
 await mobile.addStyleTag({content:'html,body{scroll-behavior:auto!important}'});
@@ -172,6 +172,27 @@ await page.waitForFunction(()=>window.MOVX_MOTION_BRIDGE.reducedMotion===true);
 await page.emulateMedia({reducedMotion:'no-preference'});
 await page.waitForFunction(()=>window.MOVX_MOTION_BRIDGE.reducedMotion===false);
 report.lifecycle.push({owners,liveReducedMotion:true});
+// The new artwork chapter must be accessible, localized and share the clock.
+await page.locator('#studioStudy').scrollIntoViewIfNeeded();
+await page.waitForTimeout(700);
+const studio=await page.evaluate(()=>({
+  stage:document.querySelector('#studioStudy').dataset.movxStage,
+  mode:document.querySelector('#studioStudy').dataset.motion,
+  items:document.querySelectorAll('#studioStudy button[data-open-project]').length,
+  images:[...document.querySelectorAll('#studioStudy img')].every(i=>i.complete&&i.naturalWidth>0),
+  overflow:document.documentElement.scrollWidth-innerWidth,
+  transform:getComputedStyle(document.querySelector('#studioStudy img')).transform
+}));
+if(studio.stage!=='workshop'||studio.items!==3||!studio.images||studio.overflow>2)throw new Error('Studio chapter regression '+JSON.stringify(studio));
+await page.screenshot({path:'_site/qa-v101-studio-desktop.png'});
+await page.locator('#studioStudy button').first().click();
+await page.waitForSelector('#caseViewer.open');
+await page.locator('#caseClose').click();
+await mobile.locator('#studioStudy').scrollIntoViewIfNeeded();
+const studioMobile=await mobile.evaluate(()=>({mode:document.querySelector('#studioStudy').dataset.motion,overflow:document.documentElement.scrollWidth-innerWidth,transform:getComputedStyle(document.querySelector('#studioStudy img')).transform}));
+if(studioMobile.mode!=='static'||studioMobile.overflow>2||studioMobile.transform!=='none')throw new Error('Studio mobile fallback failed '+JSON.stringify(studioMobile));
+await mobile.screenshot({path:'_site/qa-v101-studio-mobile.png'});
+report.studio={desktop:studio,mobile:studioMobile};
 await writeFile('_site/qa-v93-report.json',JSON.stringify(report,null,2));
 await mobile.close();
 await browser.close();
