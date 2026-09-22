@@ -1,0 +1,215 @@
+/* MOVX v85 — research-led art direction
+   Distilled from award-winning / standout portfolio patterns:
+   - one dominant motion gesture per chapter;
+   - 3D localized inside media rather than applied to UI containers;
+   - scroll reveals that expose work instead of moving copy;
+   - editorial index systems instead of app-like navigation chrome. */
+html.movx-v84 body[data-page="social"]{
+  --v85-ease:cubic-bezier(.16,1,.3,1);
+  --v85-ui:cubic-bezier(.4,0,.2,1);
+  --v85-hairline:color-mix(in srgb,var(--fg) 14%,transparent);
+  --v85-hairline-strong:color-mix(in srgb,var(--fg) 28%,transparent);
+}
+
+/* Header disciplines become an authored 01/02/03 index instead of three loose labels. */
+@media(min-width:1321px){
+  html.movx-v84 .v65-discipline-switcher{gap:18px!important}
+  html.movx-v84 .v65-discipline-switcher a{
+    position:relative!important;
+    display:grid!important;
+    grid-template-columns:16px auto!important;
+    gap:6px!important;
+    align-items:center!important;
+    padding:7px 0 8px!important;
+    opacity:.52!important;
+    transition:opacity .55s var(--v85-ui),transform .8s var(--v85-ease)!important;
+  }
+  html.movx-v84 .v65-discipline-switcher a::before{
+    font:700 7px/1 var(--mono,ui-monospace,monospace);
+    letter-spacing:.08em;
+    color:color-mix(in srgb,currentColor 46%,transparent);
+  }
+  html.movx-v84 .v65-discipline-switcher a:nth-child(1)::before{content:"01"}
+  html.movx-v84 .v65-discipline-switcher a:nth-child(2)::before{content:"02"}
+  html.movx-v84 .v65-discipline-switcher a:nth-child(3)::before{content:"03"}
+  html.movx-v84 .v65-discipline-switcher a:hover,
+  html.movx-v84 .v65-discipline-switcher a:focus-visible,
+  html.movx-v84 .v65-discipline-switcher a[aria-current="page"]{opacity:1!important;transform:translate3d(0,-1px,0)!important}
+  html.movx-v84 .v65-discipline-switcher a[aria-current="page"]::before{color:var(--editorial-red)!important}
+}
+
+/* Hero: calm layered depth. Remove pointer wobble/rotations; preserve differential planes. */
+@media(min-width:721px){
+  html.movx-v39 body[data-page="social"] .social-cover-art__stage{perspective:none!important;transform-style:flat!important}
+  html.movx-v39 body[data-page="social"] .social-cover-art__image{
+    transform:translate3d(0,var(--v39-hero-bg-y,0px),0) scale(1.045)!important;
+    transform-origin:50% 50%!important;
+  }
+  html.movx-v39 body[data-page="social"] .v28-hero-overlay{
+    transform:translate3d(0,var(--v39-hero-y,0px),0) scale(1.025)!important;
+    transform-style:flat!important;
+  }
+  html.movx-v39 body[data-page="social"] .v28-hero-plane--type{
+    transform:translate3d(0,var(--v39-type-y,0px),0)!important;
+    opacity:.24!important;
+  }
+  html.movx-v39 body[data-page="social"] .v28-hero-plane--crt{
+    transform:translate3d(0,var(--v39-crt-y,0px),0) scale(1.01)!important;
+    opacity:.36!important;
+  }
+  html.movx-v39 body[data-page="social"] .v28-hero-plane--lower{
+    transform:translate3d(0,var(--v39-lower-y,0px),0)!important;
+    opacity:.22!important;
+  }
+  html.movx-v39 body[data-page="social"] .v28-hero-grain{opacity:.052!important;transform:none!important}
+
+  html.movx-v84 body[data-page="social"] #heroTop .social-cover-art__stage::before{
+    content:"";position:absolute;inset:0;z-index:8;pointer-events:none;background:#050505;
+    transform-origin:100% 50%;animation:v85HeroAperture .92s var(--v85-ease) .06s both;
+  }
+  @keyframes v85HeroAperture{
+    from{transform:scaleX(1)}
+    to{transform:scaleX(0)}
+  }
+}
+
+/* Opening map: rail feels like editorial navigation, not four tiles. */
+html.movx-v84 body[data-page="social"] .hero-index__inner{gap:clamp(24px,3.4vw,58px)!important}
+html.movx-v84 body[data-page="social"] .hero-index__item{
+  min-height:72px!important;
+  padding:14px 0 15px!important;
+  border:0!important;
+  opacity:.52!important;
+  transition:opacity .5s var(--v85-ui),color .5s var(--v85-ui)!important;
+}
+html.movx-v84 body[data-page="social"] .hero-index__item:hover,
+html.movx-v84 body[data-page="social"] .hero-index__item:focus-visible,
+html.movx-v84 body[data-page="social"] .hero-index__item.v31-nav-current{
+  background:transparent!important;opacity:1!important;
+}
+html.movx-v84 body[data-page="social"] .hero-index__item::after{
+  left:40px!important;right:100%!important;bottom:10px!important;
+  height:1px!important;background:currentColor!important;opacity:.54!important;
+  transition:right .9s var(--v85-ease)!important;
+}
+html.movx-v84 body[data-page="social"] .hero-index__item:hover::after,
+html.movx-v84 body[data-page="social"] .hero-index__item:focus-visible::after,
+html.movx-v84 body[data-page="social"] .hero-index__item.v31-nav-current::after{right:0!important}
+
+/* Living archive: keep the moving wall kinetic, but remove the old 3D row tumble. */
+@media(min-width:981px){
+  html.movx-v39 body[data-page="social"] #livingArchive .loop-wall{perspective:none!important;transform-style:flat!important}
+  html.movx-v39 body[data-page="social"] #livingArchive .loop-row{
+    transform:translate3d(0,var(--v39-row-y,0px),0)!important;
+    transform-style:flat!important;
+  }
+  html.movx-v84 body[data-page="social"] #livingArchive .loop-wall{
+    mask-image:linear-gradient(90deg,transparent 0,#000 4%,#000 96%,transparent 100%);
+    -webkit-mask-image:linear-gradient(90deg,transparent 0,#000 4%,#000 96%,transparent 100%);
+  }
+}
+
+/* Territories: depth lives inside the photography; cards/copy stay planar. */
+@media(min-width:981px){
+  html.movx-v39 body[data-page="social"] #nicheGrid .niche-card{perspective:none!important}
+  html.movx-v39 body[data-page="social"] #nicheGrid .niche-card__media{transform-style:flat!important}
+  html.movx-v46 body[data-page="social"] #nicheGrid:has(.niche-card:hover)>.niche-card{opacity:.72!important}
+  html.movx-v46 body[data-page="social"] #nicheGrid>.niche-card{border-color:color-mix(in srgb,var(--fg) 9%,transparent)!important}
+  html.movx-v46 body[data-page="social"] #nicheGrid>.niche-card:hover,
+  html.movx-v46 body[data-page="social"] #nicheGrid>.niche-card:focus-within{border-color:color-mix(in srgb,var(--fg) 28%,transparent)!important}
+}
+
+/* Selected cases: reveal the work as a gallery layer, inspired by scroll-led portfolio stacks. */
+@media(min-width:981px){
+  html.movx-v84 body[data-page="social"] #projectsList .project-entry{
+    position:relative!important;
+    min-height:min(88svh,900px)!important;
+    align-items:center!important;
+    padding:clamp(86px,8vw,130px) 0!important;
+  }
+  html.movx-v84 body[data-page="social"] #projectsList .project-copy{top:clamp(96px,10vh,126px)!important}
+  html.movx-v84 body[data-page="social"] #projectsList .project-cover{
+    position:relative!important;isolation:isolate!important;clip-path:inset(0)!important;
+    box-shadow:0 22px 64px rgba(28,16,12,.08)!important;
+  }
+  html.movx-v84 body[data-page="social"] #projectsList .project-cover::before{
+    display:block!important;content:""!important;position:absolute!important;inset:0!important;z-index:2!important;
+    pointer-events:none!important;border:1px solid rgba(255,255,255,.12)!important;
+    box-shadow:inset 0 0 0 1px rgba(0,0,0,.06)!important;
+  }
+  html.movx-v84 body[data-page="social"] #projectsList .project-entry:hover .project-cover,
+  html.movx-v84 body[data-page="social"] #projectsList .project-entry:focus-within .project-cover{box-shadow:0 32px 84px rgba(28,16,12,.12)!important}
+}
+
+@supports (animation-timeline:view()){
+  @media(min-width:981px) and (prefers-reduced-motion:no-preference){
+    html.movx-v84 body[data-page="social"] #projectsList .project-cover{
+      animation:v85ProjectReveal linear both;
+      animation-timeline:view();
+      animation-range:entry 3% cover 38%;
+    }
+    @keyframes v85ProjectReveal{
+      0%{clip-path:inset(8% 0 8% 0);opacity:.58}
+      100%{clip-path:inset(0);opacity:1}
+    }
+    html.movx-v84 body[data-page="social"] #about .about-copy,
+    html.movx-v84 body[data-page="social"] #services .services-list{
+      animation:v85EditorialSettle linear both;
+      animation-timeline:view();
+      animation-range:entry 4% cover 34%;
+    }
+    @keyframes v85EditorialSettle{
+      from{opacity:.5;translate:0 18px}
+      to{opacity:1;translate:0 0}
+    }
+  }
+}
+
+/* Services: kinetic hierarchy, never card UI. */
+@media(min-width:981px){
+  html.movx-v84 body[data-page="social"] #services .service-row{
+    grid-template-columns:68px minmax(260px,.8fr) minmax(320px,1.2fr)!important;
+    gap:clamp(24px,3vw,54px)!important;
+    transition:border-color .55s var(--v85-ui),opacity .55s var(--v85-ui)!important;
+  }
+  html.movx-v84 body[data-page="social"] #services .service-row h3,
+  html.movx-v84 body[data-page="social"] #services .service-row p{
+    transition:translate .9s var(--v85-ease),opacity .6s var(--v85-ui)!important;
+  }
+  html.movx-v84 body[data-page="social"] #services .service-row p{opacity:.62!important}
+  html.movx-v84 body[data-page="social"] #services .service-row:hover h3,
+  html.movx-v84 body[data-page="social"] #services .service-row:focus-within h3,
+  html.movx-v84 body[data-page="social"] #services .service-row.v42-reading h3{translate:12px 0}
+  html.movx-v84 body[data-page="social"] #services .service-row:hover p,
+  html.movx-v84 body[data-page="social"] #services .service-row:focus-within p,
+  html.movx-v84 body[data-page="social"] #services .service-row.v42-reading p{opacity:1!important;translate:-8px 0}
+}
+
+/* Process: scroll state is expressed by contrast and a single authored accent, not moving copy. */
+@media(min-width:981px){
+  html.movx-v84 body[data-page="social"] #process .process-list li{
+    opacity:.56!important;border-top-color:rgba(255,255,255,.09)!important;
+    transition:opacity .72s var(--v85-ui),border-color .72s var(--v85-ui),box-shadow .9s var(--v85-ease)!important;
+  }
+  html.movx-v84 body[data-page="social"] #process .process-list li.v55-current{
+    opacity:1!important;border-top-color:rgba(255,255,255,.3)!important;box-shadow:inset 2px 0 0 #b83b2f!important;
+  }
+  html.movx-v84 body[data-page="social"] #process .process-list li.v55-current>span{color:#cf493b!important}
+  html.movx-v84 body[data-page="social"] #process .process-list li.v55-current p{color:#c7beba!important}
+}
+
+/* Mobile: authored and fast; no scroll-timeline choreography or depth tricks. */
+@media(max-width:980px){
+  html.movx-v84 body[data-page="social"] .hero-index__inner{gap:0!important}
+  html.movx-v84 body[data-page="social"] .hero-index__item{opacity:.78!important;padding-inline:16px!important}
+  html.movx-v84 body[data-page="social"] #projectsList .project-cover{box-shadow:none!important}
+  html.movx-v84 body[data-page="social"] #services .service-row :is(h3,p){translate:none!important}
+}
+
+@media(prefers-reduced-motion:reduce){
+  html.movx-v84 body[data-page="social"] #heroTop .social-cover-art__stage::before{display:none!important}
+  html.movx-v84 body[data-page="social"] #projectsList .project-cover,
+  html.movx-v84 body[data-page="social"] #about .about-copy,
+  html.movx-v84 body[data-page="social"] #services .services-list{animation:none!important;clip-path:none!important;opacity:1!important;translate:none!important}
+  html.movx-v84 body[data-page="social"] #services .service-row :is(h3,p){transition:none!important;translate:none!important}
+}
