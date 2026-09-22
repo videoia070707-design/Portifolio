@@ -1,4 +1,4 @@
-/* MOVX v86 — shared artwork project transition
+/* MOVX v86/v87 — shared artwork project transition
    Reuses the reliable v41 opener snapshot, but removes the generic shader language.
    The clicked artwork itself becomes the navigation: cover -> case hero -> cover.
    Copy remains planar; the transition is a single media gesture with an authored
@@ -16,14 +16,14 @@
 
   root.classList.add('movx-v41','movx-v86');
   root.dataset.movxProjectPortal = 'v86-shared-artwork';
-  root.dataset.movxSignatureMotion = 'v86';
+  root.dataset.movxSignatureMotion = 'v87-editorial-continuity';
 
-  /* v86 must be the final visual owner. The build packages this stylesheet,
+  /* v86/v87 must be the final visual owner. The build packages this stylesheet,
      and the existing v41 runtime appends it after all legacy CSS. */
   if (!document.querySelector('link[data-movx-v86-signature]')) {
     const link = document.createElement('link');
     link.rel = 'stylesheet';
-    link.href = 'v86-signature-motion.css?v=86-signature-motion';
+    link.href = 'v86-signature-motion.css?v=87-editorial-continuity';
     link.dataset.movxV86Signature = 'true';
     document.head.appendChild(link);
   }
@@ -200,7 +200,9 @@
     if (token !== transitionToken || !viewer.classList.contains('open')) return;
     const target = targetForOpen();
     if (target) { runOpenMorph(token,target); return; }
-    if (attempt >= 14) { finishOpen(token,null); return; }
+    /* v87: keep the mount budget bounded. Eight frames leave enough time for the
+       authored 760ms morph to settle well before the final case composition appears. */
+    if (attempt >= 8) { finishOpen(token,null); return; }
     requestAnimationFrame(() => waitForOpenTarget(token,attempt + 1));
   };
 
