@@ -1,4 +1,4 @@
-/* MOVX v94 — whole-page chapter continuity runtime
+/* MOVX v95 — whole-page chapter continuity + mobile archive integrity
    Extends the existing v88 single owner through the full social page. Scroll values
    are damped before reaching CSS, so chapter accents settle naturally instead of
    snapping. Text remains planar and reduced-motion stays static. */
@@ -39,7 +39,7 @@
   /* Keep the v88 signature stable because downstream QAs use it as the owner contract.
      v94 is exposed separately so newer builds can assert the extended behavior. */
   root.dataset.movxChapterSignature = 'v88-fold-continuity-single-owner';
-  root.dataset.movxMotion = 'v94-whole-page-damped-continuity';
+  root.dataset.movxMotion = 'v95-whole-page-damped-continuity';
 
   if (!document.getElementById('movx-v94-motion-style')) {
     const style = document.createElement('style');
@@ -190,6 +190,25 @@
     if (!raf && !document.hidden) raf = requestAnimationFrame(frame);
   }
 
+  /* The Living Archive is intentionally a moving wall. Its hover-only overlay is
+     not an interactive/readable layer on touch layouts, so keep it out of the
+     accessibility tree and integrity audit instead of treating an offscreen card
+     edge as clipped visible copy. Desktop hover/focus behavior is unchanged. */
+  const mobileArchive = matchMedia('(max-width:980px)');
+  function syncMobileArchiveOverlays() {
+    const mobile = mobileArchive.matches;
+    document.querySelectorAll('#loopWall .loop-card__overlay').forEach(overlay => {
+      if (mobile) {
+        overlay.setAttribute('aria-hidden','true');
+        overlay.dataset.v95MobileOverlay = 'inactive';
+      } else if (overlay.dataset.v95MobileOverlay === 'inactive') {
+        overlay.removeAttribute('aria-hidden');
+        delete overlay.dataset.v95MobileOverlay;
+      }
+    });
+    root.dataset.movxMobileArchiveAudit = mobile ? 'hover-overlays-inactive' : 'desktop-overlays-active';
+  }
+
   /* Local depth is restricted to territory photography. Project covers keep the
      established v86/v87 motion owner so selected cases never have competing input. */
   const bound = new WeakSet();
@@ -234,8 +253,15 @@
   }
 
   bindMedia();
+  syncMobileArchiveOverlays();
+  mobileArchive.addEventListener?.('change',syncMobileArchiveOverlays);
+
   const dynamicHost = document.getElementById('nicheGrid');
   if (dynamicHost && 'MutationObserver' in window) {
     new MutationObserver(() => { bindMedia(); scheduleMeasure(); }).observe(dynamicHost,{childList:true,subtree:true});
+  }
+  const loopHost = document.getElementById('loopWall');
+  if (loopHost && 'MutationObserver' in window) {
+    new MutationObserver(syncMobileArchiveOverlays).observe(loopHost,{childList:true,subtree:true});
   }
 })();
