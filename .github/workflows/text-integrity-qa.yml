@@ -37,7 +37,7 @@ jobs:
           tar -xf _artifact/artifact.tar -C _site
           test -s _site/index.html
           test -s _site/v88-chapter.js
-          grep -q 'v95-whole-page-damped-continuity' _site/v88-chapter.js
+          grep -q 'v96-normalized-damped-continuity' _site/v88-chapter.js
 
       - name: Install browser QA runtime
         shell: bash
@@ -59,8 +59,9 @@ jobs:
           import { chromium } from 'playwright';
           import { writeFile } from 'node:fs/promises';
 
+          const motion='v96-normalized-damped-continuity';
           const browser = await chromium.launch({headless:true,args:['--use-angle=swiftshader','--enable-webgl','--ignore-gpu-blocklist']});
-          const report = {motion:'v95-whole-page-damped-continuity',desktop:[],mobile:[],errors:[]};
+          const report = {motion,desktop:[],mobile:[],errors:[]};
 
           const sections = [
             ['#heroTop','hero'],
@@ -80,7 +81,7 @@ jobs:
             page.on('pageerror',err=>pageErrors.push(String(err)));
             await page.goto('http://127.0.0.1:4180/index.html',{waitUntil:'networkidle'});
             await page.waitForFunction(()=>window.__MOVX_V57_AUDIT__,null,{timeout:20000});
-            await page.waitForFunction(()=>document.documentElement.dataset.movxMotion==='v95-whole-page-damped-continuity',null,{timeout:10000});
+            await page.waitForFunction(expected=>document.documentElement.dataset.movxMotion===expected,motion,{timeout:10000});
             await page.addStyleTag({content:'html,body{scroll-behavior:auto!important}'});
 
             if(label==='mobile'){
@@ -100,7 +101,6 @@ jobs:
               await page.waitForTimeout(900);
 
               const state=await page.evaluate(({selector,name})=>{
-                const viewport={w:innerWidth,h:innerHeight};
                 const section=document.querySelector(selector);
                 const majorSelector='h1,h2,h3,strong,.kicker,.section-intro p,.about-copy p,.contact-copy p,.service-row p,#process .process-list p';
 
