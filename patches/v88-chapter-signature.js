@@ -1,7 +1,7 @@
-/* MOVX v98 — continuous media response + chapter presence
-   Preserves the v88/v96 production contract while refining the active motion owner.
-   Chapter presence is exposed as a continuous signal and territory pointer depth is
-   now eased by the same frame owner, removing the last abrupt local interaction. */
+/* MOVX v99 — Astra-ready motion bridge + continuous media response
+   Preserves the v88/v96/v98 production contracts while exposing one read-only motion
+   interface for future Astra-authored 2D/3D objects. No new visual object is created
+   here: scroll, chapter, presence, pointer and energy signals remain single-owner. */
 (() => {
   'use strict';
 
@@ -36,11 +36,18 @@
   if (!chapters.length) return;
 
   root.classList.add('movx-v88');
-  /* Keep the v88/v96 signatures stable because downstream QAs use them as contracts.
-     v98 is exposed independently so production checks remain backwards compatible. */
+  /* Keep established signatures stable because downstream QAs use them as contracts.
+     v99 is a bridge layer, not a replacement motion owner. */
   root.dataset.movxChapterSignature = 'v88-fold-continuity-single-owner';
   root.dataset.movxMotion = 'v96-normalized-damped-continuity';
   root.dataset.movxMotionDetail = 'v98-continuous-media-response';
+  root.dataset.movxMotionBridge = 'v99-astra-ready';
+  root.dataset.movxAstraObjects = 'deferred-to-work';
+
+  chapters.forEach(({key,node},index) => {
+    node.dataset.movxStage = key;
+    node.dataset.movxStageIndex = String(index + 1);
+  });
 
   if (!document.getElementById('movx-v96-motion-style')) {
     const style = document.createElement('style');
@@ -109,8 +116,7 @@
           transition:opacity .52s var(--v96-ui),color .52s var(--v96-ui)!important;
         }
 
-        /* v98: the frame owner now performs territory-media easing. Disable the
-           older CSS transition only for media that opt into the new owner. */
+        /* v98: the frame owner performs territory-media easing. */
         html.movx-v88 body[data-page="social"] #nicheGrid .niche-card__media[data-v98-pointer="smooth"]{
           transition:none!important;
           will-change:translate;
@@ -167,6 +173,7 @@
   }]));
 
   const pointerStates = new Map();
+  const bridgeSubscribers = new Set();
   let raf = 0;
   let current = null;
   let lastTime = 0;
@@ -175,6 +182,57 @@
   let lastScrollStamp = performance.now();
   let velocity = 0;
   let targetVelocity = 0;
+  let bridgeEnergy = 0;
+  let lastBridgePublish = 0;
+
+  const getStageState = item => {
+    const state = states.get(item);
+    return Object.freeze({
+      key:item.key,
+      index:chapters.indexOf(item) + 1,
+      progress:Number(state.progress.toFixed(4)),
+      focus:Number(state.focus.toFixed(4)),
+      enter:Number(state.enter.toFixed(4)),
+      presence:Number(clamp(state.focus*.78 + state.enter*.22).toFixed(4))
+    });
+  };
+
+  function getBridgeSnapshot() {
+    return Object.freeze({
+      version:'v99-astra-ready',
+      reducedMotion:reduced,
+      currentChapter:current?.key || '',
+      chapterIndex:current ? chapters.indexOf(current) + 1 : 0,
+      direction:root.dataset.movxScrollDirection || 'idle',
+      pageProgress:Number((getComputedStyle(root).getPropertyValue('--v94-page-progress') || '0').trim()) || 0,
+      energy:Number(bridgeEnergy.toFixed(4)),
+      stages:Object.freeze(chapters.map(getStageState))
+    });
+  }
+
+  function publishBridge(now, force=false) {
+    if (!bridgeSubscribers.size && !force) return;
+    if (!force && now-lastBridgePublish < 32) return;
+    lastBridgePublish = now;
+    const snapshot = getBridgeSnapshot();
+    bridgeSubscribers.forEach(listener => {
+      try { listener(snapshot); } catch (error) { console.error('[MOVX motion bridge]',error); }
+    });
+  }
+
+  const motionBridge = Object.freeze({
+    version:'v99-astra-ready',
+    reducedMotion:reduced,
+    getSnapshot:getBridgeSnapshot,
+    getStageNode:key => chapters.find(item => item.key === key)?.node || null,
+    subscribe(listener) {
+      if (typeof listener !== 'function') return () => {};
+      bridgeSubscribers.add(listener);
+      listener(getBridgeSnapshot());
+      return () => bridgeSubscribers.delete(listener);
+    }
+  });
+  Object.defineProperty(window,'MOVX_MOTION_BRIDGE',{value:motionBridge,configurable:true});
 
   function updateVelocity(now = performance.now()) {
     const y = scrollY;
@@ -203,11 +261,16 @@
 
   function renderChapter(item, state) {
     const node = item.node;
+    const presence = clamp(state.focus*.78 + state.enter*.22);
     node.style.setProperty('--v88-progress',state.progress.toFixed(4));
     node.style.setProperty('--v88-focus',state.focus.toFixed(4));
     node.style.setProperty('--v88-fold-angle',`${state.angle.toFixed(2)}deg`);
     node.style.setProperty('--v88-fold-lift',`${state.lift.toFixed(2)}px`);
-    node.style.setProperty('--v98-presence',clamp(state.focus*.78 + state.enter*.22).toFixed(4));
+    node.style.setProperty('--v98-presence',presence.toFixed(4));
+    node.style.setProperty('--v99-stage-progress',state.progress.toFixed(4));
+    node.style.setProperty('--v99-stage-focus',state.focus.toFixed(4));
+    node.style.setProperty('--v99-stage-enter',state.enter.toFixed(4));
+    node.style.setProperty('--v99-stage-presence',presence.toFixed(4));
 
     const mark = node.querySelector(':scope > .v88-fold-mark');
     if (mark) {
@@ -244,19 +307,25 @@
     const scrollRange = Math.max(1,document.documentElement.scrollHeight - innerHeight);
     root.style.setProperty('--v94-page-progress',clamp(scrollY/scrollRange).toFixed(4));
 
-    /* v97/v98: avoid chapter ownership flicker around the viewport midpoint. A new
-       chapter must beat the current one by a small margin before ownership moves. */
+    /* Avoid chapter ownership flicker around the viewport midpoint. */
     const handoffMargin = clamp(innerHeight * .038, 24, 48);
     if (current && nextCurrent && nextCurrent !== current && Number.isFinite(currentDistance)) {
       if (best + handoffMargin >= currentDistance) nextCurrent = current;
     }
 
     if (nextCurrent !== current) {
+      const previous = current?.key || '';
       current = nextCurrent;
       chapters.forEach(item => item.node.classList.toggle('v88-chapter-current',item === current));
       if (current) {
         root.dataset.movxCurrentChapter = current.key;
         root.dataset.movxChapterIndex = String(chapters.indexOf(current) + 1);
+        dispatchEvent(new CustomEvent('movx:chapterchange',{detail:Object.freeze({
+          previous,
+          current:current.key,
+          index:chapters.indexOf(current) + 1
+        })}));
+        publishBridge(performance.now(),true);
       }
     }
   }
@@ -269,14 +338,16 @@
     lastTime = now;
 
     /* Adaptive damping: slow/settling input gets a longer, softer tail while fast
-       scroll catches up sooner. This prevents both snapping and rubber-band lag. */
+       scroll catches up sooner. */
     const velocityAlpha = reduced ? 1 : 1 - Math.exp(-dt / 92);
     velocity += (targetVelocity-velocity) * velocityAlpha;
     targetVelocity *= Math.exp(-dt / 170);
     const energy = reduced ? 0 : clamp(Math.abs(velocity) / 1500);
+    bridgeEnergy = energy;
     const tau = reduced ? 1 : lerp(152,86,energy);
     const alpha = reduced ? 1 : 1 - Math.exp(-dt / tau);
     root.style.setProperty('--v97-motion-energy',energy.toFixed(4));
+    root.style.setProperty('--v99-motion-energy',energy.toFixed(4));
     root.dataset.movxScrollDirection = Math.abs(velocity) < 12 ? 'idle' : velocity > 0 ? 'down' : 'up';
 
     let moving = Math.abs(targetVelocity) > .2 || Math.abs(velocity) > .2;
@@ -292,8 +363,7 @@
       renderChapter(item,state);
     });
 
-    /* v98: pointer depth shares this owner instead of mixing pointer events with a
-       second CSS transition. The result is one continuous acceleration/deceleration. */
+    /* Territory pointer depth stays inside the same frame owner. */
     if (!reduced) {
       const pointerAlpha = 1 - Math.exp(-dt / 108);
       pointerStates.forEach(state => {
@@ -305,6 +375,7 @@
       });
     }
 
+    publishBridge(now);
     if ((moving || needsMeasure) && !document.hidden) raf = requestAnimationFrame(frame);
   }
 
@@ -319,9 +390,7 @@
   }
 
   /* The Living Archive is intentionally a moving wall. Its hover-only overlay is
-     not an interactive/readable layer on touch layouts, so keep it out of the
-     accessibility tree and integrity audit instead of treating an offscreen card
-     edge as clipped visible copy. Desktop hover/focus behavior is unchanged. */
+     not an interactive/readable layer on touch layouts. */
   const mobileArchive = matchMedia('(max-width:980px)');
   function syncMobileArchiveOverlays() {
     const mobile = mobileArchive.matches;
@@ -337,8 +406,8 @@
     root.dataset.movxMobileArchiveAudit = mobile ? 'hover-overlays-inactive' : 'desktop-overlays-active';
   }
 
-  /* Local depth is restricted to territory photography. Project covers keep the
-     established v86/v87 motion owner so selected cases never have competing input. */
+  /* Local depth is restricted to territory photography. Future Astra objects must
+     subscribe to MOVX_MOTION_BRIDGE rather than attaching a second scroll owner. */
   const bound = new WeakSet();
   function bindMedia() {
     if (!desktop || !fine || reduced) return;
@@ -380,6 +449,7 @@
       }
       renderChapter(item,state);
     });
+    publishBridge(performance.now(),true);
   } else {
     scheduleMeasure();
     addEventListener('scroll',scheduleMeasure,{passive:true});
