@@ -46,6 +46,8 @@ const fs=require('node:fs/promises');
     const firstCaseImage=page.locator('#caseSlides .case-slide-frame img').first();
     await firstCaseImage.waitFor();
     await firstCaseImage.evaluate(img=>img.decode());
+    await page.locator('#caseInfo .case-study-block').first().waitFor();
+    await page.locator('#caseInfo .case-swatch').first().waitFor();
     const caseLayout=await page.evaluate(()=>{
      const body=document.querySelector('.case-body');
      const info=document.querySelector('.case-info');
