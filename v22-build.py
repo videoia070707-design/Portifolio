@@ -76,7 +76,7 @@ copy = {
 'home.disciplinesText':'Social, vídeo y tecnología aplicada a la creación.','discipline.aiMeta':'3D / prototipado / visuales de producto / I+D','footer.disciplines':'Social Media / Edición de Vídeo / Tecnología & Innovación',
 'ai.index':'03 / TECNOLOGÍA & INNOVACIÓN','ai.title':'<span class="mask-reveal"><span>Nuevas herramientas</span></span><span class="mask-reveal"><span>La misma dirección</span></span>',
 'ai.intro':'La tecnología avanzada funciona como extensión de la dirección creativa: 3D, prototipado, automatización, experimentación visual y workflows emergentes usados con intención clara.','ai.meta3':'tecnología como proceso, no como efecto',
-'ai.emptyTitle':'I+D<br>en construcción','ai.emptyText':'Este capítulo estará dedicado a casos donde la tecnología amplía el lenguaje visual: 3D, producto, prototipos, sistemas generativos, automatización y nuevas formas de producción integradas con diseño.','ai.emptyMarker':'Preparando casos de tecnología aplicada','ai.footerBig':'Expandir lo <em>posible</em>','ai.footerMeta':'Archivo reservado para tecnología aplicada e I+D',
+'ai.emptyTitle':'I+D<br>en construcción','ai.emptyText':'Este capítulo estará dedicado a casos donde la tecnología amplía el lenguaje visual: 3D, producto, prototipos, sistemas generativos, automatización y nuevas formas de producción integradas con diseño.','ai.emptyMarker':'Preparando casos de tecnología aplicada','ai.footerBig':'Expandir lo <em>posible</em>','ai.footerMeta':'Arquivo reservado para tecnologia aplicada e I&D',
 'home.velocity':'DIRECCIÓN DE ARTE — DISEÑO SOCIAL — CARRUSELES — SISTEMAS DE MARCA — EDICIÓN DE VÍDEO — MOTION — TECNOLOGÍA & INNOVACIÓN —',
 'home.aboutKicker':'SOBRE MÍ / CÓMO PIENSO','home.aboutTitle':'Construyo lenguaje<br>antes que piezas',
 'home.aboutLead':'Trabajo en la intersección entre dirección de arte, social, vídeo y tecnología avanzada. En lugar de acumular piezas aisladas, construyo sistemas visuales capaces de conservar identidad, variar con intención y crecer con la marca.',
@@ -119,6 +119,23 @@ for name in ['index.html','social-media.html','ai-creator.html','video-editor.ht
     if 'soul-of-design-hero-clean.png' in html and 'rel="preload" as="image" href="assets/hero/soul-of-design-hero-clean.png"' not in html:
         html = html.replace('</head>', '<link rel="preload" as="image" href="assets/hero/soul-of-design-hero-clean.png" fetchpriority="high"/>\n</head>', 1)
     html = html.replace('class="social-cover-art__image" src="assets/hero/soul-of-design-hero-clean.png"', 'class="social-cover-art__image" src="assets/hero/soul-of-design-hero-clean.png" loading="eager" fetchpriority="high" decoding="async"')
+    path.write_text(html, encoding='utf-8')
+
+# 4) v85 reference-led art direction layer.
+# Keep it in its own file so this research phase stays isolated and reversible.
+v85_source = Path('patches/v85-reference-direction.css')
+if not v85_source.exists():
+    raise SystemExit('Missing patches/v85-reference-direction.css')
+v85_target = root / 'v85-reference-direction.css'
+v85_target.write_text(v85_source.read_text(encoding='utf-8'), encoding='utf-8')
+for name in ['index.html','social-media.html','ai-creator.html','video-editor.html']:
+    path = root / name
+    if not path.exists():
+        continue
+    html = path.read_text(encoding='utf-8')
+    marker = '<link rel="stylesheet" href="v85-reference-direction.css?v=85-reference-direction">'
+    if marker not in html:
+        html = html.replace('</head>', marker + '\n</head>', 1)
     path.write_text(html, encoding='utf-8')
 
 print('MOVX v22 build transform applied')
