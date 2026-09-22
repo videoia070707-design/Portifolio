@@ -75,7 +75,7 @@ copy = {
 'home.intro':'MOVX reúne dirección de arte, social, motion y tecnología avanzada para convertir briefs en lenguajes visuales coherentes — cada proyecto nace como sistema, no como pieza aislada.',
 'home.disciplinesText':'Social, vídeo y tecnología aplicada a la creación.','discipline.aiMeta':'3D / prototipado / visuales de producto / I+D','footer.disciplines':'Social Media / Edición de Vídeo / Tecnología & Innovación',
 'ai.index':'03 / TECNOLOGÍA & INNOVACIÓN','ai.title':'<span class="mask-reveal"><span>Nuevas herramientas</span></span><span class="mask-reveal"><span>La misma dirección</span></span>',
-'ai.intro':'La tecnología avanzada funciona como extensión de la dirección creativa: 3D, prototipado, automatización, experimentación visual y workflows emergentes usados con intención clara.','ai.meta3':'tecnología como proceso, no como efecto',
+'ai.intro':'La tecnología avanzada funciona como extensión de la dirección creativa: 3D, prototipado, automatización, experimentación visual y workflows emergentes usados con intención clara.','ai.meta3':'tecnología como proceso, no como efeito',
 'ai.emptyTitle':'I+D<br>en construcción','ai.emptyText':'Este capítulo estará dedicado a casos donde la tecnología amplía el lenguaje visual: 3D, producto, prototipos, sistemas generativos, automatización y nuevas formas de producción integradas con diseño.','ai.emptyMarker':'Preparando casos de tecnología aplicada','ai.footerBig':'Expandir lo <em>posible</em>','ai.footerMeta':'Archivo reservado para tecnología aplicada e I+D',
 'home.velocity':'DIRECCIÓN DE ARTE — DISEÑO SOCIAL — CARRUSELES — SISTEMAS DE MARCA — EDICIÓN DE VÍDEO — MOTION — TECNOLOGÍA & INNOVACIÓN —',
 'home.aboutKicker':'SOBRE MÍ / CÓMO PIENSO','home.aboutTitle':'Construyo lenguaje<br>antes que piezas',
@@ -122,26 +122,34 @@ for name in ['index.html','social-media.html','ai-creator.html','video-editor.ht
     path.write_text(html, encoding='utf-8')
 
 # 4) Research-led art direction layers.
-# v85 establishes the visual direction; v86 packages the shared artwork signature.
+# v85 establishes the baseline, v86 owns project/case continuity, v88 owns chapter continuity.
 for source_name, target_name in [
     ('patches/v85-reference-direction.css','v85-reference-direction.css'),
-    ('patches/v86-signature-motion.css','v86-signature-motion.css')
+    ('patches/v86-signature-motion.css','v86-signature-motion.css'),
+    ('patches/v88-chapter-signature.css','v88-chapter-signature.css'),
+    ('patches/v88-chapter-signature.js','v88-chapter-signature.js')
 ]:
     source = Path(source_name)
     if not source.exists():
         raise SystemExit(f'Missing {source_name}')
     (root / target_name).write_text(source.read_text(encoding='utf-8'), encoding='utf-8')
 
-# v85 stays as the static baseline. v86 is appended at runtime by the v41/v86
-# shared-element owner so it loads after legacy styles and wins the cascade cleanly.
+# v85 and v88 are static chapter layers. v86 is appended at runtime by the v41/v86
+# shared-element owner so project/case transition styles still win their local cascade.
 for name in ['index.html','social-media.html','ai-creator.html','video-editor.html']:
     path = root / name
     if not path.exists():
         continue
     html = path.read_text(encoding='utf-8')
-    marker = '<link rel="stylesheet" href="v85-reference-direction.css?v=85-reference-direction">'
-    if marker not in html:
-        html = html.replace('</head>', marker + '\n</head>', 1)
+    for marker in [
+        '<link rel="stylesheet" href="v85-reference-direction.css?v=85-reference-direction">',
+        '<link rel="stylesheet" href="v88-chapter-signature.css?v=88-chapter-signature">'
+    ]:
+        if marker not in html:
+            html = html.replace('</head>', marker + '\n</head>', 1)
+    script_marker = '<script src="v88-chapter-signature.js?v=88-chapter-signature"></script>'
+    if script_marker not in html:
+        html = html.replace('</body>', script_marker + '\n</body>', 1)
     path.write_text(html, encoding='utf-8')
 
-print('MOVX v86 build transform applied')
+print('MOVX v88 build transform applied')
