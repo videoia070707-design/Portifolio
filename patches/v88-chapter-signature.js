@@ -1,6 +1,6 @@
 /* MOVX v88 — chapter continuity runtime
    One rAF loop owns first-half chapter state. It drives only CSS custom properties,
-   a tiny editorial fold mark and local media translation. Copy is never transformed. */
+   a restrained editorial fold mark and local media translation. Copy is never transformed. */
 (() => {
   'use strict';
 
@@ -21,10 +21,10 @@
   if (!chapters.length) return;
 
   root.classList.add('movx-v88');
-  root.dataset.movxChapterSignature = 'v88-fold-continuity';
+  root.dataset.movxChapterSignature = 'v88-fold-continuity-single-owner';
 
-  const markHTML = '<i class="v88-fold-mark__rail"></i><i class="v88-fold-mark__plane"></i><i class="v88-fold-mark__pin"></i>';
-  const markHosts = chapters.filter(item => ['hero','archive','territories','projects'].includes(item.key));
+  const markHTML = '<i class="v88-fold-mark__rail"></i><i class="v88-fold-mark__plane"></i>';
+  const markHosts = chapters.filter(item => ['archive','territories'].includes(item.key));
   markHosts.forEach(({node,key}) => {
     if (node.querySelector(':scope > .v88-fold-mark')) return;
     const mark = document.createElement('span');
@@ -46,8 +46,8 @@
     const focusDistance = Math.abs(center - innerHeight * .5);
     const focus = clamp(1 - focusDistance / Math.max(innerHeight * .92, rect.height * .58));
     const enter = clamp((innerHeight * .9 - rect.top) / Math.max(1,innerHeight * .72));
-    const angle = lerp(24,-18,progress);
-    const lift = lerp(9,0,focus);
+    const angle = lerp(20,-14,progress);
+    const lift = lerp(7,0,focus);
 
     node.style.setProperty('--v88-progress',progress.toFixed(4));
     node.style.setProperty('--v88-focus',focus.toFixed(4));
@@ -58,14 +58,14 @@
     if (mark) {
       mark.style.setProperty('--v88-fold-angle',`${angle.toFixed(2)}deg`);
       mark.style.setProperty('--v88-fold-lift',`${lift.toFixed(2)}px`);
-      mark.style.setProperty('--v88-fold-opacity',(0.28 + focus*.6).toFixed(3));
+      mark.style.setProperty('--v88-fold-opacity',(0.20 + focus*.42).toFixed(3));
     }
 
     if (item.key === 'archive') {
       const rows = [...node.querySelectorAll('.loop-row')];
-      const offsets = [-30,22,-16];
+      const offsets = [-26,18,-14];
       rows.forEach((row,index) => {
-        const shift = (offsets[index] ?? ((index%2?-1:1)*14)) * (1-enter);
+        const shift = (offsets[index] ?? ((index%2?-1:1)*12)) * (1-enter);
         row.style.setProperty('--v88-row-x',`${shift.toFixed(2)}px`);
       });
     }
@@ -96,7 +96,8 @@
     if (!raf && !document.hidden) raf = requestAnimationFrame(measure);
   }
 
-  /* Local media response — never applied to text or card containers. */
+  /* Local depth is restricted to territory photography. Project covers keep the
+     established v86/v87 motion owner so selected cases never have competing input. */
   const bound = new WeakSet();
   function bindMedia(){
     if (!desktop || !fine || reduced) return;
@@ -110,30 +111,12 @@
         const rect = card.getBoundingClientRect();
         const x = clamp((event.clientX-rect.left)/Math.max(1,rect.width),0,1)-.5;
         const y = clamp((event.clientY-rect.top)/Math.max(1,rect.height),0,1)-.5;
-        media.style.setProperty('--v88-media-x',`${(x*7).toFixed(2)}px`);
-        media.style.setProperty('--v88-media-y',`${(y*5).toFixed(2)}px`);
+        media.style.setProperty('--v88-media-x',`${(x*6).toFixed(2)}px`);
+        media.style.setProperty('--v88-media-y',`${(y*4).toFixed(2)}px`);
       },{passive:true});
       card.addEventListener('pointerleave',() => {
         media.style.setProperty('--v88-media-x','0px');
         media.style.setProperty('--v88-media-y','0px');
-      },{passive:true});
-    });
-
-    document.querySelectorAll('#projectsList .project-cover').forEach(cover => {
-      if (bound.has(cover)) return;
-      bound.add(cover);
-      const img = cover.querySelector('img');
-      if (!img) return;
-      cover.addEventListener('pointermove',event => {
-        const rect = cover.getBoundingClientRect();
-        const x = clamp((event.clientX-rect.left)/Math.max(1,rect.width),0,1)-.5;
-        const y = clamp((event.clientY-rect.top)/Math.max(1,rect.height),0,1)-.5;
-        img.style.setProperty('--v88-project-x',`${(x*5).toFixed(2)}px`);
-        img.style.setProperty('--v88-project-y',`${(y*3.5).toFixed(2)}px`);
-      },{passive:true});
-      cover.addEventListener('pointerleave',() => {
-        img.style.setProperty('--v88-project-x','0px');
-        img.style.setProperty('--v88-project-y','0px');
       },{passive:true});
     });
   }
@@ -153,9 +136,8 @@
   }
 
   bindMedia();
-  const dynamicHosts = [document.getElementById('nicheGrid'),document.getElementById('projectsList')].filter(Boolean);
-  if (dynamicHosts.length && 'MutationObserver' in window) {
-    const observer = new MutationObserver(() => { bindMedia(); schedule(); });
-    dynamicHosts.forEach(host => observer.observe(host,{childList:true,subtree:true}));
+  const dynamicHost = document.getElementById('nicheGrid');
+  if (dynamicHost && 'MutationObserver' in window) {
+    new MutationObserver(() => { bindMedia(); schedule(); }).observe(dynamicHost,{childList:true,subtree:true});
   }
 })();
