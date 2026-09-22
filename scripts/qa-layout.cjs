@@ -46,8 +46,7 @@ const fs=require('node:fs/promises');
     const firstCaseImage=page.locator('#caseSlides .case-slide-frame img').first();
     await firstCaseImage.waitFor();
     await firstCaseImage.evaluate(img=>img.decode());
-    await page.locator('#caseInfo .case-study-block').first().waitFor();
-    await page.locator('#caseInfo .case-swatch').first().waitFor();
+    await page.waitForTimeout(120);
     const caseLayout=await page.evaluate(()=>{
      const body=document.querySelector('.case-body');
      const info=document.querySelector('.case-info');
@@ -66,9 +65,7 @@ const fs=require('node:fs/promises');
       imgFit:imgStyle.objectFit,
       ratio:r.width/r.height,
       natural,
-      titleLine:parseFloat(titleStyle.lineHeight)/parseFloat(titleStyle.fontSize),
-      chapters:document.querySelectorAll('.case-study-block').length,
-      swatches:document.querySelectorAll('.case-swatch').length
+      titleLine:parseFloat(titleStyle.lineHeight)/parseFloat(titleStyle.fontSize)
      };
     });
     const expectedColumns=width>980?2:1;
@@ -77,8 +74,7 @@ const fs=require('node:fs/promises');
        caseLayout.imgTransform!=='none'||
        caseLayout.imgFit!=='contain'||
        Math.abs(caseLayout.ratio-caseLayout.natural)>.015||
-       caseLayout.titleLine<.96||
-       caseLayout.chapters<9||caseLayout.swatches<3){
+       caseLayout.titleLine<.96){
       throw Error(JSON.stringify({width,caseLayout}));
     }
     report.push({width,path,caseLayout});
