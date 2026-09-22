@@ -16,7 +16,7 @@ html[data-layout="stable"] :is(section[id],.project-entry) { scroll-margin-top:c
 html[data-layout="stable"] body :is(.project-copy h2,.project-copy h3,.project-subtitle,.page-hero h1,.section-intro h2,.case-hero__title,.case-hero__deck,.empty-archive h2,#about h2,#services h2,#services h3,#process h2) { line-height:1.08!important; letter-spacing:-.025em!important; }
 html[data-layout="stable"] .page-hero h1 .mask-reveal { overflow:visible!important; }
 html[data-layout="stable"] .page-hero h1 { max-width:100%!important; }
-html[data-layout="stable"] .project-copy h2 { font-size:clamp(38px,4.5vw,72px)!important; max-width:100%!important; overflow-wrap:normal; }
+html[data-layout="stable"] body[data-page="social"] #projectsList .project-entry .project-copy h2 { font-size:clamp(38px,4.5vw,72px)!important; max-width:100%!important; overflow-wrap:normal; }
 html[data-layout="stable"] .project-copy :is(h3,.project-subtitle) { margin-top:20px; }
 /* The artwork itself determines the media height. No portrait-to-landscape crop. */
 html[data-layout="stable"] body[data-page="social"] #projectsList .project-entry { display:grid!important; grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important; grid-template-rows:auto!important; gap:clamp(32px,6vw,88px)!important; align-items:center!important; min-height:0!important; }
@@ -56,7 +56,10 @@ html[data-layout="stable"] .web-services { padding-top:80px; padding-bottom:80px
  html[data-layout="stable"] body[data-page="social"] #projectsList .project-entry { grid-template-columns:minmax(0,1fr)!important; gap:28px!important; }
  html[data-layout="stable"] body[data-page="social"] #projectsList .project-entry .project-copy { grid-column:1!important; grid-row:1!important; }
  html[data-layout="stable"] body[data-page="social"] #projectsList .project-entry .project-cover { grid-column:1!important; grid-row:2!important; }
- html[data-layout="stable"] .project-copy h2 { font-size:clamp(36px,7vw,60px)!important; }
+ html[data-layout="stable"] body[data-page="social"] #projectsList .project-entry .project-copy h2 { font-size:clamp(36px,7vw,60px)!important; }
  .web-service-grid { grid-template-columns:1fr; gap:32px; }
 }
 @media(prefers-reduced-motion:reduce) { html[data-layout="stable"] #services .service-row h3 { transition:none; } }
+
+html[data-layout="stable"] body[data-page="social"] #projectsList .project-entry .project-copy h2,
+html[data-layout="stable"] body[data-page="social"] #projectsList .project-entry .project-subtitle { line-height:1.08!important; letter-spacing:-.025em!important; }
