@@ -200,27 +200,27 @@
     if (token !== transitionToken || !viewer.classList.contains('open')) return;
     const target = targetForOpen();
     if (target) { runOpenMorph(token,target); return; }
-    /* v87: keep the mount budget bounded. Eight frames leave enough time for the
-       authored 760ms morph to settle well before the final case composition appears. */
-    if (attempt >= 8) { finishOpen(token,null); return; }
+    /* v87: the mount budget is deliberately short. If the target is not ready,
+       the stable case view wins over a late animation. */
+    if (attempt >= 6) { finishOpen(token,null); return; }
     requestAnimationFrame(() => waitForOpenTarget(token,attempt + 1));
   };
 
   const animateLayers = direction => {
-    const timing = { duration:direction > 0 ? 760 : 680, easing:'cubic-bezier(.16,1,.3,1)', fill:'both' };
+    const timing = { duration:direction > 0 ? 640 : 580, easing:'cubic-bezier(.16,1,.3,1)', fill:'both' };
     if (direction > 0) {
       activeAnimations.push(coverLayer.animate([
-        {opacity:1,offset:0},{opacity:1,offset:.48},{opacity:.18,offset:.88},{opacity:0,offset:1}
+        {opacity:1,offset:0},{opacity:1,offset:.44},{opacity:.18,offset:.86},{opacity:0,offset:1}
       ], timing));
       activeAnimations.push(containLayer.animate([
-        {opacity:0,offset:0},{opacity:0,offset:.42},{opacity:.86,offset:.9},{opacity:1,offset:1}
+        {opacity:0,offset:0},{opacity:0,offset:.38},{opacity:.86,offset:.88},{opacity:1,offset:1}
       ], timing));
     } else {
       activeAnimations.push(coverLayer.animate([
-        {opacity:0,offset:0},{opacity:.08,offset:.34},{opacity:.92,offset:.82},{opacity:1,offset:1}
+        {opacity:0,offset:0},{opacity:.08,offset:.32},{opacity:.92,offset:.8},{opacity:1,offset:1}
       ], timing));
       activeAnimations.push(containLayer.animate([
-        {opacity:1,offset:0},{opacity:.96,offset:.4},{opacity:.12,offset:.86},{opacity:0,offset:1}
+        {opacity:1,offset:0},{opacity:.96,offset:.36},{opacity:.12,offset:.84},{opacity:0,offset:1}
       ], timing));
     }
   };
@@ -247,7 +247,7 @@
     const animation = surface.animate([
       { transform:inverseTransform(from,to), clipPath:'inset(0 0 0 0)' },
       { transform:'translate3d(0,0,0) scale(1,1)', clipPath:'inset(0 0 0 0)' }
-    ], { duration:760, easing:'cubic-bezier(.16,1,.3,1)', fill:'both' });
+    ], { duration:640, easing:'cubic-bezier(.16,1,.3,1)', fill:'both' });
     activeAnimations.push(animation);
     animateLayers(1);
     animation.onfinish = () => finishOpen(token,target);
@@ -295,7 +295,7 @@
     const animation = surface.animate([
       { transform:inverseTransform(from,destination.rect) },
       { transform:'translate3d(0,0,0) scale(1,1)' }
-    ], { duration:680, easing:'cubic-bezier(.16,1,.3,1)', fill:'both' });
+    ], { duration:580, easing:'cubic-bezier(.16,1,.3,1)', fill:'both' });
     activeAnimations.push(animation);
     animateLayers(-1);
     animation.onfinish = () => finishClose(token);
