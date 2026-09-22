@@ -1,4 +1,4 @@
-/* MOVX v111 — isolated visible Process copy
+/* MOVX v111.1 — isolated visible Process copy
    Reads the real i18n/semantic source but paints a clean, independent desktop lane
    that no legacy motion selector knows about. */
 
@@ -15,9 +15,10 @@ if(body?.dataset.page==='social'&&desktop&&!reduced){
   const journey=q('.v55-process-journey',process||document);
   const grid=q('.container.process-grid',journey||document);
   const sourceTitle=q('.process-title',grid||document);
+  const sourceList=q('.process-list',grid||document);
   const sourceRows=qa('.process-list > li',grid||document).slice(0,5);
 
-  if(process&&journey&&grid&&sourceTitle&&sourceRows.length){
+  if(process&&journey&&grid&&sourceTitle&&sourceList&&sourceRows.length){
     const overlay=document.createElement('div');
     overlay.className='v111-process-copy';
     overlay.setAttribute('aria-hidden','true');
@@ -45,6 +46,17 @@ if(body?.dataset.page==='social'&&desktop&&!reduced){
       kicker.textContent=(q('.kicker',sourceTitle)?.textContent||'').trim();
       const rawTitle=(q('h2',sourceTitle)?.textContent||'').trim();
       title.textContent=rawTitle;
+    };
+
+    // v110 and older integrity layers can leave inline !important visibility on
+    // the semantic source after boot. v111 loads last, so take paint ownership here
+    // instead of starting another CSS specificity fight. Opacity keeps the source
+    // available to assistive technology while preventing any duplicate rendering.
+    const suppressLegacyPaint=()=>{
+      sourceTitle.style.setProperty('opacity','0','important');
+      sourceTitle.style.setProperty('pointer-events','none','important');
+      sourceList.style.setProperty('opacity','0','important');
+      sourceList.style.setProperty('pointer-events','none','important');
     };
 
     let active=-1;
@@ -82,6 +94,7 @@ if(body?.dataset.page==='social'&&desktop&&!reduced){
     let raf=0;
     const sync=()=>{
       raf=0;
+      suppressLegacyPaint();
       const p=progress();
       overlay.style.setProperty('--v111-progress',p.toFixed(4));
       setStep(Math.round(p*(sourceRows.length-1)),true);
@@ -90,7 +103,11 @@ if(body?.dataset.page==='social'&&desktop&&!reduced){
     const schedule=()=>{if(!raf)raf=requestAnimationFrame(sync);};
 
     // i18n mutates textContent after boot/language switches. Observe only the source.
-    const mo=new MutationObserver(()=>requestAnimationFrame(()=>{readSource();setStep(active<0?0:active,false);}));
+    const mo=new MutationObserver(()=>requestAnimationFrame(()=>{
+      suppressLegacyPaint();
+      readSource();
+      setStep(active<0?0:active,false);
+    }));
     mo.observe(sourceTitle,{subtree:true,childList:true,characterData:true});
     sourceRows.forEach(row=>mo.observe(row,{subtree:true,childList:true,characterData:true}));
 
@@ -99,6 +116,7 @@ if(body?.dataset.page==='social'&&desktop&&!reduced){
     window.MOVX_MOTION_BRIDGE?.subscribe?.(schedule);
     addEventListener('pagehide',()=>{mo.disconnect();removeEventListener('scroll',schedule);removeEventListener('resize',schedule);},{once:true});
 
+    suppressLegacyPaint();
     readSource();
     setStep(0,false);
     sync();
