@@ -31,6 +31,7 @@ const fs=require('node:fs/promises');
       const canvas=document.querySelector('#process .v108-process-canvas');
       const canvasStyle=canvas?getComputedStyle(canvas):null;
       return {
+        viewportWidth:innerWidth,
         step:document.documentElement.dataset.movxProcessStep,
         visibleRows:visible.length,
         activeRows:document.querySelectorAll('#process .process-list li.v108-process-active').length,
@@ -42,7 +43,7 @@ const fs=require('node:fs/promises');
         overflow:document.documentElement.scrollWidth-innerWidth
       };
     });
-    if(state.visibleRows!==1||state.activeRows!==1||!state.activeBox||state.activeBox.right>innerWidth*.46||!state.clipPath.includes('inset')||state.canvasOpacity<.45||state.oldSculptures!==0||state.overflow>2)throw Error(JSON.stringify({name,state}));
+    if(state.visibleRows!==1||state.activeRows!==1||!state.activeBox||state.activeBox.right>state.viewportWidth*.46||!state.clipPath.includes('inset')||state.canvasOpacity<.45||state.oldSculptures!==0||state.overflow>2)throw Error(JSON.stringify({name,state}));
     await page.screenshot({path:`_site/qa-v109-${name}.png`,fullPage:false});
     report.push({name,fraction,state});
     return state;
