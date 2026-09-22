@@ -51,7 +51,8 @@ html[data-layout="stable"] body[data-page="social"] #projectsList .project-entry
 html[data-layout="stable"] #services .service-row::before,
 html[data-layout="stable"] #services .service-row::after { content:none!important; display:none!important; }
 html[data-layout="stable"] :is(.v88-fold-mark,.v56-contact-rail,.v56-handoff-layer,.v56-trace,.v45-service-marker) { display:none!important; }
-html[data-layout="stable"] #services .service-row { transform:none!important; border-left:0!important; }
+html[data-layout="stable"] #services .services-list { border:0!important; }
+html[data-layout="stable"] #services .service-row { transform:none!important; border:0!important; padding-block:clamp(36px,5vw,68px)!important; }
 html[data-layout="stable"] #services .service-row h3 { transition:color .25s ease; }
 html[data-layout="stable"] #services .service-row:is(:hover,:focus-within,.v42-reading) h3 { color:var(--editorial-red)!important; }
 /* Fourth discipline: real services, without fabricated case studies. */
@@ -227,6 +228,15 @@ html[data-layout="stable"] .case-viewer .case-slide-frame img {
  transition:none!important;
  border:1px solid var(--line)!important;
  background:transparent!important;
+}
+/* Some legacy hover layers target case artwork with higher specificity. Lock editorial cases to the original frame. */
+html[data-layout="stable"].movx-v86.movx-v33 body.case-open .case-viewer .case-slides .case-slide-frame img,
+html[data-layout="stable"].movx-v86.movx-v33 body.case-open .case-viewer .case-slides figure:hover .case-slide-frame img {
+ transform:none!important;
+ translate:none!important;
+ scale:none!important;
+ animation:none!important;
+ transition:none!important;
 }
 html[data-layout="stable"].movx-v33 .case-hero__title {
  font-size:clamp(48px,6.2vw,98px)!important;
