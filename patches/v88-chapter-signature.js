@@ -1,7 +1,7 @@
-/* MOVX v97 — adaptive damping + stable chapter handoff
-   Preserves the v88/v96 production contract while refining the motion owner itself.
-   Scroll response now adapts to input velocity and chapter switching uses hysteresis,
-   reducing dry snaps without moving text or changing the authored composition. */
+/* MOVX v98 — continuous media response + chapter presence
+   Preserves the v88/v96 production contract while refining the active motion owner.
+   Chapter presence is exposed as a continuous signal and territory pointer depth is
+   now eased by the same frame owner, removing the last abrupt local interaction. */
 (() => {
   'use strict';
 
@@ -37,10 +37,10 @@
 
   root.classList.add('movx-v88');
   /* Keep the v88/v96 signatures stable because downstream QAs use them as contracts.
-     v97 is exposed independently so production checks remain backwards compatible. */
+     v98 is exposed independently so production checks remain backwards compatible. */
   root.dataset.movxChapterSignature = 'v88-fold-continuity-single-owner';
   root.dataset.movxMotion = 'v96-normalized-damped-continuity';
-  root.dataset.movxMotionDetail = 'v97-adaptive-damping-hysteresis';
+  root.dataset.movxMotionDetail = 'v98-continuous-media-response';
 
   if (!document.getElementById('movx-v96-motion-style')) {
     const style = document.createElement('style');
@@ -108,6 +108,13 @@
         html.movx-v88 .hero-index__item strong{
           transition:opacity .52s var(--v96-ui),color .52s var(--v96-ui)!important;
         }
+
+        /* v98: the frame owner now performs territory-media easing. Disable the
+           older CSS transition only for media that opt into the new owner. */
+        html.movx-v88 body[data-page="social"] #nicheGrid .niche-card__media[data-v98-pointer="smooth"]{
+          transition:none!important;
+          will-change:translate;
+        }
       }
       @media (max-width:980px){
         html.movx-v88 body[data-page="social"] .archive-filter-row .archive-filter,
@@ -159,6 +166,7 @@
     targetProgress:0, targetFocus:0, targetAngle:20, targetLift:7, targetEnter:0
   }]));
 
+  const pointerStates = new Map();
   let raf = 0;
   let current = null;
   let lastTime = 0;
@@ -199,6 +207,7 @@
     node.style.setProperty('--v88-focus',state.focus.toFixed(4));
     node.style.setProperty('--v88-fold-angle',`${state.angle.toFixed(2)}deg`);
     node.style.setProperty('--v88-fold-lift',`${state.lift.toFixed(2)}px`);
+    node.style.setProperty('--v98-presence',clamp(state.focus*.78 + state.enter*.22).toFixed(4));
 
     const mark = node.querySelector(':scope > .v88-fold-mark');
     if (mark) {
@@ -235,7 +244,7 @@
     const scrollRange = Math.max(1,document.documentElement.scrollHeight - innerHeight);
     root.style.setProperty('--v94-page-progress',clamp(scrollY/scrollRange).toFixed(4));
 
-    /* v97: avoid chapter ownership flicker around the viewport midpoint. A new
+    /* v97/v98: avoid chapter ownership flicker around the viewport midpoint. A new
        chapter must beat the current one by a small margin before ownership moves. */
     const handoffMargin = clamp(innerHeight * .038, 24, 48);
     if (current && nextCurrent && nextCurrent !== current && Number.isFinite(currentDistance)) {
@@ -259,8 +268,8 @@
     const dt = Math.min(48,Math.max(8,now-(lastTime || now-16)));
     lastTime = now;
 
-    /* v97 adaptive damping: slow/settling input gets a longer, softer tail while
-       fast scroll catches up sooner. This prevents both snapping and rubber-band lag. */
+    /* Adaptive damping: slow/settling input gets a longer, softer tail while fast
+       scroll catches up sooner. This prevents both snapping and rubber-band lag. */
     const velocityAlpha = reduced ? 1 : 1 - Math.exp(-dt / 92);
     velocity += (targetVelocity-velocity) * velocityAlpha;
     targetVelocity *= Math.exp(-dt / 170);
@@ -268,6 +277,7 @@
     const tau = reduced ? 1 : lerp(152,86,energy);
     const alpha = reduced ? 1 : 1 - Math.exp(-dt / tau);
     root.style.setProperty('--v97-motion-energy',energy.toFixed(4));
+    root.dataset.movxScrollDirection = Math.abs(velocity) < 12 ? 'idle' : velocity > 0 ? 'down' : 'up';
 
     let moving = Math.abs(targetVelocity) > .2 || Math.abs(velocity) > .2;
 
@@ -282,12 +292,29 @@
       renderChapter(item,state);
     });
 
+    /* v98: pointer depth shares this owner instead of mixing pointer events with a
+       second CSS transition. The result is one continuous acceleration/deceleration. */
+    if (!reduced) {
+      const pointerAlpha = 1 - Math.exp(-dt / 108);
+      pointerStates.forEach(state => {
+        state.x += (state.targetX-state.x) * pointerAlpha;
+        state.y += (state.targetY-state.y) * pointerAlpha;
+        state.media.style.setProperty('--v88-media-x',`${state.x.toFixed(2)}px`);
+        state.media.style.setProperty('--v88-media-y',`${state.y.toFixed(2)}px`);
+        if (Math.abs(state.targetX-state.x) > .02 || Math.abs(state.targetY-state.y) > .02) moving = true;
+      });
+    }
+
     if ((moving || needsMeasure) && !document.hidden) raf = requestAnimationFrame(frame);
   }
 
   function scheduleMeasure(event) {
     if (event?.type === 'scroll') updateVelocity();
     needsMeasure = true;
+    if (!raf && !document.hidden) raf = requestAnimationFrame(frame);
+  }
+
+  function scheduleFrame() {
     if (!raf && !document.hidden) raf = requestAnimationFrame(frame);
   }
 
@@ -321,16 +348,23 @@
       bound.add(card);
       const media = card.querySelector('.niche-card__media');
       if (!media) return;
+
+      media.dataset.v98Pointer = 'smooth';
+      const state = {media,x:0,y:0,targetX:0,targetY:0};
+      pointerStates.set(card,state);
+
       card.addEventListener('pointermove',event => {
         const rect = card.getBoundingClientRect();
         const x = clamp((event.clientX-rect.left)/Math.max(1,rect.width),0,1)-.5;
         const y = clamp((event.clientY-rect.top)/Math.max(1,rect.height),0,1)-.5;
-        media.style.setProperty('--v88-media-x',`${(x*6).toFixed(2)}px`);
-        media.style.setProperty('--v88-media-y',`${(y*4).toFixed(2)}px`);
+        state.targetX = x*6;
+        state.targetY = y*4;
+        scheduleFrame();
       },{passive:true});
       card.addEventListener('pointerleave',() => {
-        media.style.setProperty('--v88-media-x','0px');
-        media.style.setProperty('--v88-media-y','0px');
+        state.targetX = 0;
+        state.targetY = 0;
+        scheduleFrame();
       },{passive:true});
     });
   }
