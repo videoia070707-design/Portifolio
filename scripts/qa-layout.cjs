@@ -30,14 +30,28 @@ const fs=require('node:fs/promises');
     }
     const bad=await page.evaluate(()=>[...document.querySelectorAll('#projectsList .project-entry')].flatMap(entry=>{
      const img=entry.querySelector('.project-cover img'),title=entry.querySelector('h2');
+     const copy=entry.querySelector('.project-copy'),cover=entry.querySelector('.project-cover');
      const r=img.getBoundingClientRect(),s=getComputedStyle(img),ts=getComputedStyle(title);
+     const cr=copy.getBoundingClientRect(),mr=cover.getBoundingClientRect(),es=getComputedStyle(entry);
      const expected=img.naturalWidth/img.naturalHeight;
+     const rows=es.gridTemplateRows.trim().split(/\s+/).filter(Boolean).length;
+     const topDelta=Math.abs(cr.top-mr.top);
      const issues=[];
      if(Math.abs(r.width/r.height-expected)>.015||s.objectFit!=='contain'||s.transform!=='none')issues.push('artwork crop');
      if(parseFloat(ts.lineHeight)/parseFloat(ts.fontSize)<1.02||parseFloat(ts.letterSpacing)/parseFloat(ts.fontSize)<-.031)issues.push('tight title');
-     return issues.length?[{title:title.textContent,issues,ratio:r.width/r.height,expected}]:[];
+     if(innerWidth>980&&(rows!==1||topDelta>10))issues.push('split project rows');
+     return issues.length?[{title:title.textContent,issues,ratio:r.width/r.height,expected,rows,topDelta}]:[];
     }));
     if(bad.length)throw Error(JSON.stringify({width,bad}));
+
+    if(width===1280||width===1440){
+     for(const slug of ['marina-gengival','belive-cashflow']){
+      const entry=page.locator('#'+slug);
+      await entry.scrollIntoViewIfNeeded();
+      await page.waitForTimeout(80);
+      await page.screenshot({path:`_site/qa-project-${slug}-${width}.png`});
+     }
+    }
 
     const opener=page.locator('#projectsList [data-open-project]').first();
     await opener.scrollIntoViewIfNeeded();
@@ -102,5 +116,5 @@ const fs=require('node:fs/promises');
  if(errors.length)throw Error(errors.join('\n'));
  await fs.writeFile('_site/qa-layout-report.json',JSON.stringify(report,null,2));
  await browser.close();
- console.log('Layout integrity: 60 page/viewport/language combinations; original artwork ratios; four disciplines; compact split case studies.');
+ console.log('Layout integrity: 60 page/viewport/language combinations; original artwork ratios; aligned selected-project previews; four disciplines; compact split case studies.');
 })().catch(e=>{console.error(e);process.exit(1)});
