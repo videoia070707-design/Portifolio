@@ -263,3 +263,256 @@ html.movx-v86.movx-v33 .v33-case-chapter.v33-editorial-in::before{
     translate:none!important;
   }
 }
+
+/* ==================================================================
+   MOVX v88 — chapter continuity / authored exhibition field
+   Hero -> Living Archive -> Territories -> Directory becomes one visual
+   sentence. Decorative depth lives in a single abstract MOVX fold; copy
+   remains planar and the territory media stops reading as app cards.
+   ================================================================== */
+html.movx-v86 body[data-page="social"]{
+  --v88-ease:cubic-bezier(.16,1,.3,1);
+  --v88-ui:cubic-bezier(.4,0,.2,1);
+  --v88-accent:var(--editorial-red,#9c2e24);
+  --v88-quiet:color-mix(in srgb,var(--fg) 17%,transparent);
+}
+
+@media(min-width:981px){
+  /* The black velocity strip becomes the hinge between the hero and the archive. */
+  html.movx-v86 body[data-page="social"] .velocity-strip--social{
+    position:relative!important;
+    isolation:isolate;
+    overflow:hidden!important;
+  }
+  html.movx-v86 body[data-page="social"] .velocity-strip--social::after{
+    content:"";
+    position:absolute;
+    left:4vw;
+    bottom:0;
+    width:clamp(72px,10vw,154px);
+    height:1px;
+    z-index:3;
+    background:linear-gradient(90deg,var(--v88-accent),rgba(255,255,255,.18));
+    transform-origin:left center;
+  }
+
+  /* Living Archive: use the open right-hand field as authored depth instead of empty space. */
+  html.movx-v86 body[data-page="social"] #livingArchive{
+    position:relative!important;
+    isolation:isolate;
+    overflow:clip!important;
+  }
+  html.movx-v86 body[data-page="social"] #livingArchive::before{
+    content:"";
+    position:absolute;
+    z-index:0;
+    right:clamp(84px,9vw,158px);
+    top:clamp(138px,15vw,228px);
+    width:clamp(190px,19vw,318px);
+    aspect-ratio:1;
+    pointer-events:none;
+    opacity:.19;
+    background:
+      linear-gradient(104deg,transparent 0 18%,color-mix(in srgb,var(--v88-accent) 82%,transparent) 18.5% 22%,transparent 22.5% 39%,color-mix(in srgb,var(--fg) 26%,transparent) 39.5% 43%,transparent 43.5% 61%,color-mix(in srgb,var(--v88-accent) 46%,transparent) 61.5% 65%,transparent 65.5%),
+      radial-gradient(circle at 50% 50%,color-mix(in srgb,var(--fg) 18%,transparent) 0 1px,transparent 1.5px);
+    transform:perspective(760px) rotateX(61deg) rotateY(-31deg) rotateZ(28deg) scale(.92);
+    transform-origin:50% 50%;
+    filter:drop-shadow(0 28px 26px color-mix(in srgb,var(--fg) 8%,transparent));
+  }
+  html.movx-v86 body[data-page="social"] #livingArchive>.container,
+  html.movx-v86 body[data-page="social"] #livingArchive .loop-wall{
+    position:relative;
+    z-index:2;
+  }
+  html.movx-v86 body[data-page="social"] #livingArchive .archive-head{
+    grid-template-columns:minmax(0,.84fr) minmax(300px,.46fr)!important;
+    gap:clamp(70px,9vw,150px)!important;
+    align-items:end!important;
+  }
+  html.movx-v86 body[data-page="social"] #livingArchive .archive-head h2{
+    max-width:7.25ch!important;
+    color:color-mix(in srgb,var(--fg) 78%,var(--bg))!important;
+  }
+  html.movx-v86 body[data-page="social"] #livingArchive .archive-head p{
+    max-width:36ch!important;
+    margin:0 0 clamp(28px,3.8vw,58px)!important;
+  }
+  html.movx-v86 body[data-page="social"] #livingArchive .loop-wall{
+    margin-top:clamp(18px,2.6vw,42px)!important;
+  }
+  html.movx-v86 body[data-page="social"] #livingArchive .loop-wall::before{
+    content:"";
+    position:absolute;
+    left:4vw;
+    right:4vw;
+    top:-18px;
+    height:1px;
+    background:linear-gradient(90deg,var(--v88-accent) 0 9%,var(--v88-quiet) 9% 100%);
+    opacity:.72;
+    pointer-events:none;
+  }
+
+  /* Territories: remove the feeling of framed cards and compose an exhibition wall. */
+  html.movx-v86 body[data-page="social"] #nicheIndex{
+    position:relative!important;
+    isolation:isolate;
+    overflow:clip!important;
+  }
+  html.movx-v86 body[data-page="social"] #nicheIndex::after{
+    content:"";
+    position:absolute;
+    z-index:0;
+    right:clamp(62px,7vw,124px);
+    top:clamp(104px,10vw,164px);
+    width:clamp(130px,13vw,220px);
+    aspect-ratio:1;
+    pointer-events:none;
+    opacity:.12;
+    background:
+      linear-gradient(104deg,transparent 0 18%,color-mix(in srgb,var(--v88-accent) 78%,transparent) 18.5% 22%,transparent 22.5% 39%,color-mix(in srgb,var(--fg) 24%,transparent) 39.5% 43%,transparent 43.5% 61%,color-mix(in srgb,var(--v88-accent) 42%,transparent) 61.5% 65%,transparent 65.5%),
+      radial-gradient(circle at 50% 50%,color-mix(in srgb,var(--fg) 16%,transparent) 0 1px,transparent 1.5px);
+    transform:perspective(720px) rotateX(72deg) rotateY(36deg) rotateZ(73deg) scale(.86);
+    transform-origin:50% 50%;
+  }
+  html.movx-v86 body[data-page="social"] #nicheIndex>.container{
+    position:relative;
+    z-index:2;
+  }
+  html.movx-v86 body[data-page="social"] #nicheIndex .archive-head{
+    margin-bottom:clamp(20px,2vw,34px)!important;
+  }
+  html.movx-v86 body[data-page="social"] #nicheGrid{
+    gap:clamp(8px,.8vw,12px)!important;
+    grid-template-rows:clamp(340px,31vw,454px) clamp(326px,29vw,432px)!important;
+    overflow:visible!important;
+  }
+  html.movx-v86 body[data-page="social"] #nicheGrid>.niche-card,
+  html.movx-v86 body[data-page="social"] #nicheGrid>.niche-card:nth-child(n){
+    border:0!important;
+    outline:0!important;
+    box-shadow:none!important;
+    background:transparent!important;
+    transition:opacity .5s var(--v88-ui)!important;
+  }
+  html.movx-v86 body[data-page="social"] #nicheGrid>.niche-card:nth-child(2){
+    margin-top:clamp(44px,4.8vw,72px)!important;
+    margin-bottom:clamp(12px,1.5vw,24px)!important;
+  }
+  html.movx-v86 body[data-page="social"] #nicheGrid>.niche-card:nth-child(3){
+    margin-bottom:clamp(50px,5.2vw,80px)!important;
+  }
+  html.movx-v86 body[data-page="social"] #nicheGrid>.niche-card:nth-child(4){
+    margin-top:clamp(22px,2.5vw,40px)!important;
+    margin-bottom:clamp(30px,3.7vw,56px)!important;
+  }
+  html.movx-v86 body[data-page="social"] #nicheGrid>.niche-card:nth-child(5){
+    margin-top:clamp(46px,4.4vw,70px)!important;
+  }
+  html.movx-v86 body[data-page="social"] #nicheGrid>.niche-card::after{
+    left:clamp(15px,1.45vw,22px)!important;
+    right:auto!important;
+    bottom:clamp(14px,1.3vw,20px)!important;
+    width:clamp(42px,4vw,68px)!important;
+    height:1px!important;
+    background:rgba(255,255,255,.8)!important;
+    transform:scaleX(.34)!important;
+    opacity:.62;
+  }
+  html.movx-v86 body[data-page="social"] #nicheGrid>.niche-card:hover::after,
+  html.movx-v86 body[data-page="social"] #nicheGrid>.niche-card:focus-within::after,
+  html.movx-v86 body[data-page="social"] #nicheGrid>.niche-card.active::after{
+    transform:scaleX(1)!important;
+    background:var(--v88-accent)!important;
+    opacity:1;
+  }
+  html.movx-v86 body[data-page="social"] #nicheGrid:has(.niche-card:hover)>.niche-card{
+    opacity:.82!important;
+  }
+  html.movx-v86 body[data-page="social"] #nicheGrid:has(.niche-card:hover)>.niche-card:hover{
+    opacity:1!important;
+  }
+  html.movx-v86 body[data-page="social"] #nicheGrid .niche-card__media img{
+    transition:transform 1.35s var(--v88-ease),filter .75s var(--v88-ui)!important;
+  }
+  html.movx-v86 body[data-page="social"] #nicheGrid .niche-card:hover .niche-card__media img,
+  html.movx-v86 body[data-page="social"] #nicheGrid .niche-card:focus-within .niche-card__media img,
+  html.movx-v86 body[data-page="social"] #nicheGrid .niche-card.active .niche-card__media img{
+    transform:scale(1.012)!important;
+  }
+
+  /* Directory receives the same accent as a concluding rule, not a new component. */
+  html.movx-v86 body[data-page="social"] #archiveControls{
+    position:relative!important;
+    isolation:isolate;
+  }
+  html.movx-v86 body[data-page="social"] #archiveControls::after{
+    content:"";
+    position:absolute;
+    z-index:2;
+    right:4vw;
+    top:0;
+    width:clamp(44px,5vw,76px);
+    height:1px;
+    background:var(--v88-accent);
+    opacity:.74;
+    pointer-events:none;
+  }
+}
+
+@supports (animation-timeline:view()){
+  @media(min-width:981px) and (prefers-reduced-motion:no-preference){
+    html.movx-v86 body[data-page="social"] #livingArchive::before{
+      animation:v88FoldLiving linear both;
+      animation-timeline:view();
+      animation-range:entry 0% exit 78%;
+    }
+    html.movx-v86 body[data-page="social"] #nicheIndex::after{
+      animation:v88FoldTerritory linear both;
+      animation-timeline:view();
+      animation-range:entry 2% exit 72%;
+    }
+    html.movx-v86 body[data-page="social"] .velocity-strip--social::after{
+      animation:v88BridgeLine linear both;
+      animation-timeline:view();
+      animation-range:entry 0% exit 100%;
+    }
+    @keyframes v88FoldLiving{
+      0%{opacity:.08;transform:perspective(760px) translate3d(42px,-26px,0) rotateX(68deg) rotateY(-42deg) rotateZ(12deg) scale(.78)}
+      48%{opacity:.22;transform:perspective(760px) translate3d(0,0,0) rotateX(56deg) rotateY(-8deg) rotateZ(36deg) scale(1)}
+      100%{opacity:.08;transform:perspective(760px) translate3d(-10vw,54px,0) rotateX(76deg) rotateY(58deg) rotateZ(88deg) scale(.72)}
+    }
+    @keyframes v88FoldTerritory{
+      0%{opacity:.04;transform:perspective(720px) translate3d(52px,-34px,0) rotateX(78deg) rotateY(-16deg) rotateZ(42deg) scale(.68)}
+      54%{opacity:.15;transform:perspective(720px) translate3d(0,0,0) rotateX(68deg) rotateY(34deg) rotateZ(76deg) scale(.92)}
+      100%{opacity:.035;transform:perspective(720px) translate3d(-7vw,52px,0) rotateX(84deg) rotateY(66deg) rotateZ(112deg) scale(.62)}
+    }
+    @keyframes v88BridgeLine{
+      from{transform:scaleX(.18);opacity:.42}
+      to{transform:scaleX(1);opacity:.86}
+    }
+  }
+}
+
+@media(max-width:980px){
+  html.movx-v86 body[data-page="social"] #livingArchive::before,
+  html.movx-v86 body[data-page="social"] #nicheIndex::after,
+  html.movx-v86 body[data-page="social"] #archiveControls::after{
+    display:none!important;
+  }
+  html.movx-v86 body[data-page="social"] #livingArchive .archive-head h2{
+    color:var(--fg)!important;
+  }
+  html.movx-v86 body[data-page="social"] #nicheGrid>.niche-card,
+  html.movx-v86 body[data-page="social"] #nicheGrid>.niche-card:nth-child(n){
+    margin:0!important;
+    border:0!important;
+  }
+}
+
+@media(prefers-reduced-motion:reduce){
+  html.movx-v86 body[data-page="social"] #livingArchive::before,
+  html.movx-v86 body[data-page="social"] #nicheIndex::after,
+  html.movx-v86 body[data-page="social"] .velocity-strip--social::after{
+    animation:none!important;
+  }
+}
