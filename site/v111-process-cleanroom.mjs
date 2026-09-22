@@ -1,4 +1,4 @@
-/* MOVX v111.1 — isolated visible Process copy
+/* MOVX v111.2 — isolated visible Process copy
    Reads the real i18n/semantic source but paints a clean, independent desktop lane
    that no legacy motion selector knows about. */
 
@@ -42,10 +42,22 @@ if(body?.dataset.page==='social'&&desktop&&!reduced){
     const stepTitle=q('.v111-process-copy__step-title',overlay);
     const stepText=q('.v111-process-copy__step-text',overlay);
 
+    const structuredTitleText=titleNode=>{
+      if(!titleNode)return'';
+      const read=node=>{
+        if(node.nodeType===Node.TEXT_NODE)return node.textContent||'';
+        if(node.nodeType===Node.ELEMENT_NODE&&node.tagName==='BR')return'\n';
+        return[...node.childNodes].map(read).join('');
+      };
+      return read(titleNode)
+        .replace(/[\t ]*\n[\t ]*/g,'\n')
+        .replace(/[\t ]{2,}/g,' ')
+        .trim();
+    };
+
     const readSource=()=>{
       kicker.textContent=(q('.kicker',sourceTitle)?.textContent||'').trim();
-      const rawTitle=(q('h2',sourceTitle)?.textContent||'').trim();
-      title.textContent=rawTitle;
+      title.textContent=structuredTitleText(q('h2',sourceTitle));
     };
 
     // v110 and older integrity layers can leave inline !important visibility on
