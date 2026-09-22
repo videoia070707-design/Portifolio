@@ -1,6 +1,7 @@
-/* MOVX v111.2 — isolated visible Process copy
-   Reads the real i18n/semantic source but paints a clean, independent desktop lane
-   that no legacy motion selector knows about. */
+/* MOVX v114 — isolated Process copy + final 3D field ownership
+   Reads the real i18n/semantic source, paints one clean editorial lane, and takes
+   runtime ownership of the WebGL surface so retired CSS cannot reintroduce a black
+   half-screen or oversized visual weight. */
 
 const root=document.documentElement;
 const body=document.body;
@@ -60,15 +61,33 @@ if(body?.dataset.page==='social'&&desktop&&!reduced){
       title.textContent=structuredTitleText(q('h2',sourceTitle));
     };
 
-    // v110 and older integrity layers can leave inline !important visibility on
-    // the semantic source after boot. v111 loads last, so take paint ownership here
-    // instead of starting another CSS specificity fight. Opacity keeps the source
-    // available to assistive technology while preventing any duplicate rendering.
     const suppressLegacyPaint=()=>{
       sourceTitle.style.setProperty('opacity','0','important');
       sourceTitle.style.setProperty('pointer-events','none','important');
       sourceList.style.setProperty('opacity','0','important');
       sourceList.style.setProperty('pointer-events','none','important');
+    };
+
+    const polishField=()=>{
+      const canvas=q('.v108-process-canvas',journey);
+      const atmosphere=q('.v108-process-atmosphere',journey);
+      journey.style.setProperty('background','var(--v111-bg)','important');
+      journey.style.setProperty('isolation','isolate','important');
+      if(canvas){
+        canvas.style.setProperty('background','transparent','important');
+        canvas.style.setProperty('clip-path','inset(0 0 0 50%)','important');
+        canvas.style.setProperty('-webkit-clip-path','inset(0 0 0 50%)','important');
+        canvas.style.setProperty('-webkit-mask-image','linear-gradient(90deg,transparent 0 56%,rgba(0,0,0,.06) 62%,rgba(0,0,0,.58) 74%,#000 86%)','important');
+        canvas.style.setProperty('mask-image','linear-gradient(90deg,transparent 0 56%,rgba(0,0,0,.06) 62%,rgba(0,0,0,.58) 74%,#000 86%)','important');
+        canvas.style.setProperty('transform','translate3d(18%,0,0) scale(.70)','important');
+        canvas.style.setProperty('transform-origin','93% 50%','important');
+        canvas.style.setProperty('opacity','0.58','important');
+        canvas.style.setProperty('filter','saturate(.64) contrast(.86) brightness(.98)','important');
+        canvas.style.setProperty('mix-blend-mode','screen','important');
+      }
+      if(atmosphere){
+        atmosphere.style.setProperty('background','linear-gradient(90deg,var(--v111-bg) 0 54%,color-mix(in srgb,var(--v111-bg) 98%,transparent) 61%,color-mix(in srgb,var(--v111-bg) 82%,transparent) 69%,color-mix(in srgb,var(--v111-bg) 34%,transparent) 82%,transparent 94%),radial-gradient(circle at calc(82% + var(--v108-pointer-x,0) * 2%) calc(51% + var(--v108-pointer-y,0) * 2%),color-mix(in srgb,var(--v111-accent) 6%,transparent),transparent 22%)','important');
+      }
     };
 
     let active=-1;
@@ -89,7 +108,6 @@ if(body?.dataset.page==='social'&&desktop&&!reduced){
           step.classList.add('is-changing');
         }
       }else{
-        // Keep language changes in sync even if the active step did not change.
         if(indexEl.textContent!==sourceIndex)indexEl.textContent=sourceIndex;
         if(stepTitle.textContent!==sourceStrong)stepTitle.textContent=sourceStrong;
         if(stepText.textContent!==sourceP)stepText.textContent=sourceP;
@@ -107,6 +125,7 @@ if(body?.dataset.page==='social'&&desktop&&!reduced){
     const sync=()=>{
       raf=0;
       suppressLegacyPaint();
+      polishField();
       const p=progress();
       overlay.style.setProperty('--v111-progress',p.toFixed(4));
       setStep(Math.round(p*(sourceRows.length-1)),true);
@@ -114,9 +133,9 @@ if(body?.dataset.page==='social'&&desktop&&!reduced){
     };
     const schedule=()=>{if(!raf)raf=requestAnimationFrame(sync);};
 
-    // i18n mutates textContent after boot/language switches. Observe only the source.
     const mo=new MutationObserver(()=>requestAnimationFrame(()=>{
       suppressLegacyPaint();
+      polishField();
       readSource();
       setStep(active<0?0:active,false);
     }));
@@ -129,10 +148,12 @@ if(body?.dataset.page==='social'&&desktop&&!reduced){
     addEventListener('pagehide',()=>{mo.disconnect();removeEventListener('scroll',schedule);removeEventListener('resize',schedule);},{once:true});
 
     suppressLegacyPaint();
+    polishField();
     readSource();
     setStep(0,false);
     sync();
     root.dataset.movxV111='cleanroom-ready';
+    root.dataset.movxV114='field-owned';
   }else{
     root.dataset.movxV111='missing-source';
   }
