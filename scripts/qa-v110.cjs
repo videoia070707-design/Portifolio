@@ -67,7 +67,8 @@ const fs=require('node:fs/promises');
     if(!state.pBox||state.pBox.top<0||state.pBox.bottom>viewport.height||state.pBox.height<18||state.paragraph.visibility==='hidden'||state.paragraph.opacity<.95||transparent(state.paragraph.color)||transparent(state.paragraph.textFill))failures.push('active-copy-visible');
     if(state.active.pseudoBefore!=='none'||state.active.pseudoAfter!=='none')failures.push('legacy-pseudo-hidden');
     if(!state.clipPath.includes('50%')&& !state.clipPath.includes('52%'))failures.push('3d-clipped-right');
-    if(state.canvasDisplay==='none'||state.canvasOpacity<.55)failures.push('3d-visible');
+    // v114+ is the final visual owner and intentionally uses a lower-opacity neutral blend.
+    if(state.canvasDisplay==='none'||state.canvasOpacity<.40)failures.push('3d-visible');
     if(state.overflow>2)failures.push('horizontal-overflow');
     if(state.h2Box&&state.activeBox&&state.h2Box.bottom>state.activeBox.top-18)failures.push('title-step-overlap');
     if(failures.length)throw Error(JSON.stringify({name,fraction,failures,state}));
