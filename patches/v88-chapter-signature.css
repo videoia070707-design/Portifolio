@@ -1,0 +1,173 @@
+/* MOVX v88 — chapter continuity + proprietary fold mark
+   A small editorial registration mark folds from 2D into shallow 3D while chapters pass.
+   It is punctuation, not interface chrome. Copy remains planar; only artwork receives
+   subtle local motion. Hero -> Living Archive -> Territories -> Cases now share one rhythm. */
+html.movx-v88 body{
+  --v88-ease:cubic-bezier(.16,1,.3,1);
+  --v88-ui:cubic-bezier(.4,0,.2,1);
+  --v88-line:color-mix(in srgb,var(--fg) 17%,transparent);
+  --v88-accent:var(--editorial-red,#9c2e24);
+}
+
+/* --------------------------------------------------------------
+   MOVX FOLD MARK — two open rails + one shallow plane.
+   It never forms a closed frame and never carries UI copy.
+   -------------------------------------------------------------- */
+html.movx-v88 .v88-fold-mark{
+  --v88-fold-angle:0deg;
+  --v88-fold-lift:0px;
+  --v88-fold-opacity:.34;
+  position:absolute;
+  z-index:12;
+  width:clamp(48px,4.6vw,74px);
+  height:clamp(48px,4.6vw,74px);
+  pointer-events:none;
+  perspective:680px;
+  opacity:var(--v88-fold-opacity);
+  transition:opacity .7s var(--v88-ui);
+}
+html.movx-v88 .v88-fold-mark__rail,
+html.movx-v88 .v88-fold-mark__plane,
+html.movx-v88 .v88-fold-mark__pin{position:absolute;display:block;pointer-events:none}
+html.movx-v88 .v88-fold-mark__rail{
+  left:0;top:0;width:68%;height:68%;
+  border-left:1px solid currentColor;
+  border-top:1px solid currentColor;
+  color:color-mix(in srgb,var(--fg) 52%,transparent);
+  transform-origin:0 0;
+  transition:color .6s var(--v88-ui);
+}
+html.movx-v88 .v88-fold-mark__plane{
+  right:2px;bottom:2px;
+  width:58%;height:58%;
+  border-right:1px solid var(--v88-accent);
+  border-bottom:1px solid var(--v88-accent);
+  background:color-mix(in srgb,var(--v88-accent) 7%,transparent);
+  transform-origin:100% 100%;
+  transform:translate3d(0,var(--v88-fold-lift),0) rotateY(var(--v88-fold-angle));
+  transition:transform .18s linear,background-color .55s var(--v88-ui);
+  backface-visibility:hidden;
+}
+html.movx-v88 .v88-fold-mark__pin{
+  left:calc(50% - 1px);top:calc(50% - 1px);
+  width:2px;height:2px;border-radius:50%;background:var(--v88-accent);
+  opacity:.72;
+}
+html.movx-v88 .v88-chapter-current>.v88-fold-mark,
+html.movx-v88 .v88-chapter-current .v88-fold-mark{--v88-fold-opacity:.88}
+
+/* One location per chapter; same symbol, different editorial role. */
+html.movx-v88 body[data-page="social"] #heroTop,
+html.movx-v88 body[data-page="social"] #livingArchive,
+html.movx-v88 body[data-page="social"] #nicheIndex,
+html.movx-v88 body[data-page="social"] .projects-list{position:relative}
+html.movx-v88 body[data-page="social"] #heroTop>.v88-fold-mark{
+  right:max(24px,4vw);bottom:clamp(92px,9vw,136px);
+  color:rgba(255,255,255,.58);
+}
+html.movx-v88 body[data-page="social"] #heroTop>.v88-fold-mark .v88-fold-mark__rail{color:rgba(255,255,255,.48)}
+html.movx-v88 body[data-page="social"] #livingArchive>.v88-fold-mark,
+html.movx-v88 body[data-page="social"] #nicheIndex>.v88-fold-mark,
+html.movx-v88 body[data-page="social"] .projects-list>.v88-fold-mark{
+  right:max(24px,4vw);top:clamp(70px,7vw,110px)
+}
+
+/* --------------------------------------------------------------
+   HERO -> ARCHIVE — artwork settles while the next chapter takes over.
+   No copy translation. The outgoing gesture is entirely inside the art plane.
+   -------------------------------------------------------------- */
+@media(min-width:981px){
+  html.movx-v88 body[data-page="social"] #heroTop .social-cover-art__image{
+    filter:saturate(calc(.96 + (var(--v88-focus,1) * .04))) contrast(1.012)!important;
+    transition:filter .65s var(--v88-ui)!important;
+  }
+  html.movx-v88 body[data-page="social"] #heroTop:not(.v88-chapter-current) .social-cover-art__shade{opacity:.96!important}
+
+  /* Living Archive rows arrive as three slightly different editorial strips, then align.
+     Individual translate composes with legacy transform instead of replacing it. */
+  html.movx-v88 body[data-page="social"] #livingArchive .loop-row{
+    translate:var(--v88-row-x,0px) 0;
+    transition:translate 1.15s var(--v88-ease),opacity 1.05s var(--v88-ui),filter 1.05s var(--v88-ui)!important;
+    will-change:translate;
+  }
+  html.movx-v88 body[data-page="social"] #livingArchive .loop-card{
+    position:relative;
+  }
+  html.movx-v88 body[data-page="social"] #livingArchive .loop-card::after{
+    content:"";position:absolute;left:0;right:100%;bottom:-7px;height:1px;
+    background:var(--v88-accent);opacity:.56;pointer-events:none;
+    transition:right .78s var(--v88-ease),opacity .5s var(--v88-ui);
+  }
+  html.movx-v88 body[data-page="social"] #livingArchive .loop-card:hover::after,
+  html.movx-v88 body[data-page="social"] #livingArchive .loop-card:focus-within::after{right:38%;opacity:.9}
+  html.movx-v88 body[data-page="social"] #livingArchive .loop-card img{
+    filter:saturate(.94) contrast(1.005)!important;
+    transition:transform 1.45s var(--v88-ease),filter .72s var(--v88-ui)!important;
+  }
+  html.movx-v88 body[data-page="social"] #livingArchive .loop-card:hover img,
+  html.movx-v88 body[data-page="social"] #livingArchive .loop-card:focus-within img{
+    filter:saturate(1.02) contrast(1.018)!important;
+  }
+
+  /* Territories: the sheet stays planar. Depth exists only as a tiny translation
+     inside the photograph, following pointer position on fine-input devices. */
+  html.movx-v88 body[data-page="social"] #nicheGrid .niche-card__media{
+    translate:var(--v88-media-x,0px) var(--v88-media-y,0px);
+    transition:translate .62s var(--v88-ease)!important;
+    will-change:translate;
+  }
+  html.movx-v88 body[data-page="social"] #nicheGrid .niche-card__content{
+    transition:translate .8s var(--v88-ease),opacity .52s var(--v88-ui)!important;
+  }
+  html.movx-v88 body[data-page="social"] #nicheGrid .niche-card__num{
+    transition:color .52s var(--v88-ui),opacity .52s var(--v88-ui)!important;
+  }
+  html.movx-v88 body[data-page="social"] #nicheGrid .niche-card:hover .niche-card__content,
+  html.movx-v88 body[data-page="social"] #nicheGrid .niche-card:focus-within .niche-card__content{
+    translate:0 -5px;
+  }
+  html.movx-v88 body[data-page="social"] #nicheGrid .niche-card:hover .niche-card__num,
+  html.movx-v88 body[data-page="social"] #nicheGrid .niche-card:focus-within .niche-card__num{
+    color:#fff!important;opacity:1!important;
+  }
+
+  /* Chapter handoff: one short accent continues the archive flow language without
+     becoming a decorative border around the section. */
+  html.movx-v88 body[data-page="social"] #nicheIndex .archive-head::after,
+  html.movx-v88 body[data-page="social"] .projects-list::before{
+    transition:opacity .6s var(--v88-ui)!important;
+  }
+  html.movx-v88 body[data-page="social"] #nicheIndex.v88-chapter-current .archive-head::after{opacity:.9!important}
+
+  /* Selected cases keep v86/v87 geometry. v88 only adds a tiny media response,
+     never moving project copy. */
+  html.movx-v88 body[data-page="social"] #projectsList .project-cover img{
+    translate:var(--v88-project-x,0px) var(--v88-project-y,0px);
+    transition:translate .78s var(--v88-ease),transform 1.28s var(--v88-ease),filter .72s var(--v88-ui)!important;
+  }
+}
+
+/* At tablet/mobile widths the signature becomes a static 2D punctuation mark and
+   pointer-driven media movement disappears. */
+@media(max-width:980px){
+  html.movx-v88 .v88-fold-mark{width:42px;height:42px;perspective:none;--v88-fold-angle:0deg!important;--v88-fold-lift:0px!important;opacity:.5}
+  html.movx-v88 .v88-fold-mark__plane{background:transparent;transform:none!important}
+  html.movx-v88 body[data-page="social"] #heroTop>.v88-fold-mark{right:18px;bottom:78px}
+  html.movx-v88 body[data-page="social"] #livingArchive>.v88-fold-mark,
+  html.movx-v88 body[data-page="social"] #nicheIndex>.v88-fold-mark,
+  html.movx-v88 body[data-page="social"] .projects-list>.v88-fold-mark{right:18px;top:54px}
+  html.movx-v88 body[data-page="social"] #livingArchive .loop-row,
+  html.movx-v88 body[data-page="social"] #nicheGrid .niche-card__media,
+  html.movx-v88 body[data-page="social"] #projectsList .project-cover img{translate:none!important}
+}
+
+@media(prefers-reduced-motion:reduce){
+  html.movx-v88 .v88-fold-mark,
+  html.movx-v88 .v88-fold-mark__plane,
+  html.movx-v88 body[data-page="social"] #livingArchive .loop-row,
+  html.movx-v88 body[data-page="social"] #nicheGrid .niche-card__media,
+  html.movx-v88 body[data-page="social"] #projectsList .project-cover img{
+    transition:none!important;translate:none!important;transform:none;
+  }
+  html.movx-v88 .v88-fold-mark{--v88-fold-angle:0deg!important;--v88-fold-lift:0px!important;opacity:.52!important}
+}
