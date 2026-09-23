@@ -40,8 +40,27 @@ def ensure_media():
         subprocess.run([ffmpeg,'-hide_banner','-loglevel','error','-y','-ss','0.08','-i',str(src),'-frames:v','1','-vf','scale=1920:-2','-q:v','3',str(media_files['poster'])],check=True)
     return 'cloudinary-transcode'
 
+def run_base_build_without_retired_v116():
+    """Keep v116 source in git for reference, but exclude it from the canonical v117 build scan."""
+    retired_names=('v116-scroll-film.html','v116-scroll-film.css','v116-scroll-film.mjs')
+    with tempfile.TemporaryDirectory(prefix='movx-v117-retired-') as tmpdir:
+        retired=Path(tmpdir)
+        moved=[]
+        for name in retired_names:
+            src=root/'site'/name
+            if src.exists():
+                dst=retired/name
+                shutil.move(str(src),str(dst))
+                moved.append((src,dst))
+        try:
+            runpy.run_path(str(root/'scripts'/'build.py'),run_name='__main__')
+        finally:
+            for src,dst in moved:
+                if dst.exists():
+                    shutil.move(str(dst),str(src))
+
 media_mode=ensure_media()
-runpy.run_path(str(root/'scripts'/'build.py'),run_name='__main__')
+run_base_build_without_retired_v116()
 fragment=(root/'site'/'v117-scroll-world.html').read_text().strip()
 installed=[]
 
