@@ -22,18 +22,26 @@ if(section){
 
   let duration=0,raf=0,active=false,disposed=false,failed=false,targetTime=0;
   let targetProgress=0,smoothedProgress=0,lastFrame=0,firstRender=true;
-  let objectUrl='',loadPromise=null,loadController=null,sourceGeneration=0,localFallbackTried=false;
+  let objectUrl='',loadPromise=null,loadController=null,sourceGeneration=0,localFallbackTried=false,fallbackWatch=0;
   const properties=['--v116-scale','--v116-rx','--v116-ry','--v116-y','--v116-z','--v116-opacity','--v116-handoff','--v116-shade'];
   const isStatic=()=>staticQuery||reduce.matches;
   const runnable=()=>!disposed&&!document.hidden&&active&&section.dataset.v116Mode==='scrub';
   const sourceUrl=()=>video.dataset.srcCloudinary;
+  const canPlayH264=()=>!!video.canPlayType('video/mp4; codecs="avc1.42E01E"');
 
   function revokeObjectUrl(){
     if(objectUrl){URL.revokeObjectURL(objectUrl);objectUrl='';}
   }
 
+  function resetMediaClock(){
+    duration=0;targetTime=0;
+    section.dataset.v116MediaReady='false';
+    section.removeAttribute('data-v116-duration');
+  }
+
   function attachSource(src,mode){
     if(disposed||isStatic()||failed||!src)return;
+    resetMediaClock();
     revokeObjectUrl();
     if(mode==='cloudinary-blob')objectUrl=src;
     video.src=src;
@@ -42,8 +50,29 @@ if(section){
     video.load();
   }
 
+  function attachLocalFallback(){
+    if(localFallbackTried||isStatic()||disposed)return false;
+    localFallbackTried=true;
+    sourceGeneration++;
+    loadController?.abort();
+    loadController=null;loadPromise=null;
+    clearTimeout(fallbackWatch);fallbackWatch=0;
+    const supportsVp9=video.canPlayType('video/webm; codecs="vp9"');
+    const src=supportsVp9&&video.dataset.srcWebm?video.dataset.srcWebm:video.dataset.src;
+    if(!src)return false;
+    attachSource(src,'local-fallback');
+    return true;
+  }
+
   async function loadCloudinary(){
     if(isStatic()||failed||video.getAttribute('src')||loadPromise)return loadPromise;
+    // Playwright's Chromium build and a few constrained browsers do not ship an
+    // H.264 decoder. In those environments select the packaged VP9 fallback before
+    // loading the remote MP4, avoiding an error-event race during the first seek.
+    if(!canPlayH264()){
+      attachLocalFallback();
+      return;
+    }
     const generation=++sourceGeneration;
     const remote=sourceUrl();
     if(!remote)return;
@@ -73,24 +102,11 @@ if(section){
     return loadPromise;
   }
 
-  function attachLocalFallback(){
-    if(localFallbackTried||isStatic()||disposed)return false;
-    localFallbackTried=true;
-    sourceGeneration++;
-    loadController?.abort();
-    loadController=null;loadPromise=null;
-    const supportsVp9=video.canPlayType('video/webm; codecs="vp9"');
-    const src=supportsVp9&&video.dataset.srcWebm?video.dataset.srcWebm:video.dataset.src;
-    if(!src)return false;
-    attachSource(src,'local-fallback');
-    return true;
-  }
-
   function releaseMedia(){
     sourceGeneration++;
     loadController?.abort();loadController=null;loadPromise=null;
-    video.pause();duration=0;targetTime=0;localFallbackTried=false;
-    section.dataset.v116MediaReady='false';
+    clearTimeout(fallbackWatch);fallbackWatch=0;
+    video.pause();resetMediaClock();localFallbackTried=false;
     section.dataset.v116Source='idle';
     if(video.getAttribute('src')){video.removeAttribute('src');video.load();}
     revokeObjectUrl();
@@ -137,7 +153,7 @@ if(section){
     lastFrame=now;
     if(firstRender){smoothedProgress=targetProgress;firstRender=false;}
     const damping=1-Math.exp(-dt/78);
-    smoothedProgress+= (targetProgress-smoothedProgress)*damping;
+    smoothedProgress+=(targetProgress-smoothedProgress)*damping;
     const p=clamp(smoothedProgress);
 
     if(duration>0){
@@ -184,6 +200,9 @@ if(section){
   listen(video,'loadedmetadata',()=>{
     duration=Number.isFinite(video.duration)?video.duration:0;
     section.dataset.v116Duration=duration.toFixed(3);
+    if(section.dataset.v116Source==='local-fallback'){
+      clearTimeout(fallbackWatch);fallbackWatch=0;
+    }
     video.pause();updateTarget();
   });
   listen(video,'loadeddata',()=>{markFrameReady();updateTarget()});
@@ -196,7 +215,22 @@ if(section){
   listen(video,'play',()=>video.pause());
   listen(video,'error',()=>{
     if(!video.getAttribute('src'))return;
-    if(attachLocalFallback())return;
+    const mode=section.dataset.v116Source;
+    if(mode==='cloudinary-loading'||mode==='cloudinary-blob'||mode==='cloudinary-direct'){
+      if(attachLocalFallback())return;
+    }
+    if(section.dataset.v116Source==='local-fallback'){
+      // A source swap can surface a stale error from the previous MP4. Give VP9/H.264
+      // fallback metadata a short grace period before declaring the entire chapter dead.
+      clearTimeout(fallbackWatch);
+      fallbackWatch=setTimeout(()=>{
+        fallbackWatch=0;
+        if(disposed||isStatic()||section.dataset.v116Source!=='local-fallback')return;
+        if(video.readyState>=1&&Number.isFinite(video.duration)&&video.duration>0){updateTarget();return;}
+        failed=true;setMode();
+      },1200);
+      return;
+    }
     failed=true;setMode();
   });
   listen(window,'scroll',updateTarget,{passive:true});
@@ -210,7 +244,7 @@ if(section){
   listen(window,'pagehide',event=>{
     cancelAnimationFrame(raf);raf=0;video.pause();
     if(!event.persisted){
-      disposed=true;sourceGeneration++;loadController?.abort();
+      disposed=true;sourceGeneration++;loadController?.abort();clearTimeout(fallbackWatch);
       observer.disconnect();resizeObserver.disconnect();events.abort();revokeObjectUrl();
     }
   });
