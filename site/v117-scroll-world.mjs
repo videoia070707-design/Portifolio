@@ -1,7 +1,7 @@
 /* MOVX v120 scroll background.
    Both desktop and mobile use a deferred optimized Blob after real user engagement.
-   Desktop prefers VP9/WebM when available and falls back to H.264/MP4. Mobile prefers
-   H.264/MP4 when available. Nothing is requested on first paint. */
+   VP9/WebM is preferred whenever the browser advertises support; H.264/MP4 remains
+   the compatibility fallback. Nothing is requested on first paint. */
 const root=document.querySelector('[data-movx-scroll-world="v117"]');
 if(root){
   const video=root.querySelector('video');
@@ -14,7 +14,7 @@ if(root){
   const canH264=video.canPlayType('video/mp4; codecs="avc1.640028"')!==''||video.canPlayType('video/mp4')!=='';
   const urls={
     desktop:canWebM?'media/movx-scroll-world-0923.webm':'media/movx-scroll-world-0923.mp4',
-    mobile:canH264?'media/movx-scroll-world-0923-mobile.mp4':'media/movx-scroll-world-0923-mobile.webm'
+    mobile:canWebM?'media/movx-scroll-world-0923-mobile.webm':'media/movx-scroll-world-0923-mobile.mp4'
   };
   const clamp=x=>Math.max(0,Math.min(1,x));
   const ease=x=>{x=clamp(x);return x*x*(3-2*x)};
@@ -73,7 +73,7 @@ if(root){
     clearMedia();
     mediaVariant=variant;loading=true;
     root.dataset.mode='loading';
-    root.dataset.mediaCodec=variant==='desktop'?(canWebM?'vp9-webm':'h264-mp4'):(canH264?'h264-mp4':'vp9-webm');
+    root.dataset.mediaCodec=canWebM?'vp9-webm':'h264-mp4';
     controller=new AbortController();
     try{
       const response=await fetch(urls[variant],{signal:controller.signal,cache:'force-cache'});
