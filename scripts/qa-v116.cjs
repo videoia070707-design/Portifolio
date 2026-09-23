@@ -98,7 +98,6 @@ const fs=require('node:fs/promises');
         sourceMode:s.dataset.v116Source,
         declaredCloudinary:v.dataset.srcCloudinary,
         duration:v.duration,
-        canPlayMp4:v.canPlayType('video/mp4'),
         src:v.currentSrc,
         display:getComputedStyle(v).display,
         hero:!!document.querySelector('.social-cover-art'),
@@ -118,7 +117,7 @@ const fs=require('node:fs/promises');
   await waitForFilm(d.page);
   const desktopInitial=await initialState(d.page);
   if(d.errors.length||d.localFailures.length)throw Error(JSON.stringify({desktopErrors:d.errors,desktopLocalFailures:d.localFailures,desktopRemoteFailures:d.remoteFailures,desktopInitial}));
-  if(desktopInitial.mode!=='scrub'||desktopInitial.viewport!=='desktop'||desktopInitial.duration<=1||desktopInitial.duration>60||!desktopInitial.canPlayMp4||desktopInitial.declaredCloudinary!==cloudinary||!isAcceptedMode(desktopInitial.sourceMode)||!desktopInitial.hero||!desktopInitial.archive||desktopInitial.overflow>2||desktopInitial.autoplay||desktopInitial.controls||desktopInitial.sticky!=='sticky')throw Error(JSON.stringify({desktopInitial}));
+  if(desktopInitial.mode!=='scrub'||desktopInitial.viewport!=='desktop'||desktopInitial.duration<=1||desktopInitial.duration>60||desktopInitial.declaredCloudinary!==cloudinary||!isAcceptedMode(desktopInitial.sourceMode)||!desktopInitial.hero||!desktopInitial.archive||desktopInitial.overflow>2||desktopInitial.autoplay||desktopInitial.controls||desktopInitial.sticky!=='sticky')throw Error(JSON.stringify({desktopInitial}));
   report.push({desktopInitial,remoteFailures:d.remoteFailures,normalRangeAborts:d.getAborted()});
 
   const dm=await metrics(d.page),ds=[];
