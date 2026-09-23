@@ -6,83 +6,100 @@ const fs=require('node:fs/promises');
   const report=[];
   const url='http://127.0.0.1:4173/social-media.html';
 
-  const desktop=await browser.newPage({viewport:{width:1440,height:900},reducedMotion:'no-preference'});
-  const errors=[]; desktop.on('pageerror',e=>errors.push(String(e)));
-  await desktop.goto(url,{waitUntil:'networkidle'});
-  await desktop.waitForSelector('[data-movx-v116="film"]');
-  await desktop.waitForFunction(()=>{
-    const v=document.querySelector('[data-movx-v116="film"] video');
-    return v&&Number.isFinite(v.duration)&&v.duration>4;
-  },null,{timeout:12000});
+  async function waitForFilm(page){
+    await page.waitForSelector('[data-movx-v116="film"]');
+    await page.locator('[data-movx-v116="film"]').scrollIntoViewIfNeeded();
+    await page.waitForFunction(()=>{
+      const s=document.querySelector('[data-movx-v116="film"]');
+      const v=s?.querySelector('video');
+      return s?.dataset.v116Mode==='scrub'&&v&&Number.isFinite(v.duration)&&v.duration>4;
+    },null,{timeout:15000});
+  }
 
-  const initial=await desktop.evaluate(()=>{
-    const s=document.querySelector('[data-movx-v116="film"]');
-    const v=s.querySelector('video');
-    return {
-      mode:s.dataset.v116Mode,
-      duration:v.duration,
-      src:v.currentSrc,
-      hero:!!document.querySelector('.social-cover-art'),
-      archive:!!document.querySelector('#livingArchive'),
-      overflow:document.documentElement.scrollWidth-innerWidth,
-      autoplay:v.autoplay,
-      controls:v.controls
-    };
-  });
-  if(errors.length)throw Error(JSON.stringify({errors}));
-  if(initial.mode!=='scrub'||initial.duration<4||initial.duration>5||!initial.src.endsWith('into-signal-scroll.mp4'))throw Error(JSON.stringify({initial}));
-  if(!initial.hero||!initial.archive||initial.overflow>2||initial.autoplay||initial.controls)throw Error(JSON.stringify({initial}));
-  report.push({desktopInitial:initial});
+  async function filmMetrics(page){
+    return page.evaluate(()=>{
+      const s=document.querySelector('[data-movx-v116="film"]');
+      return {top:s.offsetTop,travel:Math.max(1,s.offsetHeight-innerHeight)};
+    });
+  }
 
-  const metrics=await desktop.evaluate(()=>{
-    const s=document.querySelector('[data-movx-v116="film"]');
-    return {top:s.offsetTop,travel:Math.max(1,s.offsetHeight-innerHeight)};
-  });
-  for(const [label,p] of [['signal',.18],['crossing',.50],['archive',.78],['handoff',.97]]){
-    await desktop.evaluate(y=>scrollTo(0,y),metrics.top+metrics.travel*p);
-    await desktop.waitForTimeout(260);
-    const state=await desktop.evaluate(()=>{
+  async function sample(page,metrics,label,p,prefix){
+    await page.evaluate(y=>scrollTo(0,y),metrics.top+metrics.travel*p);
+    await page.waitForTimeout(300);
+    const state=await page.evaluate(()=>{
       const s=document.querySelector('[data-movx-v116="film"]');
       const v=s.querySelector('video');
+      const css=getComputedStyle(s);
       return {
+        mode:s.dataset.v116Mode,
+        viewport:s.dataset.v116Viewport,
         progress:Number(s.dataset.v116Progress||0),
         phase:s.dataset.v116Phase,
         time:v.currentTime,
         duration:v.duration,
-        opacity:getComputedStyle(s).getPropertyValue('--v116-opacity').trim(),
-        handoff:getComputedStyle(s).getPropertyValue('--v116-handoff').trim()
+        scale:Number(css.getPropertyValue('--v116-scale').trim()||1),
+        opacity:Number(css.getPropertyValue('--v116-opacity').trim()||1),
+        handoff:Number(css.getPropertyValue('--v116-handoff').trim()||0)
       };
     });
-    report.push({label,state});
-    await desktop.screenshot({path:`_site/qa-v116-${label}.png`,fullPage:false});
+    report.push({prefix,label,state});
+    await page.screenshot({path:`_site/qa-v116-${prefix}-${label}.png`,fullPage:false});
+    return state;
   }
-  const states=report.filter(x=>x.state).map(x=>x.state);
-  if(!(states[0].time<states[1].time&&states[1].time<states[2].time&&states[2].time<states[3].time))throw Error(JSON.stringify({states}));
-  if(states[0].time>1.35)throw Error(JSON.stringify({openingNotHeld:states[0]}));
-  if(Number(states[3].handoff)<.65||Number(states[3].opacity)>.35)throw Error(JSON.stringify({handoff:states[3]}));
 
-  const mobile=await browser.newPage({viewport:{width:390,height:844},reducedMotion:'no-preference'});
-  await mobile.goto(url,{waitUntil:'networkidle'});
-  const mobileState=await mobile.evaluate(()=>{
+  const desktop=await browser.newPage({viewport:{width:1440,height:900},reducedMotion:'no-preference'});
+  const desktopErrors=[]; desktop.on('pageerror',e=>desktopErrors.push(String(e)));
+  await desktop.goto(url,{waitUntil:'networkidle'});
+  await waitForFilm(desktop);
+  const desktopInitial=await desktop.evaluate(()=>{
     const s=document.querySelector('[data-movx-v116="film"]');
     const v=s.querySelector('video');
-    return {mode:s.dataset.v116Mode,src:v.getAttribute('src'),currentSrc:v.currentSrc,display:getComputedStyle(v).display,sticky:getComputedStyle(s.querySelector('.into-signal-film__sticky')).position,overflow:document.documentElement.scrollWidth-innerWidth};
+    return {mode:s.dataset.v116Mode,viewport:s.dataset.v116Viewport,duration:v.duration,src:v.currentSrc,hero:!!document.querySelector('.social-cover-art'),archive:!!document.querySelector('#livingArchive'),overflow:document.documentElement.scrollWidth-innerWidth,autoplay:v.autoplay,controls:v.controls,sticky:getComputedStyle(s.querySelector('.into-signal-film__sticky')).position};
   });
-  if(mobileState.mode!=='static'||mobileState.src||mobileState.currentSrc||mobileState.display!=='none'||mobileState.sticky==='sticky'||mobileState.overflow>2)throw Error(JSON.stringify({mobileState}));
-  report.push({mobileState});
-  await mobile.screenshot({path:'_site/qa-v116-mobile.png',fullPage:false});
+  if(desktopErrors.length)throw Error(JSON.stringify({desktopErrors}));
+  if(desktopInitial.mode!=='scrub'||desktopInitial.viewport!=='desktop'||desktopInitial.duration<4||desktopInitial.duration>5||!desktopInitial.src.endsWith('into-signal-scroll.mp4'))throw Error(JSON.stringify({desktopInitial}));
+  if(!desktopInitial.hero||!desktopInitial.archive||desktopInitial.overflow>2||desktopInitial.autoplay||desktopInitial.controls||desktopInitial.sticky!=='sticky')throw Error(JSON.stringify({desktopInitial}));
+  report.push({desktopInitial});
+  const dm=await filmMetrics(desktop);
+  const desktopStates=[];
+  for(const [label,p] of [['signal',.18],['crossing',.50],['archive',.78],['handoff',.97]])desktopStates.push(await sample(desktop,dm,label,p,'desktop'));
+  if(!(desktopStates[0].time<desktopStates[1].time&&desktopStates[1].time<desktopStates[2].time&&desktopStates[2].time<desktopStates[3].time))throw Error(JSON.stringify({desktopStates}));
+  if(desktopStates[0].time>1.35)throw Error(JSON.stringify({desktopOpeningNotHeld:desktopStates[0]}));
+  if(desktopStates[3].handoff<.65||desktopStates[3].opacity>.35)throw Error(JSON.stringify({desktopHandoff:desktopStates[3]}));
 
-  const reduced=await browser.newPage({viewport:{width:1280,height:900},reducedMotion:'reduce'});
+  const mobile=await browser.newPage({viewport:{width:390,height:844},reducedMotion:'no-preference'});
+  const mobileErrors=[]; mobile.on('pageerror',e=>mobileErrors.push(String(e)));
+  await mobile.goto(url,{waitUntil:'networkidle'});
+  await waitForFilm(mobile);
+  const mobileInitial=await mobile.evaluate(()=>{
+    const s=document.querySelector('[data-movx-v116="film"]');
+    const v=s.querySelector('video');
+    const plane=s.querySelector('.into-signal-film__plane');
+    return {mode:s.dataset.v116Mode,viewport:s.dataset.v116Viewport,duration:v.duration,src:v.currentSrc,display:getComputedStyle(v).display,sticky:getComputedStyle(s.querySelector('.into-signal-film__sticky')).position,planeWidth:plane.getBoundingClientRect().width,overflow:document.documentElement.scrollWidth-innerWidth};
+  });
+  if(mobileErrors.length)throw Error(JSON.stringify({mobileErrors}));
+  if(mobileInitial.mode!=='scrub'||mobileInitial.viewport!=='mobile'||mobileInitial.duration<4||mobileInitial.duration>5||!mobileInitial.src.endsWith('into-signal-scroll.mp4')||mobileInitial.display==='none'||mobileInitial.sticky!=='sticky'||mobileInitial.overflow>2)throw Error(JSON.stringify({mobileInitial}));
+  if(mobileInitial.planeWidth<370||mobileInitial.planeWidth>410)throw Error(JSON.stringify({mobilePlane:mobileInitial}));
+  report.push({mobileInitial});
+  const mm=await filmMetrics(mobile);
+  const mobileStates=[];
+  for(const [label,p] of [['signal',.18],['crossing',.50],['archive',.78],['handoff',.97]])mobileStates.push(await sample(mobile,mm,label,p,'mobile'));
+  if(!(mobileStates[0].time<mobileStates[1].time&&mobileStates[1].time<mobileStates[2].time&&mobileStates[2].time<mobileStates[3].time))throw Error(JSON.stringify({mobileStates}));
+  if(mobileStates[0].time>1.35)throw Error(JSON.stringify({mobileOpeningNotHeld:mobileStates[0]}));
+  if(mobileStates[1].scale<1.25)throw Error(JSON.stringify({mobileCrossingNeedsDepth:mobileStates[1]}));
+  if(mobileStates[3].handoff<.65||mobileStates[3].opacity>.35)throw Error(JSON.stringify({mobileHandoff:mobileStates[3]}));
+
+  const reduced=await browser.newPage({viewport:{width:390,height:844},reducedMotion:'reduce'});
   await reduced.goto(url,{waitUntil:'networkidle'});
   const reducedState=await reduced.evaluate(()=>{
     const s=document.querySelector('[data-movx-v116="film"]');
     const v=s.querySelector('video');
-    return {mode:s.dataset.v116Mode,src:v.getAttribute('src'),currentSrc:v.currentSrc,display:getComputedStyle(v).display,sticky:getComputedStyle(s.querySelector('.into-signal-film__sticky')).position};
+    return {mode:s.dataset.v116Mode,src:v.getAttribute('src'),currentSrc:v.currentSrc,display:getComputedStyle(v).display,sticky:getComputedStyle(s.querySelector('.into-signal-film__sticky')).position,overflow:document.documentElement.scrollWidth-innerWidth};
   });
-  if(reducedState.mode!=='static'||reducedState.src||reducedState.currentSrc||reducedState.display!=='none'||reducedState.sticky==='sticky')throw Error(JSON.stringify({reducedState}));
+  if(reducedState.mode!=='static'||reducedState.src||reducedState.currentSrc||reducedState.display!=='none'||reducedState.sticky==='sticky'||reducedState.overflow>2)throw Error(JSON.stringify({reducedState}));
   report.push({reducedState});
 
   await fs.writeFile('_site/qa-v116-report.json',JSON.stringify(report,null,2));
   await browser.close();
-  console.log('MOVX v116: scroll-owned film, held CRT opening, progressive seek, archive handoff, mobile and reduced-motion fallbacks validated.');
+  console.log('MOVX v116: desktop + mobile scroll-owned film, CRT hold, crossing depth, archive handoff and reduced-motion fallback validated.');
 })().catch(e=>{console.error(e);process.exit(1)});
