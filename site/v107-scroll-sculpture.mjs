@@ -31,6 +31,7 @@ function createSection(){
 
 const section=createSection();
 if(!section){root.dataset.v107Webgl='not-applicable';}
+else root.dataset.v107Webgl=reduced?'reduced':narrow?'mobile-fallback':'fallback';
 
 function sectionProgress(){
   if(!section)return 0;
@@ -237,4 +238,8 @@ async function init(){
   root.dataset.v107Webgl='ready';start();
 }
 
-init();
+init().catch(error=>{
+  // Keep a visible CSS fallback if Three.js initialization fails mid-setup.
+  console.warn('[MOVX v107] 3D chapter initialization failed; using CSS fallback.',error);
+  if(section)root.dataset.v107Webgl=reduced?'reduced':narrow?'mobile-fallback':'fallback';
+});
