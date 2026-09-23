@@ -33,11 +33,11 @@ required=[out/'v116-scroll-film.css',out/'v116-scroll-film.mjs']
 missing=[str(p.relative_to(out)) for p in required if not p.exists()]
 if missing: raise SystemExit('v116 missing build assets: '+str(missing))
 if not installed: raise SystemExit('v116 did not find a Social Media cover + Living Archive target')
-video='https://res.cloudinary.com/gp3xbngz/video/upload/v1790173902/0923.mp4'
+video='https://res.cloudinary.com/gp3xbngz/video/upload/f_mp4,vc_h264:baseline:3.1,q_auto:good,c_limit,w_1280/v1790173902/0923.mp4'
 poster='https://res.cloudinary.com/gp3xbngz/video/upload/so_0/v1790173902/0923.jpg'
 for name in installed:
     built=(out/name).read_text()
     if video not in built or poster not in built:
         raise SystemExit(f'v116 Cloudinary media missing from {name}')
 
-print(json.dumps({'release':release,'scroll_film_owner':'v116','installed_pages':installed,'video_source':'cloudinary','poster_source':'cloudinary','missing':missing}))
+print(json.dumps({'release':release,'scroll_film_owner':'v116','installed_pages':installed,'video_source':'cloudinary-h264','poster_source':'cloudinary','missing':missing}))
