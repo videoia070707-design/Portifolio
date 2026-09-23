@@ -39,9 +39,9 @@ for name in ('index.html','latest.html','social-media.html'):
         if ref and ':' not in ref and not ref.startswith('//'):
             local_styles.append(ref)
     if len(local_styles)!=1:
-        errors.append(f'{name} loads {len(local_styles)} local stylesheets; expected one v119 bundle')
+        errors.append(f'{name} loads {len(local_styles)} local stylesheets; expected one v119+ bundle')
     elif not local_styles[0].startswith('movx-css-'):
-        errors.append(f'{name} does not load a v119 CSS bundle: {local_styles[0]}')
+        errors.append(f'{name} does not load a MOVX CSS bundle: {local_styles[0]}')
     else:
         bundle=out/local_styles[0]
         if not bundle.exists():
@@ -60,13 +60,19 @@ if "rootMargin:'320px 0px'" not in runtime:
 scroll=(out/'v117-scroll-world.mjs').read_text()
 if "rootMargin:'0px'" not in scroll:
     errors.append('Scroll World intersection margin is not zero')
+if "video.src=urls.desktop" not in scroll:
+    errors.append('Scroll World desktop direct optimized source is missing')
 if "const data=await response.blob()" not in scroll or "video.src=blobURL" not in scroll:
-    errors.append('Scroll World must use the optimized deferred Blob for reliable static-host seeks')
+    errors.append('Scroll World mobile deferred Blob path is missing')
 if 'userEngaged' not in scroll or 'engagementThreshold' not in scroll:
     errors.append('Scroll World explicit user-scroll gate is missing')
 if 'if(active){if(userEngaged)load();schedule()}' not in scroll:
     errors.append('Scroll World can still request media before user engagement')
 
+fragment=(out/'index.html').read_text()
+if fragment.count('data-world-chapter-panel=')!=4:
+    errors.append('Scroll World must render four scroll chapters')
+
 if errors:
     raise SystemExit('MOVX performance QA failed: '+json.dumps(errors,ensure_ascii=False))
-print(json.dumps({'status':'passed','sizes':sizes,'css_bundles':css_bundles,'deferred_video_gate':True,'engaged_delivery':'optimized-blob'},ensure_ascii=False))
+print(json.dumps({'status':'passed','sizes':sizes,'css_bundles':css_bundles,'deferred_video_gate':True,'desktop_delivery':'optimized-direct','mobile_delivery':'optimized-blob','scroll_chapters':4},ensure_ascii=False))
