@@ -45,10 +45,17 @@ const fs=require('node:fs/promises');
     };
   });
 
+  const assertOwnedOpacity=(state,label)=>{
+    const inline=parseFloat(state.canvasInlineOpacity||'NaN');
+    if(state.canvasInlineOpacityPriority!=='important'||!Number.isFinite(inline)||inline<0||inline>.46||Math.abs(inline-state.canvasOpacity)>.02){
+      throw Error(JSON.stringify({[label]:state,reason:'adaptive-opacity-owner'}));
+    }
+  };
+
   const desktop=await inspect();
   if(desktop.mode!=='adaptive-owner'||desktop.overlayCount!==1||desktop.titleOpacity>.02||desktop.listOpacity>.02)throw Error(JSON.stringify({desktop}));
   if(desktop.canvasDisplay==='none'||desktop.canvasOpacity<.40||desktop.canvasOpacity>.50)throw Error(JSON.stringify({desktopCanvas:desktop}));
-  if(desktop.canvasInlineOpacityPriority==='important')throw Error(JSON.stringify({opacityFight:desktop}));
+  assertOwnedOpacity(desktop,'desktopOpacity');
   if(desktop.overflow>2)throw Error(JSON.stringify({desktopOverflow:desktop}));
   report.push({desktop});
 
@@ -57,6 +64,7 @@ const fs=require('node:fs/promises');
   await page.waitForTimeout(120);
   const mobileAfterDesktop=await inspect();
   if(mobileAfterDesktop.overlayCount!==0||mobileAfterDesktop.titleOpacity<.95||mobileAfterDesktop.listOpacity<.95||mobileAfterDesktop.canvasDisplay!=='none')throw Error(JSON.stringify({mobileAfterDesktop}));
+  if(mobileAfterDesktop.canvasInlineOpacityPriority)throw Error(JSON.stringify({staleSurfaceOwner:mobileAfterDesktop}));
   if(mobileAfterDesktop.gridInlinePositionPriority||mobileAfterDesktop.listInlinePositionPriority||mobileAfterDesktop.rowInlinePositionPriority)throw Error(JSON.stringify({staleInlineGeometry:mobileAfterDesktop}));
   if(mobileAfterDesktop.overflow>2)throw Error(JSON.stringify({mobileOverflow:mobileAfterDesktop}));
   report.push({mobileAfterDesktop});
@@ -66,7 +74,7 @@ const fs=require('node:fs/promises');
   await page.waitForTimeout(120);
   const desktopAgain=await inspect();
   if(desktopAgain.overlayCount!==1||desktopAgain.titleOpacity>.02||desktopAgain.listOpacity>.02||desktopAgain.canvasDisplay==='none')throw Error(JSON.stringify({desktopAgain}));
-  if(desktopAgain.canvasInlineOpacityPriority==='important')throw Error(JSON.stringify({opacityFightAgain:desktopAgain}));
+  assertOwnedOpacity(desktopAgain,'desktopAgainOpacity');
   report.push({desktopAgain});
 
   await page.emulateMedia({reducedMotion:'reduce'});
@@ -74,6 +82,7 @@ const fs=require('node:fs/promises');
   await page.waitForTimeout(120);
   const reduced=await inspect();
   if(reduced.overlayCount!==0||reduced.titleOpacity<.95||reduced.listOpacity<.95||reduced.canvasDisplay!=='none')throw Error(JSON.stringify({reduced}));
+  if(reduced.canvasInlineOpacityPriority)throw Error(JSON.stringify({reducedSurfaceOwner:reduced}));
   if(reduced.gridInlinePositionPriority||reduced.listInlinePositionPriority||reduced.rowInlinePositionPriority)throw Error(JSON.stringify({reducedInlineGeometry:reduced}));
   report.push({reduced});
 
@@ -82,11 +91,12 @@ const fs=require('node:fs/promises');
   await page.waitForTimeout(120);
   const restored=await inspect();
   if(restored.overlayCount!==1||restored.titleOpacity>.02||restored.listOpacity>.02)throw Error(JSON.stringify({restored}));
+  assertOwnedOpacity(restored,'restoredOpacity');
   report.push({restored});
 
   if(errors.length)throw Error(errors.join('\n'));
   await page.screenshot({path:'_site/qa-v115-adaptive-process.png',fullPage:false});
   await fs.writeFile('_site/qa-v115-report.json',JSON.stringify(report,null,2));
   await browser.close();
-  console.log('MOVX v115: adaptive desktop/mobile/reduced-motion Process ownership validated without inline-important opacity contention.');
+  console.log('MOVX v115.5: adaptive desktop/mobile/reduced-motion Process ownership validated with one v115 surface owner and no stale fallback styles.');
 })().catch(e=>{console.error(e);process.exit(1)});
