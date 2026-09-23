@@ -3,9 +3,23 @@ from pathlib import Path, PurePosixPath
 import shutil, zipfile, re, subprocess, json
 root=Path(__file__).resolve().parents[1]
 out=root/'_site'
-release='v115-adaptive-process-owner'
+release='v115-3-single-process-opacity-owner'
 if out.exists():shutil.rmtree(out)
 shutil.copytree(root/'site',out,ignore=shutil.ignore_patterns('assets','vendor'))
+
+# v108 owns camera/rendering and publishes the end-fade signal, but it must not
+# also write the canvas opacity directly. Strip that historical writer from the
+# canonical runtime so v115 is the only final opacity owner.
+v108_runtime=out/'v108-institutional-depth.mjs'
+v108_text=v108_runtime.read_text()
+legacy_opacity_writer="    canvas.style.opacity=String(.96*edgeFade);\n"
+if v108_text.count(legacy_opacity_writer)!=1:
+ raise SystemExit('Expected exactly one legacy v108 canvas opacity writer')
+v108_runtime.write_text(v108_text.replace(
+ legacy_opacity_writer,
+ "    // v115 owns final canvas opacity; v108 publishes only the fade signal.\n"
+))
+
 # Cache-bust authoritative stability layers. Build-only guards and the current
 # dimensional layers load last so historical experiments cannot override them.
 for html in out.glob('*.html'):
@@ -70,4 +84,6 @@ for f in out.glob('*.html'):
 for f in [*out.glob('*.js'),*out.glob('*.mjs')]:
  subprocess.run(['node','--check',str(f)],check=True,capture_output=True)
 if missing:raise SystemExit('Missing references: '+str(missing))
-print(json.dumps({'release':release,'assets':len(list((out/'assets').rglob('*.*'))),'missing':missing}))
+if 'canvas.style.opacity=String(.96*edgeFade)' in v108_runtime.read_text():
+ raise SystemExit('Legacy Process opacity writer survived canonical build')
+print(json.dumps({'release':release,'assets':len(list((out/'assets').rglob('*.*'))),'missing':missing,'process_opacity_owner':'v115'}))
