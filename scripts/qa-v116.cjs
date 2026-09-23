@@ -10,6 +10,10 @@ const fs=require('node:fs/promises');
   const isAcceptedMode=m=>['cloudinary-blob','cloudinary-direct','local-fallback'].includes(m);
   const materialFailure=f=>f&&f.errorText&&!f.errorText.includes('ERR_ABORTED');
 
+  async function persist(){
+    await fs.writeFile('_site/qa-v116-report.json',JSON.stringify(report,null,2));
+  }
+
   async function open(viewport,reducedMotion='no-preference'){
     const page=await browser.newPage({viewport,reducedMotion});
     const errors=[],localFailures=[],remoteFailures=[],mediaResponses=[]; let aborted=0;
@@ -76,8 +80,10 @@ const fs=require('node:fs/promises');
         phase:s.dataset.v116Phase,
         sourceMode:s.dataset.v116Source,
         time:v.currentTime,
+        target:Number(s.dataset.v116Target||0),
         duration:v.duration,
         readyState:v.readyState,
+        seeking:v.seeking,
         scale:Number(css.getPropertyValue('--v116-scale').trim()||1),
         z:parseFloat(css.getPropertyValue('--v116-z').trim()||0),
         opacity:Number(css.getPropertyValue('--v116-opacity').trim()||1),
@@ -86,6 +92,7 @@ const fs=require('node:fs/promises');
     });
     report.push({prefix,label,state});
     await page.screenshot({path:`_site/qa-v116-${prefix}-${label}.png`,fullPage:false});
+    await persist();
     return state;
   }
 
@@ -119,9 +126,11 @@ const fs=require('node:fs/promises');
   if(d.errors.length||d.localFailures.length)throw Error(JSON.stringify({desktopErrors:d.errors,desktopLocalFailures:d.localFailures,desktopRemoteFailures:d.remoteFailures,desktopInitial}));
   if(desktopInitial.mode!=='scrub'||desktopInitial.viewport!=='desktop'||desktopInitial.duration<=1||desktopInitial.duration>60||desktopInitial.declaredCloudinary!==cloudinary||!isAcceptedMode(desktopInitial.sourceMode)||!desktopInitial.hero||!desktopInitial.archive||desktopInitial.overflow>2||desktopInitial.autoplay||desktopInitial.controls||desktopInitial.sticky!=='sticky')throw Error(JSON.stringify({desktopInitial}));
   report.push({desktopInitial,remoteFailures:d.remoteFailures,normalRangeAborts:d.getAborted()});
+  await persist();
 
   const dm=await metrics(d.page),ds=[];
   for(const [label,p] of [['signal',.18],['crossing',.50],['archive',.78],['handoff',.97]])ds.push(await sample(d.page,dm,label,p,'desktop'));
+  await persist();
   if(!(ds[0].time<ds[1].time&&ds[1].time<ds[2].time&&ds[2].time<ds[3].time))throw Error(JSON.stringify({desktopNonMonotonic:ds}));
   if(ds[3].handoff<.60||ds[3].opacity>.40||ds[0].z>=ds[2].z)throw Error(JSON.stringify({desktopTiming:ds}));
 
@@ -133,9 +142,11 @@ const fs=require('node:fs/promises');
   if(mobileInitial.mode!=='scrub'||mobileInitial.viewport!=='mobile'||mobileInitial.duration<=1||mobileInitial.duration>60||mobileInitial.declaredCloudinary!==cloudinary||!isAcceptedMode(mobileInitial.sourceMode)||mobileInitial.display==='none'||mobileInitial.sticky!=='sticky'||mobileInitial.overflow>2)throw Error(JSON.stringify({mobileInitial}));
   if(mobileInitial.planeCssWidth<370||mobileInitial.planeCssWidth>410)throw Error(JSON.stringify({mobileBasePlane:mobileInitial}));
   report.push({mobileInitial,remoteFailures:m.remoteFailures,normalRangeAborts:m.getAborted()});
+  await persist();
 
   const mm=await metrics(m.page),ms=[];
   for(const [label,p] of [['signal',.18],['crossing',.50],['archive',.78],['handoff',.97]])ms.push(await sample(m.page,mm,label,p,'mobile'));
+  await persist();
   if(!(ms[0].time<ms[1].time&&ms[1].time<ms[2].time&&ms[2].time<ms[3].time))throw Error(JSON.stringify({mobileNonMonotonic:ms}));
   if(ms[1].scale<1.20||ms[3].handoff<.60||ms[3].opacity>.40)throw Error(JSON.stringify({mobileTiming:ms}));
 
@@ -148,7 +159,7 @@ const fs=require('node:fs/promises');
   if(reducedState.mode!=='static'||reducedState.sourceMode!=='idle'||reducedState.declaredCloudinary!==cloudinary||reducedState.src||reducedState.currentSrc||reducedState.display!=='none'||reducedState.sticky==='sticky'||reducedState.overflow>2)throw Error(JSON.stringify({reducedState}));
   report.push({reducedState});
 
-  await fs.writeFile('_site/qa-v116-report.json',JSON.stringify(report,null,2));
+  await persist();
   await browser.close();
   console.log('MOVX Scroll World: Cloudinary 0923.mp4 is canonical, blob/direct playback scrubs on desktop + mobile, 3D depth/handoff and reduced-motion fallback validated.');
 })().catch(e=>{console.error(e);process.exit(1)});
