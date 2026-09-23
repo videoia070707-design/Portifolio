@@ -32,6 +32,9 @@ const fs=require('node:fs/promises');
     });
     page.__errors=errors;page.__mediaResponses=mediaResponses;
     await page.goto(url,{waitUntil:'networkidle'});
+    // The portfolio intentionally uses smooth native scrolling. QA needs deterministic
+    // coordinates so it measures the requested film progress instead of the scroll tween.
+    await page.addStyleTag({content:'html,body{scroll-behavior:auto!important}'});
     return {page,errors,localFailures,remoteFailures,mediaResponses,getAborted:()=>aborted};
   }
 
@@ -71,8 +74,25 @@ const fs=require('node:fs/promises');
   }
 
   async function sample(page,m,label,p,prefix){
-    await page.evaluate(y=>scrollTo(0,y),m.top+m.travel*p);
-    await page.waitForTimeout(760);
+    const y=m.top+m.travel*p;
+    await page.evaluate(({y})=>{
+      document.documentElement.style.setProperty('scroll-behavior','auto','important');
+      document.body.style.setProperty('scroll-behavior','auto','important');
+      scrollTo({top:y,left:0,behavior:'instant'});
+    },{y});
+    await page.waitForFunction(expected=>{
+      const s=document.querySelector('[data-movx-v116="film"]');
+      return s&&Math.abs(Number(s.dataset.v116Progress||0)-expected)<.018;
+    },p,{timeout:8000});
+    // A video seek can outlive the scroll tween, especially in headless Chromium while
+    // the packaged VP9 fallback is still buffering. Validate the decoded temporal state.
+    await page.waitForFunction(()=>{
+      const s=document.querySelector('[data-movx-v116="film"]'),v=s?.querySelector('video');
+      if(!s||!v)return false;
+      const target=Number(s.dataset.v116Target||0);
+      return v.readyState>=2&&!v.seeking&&Number.isFinite(target)&&Math.abs(v.currentTime-target)<.18;
+    },null,{timeout:15000});
+    await page.waitForTimeout(100);
     const state=await page.evaluate(()=>{
       const s=document.querySelector('[data-movx-v116="film"]'),v=s.querySelector('video'),css=getComputedStyle(s);
       return {
