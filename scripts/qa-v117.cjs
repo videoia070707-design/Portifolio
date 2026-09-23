@@ -28,16 +28,20 @@ const path=require('node:path');
         const t=Number(el?.dataset.worldTarget||0);
         return el?.dataset.mode==='scrub'&&v?.currentSrc&&v.seekable.length>0&&Math.abs(v.currentTime-t)<.4&&Math.abs(Number(el.dataset.worldProgress)-value)<.03;
       },p,{timeout:18000}).catch(async error=>{
-        const state=await film.evaluate(el=>({mode:el.dataset.mode,p:el.dataset.worldProgress,target:el.dataset.worldTarget,chapter:el.dataset.worldChapter,ready:el.dataset.frameReady,source:el.querySelector('video').currentSrc,time:el.querySelector('video').currentTime,seekable:el.querySelector('video').seekable.length,readyState:el.querySelector('video').readyState,error:el.querySelector('video').error?.message,canMp4:el.querySelector('video').canPlayType('video/mp4')}));
+        const state=await film.evaluate(el=>({mode:el.dataset.mode,p:el.dataset.worldProgress,target:el.dataset.worldTarget,chapter:el.dataset.worldChapter,codec:el.dataset.mediaCodec,ready:el.dataset.frameReady,source:el.querySelector('video').currentSrc,time:el.querySelector('video').currentTime,seekable:el.querySelector('video').seekable.length,readyState:el.querySelector('video').readyState,error:el.querySelector('video').error?.message,canMp4:el.querySelector('video').canPlayType('video/mp4'),canWebM:el.querySelector('video').canPlayType('video/webm; codecs="vp9"')}));
         throw new Error(`${error.message}\n${JSON.stringify(state)}`);
       });
     };
 
     await seekTo(.12);
     const desktopSource=await film.locator('video').evaluate(v=>v.currentSrc);
-    assert.ok(/movx-scroll-world-0923\.(mp4|webm)(?:$|\?)/.test(desktopSource),'desktop must use the optimized direct media source');
-    assert.ok(mediaRequests.some(url=>/movx-scroll-world-0923\.(mp4|webm)/.test(url)),'desktop source must be requested after engagement');
+    const desktopCodec=await film.getAttribute('data-media-codec');
+    assert.ok(desktopSource.startsWith('blob:'),'desktop must use the deferred Blob source for reliable scrub seeking');
+    assert.match(desktopCodec||'',/^(vp9-webm|h264-mp4)$/,'desktop must record the negotiated optimized codec');
+    const desktopMediaPattern=desktopCodec==='vp9-webm'?/movx-scroll-world-0923\.webm/:/movx-scroll-world-0923\.mp4/;
+    assert.ok(mediaRequests.some(url=>desktopMediaPattern.test(url)),'desktop optimized source must be fetched only after engagement');
     const first=await film.locator('video').evaluate(v=>v.currentTime);
+    assert.ok(first>0,'desktop scrub must move away from frame zero');
     assert.equal(await film.getAttribute('data-world-chapter'),'1');
     await page.screenshot({path:path.resolve('qa-v117-desktop.png')});
 
@@ -67,7 +71,7 @@ const path=require('node:path');
     assert.equal(await mobileFilm.locator('video').getAttribute('src'),null,'mobile video must stay idle above the fold');
     await mobileFilm.scrollIntoViewIfNeeded();
     await mobile.waitForFunction(()=>{const w=document.querySelector('.movx-scroll-world__video')?.videoWidth;return w>700&&w<1000},null,{timeout:15000}).catch(async error=>{
-      const state=await mobileFilm.evaluate(el=>({width:innerWidth,match:matchMedia('(max-width: 767px)').matches,mode:el.dataset.mode,source:el.querySelector('video').currentSrc,videoWidth:el.querySelector('video').videoWidth,error:el.querySelector('video').error?.message}));
+      const state=await mobileFilm.evaluate(el=>({width:innerWidth,match:matchMedia('(max-width: 767px)').matches,mode:el.dataset.mode,codec:el.dataset.mediaCodec,source:el.querySelector('video').currentSrc,videoWidth:el.querySelector('video').videoWidth,error:el.querySelector('video').error?.message}));
       throw new Error(`${error.message}\n${JSON.stringify(state)}`);
     });
     const mobileSource=await mobileFilm.locator('video').evaluate(v=>v.currentSrc);
@@ -88,6 +92,6 @@ const path=require('node:path');
     assert.equal(await reducedFilm.locator('.movx-scroll-world__video').getAttribute('src'),null);
     assert.equal(await reducedFilm.locator('[data-world-chapter-panel]').count(),4,'reduced motion keeps the multi-section structure over the poster');
     await reduced.close();
-    console.log(JSON.stringify({status:'passed',initialMediaRequests,chapters:4,desktopSource,forward:[first,middle,last],reverse,mobileSource,reduced:'poster + chapters'}));
+    console.log(JSON.stringify({status:'passed',initialMediaRequests,chapters:4,desktopCodec,desktopSource,forward:[first,middle,last],reverse,mobileSource,reduced:'poster + chapters'}));
   }finally{await browser.close()}
 })().catch(error=>{console.error(error);process.exitCode=1});
