@@ -1,17 +1,34 @@
-<section class="movx-scroll-world" id="movxScrollWorld" data-movx-scroll-world="v117" data-mode="loading" aria-label="MOVX: viagem visual controlada pela rolagem">
-  <div class="movx-scroll-world__sticky">
-    <div class="movx-scroll-world__space" aria-hidden="true">
+<div class="movx-scroll-world" id="movxScrollWorld" data-movx-scroll-world="v117" data-mode="loading" data-world-chapter="1" aria-label="MOVX: viagem visual controlada pela rolagem">
+  <div class="movx-scroll-world__sticky" aria-hidden="true">
+    <div class="movx-scroll-world__space">
       <div class="movx-scroll-world__plane">
         <img class="movx-scroll-world__poster" src="media/movx-scroll-world-poster.jpg" alt="" decoding="async" loading="lazy">
         <video class="movx-scroll-world__video" muted playsinline preload="none" poster="media/movx-scroll-world-poster.jpg" tabindex="-1" aria-hidden="true"></video>
+        <div class="movx-scroll-world__veil"></div>
       </div>
     </div>
-    <div class="movx-scroll-world__chrome" aria-hidden="true">
+    <div class="movx-scroll-world__chrome">
       <span>MOVX <i>/</i> SOUL OF DESIGN</span>
       <span class="movx-scroll-world__hint">ROLE PARA EXPLORAR <b>↓</b></span>
-      <span class="movx-scroll-world__count">01 / 01</span>
+      <span class="movx-scroll-world__count"><b>01</b> / 04</span>
     </div>
-    <div class="movx-scroll-world__progress" aria-hidden="true"><span></span></div>
+    <div class="movx-scroll-world__progress"><span></span></div>
   </div>
-  <p class="sr-only">Ao rolar a página, a câmera avança pelos monitores e apresenta o universo visual MOVX. Continue rolando para chegar ao arquivo de trabalhos.</p>
-</section>
+
+  <div class="movx-scroll-world__chapters">
+    <section class="movx-scroll-world__chapter" data-world-chapter-panel="1" aria-label="Capítulo visual 1 de 4">
+      <span class="movx-scroll-world__chapter-mark" aria-hidden="true">01</span>
+    </section>
+    <section class="movx-scroll-world__chapter" data-world-chapter-panel="2" aria-label="Capítulo visual 2 de 4">
+      <span class="movx-scroll-world__chapter-mark" aria-hidden="true">02</span>
+    </section>
+    <section class="movx-scroll-world__chapter" data-world-chapter-panel="3" aria-label="Capítulo visual 3 de 4">
+      <span class="movx-scroll-world__chapter-mark" aria-hidden="true">03</span>
+    </section>
+    <section class="movx-scroll-world__chapter" data-world-chapter-panel="4" aria-label="Capítulo visual 4 de 4">
+      <span class="movx-scroll-world__chapter-mark" aria-hidden="true">04</span>
+    </section>
+  </div>
+
+  <p class="sr-only">O mesmo filme permanece como fundo de quatro seções. Ao rolar a página, a câmera avança ou recua de acordo com a posição do scroll.</p>
+</div>
