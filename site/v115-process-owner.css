@@ -1,15 +1,17 @@
-/* MOVX v115.2 — adaptive Process ownership
-   v108 publishes its edge-fade signal, while this late layer owns the computed
-   WebGL opacity. The old v111 runtime remains retired from the canonical build. */
+/* MOVX v115.4 — adaptive Process ownership
+   v108 publishes camera/progress state; v115 is the only final visual owner for
+   the Process WebGL surface in the canonical build. */
 
 .v111-process-copy[hidden]{display:none!important}
 
 @media (min-width:981px) and (prefers-reduced-motion:no-preference){
   html.movx-v108 body[data-page="social"] #process.process-section .v108-process-canvas{
-    /* CSS calc() cannot multiply arbitrary <number> values in the Chromium gate.
-       Cap the v108 signal instead: stable 0.46 field through the reading corridor,
-       then follow the source signal only when its end fade drops below that cap. */
-    opacity:min(.46,var(--v108-process-canvas-o,.46))!important;
+    /* Keep the correction pass deterministic. The legacy v108 direct opacity
+       writer is stripped by build.py, and transitions/animations are disabled so
+       no historical tween can interpolate above the approved 0.46 surface. */
+    opacity:.46!important;
+    transition:none!important;
+    animation:none!important;
   }
 
   html.movx-v108 body[data-page="social"] #process.process-section .v108-process-progress{
