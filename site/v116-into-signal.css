@@ -1,0 +1,146 @@
+/* MOVX v116 — Into the Signal scroll film.
+   Local owner only: one sticky section, one paused video, no global scroll engine. */
+.movx-signal-film{
+  --movx-signal-progress:0;
+  --movx-signal-scale:1.026;
+  --movx-signal-tilt-y:-1.6deg;
+  --movx-signal-tilt-x:.42deg;
+  --movx-signal-shift-y:1.2vh;
+  --movx-signal-exit:0;
+  position:relative;
+  min-height:430svh;
+  background:#050505;
+  color:#f2efe8;
+  isolation:isolate;
+}
+.movx-signal-film__sticky{
+  position:sticky;
+  top:0;
+  height:100svh;
+  overflow:hidden;
+  background:#050505;
+  transform:translateZ(0);
+}
+.movx-signal-film__surface{
+  position:absolute;
+  inset:-1.25%;
+  overflow:hidden;
+  transform-style:preserve-3d;
+  perspective:1500px;
+  background:#050505;
+}
+.movx-signal-film__video,
+.movx-signal-film__poster{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  display:block;
+  object-fit:cover;
+  background:#050505;
+}
+.movx-signal-film__video{
+  z-index:2;
+  transform:
+    perspective(1500px)
+    translate3d(0,var(--movx-signal-shift-y),0)
+    rotateX(var(--movx-signal-tilt-x))
+    rotateY(var(--movx-signal-tilt-y))
+    scale(var(--movx-signal-scale));
+  transform-origin:50% 50%;
+  will-change:transform;
+}
+.movx-signal-film__poster{z-index:1}
+.movx-signal-film[data-video-ready="1"] .movx-signal-film__poster{opacity:0}
+.movx-signal-film__vignette,
+.movx-signal-film__grain,
+.movx-signal-film__wash{
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+}
+.movx-signal-film__vignette{
+  z-index:3;
+  background:
+    radial-gradient(ellipse at 50% 48%,transparent 42%,rgba(0,0,0,.16) 73%,rgba(0,0,0,.5) 100%),
+    linear-gradient(180deg,rgba(0,0,0,.22),transparent 18%,transparent 78%,rgba(0,0,0,.34));
+}
+.movx-signal-film__grain{
+  z-index:4;
+  opacity:.085;
+  mix-blend-mode:soft-light;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.77' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.34'/%3E%3C/svg%3E");
+}
+.movx-signal-film__wash{
+  z-index:7;
+  background:var(--bg);
+  opacity:var(--movx-signal-exit);
+  will-change:opacity;
+}
+.movx-signal-film__meta{
+  position:absolute;
+  z-index:6;
+  left:var(--pad);
+  right:var(--pad);
+  top:calc(76px + clamp(18px,2.5vw,38px));
+  display:flex;
+  justify-content:space-between;
+  gap:20px;
+  pointer-events:none;
+  font:700 10px/1.25 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  letter-spacing:.16em;
+  text-transform:uppercase;
+  color:rgba(242,239,232,.8);
+  text-shadow:0 1px 16px rgba(0,0,0,.55);
+  opacity:calc(1 - var(--movx-signal-exit));
+}
+.movx-signal-film__rail{
+  position:absolute;
+  z-index:6;
+  left:var(--pad);
+  right:var(--pad);
+  bottom:clamp(22px,3vw,44px);
+  display:grid;
+  grid-template-columns:auto minmax(120px,340px) 32px;
+  align-items:center;
+  gap:18px;
+  pointer-events:none;
+  font:700 10px/1.25 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  letter-spacing:.14em;
+  text-transform:uppercase;
+  color:rgba(242,239,232,.8);
+  opacity:calc(1 - var(--movx-signal-exit));
+}
+.movx-signal-film__line{height:1px;background:rgba(242,239,232,.24);overflow:hidden}
+.movx-signal-film__line>span{display:block;width:100%;height:100%;background:#f2efe8;transform:scaleX(var(--movx-signal-progress));transform-origin:left center}
+.movx-signal-film__counter{text-align:right}
+.movx-signal-film__sr{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
+html[data-movx-signal-active="1"] .site-header{
+  background:color-mix(in srgb,#070707 82%,transparent);
+  color:#f2efe8;
+  border-color:rgba(242,239,232,.12);
+}
+html[data-movx-signal-active="1"] .site-header .wordmark small,
+html[data-movx-signal-active="1"] .site-header .nav a,
+html[data-movx-signal-active="1"] .site-header .theme-toggle,
+html[data-movx-signal-active="1"] .site-header .language-switcher{color:#f2efe8}
+html[data-movx-signal-active="1"] .scroll-progress span{background:#f2efe8}
+@media (max-width:767px){
+  .movx-signal-film{min-height:auto;background:#050505}
+  .movx-signal-film__sticky{position:relative;top:auto;height:min(72svh,640px);min-height:460px}
+  .movx-signal-film__surface{inset:0}
+  .movx-signal-film__video{display:none!important}
+  .movx-signal-film__poster{opacity:1!important;transform:none!important;object-fit:cover}
+  .movx-signal-film__meta{top:22px;font-size:9px}
+  .movx-signal-film__rail{bottom:22px;grid-template-columns:auto;justify-items:start}
+  .movx-signal-film__line,.movx-signal-film__counter{display:none}
+  .movx-signal-film__wash{display:none}
+}
+@media (prefers-reduced-motion:reduce){
+  .movx-signal-film{min-height:auto!important;background:#050505}
+  .movx-signal-film__sticky{position:relative!important;top:auto!important;height:min(76svh,720px);min-height:480px}
+  .movx-signal-film__surface{inset:0}
+  .movx-signal-film__video{display:none!important}
+  .movx-signal-film__poster{opacity:1!important;transform:none!important}
+  .movx-signal-film__rail,.movx-signal-film__wash{display:none!important}
+}
