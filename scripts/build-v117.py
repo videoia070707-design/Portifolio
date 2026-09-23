@@ -43,8 +43,8 @@ def ensure_media():
             shutil.copyfileobj(response,target)
         if src.stat().st_size<1024:
             raise SystemExit('MOVX v120 source video download was empty')
-        # Seek-friendly, web-sized encodes. Desktop is served directly for robust range seeking;
-        # mobile keeps the deferred Blob strategy that already works well on touch browsers.
+        # Seek-friendly, web-sized encodes. Runtime delivery is deferred into a Blob on both
+        # desktop and mobile after real user engagement, avoiding static-host range-seek quirks.
         run_ffmpeg(ffmpeg,src,'-an','-vf','scale=1440:-2','-c:v','libx264','-preset','medium','-crf','26','-g','12','-keyint_min','12','-sc_threshold','0','-movflags','+faststart',media_files['desktop_mp4'])
         run_ffmpeg(ffmpeg,src,'-an','-vf','scale=854:-2','-c:v','libx264','-preset','medium','-crf','27','-g','8','-keyint_min','8','-sc_threshold','0','-movflags','+faststart',media_files['mobile_mp4'])
         run_ffmpeg(ffmpeg,src,'-an','-vf','scale=1440:-2','-c:v','libvpx-vp9','-deadline','good','-cpu-used','6','-crf','39','-b:v','0',media_files['desktop_webm'])
@@ -136,4 +136,4 @@ required=('v117-scroll-world.css','v117-scroll-world.mjs','assets/hero/soul-of-d
 missing=[name for name in required if not (out/name).exists()]
 if missing or not installed:raise SystemExit(f'v120 invalid build: missing={missing}; installed={installed}')
 media_sizes={key:path.stat().st_size for key,path in media_files.items()}
-print(json.dumps({'release':release,'pages':installed,'source':source_url,'media_mode':media_mode,'hero':hero_stats,'media_bytes':media_sizes,'desktop':'direct optimized range-seek','mobile':'deferred blob landscape contain','scroll_world':'sticky background + 4 chapters','missing':missing}))
+print(json.dumps({'release':release,'pages':installed,'source':source_url,'media_mode':media_mode,'hero':hero_stats,'media_bytes':media_sizes,'desktop':'deferred optimized blob seek','mobile':'deferred optimized blob seek','scroll_world':'sticky background + 4 chapters','missing':missing}))
