@@ -1,6 +1,6 @@
 """Build canonical MOVX source, then install v116 Into the Signal as an isolated scroll-film chapter."""
 from pathlib import Path
-import runpy, json, base64
+import runpy, json
 
 root=Path(__file__).resolve().parents[1]
 runpy.run_path(str(root/'scripts'/'build.py'),run_name='__main__')
@@ -8,18 +8,6 @@ out=root/'_site'
 release='v116-into-signal-scroll-film'
 fragment=(root/'site'/'v116-scroll-film.html').read_text().strip()
 installed=[]
-
-# The film itself is streamed from Cloudinary. Only the lightweight poster is
-# reconstructed locally so reduced-motion and error fallbacks remain instant.
-encoded=root/'.assets'/'into-signal'
-media=out/'media'; media.mkdir(exist_ok=True)
-def decode_parts(pattern,target):
-    parts=sorted(encoded.glob(pattern))
-    if not parts: raise SystemExit(f'v116 encoded media missing: {pattern}')
-    payload=''.join(p.read_text().strip() for p in parts)
-    target.write_bytes(base64.b64decode(payload,validate=True))
-
-decode_parts('poster-*.b64',media/'into-signal-poster.jpg')
 
 for name in ['index.html','latest.html','social-media.html']:
     html=out/name
@@ -41,13 +29,15 @@ for name in ['index.html','latest.html','social-media.html']:
 fragment_out=out/'v116-scroll-film.html'
 if fragment_out.exists(): fragment_out.unlink()
 
-required=[out/'v116-scroll-film.css',out/'v116-scroll-film.mjs',out/'media'/'into-signal-poster.jpg']
+required=[out/'v116-scroll-film.css',out/'v116-scroll-film.mjs']
 missing=[str(p.relative_to(out)) for p in required if not p.exists()]
 if missing: raise SystemExit('v116 missing build assets: '+str(missing))
 if not installed: raise SystemExit('v116 did not find a Social Media cover + Living Archive target')
-cloudinary='https://res.cloudinary.com/gp3xbngz/video/upload/v1790173902/0923.mp4'
+video='https://res.cloudinary.com/gp3xbngz/video/upload/v1790173902/0923.mp4'
+poster='https://res.cloudinary.com/gp3xbngz/video/upload/so_0/v1790173902/0923.jpg'
 for name in installed:
-    if cloudinary not in (out/name).read_text():
-        raise SystemExit(f'v116 Cloudinary film missing from {name}')
+    built=(out/name).read_text()
+    if video not in built or poster not in built:
+        raise SystemExit(f'v116 Cloudinary media missing from {name}')
 
-print(json.dumps({'release':release,'scroll_film_owner':'v116','installed_pages':installed,'video_source':'cloudinary','missing':missing}))
+print(json.dumps({'release':release,'scroll_film_owner':'v116','installed_pages':installed,'video_source':'cloudinary','poster_source':'cloudinary','missing':missing}))
