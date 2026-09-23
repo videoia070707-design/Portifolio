@@ -1,5 +1,7 @@
-/* MOVX local preview — one scroll owner, coalesced video seeking.
-   The original v116 chapter timing is preserved. Media is bundled locally. */
+/* MOVX — Scroll World film engine
+   Cloudinary 0923.mp4 is the canonical film. The runtime follows the Scroll World
+   pattern: fixed cinematic stage, scroll->time mapping, damped progress, rAF seek
+   coalescing, opening linger, decoded-frame crossfade and resilient fallbacks. */
 const section=document.querySelector('[data-movx-v116="film"]');
 if(section){
   const video=section.querySelector('video');
@@ -12,27 +14,88 @@ if(section){
   const mix=(a,b,t)=>a+(b-a)*t;
   const smooth=t=>{t=clamp(t);return t*t*(3-2*t)};
   const segment=(p,a,b,x,y)=>mix(x,y,smooth((p-a)/(b-a)));
-  const mapProgress=p=>p<=.38?segment(p,0,.38,0,.28):p<=.58?segment(p,.38,.58,.28,.56):p<=.90?segment(p,.58,.90,.56,.94):segment(p,.90,1,.94,.995);
-  const mobileScale=p=>p<=.38?segment(p,0,.38,.98,1.08):p<=.58?segment(p,.38,.58,1.08,1.72):p<=.90?segment(p,.58,.90,1.72,1.16):segment(p,.90,1,1.16,1.06);
+
+  // Scroll World timing: brief opening linger, accelerated crossing, long archive reveal,
+  // then a short end hold for a clean handoff to the real DOM archive.
+  const mapProgress=p=>p<=.08?0:p<=.42?segment(p,.08,.42,0,.32):p<=.58?segment(p,.42,.58,.32,.60):p<=.90?segment(p,.58,.90,.60,.94):segment(p,.90,1,.94,.995);
+  const mobileScale=p=>p<=.42?segment(p,0,.42,.97,1.09):p<=.60?segment(p,.42,.60,1.09,1.68):p<=.90?segment(p,.60,.90,1.68,1.15):segment(p,.90,1,1.15,1.055);
+
   let duration=0,raf=0,active=false,disposed=false,failed=false,targetTime=0;
-  // Skip the black opening frames while retaining the full source in the package.
-  const startTime=.6;
-  const properties=['--v116-scale','--v116-rx','--v116-ry','--v116-y','--v116-opacity','--v116-handoff','--v116-shade'];
+  let targetProgress=0,smoothedProgress=0,lastFrame=0,firstRender=true;
+  let objectUrl='',loadPromise=null,loadController=null,sourceGeneration=0,localFallbackTried=false;
+  const properties=['--v116-scale','--v116-rx','--v116-ry','--v116-y','--v116-z','--v116-opacity','--v116-handoff','--v116-shade'];
   const isStatic=()=>staticQuery||reduce.matches;
   const runnable=()=>!disposed&&!document.hidden&&active&&section.dataset.v116Mode==='scrub';
+  const sourceUrl=()=>video.dataset.srcCloudinary;
 
-  function ensureMedia(){
-    if(isStatic()||failed||video.getAttribute('src'))return;
-    const supportsVp9=video.canPlayType('video/webm; codecs="vp9"');
-    video.src=supportsVp9&&video.dataset.srcWebm?video.dataset.srcWebm:video.dataset.src;
+  function revokeObjectUrl(){
+    if(objectUrl){URL.revokeObjectURL(objectUrl);objectUrl='';}
+  }
+
+  function attachSource(src,mode){
+    if(disposed||isStatic()||failed||!src)return;
+    revokeObjectUrl();
+    if(mode==='cloudinary-blob')objectUrl=src;
+    video.src=src;
     video.preload='auto';
+    section.dataset.v116Source=mode;
     video.load();
   }
-  function releaseMedia(){
-    video.pause();duration=0;
-    section.dataset.v116MediaReady='false';
-    if(video.getAttribute('src')){video.removeAttribute('src');video.load();}
+
+  async function loadCloudinary(){
+    if(isStatic()||failed||video.getAttribute('src')||loadPromise)return loadPromise;
+    const generation=++sourceGeneration;
+    const remote=sourceUrl();
+    if(!remote)return;
+    section.dataset.v116Source='cloudinary-loading';
+    loadController=new AbortController();
+    const timeout=setTimeout(()=>loadController?.abort(),4500);
+    loadPromise=(async()=>{
+      try{
+        const response=await fetch(remote,{mode:'cors',cache:'force-cache',signal:loadController.signal});
+        if(!response.ok)throw new Error(`film fetch ${response.status}`);
+        const blob=await response.blob();
+        if(!blob.size)throw new Error('empty film blob');
+        if(generation!==sourceGeneration||disposed||isStatic())return;
+        const url=URL.createObjectURL(blob);
+        attachSource(url,'cloudinary-blob');
+      }catch(error){
+        if(generation!==sourceGeneration||disposed||isStatic())return;
+        // Direct CDN playback keeps the canonical source even when CORS/Blob acquisition
+        // is unavailable. Local encodes are only a final resilience fallback.
+        attachSource(remote,'cloudinary-direct');
+      }finally{
+        clearTimeout(timeout);
+        loadController=null;
+        loadPromise=null;
+      }
+    })();
+    return loadPromise;
   }
+
+  function attachLocalFallback(){
+    if(localFallbackTried||isStatic()||disposed)return false;
+    localFallbackTried=true;
+    sourceGeneration++;
+    loadController?.abort();
+    loadController=null;loadPromise=null;
+    const supportsVp9=video.canPlayType('video/webm; codecs="vp9"');
+    const src=supportsVp9&&video.dataset.srcWebm?video.dataset.srcWebm:video.dataset.src;
+    if(!src)return false;
+    attachSource(src,'local-fallback');
+    return true;
+  }
+
+  function releaseMedia(){
+    sourceGeneration++;
+    loadController?.abort();loadController=null;loadPromise=null;
+    video.pause();duration=0;targetTime=0;localFallbackTried=false;
+    section.dataset.v116MediaReady='false';
+    section.dataset.v116Source='idle';
+    if(video.getAttribute('src')){video.removeAttribute('src');video.load();}
+    revokeObjectUrl();
+  }
+
   function setMode(){
     section.dataset.v116Mode=isStatic()?'static':failed?'poster':'scrub';
     section.dataset.v116Viewport=mobile.matches?'mobile':'desktop';
@@ -40,67 +103,120 @@ if(section){
       cancelAnimationFrame(raf);raf=0;
       properties.forEach(name=>section.style.removeProperty(name));
       if(isStatic())releaseMedia();
-    }else if(active)ensureMedia();
-    schedule();
+    }else if(active)loadCloudinary();
+    updateTarget();
   }
+
   function requestSeek(){
     if(!runnable()||duration<=0||video.readyState<1||video.seeking)return;
-    // One in-flight seek. 'seeked' consumes the latest scroll target, not stale events.
-    if(Math.abs(video.currentTime-targetTime)>1/60){
-      try{video.currentTime=targetTime;}catch{ /* wait for loadeddata/canplay */ }
+    if(Math.abs(video.currentTime-targetTime)>1/50){
+      try{video.currentTime=targetTime;}catch{/* metadata/frame not ready yet */}
     }
   }
-  function render(){
+
+  function markFrameReady(){
+    if(video.readyState<2)return;
+    section.dataset.v116MediaReady='true';
+  }
+
+  function computeTarget(){
+    targetProgress=clamp(-section.getBoundingClientRect().top/Math.max(1,section.offsetHeight-innerHeight));
+  }
+
+  function updateTarget(){
+    computeTarget();
+    if(!raf&&!disposed&&!document.hidden)raf=requestAnimationFrame(render);
+  }
+
+  function render(now=performance.now()){
     raf=0;
     if(!runnable())return;
-    const p=clamp(-section.getBoundingClientRect().top/Math.max(1,section.offsetHeight-innerHeight));
+    computeTarget();
+
+    const dt=lastFrame?Math.min(64,now-lastFrame):16.7;
+    lastFrame=now;
+    if(firstRender){smoothedProgress=targetProgress;firstRender=false;}
+    const damping=1-Math.exp(-dt/78);
+    smoothedProgress+= (targetProgress-smoothedProgress)*damping;
+    const p=clamp(smoothedProgress);
+
     if(duration>0){
-      const end=Math.max(0,duration-1/30);
-      const start=Math.min(startTime,end);
+      const frame=1/Math.max(24,Number(video.dataset.fps)||30);
+      const end=Math.max(0,duration-frame);
+      // Relative opening skip scales to short/long source files and avoids black leader frames.
+      const start=Math.min(Math.min(.6,duration*.065),end);
       targetTime=mix(start,end,mapProgress(p));
       section.dataset.v116Target=targetTime.toFixed(3);
       requestSeek();
     }
+
     const exit=smooth((p-.90)/.10);
-    const settle=smooth(p/(mobile.matches?.38:.58));
-    section.style.setProperty('--v116-scale',(mobile.matches?mobileScale(p):mix(.935,1.018,settle)).toFixed(4));
-    section.style.setProperty('--v116-rx',`${mix(mobile.matches?.55:1.1,0,settle).toFixed(3)}deg`);
-    section.style.setProperty('--v116-ry',`${mix(mobile.matches?-1.15:-.65,0,settle).toFixed(3)}deg`);
-    section.style.setProperty('--v116-y',`${mix(mobile.matches?.8:1.4,0,settle).toFixed(3)}vh`);
+    const settle=smooth(p/(mobile.matches?.42:.60));
+    const scale=mobile.matches?mobileScale(p):mix(.92,1.024,settle);
+    const z=mobile.matches?mix(-78,0,settle):mix(-145,0,settle);
+    section.style.setProperty('--v116-scale',scale.toFixed(4));
+    section.style.setProperty('--v116-rx',`${mix(mobile.matches?1.05:2.15,0,settle).toFixed(3)}deg`);
+    section.style.setProperty('--v116-ry',`${mix(mobile.matches?-1.8:-1.35,0,settle).toFixed(3)}deg`);
+    section.style.setProperty('--v116-y',`${mix(mobile.matches?1.15:2.25,0,settle).toFixed(3)}vh`);
+    section.style.setProperty('--v116-z',`${z.toFixed(2)}px`);
     section.style.setProperty('--v116-opacity',mix(1,0,exit).toFixed(4));
     section.style.setProperty('--v116-handoff',exit.toFixed(4));
-    section.style.setProperty('--v116-shade',mix(.22,.08,smooth((p-.45)/.45)).toFixed(4));
+    section.style.setProperty('--v116-shade',mix(.24,.075,smooth((p-.42)/.48)).toFixed(4));
     section.dataset.v116Progress=p.toFixed(4);
-    section.dataset.v116Phase=p<.38?'signal':p<.58?'crossing':'archive';
+    section.dataset.v116Phase=p<.42?'signal':p<.60?'crossing':'archive';
+
+    const unsettled=Math.abs(targetProgress-smoothedProgress)>.00045;
+    if(unsettled||video.seeking)raf=requestAnimationFrame(render);
   }
-  function schedule(){if(!raf&&!disposed&&!document.hidden)raf=requestAnimationFrame(render)}
+
   const observer=new IntersectionObserver(entries=>{
     active=entries.some(entry=>entry.isIntersecting);
-    if(active){ensureMedia();schedule();}
-    else{cancelAnimationFrame(raf);raf=0;}
-  },{rootMargin:'75% 0px'});
+    if(active){
+      firstRender=true;lastFrame=0;computeTarget();smoothedProgress=targetProgress;
+      loadCloudinary();updateTarget();
+    }else{
+      cancelAnimationFrame(raf);raf=0;lastFrame=0;
+    }
+  },{rootMargin:'125% 0px'});
   observer.observe(section);
+
   video.muted=true;video.playsInline=true;video.controls=false;video.disableRemotePlayback=true;
-  listen(video,'loadedmetadata',()=>{duration=Number.isFinite(video.duration)?video.duration:0;video.pause();schedule()});
-  listen(video,'loadeddata',schedule);
-  listen(video,'canplay',schedule);
+  listen(video,'loadedmetadata',()=>{
+    duration=Number.isFinite(video.duration)?video.duration:0;
+    section.dataset.v116Duration=duration.toFixed(3);
+    video.pause();updateTarget();
+  });
+  listen(video,'loadeddata',()=>{markFrameReady();updateTarget()});
+  listen(video,'canplay',()=>{markFrameReady();updateTarget()});
   listen(video,'seeked',()=>{
-    if(video.readyState>=2&&video.currentTime>=Math.min(startTime,duration-1/30))section.dataset.v116MediaReady='true';
-    requestSeek();
+    markFrameReady();
+    if('requestVideoFrameCallback' in video)video.requestVideoFrameCallback(markFrameReady);
+    requestSeek();updateTarget();
   });
   listen(video,'play',()=>video.pause());
-  listen(video,'error',()=>{if(video.getAttribute('src')){failed=true;setMode()}});
-  listen(window,'scroll',schedule,{passive:true});
-  listen(window,'resize',()=>{setMode();schedule()},{passive:true});
+  listen(video,'error',()=>{
+    if(!video.getAttribute('src'))return;
+    if(attachLocalFallback())return;
+    failed=true;setMode();
+  });
+  listen(window,'scroll',updateTarget,{passive:true});
+  listen(window,'resize',()=>{setMode();updateTarget()},{passive:true});
   listen(reduce,'change',setMode);listen(mobile,'change',setMode);
-  listen(document,'visibilitychange',()=>{cancelAnimationFrame(raf);raf=0;video.pause();if(!document.hidden)schedule()});
-  listen(window,'pageshow',schedule);
+  listen(document,'visibilitychange',()=>{
+    cancelAnimationFrame(raf);raf=0;lastFrame=0;video.pause();
+    if(!document.hidden)updateTarget();
+  });
+  listen(window,'pageshow',updateTarget);
   listen(window,'pagehide',event=>{
     cancelAnimationFrame(raf);raf=0;video.pause();
-    if(!event.persisted){disposed=true;observer.disconnect();resizeObserver.disconnect();events.abort();}
+    if(!event.persisted){
+      disposed=true;sourceGeneration++;loadController?.abort();
+      observer.disconnect();resizeObserver.disconnect();events.abort();revokeObjectUrl();
+    }
   });
-  const resizeObserver=new ResizeObserver(schedule);resizeObserver.observe(section);
-  document.fonts?.ready.then(schedule);
+
+  const resizeObserver=new ResizeObserver(updateTarget);resizeObserver.observe(section);
+  document.fonts?.ready.then(updateTarget);
   setMode();
-  document.documentElement.dataset.movxIntro='v116-local-preview';
+  document.documentElement.dataset.movxIntro='scroll-world-cloudinary-0923';
 }
