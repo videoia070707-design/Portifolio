@@ -42,8 +42,8 @@ if "rootMargin:'320px 0px'" not in runtime:
 scroll=(out/'v117-scroll-world.mjs').read_text()
 if "rootMargin:'0px'" not in scroll:
     errors.append('Scroll World intersection margin is not zero')
-if "video.preload='auto';video.src=directURL" not in scroll:
-    errors.append('Scroll World must fully buffer the optimized file only after engagement')
+if "const data=await response.blob()" not in scroll or "video.src=blobURL" not in scroll:
+    errors.append('Scroll World must use the optimized deferred Blob for reliable static-host seeks')
 if 'userEngaged' not in scroll or 'engagementThreshold' not in scroll:
     errors.append('Scroll World explicit user-scroll gate is missing')
 if 'if(active){if(userEngaged)load();schedule()}' not in scroll:
@@ -51,4 +51,4 @@ if 'if(active){if(userEngaged)load();schedule()}' not in scroll:
 
 if errors:
     raise SystemExit('MOVX performance QA failed: '+json.dumps(errors,ensure_ascii=False))
-print(json.dumps({'status':'passed','sizes':sizes,'deferred_video_gate':True,'engaged_preload':'auto'},ensure_ascii=False))
+print(json.dumps({'status':'passed','sizes':sizes,'deferred_video_gate':True,'engaged_delivery':'optimized-blob'},ensure_ascii=False))
