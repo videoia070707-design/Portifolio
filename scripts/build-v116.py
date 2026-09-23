@@ -3,24 +3,24 @@ from pathlib import Path
 import runpy, json, re, base64
 
 root=Path(__file__).resolve().parents[1]
-runpy.run_path(str(root/'scripts'/'build.py'),run_name='__main__')
-out=root/'_site'
-release='v116-local-scroll-preview'
 # GitHub stores the reviewed source video as small text-safe chunks so the
 # exact MP4 can be reconstructed during Pages builds without committing a
 # large opaque binary blob.
 encoded_media=root/'.assets'/'into-signal'/'deploy-video'
-video_out=out/'media'/'movx-crt-scroll.mp4'
+video_out=root/'site'/'media'/'movx-crt-scroll.mp4'
 if not video_out.exists():
     chunks=sorted(encoded_media.glob('part-*.b64'))
     if not chunks: raise SystemExit('v116 encoded scroll-film source is missing')
     video_out.parent.mkdir(parents=True,exist_ok=True)
     video_out.write_bytes(base64.b64decode(''.join(p.read_text() for p in chunks)))
-poster_out=out/'media'/'movx-crt-poster.jpg'
+poster_out=root/'site'/'media'/'movx-crt-poster.jpg'
 poster_source=encoded_media/'poster.b64'
 if not poster_out.exists() and poster_source.exists():
     poster_out.parent.mkdir(parents=True,exist_ok=True)
     poster_out.write_bytes(base64.b64decode(poster_source.read_text()))
+runpy.run_path(str(root/'scripts'/'build.py'),run_name='__main__')
+out=root/'_site'
+release='v116-local-scroll-preview'
 fragment=(root/'site'/'v116-scroll-film.html').read_text().strip()
 installed=[]
 
