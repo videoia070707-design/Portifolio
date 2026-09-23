@@ -27,7 +27,7 @@
 .into-signal-film[data-v116-phase="archive"] .into-signal-film__shade{opacity:calc(var(--v116-shade) * .6)}
 .into-signal-film[data-v116-mode="poster"] .into-signal-film__video{display:none}
 .into-signal-film[data-v116-mode="poster"] .into-signal-film__plane,
-.into-signal-film[data-v116-mode="static"] .into-signal-film__plane{background:#050505 url("media/into-signal-poster.jpg") center/cover no-repeat}
+.into-signal-film[data-v116-mode="static"] .into-signal-film__plane{background:#050505 url("https://res.cloudinary.com/gp3xbngz/video/upload/so_0/v1790173902/0923.jpg") center/cover no-repeat}
 .into-signal-film[data-v116-mode="static"] .into-signal-film__video{display:none}
 
 @media (max-width:767px){
