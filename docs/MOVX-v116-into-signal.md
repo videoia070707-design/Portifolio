@@ -24,7 +24,8 @@ O progresso normalizado da seção é remapeado para preservar o começo com vá
 - `prefers-reduced-motion` continua sendo o único fallback estático intencional; erro real de mídia cai para poster.
 
 ## Media lifecycle
-- Desktop/mobile sem reduced-motion: MP4 H.264 normal, com keyframes curtos para seeking por scroll.
+- Desktop/mobile sem reduced-motion: VP9/WebM quando o navegador suporta; MP4 H.264 permanece como fallback para Safari e outros navegadores.
+- As duas codificações preservam a mesma duração e são empacotadas localmente para evitar dependência de CDN.
 - `prefers-reduced-motion`: sem `src` no vídeo; usa somente poster estático.
 - O build reconstrói o MP4 antes do deploy a partir dos chunks text-safe em `.assets/into-signal`.
 - O browser recebe um MP4 normal; não reconstrói base64 em runtime.

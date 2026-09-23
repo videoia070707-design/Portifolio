@@ -7,12 +7,19 @@ root=Path(__file__).resolve().parents[1]
 # exact MP4 can be reconstructed during Pages builds without committing a
 # large opaque binary blob.
 encoded_media=root/'.assets'/'into-signal'/'deploy-video'
+encoded_webm=root/'.assets'/'into-signal'/'deploy-video-webm'
 video_out=root/'site'/'media'/'movx-crt-scroll.mp4'
 if not video_out.exists():
     chunks=sorted(encoded_media.glob('part-*.b64'))
     if not chunks: raise SystemExit('v116 encoded scroll-film source is missing')
     video_out.parent.mkdir(parents=True,exist_ok=True)
     video_out.write_bytes(base64.b64decode(''.join(p.read_text() for p in chunks)))
+webm_out=root/'site'/'media'/'movx-crt-scroll.webm'
+if not webm_out.exists():
+    chunks=sorted(encoded_webm.glob('part-*.b64'))
+    if not chunks: raise SystemExit('v116 encoded VP9 scroll-film source is missing')
+    webm_out.parent.mkdir(parents=True,exist_ok=True)
+    webm_out.write_bytes(base64.b64decode(''.join(p.read_text() for p in chunks)))
 poster_out=root/'site'/'media'/'movx-crt-poster.jpg'
 poster_source=encoded_media/'poster.b64'
 if not poster_out.exists() and poster_source.exists():
@@ -46,7 +53,7 @@ for name in ['index.html','latest.html','social-media.html']:
 fragment_out=out/'v116-scroll-film.html'
 if fragment_out.exists(): fragment_out.unlink()
 
-required=[out/'v116-scroll-film.css',out/'v116-scroll-film.mjs',out/'media/movx-crt-scroll.mp4',out/'media/movx-crt-poster.jpg']
+required=[out/'v116-scroll-film.css',out/'v116-scroll-film.mjs',out/'media/movx-crt-scroll.mp4',out/'media/movx-crt-scroll.webm',out/'media/movx-crt-poster.jpg']
 missing=[str(p.relative_to(out)) for p in required if not p.exists()]
 if missing: raise SystemExit('v116 missing build assets: '+str(missing))
 if not installed: raise SystemExit('v116 did not find a Social Media cover + Living Archive target')
@@ -54,7 +61,7 @@ video='media/movx-crt-scroll.mp4'
 poster='media/movx-crt-poster.jpg'
 for name in installed:
     built=(out/name).read_text()
-    if video not in built or poster not in built:
+    if video not in built or 'media/movx-crt-scroll.webm' not in built or poster not in built:
         raise SystemExit(f'v116 local media missing from {name}')
 
-print(json.dumps({'release':release,'scroll_film_owner':'v116','installed_pages':installed,'video_source':'local-h264','poster_source':'local','missing':missing}))
+print(json.dumps({'release':release,'scroll_film_owner':'v116','installed_pages':installed,'video_source':'local-vp9-with-h264-fallback','poster_source':'local','missing':missing}))

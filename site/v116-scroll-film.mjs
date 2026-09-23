@@ -23,7 +23,8 @@ if(section){
 
   function ensureMedia(){
     if(isStatic()||failed||video.getAttribute('src'))return;
-    video.src=video.dataset.src;
+    const supportsVp9=video.canPlayType('video/webm; codecs="vp9"');
+    video.src=supportsVp9&&video.dataset.srcWebm?video.dataset.srcWebm:video.dataset.src;
     video.preload='auto';
     video.load();
   }

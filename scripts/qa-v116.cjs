@@ -5,16 +5,16 @@ const fs=require('node:fs/promises');
   const browser=await chromium.launch({headless:true,executablePath:chromium.executablePath(),args:['--use-angle=swiftshader','--enable-webgl','--ignore-gpu-blocklist']});
   const report=[];
   const url='http://127.0.0.1:4173/social-media.html';
-  const isLocalFilm=src=>src.endsWith('/media/movx-crt-scroll.mp4');
+  const isLocalFilm=src=>/\/media\/movx-crt-scroll\.(?:mp4|webm)$/.test(src);
   const materialFailure=f=>f&&f.errorText&&!f.errorText.includes('ERR_ABORTED');
 
   async function open(viewport,reducedMotion='no-preference'){
     const page=await browser.newPage({viewport,reducedMotion});
     const errors=[],requests=[],mediaResponses=[]; let aborted=0;
     page.on('pageerror',e=>errors.push(String(e)));
-    page.on('response',r=>{if(r.url().includes('/media/movx-crt-scroll.mp4'))mediaResponses.push({url:r.url(),status:r.status(),contentType:r.headers()['content-type'],length:r.headers()['content-length']});});
+    page.on('response',r=>{if(r.url().includes('/media/movx-crt-scroll.'))mediaResponses.push({url:r.url(),status:r.status(),contentType:r.headers()['content-type'],length:r.headers()['content-length']});});
     page.on('requestfailed',r=>{
-      if(!r.url().includes('/media/movx-crt-scroll.mp4'))return;
+      if(!r.url().includes('/media/movx-crt-scroll.'))return;
       const failure=r.failure();
       if(materialFailure(failure))requests.push({url:r.url(),failure});
       else if(failure?.errorText?.includes('ERR_ABORTED'))aborted++;
@@ -60,10 +60,10 @@ const fs=require('node:fs/promises');
   await waitForFilm(d.page);
   const desktopInitial=await d.page.evaluate(()=>{
     const s=document.querySelector('[data-movx-v116="film"]'),v=s.querySelector('video');
-    return {mode:s.dataset.v116Mode,viewport:s.dataset.v116Viewport,duration:v.duration,canPlayH264:v.canPlayType('video/mp4; codecs="avc1.42E01E"'),src:v.currentSrc,hero:!!document.querySelector('.social-cover-art'),archive:!!document.querySelector('#livingArchive'),overflow:document.documentElement.scrollWidth-innerWidth,autoplay:v.autoplay,controls:v.controls,sticky:getComputedStyle(s.querySelector('.into-signal-film__sticky')).position};
+    const src=v.currentSrc;return {mode:s.dataset.v116Mode,viewport:s.dataset.v116Viewport,duration:v.duration,canPlayFilm:src.endsWith('.webm')?v.canPlayType('video/webm; codecs="vp9"'):v.canPlayType('video/mp4; codecs="avc1.42E01E"'),src,hero:!!document.querySelector('.social-cover-art'),archive:!!document.querySelector('#livingArchive'),overflow:document.documentElement.scrollWidth-innerWidth,autoplay:v.autoplay,controls:v.controls,sticky:getComputedStyle(s.querySelector('.into-signal-film__sticky')).position};
   });
   if(d.errors.length||d.requests.length)throw Error(JSON.stringify({desktopErrors:d.errors,desktopRequests:d.requests,desktopInitial}));
-  if(desktopInitial.mode!=='scrub'||desktopInitial.viewport!=='desktop'||desktopInitial.duration<8||desktopInitial.duration>12||desktopInitial.canPlayH264==='no'||!isLocalFilm(desktopInitial.src)||!desktopInitial.hero||!desktopInitial.archive||desktopInitial.overflow>2||desktopInitial.autoplay||desktopInitial.controls||desktopInitial.sticky!=='sticky')throw Error(JSON.stringify({desktopInitial}));
+  if(desktopInitial.mode!=='scrub'||desktopInitial.viewport!=='desktop'||desktopInitial.duration<8||desktopInitial.duration>12||!desktopInitial.canPlayFilm||!isLocalFilm(desktopInitial.src)||!desktopInitial.hero||!desktopInitial.archive||desktopInitial.overflow>2||desktopInitial.autoplay||desktopInitial.controls||desktopInitial.sticky!=='sticky')throw Error(JSON.stringify({desktopInitial}));
   report.push({desktopInitial,normalRangeAborts:d.getAborted()});
   const dm=await metrics(d.page),ds=[];
   for(const [label,p] of [['signal',.18],['crossing',.50],['archive',.78],['handoff',.97]])ds.push(await sample(d.page,dm,label,p,'desktop'));
@@ -76,10 +76,10 @@ const fs=require('node:fs/promises');
   await waitForFilm(m.page);
   const mobileInitial=await m.page.evaluate(()=>{
     const s=document.querySelector('[data-movx-v116="film"]'),v=s.querySelector('video'),plane=s.querySelector('.into-signal-film__plane'),pcs=getComputedStyle(plane);
-    return {mode:s.dataset.v116Mode,viewport:s.dataset.v116Viewport,duration:v.duration,canPlayH264:v.canPlayType('video/mp4; codecs="avc1.42E01E"'),src:v.currentSrc,display:getComputedStyle(v).display,sticky:getComputedStyle(s.querySelector('.into-signal-film__sticky')).position,planeCssWidth:parseFloat(pcs.width),planeRenderedWidth:plane.getBoundingClientRect().width,overflow:document.documentElement.scrollWidth-innerWidth};
+    const src=v.currentSrc;return {mode:s.dataset.v116Mode,viewport:s.dataset.v116Viewport,duration:v.duration,canPlayFilm:src.endsWith('.webm')?v.canPlayType('video/webm; codecs="vp9"'):v.canPlayType('video/mp4; codecs="avc1.42E01E"'),src,display:getComputedStyle(v).display,sticky:getComputedStyle(s.querySelector('.into-signal-film__sticky')).position,planeCssWidth:parseFloat(pcs.width),planeRenderedWidth:plane.getBoundingClientRect().width,overflow:document.documentElement.scrollWidth-innerWidth};
   });
   if(m.errors.length||m.requests.length)throw Error(JSON.stringify({mobileErrors:m.errors,mobileRequests:m.requests,mobileInitial}));
-  if(mobileInitial.mode!=='scrub'||mobileInitial.viewport!=='mobile'||mobileInitial.duration<8||mobileInitial.duration>12||mobileInitial.canPlayH264==='no'||!isLocalFilm(mobileInitial.src)||mobileInitial.display==='none'||mobileInitial.sticky!=='sticky'||mobileInitial.overflow>2)throw Error(JSON.stringify({mobileInitial}));
+  if(mobileInitial.mode!=='scrub'||mobileInitial.viewport!=='mobile'||mobileInitial.duration<8||mobileInitial.duration>12||!mobileInitial.canPlayFilm||!isLocalFilm(mobileInitial.src)||mobileInitial.display==='none'||mobileInitial.sticky!=='sticky'||mobileInitial.overflow>2)throw Error(JSON.stringify({mobileInitial}));
   if(mobileInitial.planeCssWidth<370||mobileInitial.planeCssWidth>410)throw Error(JSON.stringify({mobileBasePlane:mobileInitial}));
   report.push({mobileInitial,normalRangeAborts:m.getAborted()});
   const mm=await metrics(m.page),ms=[];
