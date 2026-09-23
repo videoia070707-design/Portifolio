@@ -1,12 +1,15 @@
-/* MOVX v115.1 — adaptive Process ownership
-   v108 may publish its edge-fade signal, but the computed WebGL opacity is owned
-   here. v111 remains styling only; its old runtime is no longer loaded. */
+/* MOVX v115.2 — adaptive Process ownership
+   v108 publishes its edge-fade signal, while this late layer owns the computed
+   WebGL opacity. The old v111 runtime remains retired from the canonical build. */
 
 .v111-process-copy[hidden]{display:none!important}
 
 @media (min-width:981px) and (prefers-reduced-motion:no-preference){
   html.movx-v108 body[data-page="social"] #process.process-section .v108-process-canvas{
-    opacity:calc(.46 * var(--v108-process-canvas-o,1))!important;
+    /* CSS calc() cannot multiply arbitrary <number> values in the Chromium gate.
+       Cap the v108 signal instead: stable 0.46 field through the reading corridor,
+       then follow the source signal only when its end fade drops below that cap. */
+    opacity:min(.46,var(--v108-process-canvas-o,.46))!important;
   }
 
   html.movx-v108 body[data-page="social"] #process.process-section .v108-process-progress{
