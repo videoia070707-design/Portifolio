@@ -1,6 +1,7 @@
 """Static performance budgets for the deployed MOVX artifact."""
 from pathlib import Path
 import json
+import re
 
 root=Path(__file__).resolve().parents[1]
 out=root/'_site'
@@ -24,12 +25,29 @@ for name,limit in budgets.items():
 
 old='assets/hero/soul-of-design-hero-clean.png'
 new='assets/hero/soul-of-design-hero-clean.webp'
+stylesheet_re=re.compile(r'<link\b(?=[^>]*\brel=["\']stylesheet["\'])[^>]*\bhref=["\']([^"\']+)["\'][^>]*>',re.I)
+css_bundles={}
 for name in ('index.html','latest.html','social-media.html'):
     text=(out/name).read_text()
     if f'src="{old}"' in text or f'href="{old}"' in text:
         errors.append(f'{name} still loads the PNG hero')
     if f'src="{new}"' not in text or f'href="{new}"' not in text:
         errors.append(f'{name} is missing optimized hero preload/src')
+    local_styles=[]
+    for href in stylesheet_re.findall(text):
+        ref=href.split('?',1)[0].split('#',1)[0]
+        if ref and ':' not in ref and not ref.startswith('//'):
+            local_styles.append(ref)
+    if len(local_styles)!=1:
+        errors.append(f'{name} loads {len(local_styles)} local stylesheets; expected one v119 bundle')
+    elif not local_styles[0].startswith('movx-css-'):
+        errors.append(f'{name} does not load a v119 CSS bundle: {local_styles[0]}')
+    else:
+        bundle=out/local_styles[0]
+        if not bundle.exists():
+            errors.append(f'{name} references missing CSS bundle {local_styles[0]}')
+        else:
+            css_bundles[local_styles[0]]=bundle.stat().st_size
 
 runtime=(out/'script.js').read_text()
 if 'loading="${itemIndex < 2 ? \'eager\' : \'lazy\'}"' in runtime:
@@ -51,4 +69,4 @@ if 'if(active){if(userEngaged)load();schedule()}' not in scroll:
 
 if errors:
     raise SystemExit('MOVX performance QA failed: '+json.dumps(errors,ensure_ascii=False))
-print(json.dumps({'status':'passed','sizes':sizes,'deferred_video_gate':True,'engaged_delivery':'optimized-blob'},ensure_ascii=False))
+print(json.dumps({'status':'passed','sizes':sizes,'css_bundles':css_bundles,'deferred_video_gate':True,'engaged_delivery':'optimized-blob'},ensure_ascii=False))
