@@ -27,7 +27,7 @@ jobs:
         run: npm ci --no-audit --no-fund
       - name: Build canonical MOVX source
         run: npm run build
-      - name: Validate desktop, mobile, cases and motion before publishing
+      - name: Validate desktop, mobile, cases, motion and Into the Signal preview
         run: |
           npx playwright install --with-deps chromium
           python3 -m http.server 4173 --directory _site >/tmp/movx-preview.log 2>&1 &
@@ -45,11 +45,12 @@ jobs:
           node scripts/qa-v114.cjs
           node scripts/qa-v115.cjs
           node scripts/qa-v115-mobile-first.cjs
+          node scripts/qa-into-signal-preview.cjs
       - name: Save validation evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: movx-v115-1-validation
+          name: movx-v115-6-into-signal-validation
           path: _site/qa-*
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
