@@ -1,5 +1,6 @@
-/* MOVX v118 performance pass: range-first scroll video with blob fallback.
-   The supplied footage is one continuous take, so there are no segment seams. */
+/* MOVX v118 performance pass: deferred Blob scrub.
+   No movie is requested during first paint. After real user scroll, the optimized
+   file is fetched once into a Blob so static hosting can seek reliably. */
 const root=document.querySelector('[data-movx-scroll-world="v117"]');
 if(root){
   const video=root.querySelector('video');
@@ -13,7 +14,7 @@ if(root){
   const ease=x=>{x=clamp(x);return x*x*(3-2*x)};
   const engagementThreshold=()=>Math.max(48,innerHeight*.08);
   let active=false,failed=false,disposed=false,raf=0,duration=0,target=0,blobURL='',controller=null,loading=false;
-  let viewportWidth=innerWidth,mediaVariant='',directURL='',blobFallbackTried=false;
+  let viewportWidth=innerWidth,mediaVariant='';
   let userEngaged=scrollY>engagementThreshold();
 
   function progress(){
@@ -48,32 +49,29 @@ if(root){
     controller?.abort();controller=null;
     video.pause();video.removeAttribute('src');video.load();
     if(blobURL)URL.revokeObjectURL(blobURL);
-    blobURL='';duration=0;loading=false;directURL='';blobFallbackTried=false;
+    blobURL='';duration=0;loading=false;mediaVariant='';
     root.dataset.frameReady='false';
   }
-  async function loadBlobFallback(){
-    if(disposed||failed||reduced.matches||blobFallbackTried||!directURL||!userEngaged)return;
-    blobFallbackTried=true;loading=true;
-    controller?.abort();controller=new AbortController();
+  async function load(){
+    if(disposed||failed||reduced.matches||!userEngaged)return;
+    const variant=mobile.matches?'mobile':'desktop';
+    if(mediaVariant===variant&&(loading||blobURL))return;
+    clearMedia();
+    mediaVariant=variant;loading=true;
+    controller=new AbortController();
+    root.dataset.mode='loading';
     try{
-      const response=await fetch(directURL,{signal:controller.signal,cache:'force-cache'});
+      const response=await fetch(urls[variant],{signal:controller.signal,cache:'force-cache'});
       if(!response.ok)throw new Error(`media status ${response.status}`);
       const data=await response.blob();
-      if(disposed||reduced.matches)return;
+      if(disposed||reduced.matches||mediaVariant!==variant)return;
       blobURL=URL.createObjectURL(data);
       video.preload='auto';video.src=blobURL;video.load();
     }catch(error){
       if(error.name==='AbortError')return;
-      failed=true;loading=false;root.dataset.mode='fallback';
+      failed=true;loading=false;root.dataset.mode='fallback';root.dataset.frameReady='false';
       console.warn('MOVX scroll film: poster fallback',error);
     }
-  }
-  function load(){
-    if(disposed||failed||reduced.matches||loading||!userEngaged)return;
-    const variant=mobile.matches?'mobile':'desktop';
-    if(mediaVariant===variant&&video.getAttribute('src'))return;
-    clearMedia();mediaVariant=variant;directURL=urls[variant];loading=true;
-    video.preload='auto';video.src=directURL;video.load();
   }
   function handleScroll(){
     if(!userEngaged&&scrollY>engagementThreshold()){
@@ -84,7 +82,7 @@ if(root){
     schedule();
   }
   async function prime(){
-    if(!active||!userEngaged||reduced.matches||mobile.matches===false)return;
+    if(!active||!userEngaged||reduced.matches||!mobile.matches||!blobURL)return;
     try{await video.play();video.pause();schedule()}catch{}
   }
   const observer=new IntersectionObserver(entries=>{
@@ -110,14 +108,14 @@ if(root){
   });
   video.addEventListener('error',()=>{
     if(!video.getAttribute('src'))return;
-    if(!blobURL&&!blobFallbackTried){loadBlobFallback();return;}
     failed=true;loading=false;root.dataset.mode='fallback';root.dataset.frameReady='false';
   });
   window.addEventListener('scroll',handleScroll,{passive:true});
   window.addEventListener('resize',()=>{
     const widthChanged=innerWidth!==viewportWidth;
     viewportWidth=innerWidth;
-    if(widthChanged&&active&&userEngaged){load();schedule()}
+    if(widthChanged&&active&&userEngaged)load();
+    schedule();
   },{passive:true});
   reduced.addEventListener('change',()=>{
     if(reduced.matches){clearMedia();root.dataset.mode='fallback'}
