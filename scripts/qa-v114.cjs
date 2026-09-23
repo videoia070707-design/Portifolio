@@ -33,6 +33,7 @@ const fs=require('node:fs/promises');
       const sourceTitle=document.querySelector('#process .process-title');
       const sourceList=document.querySelector('#process .process-list');
       const j=getComputedStyle(journey), c=getComputedStyle(canvas), a=getComputedStyle(atmosphere), t=getComputedStyle(title);
+      const v115Link=document.querySelector('link[href*="v115-process-owner.css"]');
       return {
         owner:root.dataset.movxV114,
         step:Number(root.dataset.movxV111Step||0),
@@ -45,9 +46,21 @@ const fs=require('node:fs/promises');
         journeyBackground:j.background,
         journeyBackgroundColor:j.backgroundColor,
         journeyIsolation:j.isolation,
+        v115Stylesheet:{
+          href:v115Link?.href||null,
+          loaded:!!v115Link?.sheet,
+          links:[...document.querySelectorAll('link[rel="stylesheet"]')].map(link=>link.href).filter(href=>/v10[89]|v11[0125]/.test(href))
+        },
         canvas:{
           display:c.display,
           opacity:parseFloat(c.opacity||'0'),
+          inlineOpacity:canvas.style.getPropertyValue('opacity'),
+          inlineOpacityPriority:canvas.style.getPropertyPriority('opacity'),
+          transitionProperty:c.transitionProperty,
+          transitionDuration:c.transitionDuration,
+          transitionDelay:c.transitionDelay,
+          animationName:c.animationName,
+          animationDuration:c.animationDuration,
           transform:c.transform,
           transformOrigin:c.transformOrigin,
           clip:c.clipPath||c.webkitClipPath||'',
@@ -70,6 +83,7 @@ const fs=require('node:fs/promises');
     if(state.sourceTitleOpacity>.02||state.sourceListOpacity>.02)failures.push('legacy-copy-paint');
     if(state.journeyIsolation!=='isolate')failures.push('journey-isolation');
     if(!state.journeyBackground||state.journeyBackground==='none')failures.push('journey-background');
+    if(!state.v115Stylesheet.loaded)failures.push('v115-stylesheet-loaded');
     if(state.canvas.display==='none'||state.canvas.opacity<.42||state.canvas.opacity>.50)failures.push('canvas-opacity-owner');
     if(state.canvas.transform==='none'||!state.canvas.transform.includes('0.72'))failures.push('canvas-scale-owner');
     if(!state.canvas.clip.includes('50%'))failures.push('canvas-right-field');
