@@ -1,6 +1,7 @@
 /* MOVX v120 scroll background.
-   Desktop uses the optimized static source directly for reliable range seeking.
-   Mobile keeps the proven deferred Blob path. Nothing is requested on first paint. */
+   Desktop uses a directly seekable optimized source, preferring VP9/WebM in Chromium
+   and falling back to H.264/MP4 for browsers such as Safari. Mobile keeps the proven
+   deferred Blob path. Nothing is requested on first paint. */
 const root=document.querySelector('[data-movx-scroll-world="v117"]');
 if(root){
   const video=root.querySelector('video');
@@ -9,10 +10,12 @@ if(root){
   const chapterCount=Math.max(1,chapterPanels.length);
   const reduced=matchMedia('(prefers-reduced-motion: reduce)');
   const mobile=matchMedia('(max-width: 767px)');
-  const mp4=video.canPlayType('video/mp4')!=='';
-  const urls=mp4?
-    {desktop:'media/movx-scroll-world-0923.mp4',mobile:'media/movx-scroll-world-0923-mobile.mp4'}:
-    {desktop:'media/movx-scroll-world-0923.webm',mobile:'media/movx-scroll-world-0923-mobile.webm'};
+  const canWebM=video.canPlayType('video/webm; codecs="vp9"')!=='';
+  const canH264=video.canPlayType('video/mp4; codecs="avc1.640028"')!==''||video.canPlayType('video/mp4')!=='';
+  const urls={
+    desktop:canWebM?'media/movx-scroll-world-0923.webm':'media/movx-scroll-world-0923.mp4',
+    mobile:canH264?'media/movx-scroll-world-0923-mobile.mp4':'media/movx-scroll-world-0923-mobile.webm'
+  };
   const clamp=x=>Math.max(0,Math.min(1,x));
   const ease=x=>{x=clamp(x);return x*x*(3-2*x)};
   const engagementThreshold=()=>Math.max(48,innerHeight*.08);
@@ -70,6 +73,7 @@ if(root){
     clearMedia();
     mediaVariant=variant;loading=true;
     root.dataset.mode='loading';
+    root.dataset.mediaCodec=variant==='desktop'?(canWebM?'vp9-webm':'h264-mp4'):(canH264?'h264-mp4':'vp9-webm');
 
     if(variant==='desktop'){
       video.preload='auto';
