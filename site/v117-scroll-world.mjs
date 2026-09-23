@@ -73,7 +73,7 @@ if(root){
     const variant=mobile.matches?'mobile':'desktop';
     if(mediaVariant===variant&&video.getAttribute('src'))return;
     clearMedia();mediaVariant=variant;directURL=urls[variant];loading=true;
-    video.preload='metadata';video.src=directURL;video.load();
+    video.preload='auto';video.src=directURL;video.load();
   }
   function handleScroll(){
     if(!userEngaged&&scrollY>engagementThreshold()){
