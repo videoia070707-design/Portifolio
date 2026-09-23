@@ -1,1 +1,1 @@
-{"name":"movx-portfolio","private":true,"version":"1.0.0","scripts":{"build":"python3 scripts/build.py","qa":"node scripts/qa.cjs"},"dependencies":{"gsap":"3.13.0","three":"0.180.0"},"devDependencies":{"playwright":"1.55.0"}}
+{"name":"movx-portfolio","private":true,"version":"1.0.0","scripts":{"build":"python3 scripts/build-v116.py","qa":"node scripts/qa.cjs"},"dependencies":{"gsap":"3.13.0","three":"0.180.0"},"devDependencies":{"playwright":"1.55.0"}}
