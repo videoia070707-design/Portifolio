@@ -1,0 +1,82 @@
+/* MOVX v117: the source video owns the camera movement; scroll owns its time. */
+.movx-scroll-world{
+  --world-scale:.88;
+  --world-turn:-3deg;
+  --world-lift:2vh;
+  --world-exit:1;
+  --world-progress:0%;
+  position:relative;
+  height:370svh;
+  min-height:2100px;
+  background:#120b0a;
+  color:#f3eee9;
+  isolation:isolate;
+  z-index:2;
+}
+.movx-scroll-world__sticky{
+  position:sticky;
+  top:0;
+  height:100svh;
+  overflow:hidden;
+  background:#080706;
+  perspective:1400px;
+}
+.movx-scroll-world__space{position:absolute;inset:0;display:grid;place-items:center;perspective:inherit}
+.movx-scroll-world__plane{
+  position:absolute;
+  inset:0;
+  overflow:hidden;
+  background:#080706;
+  transform:translate3d(0,var(--world-lift),0) rotateY(var(--world-turn)) scale(var(--world-scale));
+  transform-origin:center;
+  opacity:var(--world-exit);
+  box-shadow:0 24px 90px rgba(0,0,0,.45);
+  backface-visibility:hidden;
+  will-change:transform,opacity;
+}
+.movx-scroll-world__poster,.movx-scroll-world__video{
+  position:absolute;
+  inset:0;
+  width:100%;height:100%;
+  display:block;
+  object-fit:contain;
+  background:#080706;
+}
+.movx-scroll-world__video{opacity:0}
+.movx-scroll-world[data-frame-ready="true"] .movx-scroll-world__video{opacity:1}
+.movx-scroll-world[data-frame-ready="true"] .movx-scroll-world__poster{opacity:0}
+.movx-scroll-world__chrome{
+  position:absolute;
+  inset:auto clamp(18px,3.4vw,58px) clamp(32px,5vh,54px);
+  z-index:2;
+  display:flex;justify-content:space-between;align-items:center;
+  gap:16px;
+  font:600 10px/1.4 Arial,sans-serif;
+  letter-spacing:.16em;
+  text-shadow:0 1px 8px #080706;
+  pointer-events:none;
+  opacity:var(--world-exit);
+}
+.movx-scroll-world__chrome i{font-style:normal;color:#b45749;padding:0 8px}
+.movx-scroll-world__hint b{font-size:15px;font-weight:400;margin-left:8px}
+.movx-scroll-world__progress{position:absolute;z-index:3;left:0;bottom:0;width:100%;height:2px;background:rgba(255,255,255,.12)}
+.movx-scroll-world__progress span{display:block;width:var(--world-progress);height:100%;background:#a94a3d}
+.movx-scroll-world[data-mode="fallback"]{height:100svh;min-height:420px}
+.movx-scroll-world[data-mode="fallback"] .movx-scroll-world__sticky{position:relative}
+.movx-scroll-world[data-mode="fallback"] .movx-scroll-world__plane{transform:none;opacity:1;box-shadow:none}
+.movx-scroll-world[data-mode="fallback"] .movx-scroll-world__hint,
+.movx-scroll-world[data-mode="fallback"] .movx-scroll-world__progress{display:none}
+@media (max-width:767px){
+  .movx-scroll-world{height:270svh;min-height:1500px}
+  .movx-scroll-world__plane{box-shadow:none}
+  .movx-scroll-world__chrome{font-size:9px;letter-spacing:.1em;bottom:calc(30px + env(safe-area-inset-bottom))}
+  .movx-scroll-world__count{display:none}
+  /* The supplied film is landscape. Show the complete frame on phones. */
+  .movx-scroll-world__poster,.movx-scroll-world__video{object-fit:contain}
+}
+@media (prefers-reduced-motion:reduce){
+  .movx-scroll-world{height:100svh!important;min-height:420px!important}
+  .movx-scroll-world__sticky{position:relative!important}
+  .movx-scroll-world__plane{transform:none!important;opacity:1!important;box-shadow:none!important}
+  .movx-scroll-world__video,.movx-scroll-world__progress,.movx-scroll-world__hint{display:none!important}
+}

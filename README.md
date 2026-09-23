@@ -22,3 +22,10 @@ dynamic geometry and changed reduced-motion preferences; it stops when hidden.
 
 The hero displays the original image once. Fake depth made from duplicate crops
 was removed because it doubled the typography and CRT screens.
+
+## MOVX v117 — scroll world
+
+This source installs the user's 0923 film as a single-take scroll-scrub chapter
+between the existing Social Media cover and Living Archive. Build with
+`npm ci && npm run build`. Serve `_site/` over HTTP; do not open source
+`index.html` directly inside this ZIP. See `docs/MOVX-v117-scroll-world.md`.
