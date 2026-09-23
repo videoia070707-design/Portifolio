@@ -3,13 +3,13 @@ from pathlib import Path, PurePosixPath
 import shutil, zipfile, re, subprocess, json
 root=Path(__file__).resolve().parents[1]
 out=root/'_site'
-release='v115-3-single-process-opacity-owner'
+release='v115-5-adaptive-surface-owner'
 if out.exists():shutil.rmtree(out)
 shutil.copytree(root/'site',out,ignore=shutil.ignore_patterns('assets','vendor'))
 
-# v108 owns camera/rendering and publishes the end-fade signal, but it must not
+# V108 owns camera/rendering and publishes the end-fade signal, but it must not
 # also write the canvas opacity directly. Strip that historical writer from the
-# canonical runtime so v115 is the only final opacity owner.
+# canonical runtime so the adaptive v115 owner is the only final surface writer.
 v108_runtime=out/'v108-institutional-depth.mjs'
 v108_text=v108_runtime.read_text()
 legacy_opacity_writer="    canvas.style.opacity=String(.96*edgeFade);\n"
@@ -19,6 +19,23 @@ v108_runtime.write_text(v108_text.replace(
  legacy_opacity_writer,
  "    // v115 owns final canvas opacity; v108 publishes only the fade signal.\n"
 ))
+
+# Promote the already-canonical v115 runtime from geometry owner to complete
+# Process surface owner. The old cascade contains several !important opacity
+# declarations; inline-important is safe now because v108 no longer rewrites it.
+# V115 consumes v108's fade signal and caps visual weight at the approved 0.46.
+v115_runtime=out/'v115-process-owner.mjs'
+v115_text=v115_runtime.read_text()
+opacity_anchor="        canvas.style.setProperty('transform-origin','92% 50%','important');\n        canvas.style.setProperty('filter','saturate(.72) contrast(.92) brightness(1.02)','important');\n"
+opacity_patch="        canvas.style.setProperty('transform-origin','92% 50%','important');\n        const fadeSignal=parseFloat(getComputedStyle(journey).getPropertyValue('--v108-process-canvas-o'));\n        const ownedOpacity=Number.isFinite(fadeSignal)?Math.min(.46,Math.max(0,fadeSignal)):.46;\n        canvas.style.setProperty('opacity',ownedOpacity.toFixed(4),'important');\n        canvas.style.setProperty('transition','none','important');\n        canvas.style.setProperty('animation','none','important');\n        canvas.style.setProperty('filter','saturate(.72) contrast(.92) brightness(1.02)','important');\n"
+if v115_text.count(opacity_anchor)!=1:
+ raise SystemExit('Expected exactly one v115 surface ownership anchor')
+v115_text=v115_text.replace(opacity_anchor,opacity_patch)
+clear_anchor="      clear(canvas,['background','clip-path','-webkit-clip-path','-webkit-mask-image','mask-image','transform','transform-origin','filter','mix-blend-mode']);\n"
+clear_patch="      clear(canvas,['background','clip-path','-webkit-clip-path','-webkit-mask-image','mask-image','transform','transform-origin','opacity','transition','animation','filter','mix-blend-mode']);\n"
+if v115_text.count(clear_anchor)!=1:
+ raise SystemExit('Expected exactly one v115 surface cleanup anchor')
+v115_runtime.write_text(v115_text.replace(clear_anchor,clear_patch))
 
 # Cache-bust authoritative stability layers. Build-only guards and the current
 # dimensional layers load last so historical experiments cannot override them.
@@ -86,4 +103,6 @@ for f in [*out.glob('*.js'),*out.glob('*.mjs')]:
 if missing:raise SystemExit('Missing references: '+str(missing))
 if 'canvas.style.opacity=String(.96*edgeFade)' in v108_runtime.read_text():
  raise SystemExit('Legacy Process opacity writer survived canonical build')
-print(json.dumps({'release':release,'assets':len(list((out/'assets').rglob('*.*'))),'missing':missing,'process_opacity_owner':'v115'}))
+if "canvas.style.setProperty('opacity',ownedOpacity.toFixed(4),'important')" not in v115_runtime.read_text():
+ raise SystemExit('Adaptive v115 Process opacity owner was not installed')
+print(json.dumps({'release':release,'assets':len(list((out/'assets').rglob('*.*'))),'missing':missing,'process_surface_owner':'v115'}))
