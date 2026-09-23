@@ -1,4 +1,4 @@
-/* MOVX v115 — adaptive Process ownership
+/* MOVX v115.1 — adaptive Process ownership
    v108 may publish its edge-fade signal, but the computed WebGL opacity is owned
    here. v111 remains styling only; its old runtime is no longer loaded. */
 
@@ -11,6 +11,17 @@
 
   html.movx-v108 body[data-page="social"] #process.process-section .v108-process-progress{
     display:none!important;
+  }
+
+  html[data-movx-v115="field-fallback"] body[data-page="social"] #process.process-section .v108-process-canvas,
+  html[data-movx-v115="field-fallback"] body[data-page="social"] #process.process-section .v108-process-atmosphere{
+    display:none!important;
+  }
+
+  html[data-movx-v115="field-fallback"] body[data-page="social"] #process.process-section .process-title,
+  html[data-movx-v115="field-fallback"] body[data-page="social"] #process.process-section .process-list{
+    opacity:1!important;
+    pointer-events:auto!important;
   }
 }
 
