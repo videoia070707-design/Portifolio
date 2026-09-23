@@ -1,0 +1,9 @@
+/* Frame 02 refinement only: preserve the push-in concept while clearing the
+   editorial caption lane. This file is intentionally isolated to the previs. */
+@media (min-width:901px){
+  .shot--02 .crt--hero{
+    width:min(1080px,74vw);
+    height:min(650px,62vh);
+    transform:translate3d(8vw,-7vh,120px) rotateY(-7deg) rotateX(1deg);
+  }
+}
