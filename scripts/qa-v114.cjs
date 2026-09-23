@@ -21,7 +21,7 @@ const fs=require('node:fs/promises');
     await page.evaluate(y=>scrollTo({top:y,behavior:'instant'}),y);
     await page.waitForTimeout(560);
 
-    const state=await page.evaluate(()=>{
+    const state=await page.evaluate(async()=>{
       const root=document.documentElement;
       const process=document.querySelector('#process.process-section');
       const journey=document.querySelector('#process .v55-process-journey');
@@ -33,7 +33,16 @@ const fs=require('node:fs/promises');
       const sourceTitle=document.querySelector('#process .process-title');
       const sourceList=document.querySelector('#process .process-list');
       const j=getComputedStyle(journey), c=getComputedStyle(canvas), a=getComputedStyle(atmosphere), t=getComputedStyle(title);
-      const v115Link=document.querySelector('link[href*="v115-process-owner.css"]');
+      const links=[...document.querySelectorAll('link[rel="stylesheet"]')];
+      const v115Link=links.find(link=>link.href.includes('v115-process-owner.css'))||null;
+      const bundleLink=links.find(link=>/\/movx-css-[^/?]+\.css(?:\?|$)/.test(link.href))||null;
+      let v115Bundled=false;
+      if(bundleLink){
+        try{
+          const css=await fetch(bundleLink.href,{cache:'force-cache'}).then(response=>response.ok?response.text():'');
+          v115Bundled=css.includes('/* MOVX bundle source: v115-process-owner.css */');
+        }catch{}
+      }
       return {
         owner:root.dataset.movxV114,
         step:Number(root.dataset.movxV111Step||0),
@@ -47,9 +56,11 @@ const fs=require('node:fs/promises');
         journeyBackgroundColor:j.backgroundColor,
         journeyIsolation:j.isolation,
         v115Stylesheet:{
-          href:v115Link?.href||null,
-          loaded:!!v115Link?.sheet,
-          links:[...document.querySelectorAll('link[rel="stylesheet"]')].map(link=>link.href).filter(href=>/v10[89]|v11[0125]/.test(href))
+          href:v115Link?.href||bundleLink?.href||null,
+          loaded:!!v115Link?.sheet||v115Bundled,
+          direct:!!v115Link?.sheet,
+          bundled:v115Bundled,
+          links:links.map(link=>link.href).filter(href=>/v10[89]|v11[0125]|movx-css-/.test(href))
         },
         canvas:{
           display:c.display,
