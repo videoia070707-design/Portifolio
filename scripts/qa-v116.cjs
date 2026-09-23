@@ -10,26 +10,33 @@ const fs=require('node:fs/promises');
 
   async function open(viewport,reducedMotion='no-preference'){
     const page=await browser.newPage({viewport,reducedMotion});
-    const errors=[],requests=[]; let aborted=0;
+    const errors=[],requests=[],mediaResponses=[]; let aborted=0;
     page.on('pageerror',e=>errors.push(String(e)));
+    page.on('response',r=>{if(r.url().includes('/media/movx-crt-scroll.mp4'))mediaResponses.push({url:r.url(),status:r.status(),contentType:r.headers()['content-type'],length:r.headers()['content-length']});});
     page.on('requestfailed',r=>{
       if(!r.url().includes('/media/movx-crt-scroll.mp4'))return;
       const failure=r.failure();
       if(materialFailure(failure))requests.push({url:r.url(),failure});
       else if(failure?.errorText?.includes('ERR_ABORTED'))aborted++;
     });
+    page.__errors=errors;page.__mediaResponses=mediaResponses;
     await page.goto(url,{waitUntil:'networkidle'});
-    return {page,errors,requests,getAborted:()=>aborted};
+    return {page,errors,requests,mediaResponses,getAborted:()=>aborted};
   }
 
   async function waitForFilm(page){
     await page.waitForSelector('[data-movx-v116="film"]');
     await page.locator('[data-movx-v116="film"]').scrollIntoViewIfNeeded();
-    await page.waitForFunction(()=>{
-      const s=document.querySelector('[data-movx-v116="film"]');
-      const v=s?.querySelector('video');
-      return s?.dataset.v116Mode==='scrub'&&v&&Number.isFinite(v.duration)&&v.duration>8;
-    },null,{timeout:30000});
+    try{
+      await page.waitForFunction(()=>{
+        const s=document.querySelector('[data-movx-v116="film"]');
+        const v=s?.querySelector('video');
+        return s?.dataset.v116Mode==='scrub'&&v&&Number.isFinite(v.duration)&&v.duration>8;
+      },null,{timeout:30000});
+    }catch(error){
+      const state=await page.evaluate(()=>{const s=document.querySelector('[data-movx-v116="film"]'),v=s?.querySelector('video');return {mode:s?.dataset.v116Mode,mediaReady:s?.dataset.v116MediaReady,src:v?.getAttribute('src'),currentSrc:v?.currentSrc,duration:v?.duration,readyState:v?.readyState,networkState:v?.networkState,error:v?.error?{code:v.error.code,message:v.error.message}:null,videoWidth:v?.videoWidth,videoHeight:v?.videoHeight,progress:s?.dataset.v116Progress,viewport:innerWidth};});
+      throw new Error(`v116 media did not become playable: ${JSON.stringify({state,errors:page.__errors||[],mediaResponses:page.__mediaResponses||[]})}; ${error.message}`);
+    }
   }
 
   async function metrics(page){
