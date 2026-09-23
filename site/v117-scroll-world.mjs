@@ -1,4 +1,4 @@
-/* Adapted from scroll-world's blob seek, mobile seek coalescing and poster fallback.
+/* MOVX v118 performance pass: range-first scroll video with blob fallback.
    The supplied footage is one continuous take, so there are no segment seams. */
 const root=document.querySelector('[data-movx-scroll-world="v117"]');
 if(root){
@@ -12,7 +12,7 @@ if(root){
   const clamp=x=>Math.max(0,Math.min(1,x));
   const ease=x=>{x=clamp(x);return x*x*(3-2*x)};
   let active=false,failed=false,disposed=false,raf=0,duration=0,target=0,blobURL='',controller=null,loading=false;
-  let viewportWidth=innerWidth,mediaVariant='';
+  let viewportWidth=innerWidth,mediaVariant='',directURL='',blobFallbackTried=false;
 
   function progress(){
     const length=Math.max(1,root.offsetHeight-innerHeight);
@@ -46,39 +46,45 @@ if(root){
     controller?.abort();controller=null;
     video.pause();video.removeAttribute('src');video.load();
     if(blobURL)URL.revokeObjectURL(blobURL);
-    blobURL='';duration=0;loading=false;
+    blobURL='';duration=0;loading=false;directURL='';blobFallbackTried=false;
     root.dataset.frameReady='false';
   }
-  async function load(){
-    if(disposed||failed||reduced.matches||loading)return;
-    const variant=mobile.matches?'mobile':'desktop';
-    if(mediaVariant===variant&&blobURL)return;
-    clearMedia();mediaVariant=variant;loading=true;
-    controller=new AbortController();
+  async function loadBlobFallback(){
+    if(disposed||failed||reduced.matches||blobFallbackTried||!directURL)return;
+    blobFallbackTried=true;loading=true;
+    controller?.abort();controller=new AbortController();
     try{
-      const response=await fetch(urls[variant],{signal:controller.signal});
+      const response=await fetch(directURL,{signal:controller.signal,cache:'force-cache'});
       if(!response.ok)throw new Error(`media status ${response.status}`);
       const data=await response.blob();
-      if(disposed||reduced.matches||mediaVariant!==variant)return;
+      if(disposed||reduced.matches)return;
       blobURL=URL.createObjectURL(data);
-      video.src=blobURL;video.load();loading=false;
+      video.preload='auto';video.src=blobURL;video.load();
     }catch(error){
       if(error.name==='AbortError')return;
-      failed=true;root.dataset.mode='fallback';loading=false;
+      failed=true;loading=false;root.dataset.mode='fallback';
       console.warn('MOVX scroll film: poster fallback',error);
     }
   }
+  function load(){
+    if(disposed||failed||reduced.matches||loading)return;
+    const variant=mobile.matches?'mobile':'desktop';
+    if(mediaVariant===variant&&video.getAttribute('src'))return;
+    clearMedia();mediaVariant=variant;directURL=urls[variant];loading=true;
+    video.preload='metadata';video.src=directURL;video.load();
+  }
   async function prime(){
-    if(!active||!blobURL||reduced.matches||!mobile.matches)return;
+    if(!active||reduced.matches||mobile.matches===false)return;
     try{await video.play();video.pause();schedule()}catch{}
   }
   const observer=new IntersectionObserver(entries=>{
     active=entries.some(entry=>entry.isIntersecting);
     if(active){load();schedule()}else{cancelAnimationFrame(raf);raf=0;video.pause()}
-  },{rootMargin:'150% 0px'});
+  },{rootMargin:'0px',threshold:0});
   observer.observe(root);
   video.muted=true;video.playsInline=true;video.disableRemotePlayback=true;
   video.addEventListener('loadedmetadata',()=>{
+    loading=false;
     duration=Number.isFinite(video.duration)?video.duration:0;
     root.dataset.mode=duration?'scrub':'fallback';
     schedule();
@@ -92,7 +98,9 @@ if(root){
     seek();
   });
   video.addEventListener('error',()=>{
-    if(blobURL){failed=true;root.dataset.mode='fallback';root.dataset.frameReady='false'}
+    if(!video.getAttribute('src'))return;
+    if(!blobURL&&!blobFallbackTried){loadBlobFallback();return;}
+    failed=true;loading=false;root.dataset.mode='fallback';root.dataset.frameReady='false';
   });
   window.addEventListener('scroll',schedule,{passive:true});
   window.addEventListener('resize',()=>{

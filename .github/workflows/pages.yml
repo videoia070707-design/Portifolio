@@ -25,10 +25,12 @@ jobs:
           cache: npm
       - name: Install pinned dependencies
         run: npm ci --no-audit --no-fund
-      - name: Ensure FFmpeg for v117 media
+      - name: Ensure FFmpeg for optimized media
         run: ffmpeg -version || (sudo apt-get update && sudo apt-get install -y ffmpeg)
-      - name: Build canonical MOVX v117 source
+      - name: Build optimized MOVX source
         run: npm run build
+      - name: Enforce performance budgets
+        run: python3 scripts/qa-performance.py
       - name: Validate desktop, mobile, cases, motion and Scroll World
         run: |
           npx playwright install --with-deps chromium
@@ -52,7 +54,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: movx-v117-scroll-world-validation
+          name: movx-v118-performance-validation
           path: _site/qa-*
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5

@@ -1,10 +1,10 @@
-"""Build MOVX v117 and install the single-take scroll-world chapter from user footage."""
+"""Build MOVX v118 performance pass on top of the v117 Scroll World source."""
 from pathlib import Path
 import runpy, json, re, shutil, subprocess, tempfile, urllib.request
 
 root=Path(__file__).resolve().parents[1]
 out=root/'_site'
-release='v117-scroll-world-0923'
+release='v118-performance'
 source_url='https://res.cloudinary.com/gp3xbngz/video/upload/v1790173902/0923.mp4'
 media=root/'site'/'media'
 media.mkdir(parents=True,exist_ok=True)
@@ -16,34 +16,49 @@ media_files={
     'mobile_webm':media/'movx-scroll-world-0923-mobile.webm',
     'poster':media/'movx-scroll-world-poster.jpg',
 }
+media_budgets={
+    'desktop_mp4':3_600_000,
+    'mobile_mp4':1_700_000,
+    'desktop_webm':3_600_000,
+    'mobile_webm':1_700_000,
+    'poster':180_000,
+}
 
 def run_ffmpeg(ffmpeg,src,*args):
     subprocess.run([ffmpeg,'-hide_banner','-loglevel','error','-y','-i',str(src),*map(str,args)],check=True)
 
+def media_is_optimized():
+    return all(path.exists() and 1024<path.stat().st_size<=media_budgets[key] for key,path in media_files.items())
+
 def ensure_media():
-    if all(path.exists() and path.stat().st_size>1024 for path in media_files.values()):
-        return 'packaged'
+    if media_is_optimized():
+        return 'packaged-optimized'
     ffmpeg=shutil.which('ffmpeg')
     if not ffmpeg:
-        raise SystemExit('MOVX v117 media is missing and ffmpeg is unavailable')
-    with tempfile.TemporaryDirectory(prefix='movx-v117-') as tmpdir:
+        raise SystemExit('MOVX performance media is missing and ffmpeg is unavailable')
+    with tempfile.TemporaryDirectory(prefix='movx-v118-') as tmpdir:
         src=Path(tmpdir)/'0923-source.mp4'
-        req=urllib.request.Request(source_url,headers={'User-Agent':'MOVX-v117-builder/1.0'})
+        req=urllib.request.Request(source_url,headers={'User-Agent':'MOVX-v118-builder/1.0'})
         with urllib.request.urlopen(req,timeout=90) as response, src.open('wb') as target:
             shutil.copyfileobj(response,target)
         if src.stat().st_size<1024:
-            raise SystemExit('MOVX v117 source video download was empty')
-        run_ffmpeg(ffmpeg,src,'-an','-vf','scale=1920:-2','-c:v','libx264','-preset','veryfast','-crf','20','-g','8','-keyint_min','8','-sc_threshold','0','-movflags','+faststart',media_files['desktop_mp4'])
-        run_ffmpeg(ffmpeg,src,'-an','-vf','scale=960:-2','-c:v','libx264','-preset','veryfast','-crf','21','-g','4','-keyint_min','4','-sc_threshold','0','-movflags','+faststart',media_files['mobile_mp4'])
-        run_ffmpeg(ffmpeg,src,'-an','-vf','scale=1920:-2','-c:v','libvpx-vp9','-deadline','good','-cpu-used','4','-crf','32','-b:v','0',media_files['desktop_webm'])
-        run_ffmpeg(ffmpeg,src,'-an','-vf','scale=960:-2','-c:v','libvpx-vp9','-deadline','good','-cpu-used','5','-crf','34','-b:v','0',media_files['mobile_webm'])
-        subprocess.run([ffmpeg,'-hide_banner','-loglevel','error','-y','-ss','0.08','-i',str(src),'-frames:v','1','-vf','scale=1920:-2','-q:v','3',str(media_files['poster'])],check=True)
-    return 'cloudinary-transcode'
+            raise SystemExit('MOVX v118 source video download was empty')
+        # Smaller, seek-friendly encodes. The film owns the motion; these resolutions are enough
+        # for a full-bleed web viewport without making the opening page compete with an 8–9 MB file.
+        run_ffmpeg(ffmpeg,src,'-an','-vf','scale=1440:-2','-c:v','libx264','-preset','medium','-crf','26','-g','12','-keyint_min','12','-sc_threshold','0','-movflags','+faststart',media_files['desktop_mp4'])
+        run_ffmpeg(ffmpeg,src,'-an','-vf','scale=854:-2','-c:v','libx264','-preset','medium','-crf','27','-g','8','-keyint_min','8','-sc_threshold','0','-movflags','+faststart',media_files['mobile_mp4'])
+        run_ffmpeg(ffmpeg,src,'-an','-vf','scale=1440:-2','-c:v','libvpx-vp9','-deadline','good','-cpu-used','6','-crf','39','-b:v','0',media_files['desktop_webm'])
+        run_ffmpeg(ffmpeg,src,'-an','-vf','scale=854:-2','-c:v','libvpx-vp9','-deadline','good','-cpu-used','7','-crf','41','-b:v','0',media_files['mobile_webm'])
+        subprocess.run([ffmpeg,'-hide_banner','-loglevel','error','-y','-ss','0.08','-i',str(src),'-frames:v','1','-vf','scale=1440:-2','-q:v','4',str(media_files['poster'])],check=True)
+    if not media_is_optimized():
+        sizes={key:path.stat().st_size if path.exists() else 0 for key,path in media_files.items()}
+        raise SystemExit(f'MOVX v118 media exceeds performance budget: {sizes}')
+    return 'cloudinary-transcode-optimized'
 
 def run_base_build_without_retired_v116():
-    """Keep v116 source in git for reference, but exclude it from the canonical v117 build scan."""
+    """Keep v116 source in git for reference, but exclude it from the canonical v118 build scan."""
     retired_names=('v116-scroll-film.html','v116-scroll-film.css','v116-scroll-film.mjs')
-    with tempfile.TemporaryDirectory(prefix='movx-v117-retired-') as tmpdir:
+    with tempfile.TemporaryDirectory(prefix='movx-v118-retired-') as tmpdir:
         retired=Path(tmpdir)
         moved=[]
         for name in retired_names:
@@ -59,8 +74,44 @@ def run_base_build_without_retired_v116():
                 if dst.exists():
                     shutil.move(str(dst),str(src))
 
+def optimize_hero():
+    ffmpeg=shutil.which('ffmpeg')
+    source=out/'assets'/'hero'/'soul-of-design-hero-clean.png'
+    target=out/'assets'/'hero'/'soul-of-design-hero-clean.webp'
+    if not ffmpeg or not source.exists():
+        raise SystemExit('MOVX v118 hero optimizer prerequisites are missing')
+    run_ffmpeg(ffmpeg,source,'-frames:v','1','-c:v','libwebp','-quality','82','-compression_level','6',target)
+    if not target.exists() or target.stat().st_size>220_000:
+        raise SystemExit(f'MOVX v118 optimized hero is too large: {target.stat().st_size if target.exists() else 0}')
+    old_local='assets/hero/soul-of-design-hero-clean.png'
+    new_local='assets/hero/soul-of-design-hero-clean.webp'
+    rewrites=0
+    for html in out.glob('*.html'):
+        content=html.read_text()
+        changed=content.replace(f'href="{old_local}"',f'href="{new_local}"').replace(f'src="{old_local}"',f'src="{new_local}"')
+        if changed!=content:
+            rewrites+=1
+            html.write_text(changed)
+    return {'png_bytes':source.stat().st_size,'webp_bytes':target.stat().st_size,'pages':rewrites}
+
+def optimize_runtime():
+    runtime=out/'script.js'
+    text=runtime.read_text()
+    eager='loading="${itemIndex < 2 ? \'eager\' : \'lazy\'}" fetchpriority="${itemIndex === 0 ? \'high\' : \'auto\'}"'
+    lazy='loading="lazy" fetchpriority="low"'
+    if text.count(eager)!=1:
+        raise SystemExit('MOVX v118 expected one eager conveyor image template')
+    text=text.replace(eager,lazy,1)
+    warm="rootMargin:'900px 0px'"
+    if text.count(warm)!=1:
+        raise SystemExit('MOVX v118 expected one 900px archive predecode margin')
+    text=text.replace(warm,"rootMargin:'320px 0px'",1)
+    runtime.write_text(text)
+
 media_mode=ensure_media()
 run_base_build_without_retired_v116()
+hero_stats=optimize_hero()
+optimize_runtime()
 fragment=(root/'site'/'v117-scroll-world.html').read_text().strip()
 installed=[]
 
@@ -81,7 +132,8 @@ for name in ('index.html','latest.html','social-media.html'):
 for old in ('v116-scroll-film.html','v116-scroll-film.css','v116-scroll-film.mjs','media/movx-crt-scroll.mp4','media/movx-crt-poster.jpg'):
     (out/old).unlink(missing_ok=True)
 
-required=('v117-scroll-world.css','v117-scroll-world.mjs','media/movx-scroll-world-0923.mp4','media/movx-scroll-world-0923-mobile.mp4','media/movx-scroll-world-0923.webm','media/movx-scroll-world-0923-mobile.webm','media/movx-scroll-world-poster.jpg')
+required=('v117-scroll-world.css','v117-scroll-world.mjs','assets/hero/soul-of-design-hero-clean.webp','media/movx-scroll-world-0923.mp4','media/movx-scroll-world-0923-mobile.mp4','media/movx-scroll-world-0923.webm','media/movx-scroll-world-0923-mobile.webm','media/movx-scroll-world-poster.jpg')
 missing=[name for name in required if not (out/name).exists()]
-if missing or not installed:raise SystemExit(f'v117 invalid build: missing={missing}; installed={installed}')
-print(json.dumps({'release':release,'pages':installed,'source':source_url,'media_mode':media_mode,'mobile':'landscape letterbox fallback','missing':missing}))
+if missing or not installed:raise SystemExit(f'v118 invalid build: missing={missing}; installed={installed}')
+media_sizes={key:path.stat().st_size for key,path in media_files.items()}
+print(json.dumps({'release':release,'pages':installed,'source':source_url,'media_mode':media_mode,'hero':hero_stats,'media_bytes':media_sizes,'mobile':'landscape contain','missing':missing}))
