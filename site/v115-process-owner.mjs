@@ -1,4 +1,4 @@
-/* MOVX v115 — adaptive Process owner
+/* MOVX v115.1 — adaptive Process owner
    Replaces the v111 runtime in the canonical build. It keeps one desktop reading
    lane, restores the semantic DOM when the viewport/reduced-motion state changes,
    and lets CSS own the final WebGL opacity without a MutationObserver fight. */
@@ -27,7 +27,9 @@ if(body?.dataset.page==='social'){
     let active=-1;
     let raf=0;
 
-    const enhanced=()=>desktopMq.matches&&!reduceMq.matches&&!staticMode;
+    const wantsEnhanced=()=>desktopMq.matches&&!reduceMq.matches&&!staticMode;
+    const fieldBlocked=()=>['mobile-fallback','reduced','context-lost','missing-process','missing-steps'].includes(root.dataset.v108Webgl||'');
+    const enhanced=()=>wantsEnhanced()&&!fieldBlocked();
 
     const structuredTitleText=titleNode=>{
       if(!titleNode)return'';
@@ -176,9 +178,10 @@ if(body?.dataset.page==='social'){
         clearLegacyGeometry();
         clearFieldPolish();
         destroyOverlay();
-        root.dataset.movxV111=reduceMq.matches||staticMode?'reduced-flow':'mobile-flow';
+        const fieldFallback=wantsEnhanced()&&fieldBlocked();
+        root.dataset.movxV111=reduceMq.matches||staticMode?'reduced-flow':fieldFallback?'field-fallback':'mobile-flow';
         root.dataset.movxV114='fallback-flow';
-        root.dataset.movxV115='flow-fallback';
+        root.dataset.movxV115=fieldFallback?'field-fallback':'flow-fallback';
         return;
       }
 
@@ -198,6 +201,8 @@ if(body?.dataset.page==='social'){
     const sourceMo=new MutationObserver(schedule);
     sourceMo.observe(sourceTitle,{subtree:true,childList:true,characterData:true});
     sourceRows.forEach(row=>sourceMo.observe(row,{subtree:true,childList:true,characterData:true}));
+    const fieldMo=new MutationObserver(schedule);
+    fieldMo.observe(root,{attributes:true,attributeFilter:['data-v108-webgl']});
 
     addEventListener('scroll',schedule,{passive:true});
     addEventListener('resize',schedule,{passive:true});
@@ -207,6 +212,7 @@ if(body?.dataset.page==='social'){
 
     addEventListener('pagehide',()=>{
       sourceMo.disconnect();
+      fieldMo.disconnect();
       cancelAnimationFrame(raf);
       removeEventListener('scroll',schedule);
       removeEventListener('resize',schedule);
