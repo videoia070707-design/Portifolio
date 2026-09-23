@@ -60,10 +60,10 @@ if "rootMargin:'320px 0px'" not in runtime:
 scroll=(out/'v117-scroll-world.mjs').read_text()
 if "rootMargin:'0px'" not in scroll:
     errors.append('Scroll World intersection margin is not zero')
-if "video.src=urls.desktop" not in scroll:
-    errors.append('Scroll World desktop direct optimized source is missing')
-if "const data=await response.blob()" not in scroll or "video.src=blobURL" not in scroll:
-    errors.append('Scroll World mobile deferred Blob path is missing')
+if "const response=await fetch(urls[variant]" not in scroll or "const data=await response.blob()" not in scroll or "video.src=blobURL" not in scroll:
+    errors.append('Scroll World deferred Blob delivery for reliable seeking is missing')
+if "canWebM" not in scroll or "canH264" not in scroll:
+    errors.append('Scroll World codec negotiation is missing')
 if 'userEngaged' not in scroll or 'engagementThreshold' not in scroll:
     errors.append('Scroll World explicit user-scroll gate is missing')
 if 'if(active){if(userEngaged)load();schedule()}' not in scroll:
@@ -75,4 +75,4 @@ if fragment.count('data-world-chapter-panel=')!=4:
 
 if errors:
     raise SystemExit('MOVX performance QA failed: '+json.dumps(errors,ensure_ascii=False))
-print(json.dumps({'status':'passed','sizes':sizes,'css_bundles':css_bundles,'deferred_video_gate':True,'desktop_delivery':'optimized-direct','mobile_delivery':'optimized-blob','scroll_chapters':4},ensure_ascii=False))
+print(json.dumps({'status':'passed','sizes':sizes,'css_bundles':css_bundles,'deferred_video_gate':True,'desktop_delivery':'optimized-blob','mobile_delivery':'optimized-blob','scroll_chapters':4},ensure_ascii=False))
