@@ -41,10 +41,14 @@ if "rootMargin:'320px 0px'" not in runtime:
 
 scroll=(out/'v117-scroll-world.mjs').read_text()
 if "rootMargin:'0px'" not in scroll:
-    errors.append('Scroll World still preloads before entering the viewport')
+    errors.append('Scroll World intersection margin is not zero')
 if "video.preload='metadata'" not in scroll:
     errors.append('Scroll World range-first metadata preload is missing')
+if 'userEngaged' not in scroll or 'engagementThreshold' not in scroll:
+    errors.append('Scroll World explicit user-scroll gate is missing')
+if 'if(active){if(userEngaged)load();schedule()}' not in scroll:
+    errors.append('Scroll World can still request media before user engagement')
 
 if errors:
     raise SystemExit('MOVX performance QA failed: '+json.dumps(errors,ensure_ascii=False))
-print(json.dumps({'status':'passed','sizes':sizes},ensure_ascii=False))
+print(json.dumps({'status':'passed','sizes':sizes,'deferred_video_gate':True},ensure_ascii=False))
