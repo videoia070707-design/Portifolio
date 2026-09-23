@@ -1,7 +1,7 @@
 /* MOVX v120 scroll background.
-   Desktop uses a directly seekable optimized source, preferring VP9/WebM in Chromium
-   and falling back to H.264/MP4 for browsers such as Safari. Mobile keeps the proven
-   deferred Blob path. Nothing is requested on first paint. */
+   Both desktop and mobile use a deferred optimized Blob after real user engagement.
+   Desktop prefers VP9/WebM when available and falls back to H.264/MP4. Mobile prefers
+   H.264/MP4 when available. Nothing is requested on first paint. */
 const root=document.querySelector('[data-movx-scroll-world="v117"]');
 if(root){
   const video=root.querySelector('video');
@@ -69,27 +69,21 @@ if(root){
   async function load(){
     if(disposed||failed||reduced.matches||!userEngaged)return;
     const variant=mobile.matches?'mobile':'desktop';
-    if(mediaVariant===variant&&(loading||video.currentSrc||video.getAttribute('src')))return;
+    if(mediaVariant===variant&&(loading||blobURL||video.currentSrc||video.getAttribute('src')))return;
     clearMedia();
     mediaVariant=variant;loading=true;
     root.dataset.mode='loading';
     root.dataset.mediaCodec=variant==='desktop'?(canWebM?'vp9-webm':'h264-mp4'):(canH264?'h264-mp4':'vp9-webm');
-
-    if(variant==='desktop'){
-      video.preload='auto';
-      video.src=urls.desktop;
-      video.load();
-      return;
-    }
-
     controller=new AbortController();
     try{
-      const response=await fetch(urls.mobile,{signal:controller.signal,cache:'force-cache'});
+      const response=await fetch(urls[variant],{signal:controller.signal,cache:'force-cache'});
       if(!response.ok)throw new Error(`media status ${response.status}`);
       const data=await response.blob();
       if(disposed||reduced.matches||mediaVariant!==variant)return;
       blobURL=URL.createObjectURL(data);
-      video.preload='auto';video.src=blobURL;video.load();
+      video.preload='auto';
+      video.src=blobURL;
+      video.load();
     }catch(error){
       if(error.name==='AbortError')return;
       failed=true;loading=false;root.dataset.mode='fallback';root.dataset.frameReady='false';
