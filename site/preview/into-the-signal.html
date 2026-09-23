@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="pt-BR" data-active-shot="01">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>MOVX — Soul of Design / Into the Signal — Direction Board</title>
+<link rel="stylesheet" href="into-the-signal.css">
+</head>
+<body>
+<header class="board-head" aria-label="Direction board status">
+  <div class="board-head__brand">MOVX / SOUL OF DESIGN</div>
+  <div class="board-head__state"><i></i><span>INTO THE SIGNAL / PRE-VIS / NOT PRODUCTION</span></div>
+</header>
+
+<main>
+  <section class="board-intro">
+    <div>
+      <div class="board-intro__meta">DIRECTION BOARD / 03 KEYFRAMES / SCROLL FILM PREVIS</div>
+      <h1>Into the<br>Signal</h1>
+      <p>Uma viagem curta da capa reconhecível do MOVX para dentro do próprio sistema visual. <strong>A capa atual continua intacta.</strong> Estes três quadros definem o vídeo pré-renderizado que depois será controlado pelo scroll, enquanto navegação e copy permanecem DOM real.</p>
+    </div>
+  </section>
+
+  <section class="shot shot--01 is-active" data-shot="01" aria-labelledby="shot-01-title">
+    <div class="shot__sticky">
+      <div class="shot__scene" aria-hidden="true">
+        <div class="crt crt--left">
+          <div class="crt__screen"><img src="../assets/projects/hardwork-neon-direction/slide-01.webp" alt=""></div><i class="crt__led"></i>
+        </div>
+        <div class="crt crt--hero">
+          <div class="crt__screen"><img src="../assets/hero/soul-of-design-hero-clean.png" alt=""></div><i class="crt__led"></i>
+        </div>
+        <div class="crt crt--right">
+          <div class="crt__screen"><img src="../assets/projects/belive-cashflow.webp" alt=""></div><i class="crt__led"></i>
+        </div>
+        <div class="cable"></div>
+      </div>
+      <div class="shot__rule"></div>
+      <div class="shot__caption">
+        <span class="shot__number">FRAME 01</span>
+        <h2 id="shot-01-title">Signal Found</h2>
+        <p><b>Câmera:</b> plano aberto, 35–40mm, leve assimetria. A capa Soul of Design continua 100% reconhecível no CRT principal. Monitores secundários usam trabalhos reais do portfólio para transformar o cenário em universo MOVX, não em decoração genérica.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="shot shot--02" data-shot="02" aria-labelledby="shot-02-title">
+    <div class="shot__sticky">
+      <div class="shot__scene" aria-hidden="true">
+        <div class="ghost"></div>
+        <div class="signal-line"></div>
+        <div class="crt crt--hero">
+          <div class="crt__screen"><img src="../assets/hero/soul-of-design-hero-clean.png" alt=""></div><i class="crt__led"></i>
+        </div>
+      </div>
+      <div class="shot__rule"></div>
+      <div class="shot__caption">
+        <span class="shot__number">FRAME 02</span>
+        <h2 id="shot-02-title">Crossing the Glass</h2>
+        <p><b>Câmera:</b> push-in contínuo. O CRT ocupa quase todo o quadro; moldura, vidro e scanline ainda existem, mas começam a virar passagem. O movimento deve parecer câmera física aproximando-se, sem texto 3D, HUD ou elementos “tech IA”.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="shot shot--03" data-shot="03" aria-labelledby="shot-03-title">
+    <div class="shot__sticky">
+      <div class="shot__scene" aria-hidden="true">
+        <div class="portal">
+          <div class="archive-field">
+            <div class="archive-tile"><img src="../assets/projects/voltara-operacoes/slide-01.webp" alt=""></div>
+            <div class="archive-tile"><img src="../assets/projects/marina-gengival/01.webp" alt=""></div>
+            <div class="archive-tile"><img src="../assets/projects/hardwork-thermo-plus/hardwork-thermo-plus-01.webp" alt=""></div>
+            <div class="archive-tile"><img src="../assets/projects/motionhub-01.webp" alt=""></div>
+            <div class="archive-tile"><img src="../assets/projects/voltara-viabilidade/voltara-viabilidade-01.webp" alt=""></div>
+            <div class="archive-tile"><img src="../assets/projects/hardwork-modo/hardwork-modo-01.webp" alt=""></div>
+            <div class="archive-tile"><img src="../assets/projects/marina-familia/01.webp" alt=""></div>
+          </div>
+        </div>
+        <div class="screen-edge"></div>
+      </div>
+      <div class="shot__rule"></div>
+      <div class="shot__caption">
+        <span class="shot__number">FRAME 03</span>
+        <h2 id="shot-03-title">Inside the Archive</h2>
+        <p><b>Câmera:</b> atravessa o vidro; a moldura desaparece nas bordas e o sinal resolve no Arquivo Vivo. O vídeo termina aqui e entrega o controle ao site real. O último frame deve casar geometricamente com o primeiro estado do mural para esconder o corte vídeo → DOM.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="board-end">
+    <h2>Film first.<br>Then wire it.</h2>
+    <div class="board-end__copy">
+      <p>Este preview existe para aprovar composição, profundidade e trajetória antes de renderizar o vídeo. A produção final não deve rasterizar navegação, títulos funcionais ou controles do site.</p>
+      <p>Depois do vídeo aprovado, a integração deve usar um único progresso normalizado de scroll para mapear tempo/frame, com fallback estático em mobile/reduced-motion e sem criar um segundo motor global de scroll.</p>
+      <ul>
+        <li><span>01 / START</span><b>CRT wall + hero intacto</b></li>
+        <li><span>02 / PUSH</span><b>Camera dive / bezel → portal</b></li>
+        <li><span>03 / LAND</span><b>Living Archive / seamless handoff</b></li>
+      </ul>
+    </div>
+  </section>
+</main>
+<script type="module" src="into-the-signal.mjs"></script>
+</body>
+</html>
