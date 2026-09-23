@@ -1,14 +1,13 @@
-/* MOVX v115.4 — adaptive Process ownership
-   v108 publishes camera/progress state; v115 is the only final visual owner for
-   the Process WebGL surface in the canonical build. */
+/* MOVX v115.6 — adaptive Process ownership
+   V108 publishes camera/progress state; the canonical build promotes v115 to the
+   only final Process surface owner. This CSS also protects explicit fallbacks. */
 
 .v111-process-copy[hidden]{display:none!important}
 
 @media (min-width:981px) and (prefers-reduced-motion:no-preference){
   html.movx-v108 body[data-page="social"] #process.process-section .v108-process-canvas{
-    /* Keep the correction pass deterministic. The legacy v108 direct opacity
-       writer is stripped by build.py, and transitions/animations are disabled so
-       no historical tween can interpolate above the approved 0.46 surface. */
+    /* Build-time v115 owns opacity inline-important. These are defensive guards
+       against historical transition/animation declarations. */
     opacity:.46!important;
     transition:none!important;
     animation:none!important;
@@ -18,13 +17,16 @@
     display:none!important;
   }
 
-  html[data-movx-v115="field-fallback"] body[data-page="social"] #process.process-section .v108-process-canvas,
-  html[data-movx-v115="field-fallback"] body[data-page="social"] #process.process-section .v108-process-atmosphere{
+  /* v108-process-structure uses .v55-process-journey + !important to force the
+     desktop field visible. Field-fallback must be more specific so a page loaded
+     first on mobile never exposes an uninitialized canvas after widening. */
+  html.movx-v108[data-movx-v115="field-fallback"] body[data-page="social"] #process.process-section .v55-process-journey .v108-process-canvas,
+  html.movx-v108[data-movx-v115="field-fallback"] body[data-page="social"] #process.process-section .v55-process-journey .v108-process-atmosphere{
     display:none!important;
   }
 
-  html[data-movx-v115="field-fallback"] body[data-page="social"] #process.process-section .process-title,
-  html[data-movx-v115="field-fallback"] body[data-page="social"] #process.process-section .process-list{
+  html.movx-v108[data-movx-v115="field-fallback"] body[data-page="social"] #process.process-section .v55-process-journey .process-title,
+  html.movx-v108[data-movx-v115="field-fallback"] body[data-page="social"] #process.process-section .v55-process-journey .process-list{
     opacity:1!important;
     pointer-events:auto!important;
   }
