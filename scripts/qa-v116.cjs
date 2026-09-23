@@ -2,13 +2,25 @@ const {chromium}=require('playwright');
 const fs=require('node:fs/promises');
 
 (async()=>{
-  // v116 validates H.264 scroll-scrubbing in the same Chrome codec stack used
-  // by real visitors, rather than Playwright's open-source Chromium codec set.
   const browser=await chromium.launch({channel:'chrome',headless:true});
   const report=[];
   const url='http://127.0.0.1:4173/social-media.html';
-  const cloudinaryHost='res.cloudinary.com';
-  const cloudinaryFile='/0923.mp4';
+  const isCloudinary=src=>src.includes('res.cloudinary.com')&&src.endsWith('/0923.mp4');
+  const materialFailure=f=>f&&f.errorText&&!f.errorText.includes('ERR_ABORTED');
+
+  async function open(viewport,reducedMotion='no-preference'){
+    const page=await browser.newPage({viewport,reducedMotion});
+    const errors=[],requests=[]; let aborted=0;
+    page.on('pageerror',e=>errors.push(String(e)));
+    page.on('requestfailed',r=>{
+      if(!r.url().includes('cloudinary.com'))return;
+      const failure=r.failure();
+      if(materialFailure(failure))requests.push({url:r.url(),failure});
+      else if(failure?.errorText?.includes('ERR_ABORTED'))aborted++;
+    });
+    await page.goto(url,{waitUntil:'networkidle'});
+    return {page,errors,requests,getAborted:()=>aborted};
+  }
 
   async function waitForFilm(page){
     await page.waitForSelector('[data-movx-v116="film"]');
@@ -20,103 +32,58 @@ const fs=require('node:fs/promises');
     },null,{timeout:30000});
   }
 
-  const isCloudinary=src=>src.includes(cloudinaryHost)&&src.endsWith(cloudinaryFile);
-  const materialFailure=f=>f&&f.errorText&&!f.errorText.includes('ERR_ABORTED');
-
-  async function filmMetrics(page){
-    return page.evaluate(()=>{
-      const s=document.querySelector('[data-movx-v116="film"]');
-      return {top:s.offsetTop,travel:Math.max(1,s.offsetHeight-innerHeight)};
-    });
+  async function metrics(page){
+    return page.evaluate(()=>{const s=document.querySelector('[data-movx-v116="film"]');return {top:s.offsetTop,travel:Math.max(1,s.offsetHeight-innerHeight)}});
   }
 
-  async function sample(page,metrics,label,p,prefix){
-    await page.evaluate(y=>scrollTo(0,y),metrics.top+metrics.travel*p);
+  async function sample(page,m,label,p,prefix){
+    await page.evaluate(y=>scrollTo(0,y),m.top+m.travel*p);
     await page.waitForTimeout(620);
     const state=await page.evaluate(()=>{
-      const s=document.querySelector('[data-movx-v116="film"]');
-      const v=s.querySelector('video');
-      const css=getComputedStyle(s);
-      return {
-        mode:s.dataset.v116Mode,
-        viewport:s.dataset.v116Viewport,
-        progress:Number(s.dataset.v116Progress||0),
-        phase:s.dataset.v116Phase,
-        time:v.currentTime,
-        duration:v.duration,
-        readyState:v.readyState,
-        networkState:v.networkState,
-        scale:Number(css.getPropertyValue('--v116-scale').trim()||1),
-        opacity:Number(css.getPropertyValue('--v116-opacity').trim()||1),
-        handoff:Number(css.getPropertyValue('--v116-handoff').trim()||0)
-      };
+      const s=document.querySelector('[data-movx-v116="film"]'),v=s.querySelector('video'),css=getComputedStyle(s);
+      return {progress:Number(s.dataset.v116Progress||0),phase:s.dataset.v116Phase,time:v.currentTime,duration:v.duration,readyState:v.readyState,scale:Number(css.getPropertyValue('--v116-scale').trim()||1),opacity:Number(css.getPropertyValue('--v116-opacity').trim()||1),handoff:Number(css.getPropertyValue('--v116-handoff').trim()||0)};
     });
     report.push({prefix,label,state});
     await page.screenshot({path:`_site/qa-v116-${prefix}-${label}.png`,fullPage:false});
     return state;
   }
 
-  const desktop=await browser.newPage({viewport:{width:1440,height:900},reducedMotion:'no-preference'});
-  const desktopErrors=[]; const desktopRequests=[]; let desktopAborted=0;
-  desktop.on('pageerror',e=>desktopErrors.push(String(e)));
-  desktop.on('requestfailed',r=>{
-    if(!r.url().includes('cloudinary.com'))return;
-    const failure=r.failure();
-    if(materialFailure(failure))desktopRequests.push({url:r.url(),failure});
-    else if(failure?.errorText?.includes('ERR_ABORTED'))desktopAborted++;
+  // Desktop — source, metadata, sticky surface and real temporal scrub.
+  const d=await open({width:1440,height:900});
+  await waitForFilm(d.page);
+  const desktopInitial=await d.page.evaluate(()=>{
+    const s=document.querySelector('[data-movx-v116="film"]'),v=s.querySelector('video');
+    return {mode:s.dataset.v116Mode,viewport:s.dataset.v116Viewport,duration:v.duration,canPlayH264:v.canPlayType('video/mp4; codecs="avc1.42E01E"'),src:v.currentSrc,hero:!!document.querySelector('.social-cover-art'),archive:!!document.querySelector('#livingArchive'),overflow:document.documentElement.scrollWidth-innerWidth,autoplay:v.autoplay,controls:v.controls,sticky:getComputedStyle(s.querySelector('.into-signal-film__sticky')).position};
   });
-  await desktop.goto(url,{waitUntil:'networkidle'});
-  await waitForFilm(desktop);
-  const desktopInitial=await desktop.evaluate(()=>{
-    const s=document.querySelector('[data-movx-v116="film"]');
-    const v=s.querySelector('video');
-    return {mode:s.dataset.v116Mode,viewport:s.dataset.v116Viewport,duration:v.duration,readyState:v.readyState,networkState:v.networkState,canPlayH264:v.canPlayType('video/mp4; codecs="avc1.42E01E"'),src:v.currentSrc,hero:!!document.querySelector('.social-cover-art'),archive:!!document.querySelector('#livingArchive'),overflow:document.documentElement.scrollWidth-innerWidth,autoplay:v.autoplay,controls:v.controls,sticky:getComputedStyle(s.querySelector('.into-signal-film__sticky')).position};
-  });
-  if(desktopErrors.length||desktopRequests.length)throw Error(JSON.stringify({desktopErrors,desktopRequests,desktopAborted,desktopInitial}));
-  if(desktopInitial.mode!=='scrub'||desktopInitial.viewport!=='desktop'||desktopInitial.duration<8||desktopInitial.duration>12||desktopInitial.canPlayH264==='no'||!isCloudinary(desktopInitial.src))throw Error(JSON.stringify({desktopInitial}));
-  if(!desktopInitial.hero||!desktopInitial.archive||desktopInitial.overflow>2||desktopInitial.autoplay||desktopInitial.controls||desktopInitial.sticky!=='sticky')throw Error(JSON.stringify({desktopInitial}));
-  report.push({desktopInitial,desktopAborted});
-  const dm=await filmMetrics(desktop);
-  const desktopStates=[];
-  for(const [label,p] of [['signal',.18],['crossing',.50],['archive',.78],['handoff',.97]])desktopStates.push(await sample(desktop,dm,label,p,'desktop'));
-  if(!(desktopStates[0].time<desktopStates[1].time&&desktopStates[1].time<desktopStates[2].time&&desktopStates[2].time<desktopStates[3].time))throw Error(JSON.stringify({desktopStates}));
-  if(desktopStates[0].time>2.1)throw Error(JSON.stringify({desktopOpeningNotHeld:desktopStates[0]}));
-  if(desktopStates[3].handoff<.65||desktopStates[3].opacity>.35)throw Error(JSON.stringify({desktopHandoff:desktopStates[3]}));
+  if(d.errors.length||d.requests.length)throw Error(JSON.stringify({desktopErrors:d.errors,desktopRequests:d.requests,desktopInitial}));
+  if(desktopInitial.mode!=='scrub'||desktopInitial.viewport!=='desktop'||desktopInitial.duration<8||desktopInitial.duration>12||desktopInitial.canPlayH264==='no'||!isCloudinary(desktopInitial.src)||!desktopInitial.hero||!desktopInitial.archive||desktopInitial.overflow>2||desktopInitial.autoplay||desktopInitial.controls||desktopInitial.sticky!=='sticky')throw Error(JSON.stringify({desktopInitial}));
+  report.push({desktopInitial,normalRangeAborts:d.getAborted()});
+  const dm=await metrics(d.page),ds=[];
+  for(const [label,p] of [['signal',.18],['crossing',.50],['archive',.78],['handoff',.97]])ds.push(await sample(d.page,dm,label,p,'desktop'));
+  if(!(ds[0].time<ds[1].time&&ds[1].time<ds[2].time&&ds[2].time<ds[3].time))throw Error(JSON.stringify({desktopNonMonotonic:ds}));
+  if(ds[0].time>2.1||ds[3].handoff<.65||ds[3].opacity>.35)throw Error(JSON.stringify({desktopTiming:ds}));
 
-  const mobile=await browser.newPage({viewport:{width:390,height:844},reducedMotion:'no-preference'});
-  const mobileErrors=[]; const mobileRequests=[]; let mobileAborted=0;
-  mobile.on('pageerror',e=>mobileErrors.push(String(e)));
-  mobile.on('requestfailed',r=>{
-    if(!r.url().includes('cloudinary.com'))return;
-    const failure=r.failure();
-    if(materialFailure(failure))mobileRequests.push({url:r.url(),failure});
-    else if(failure?.errorText?.includes('ERR_ABORTED'))mobileAborted++;
+  // Mobile — same temporal scrub, sticky surface, viewport-width base plane,
+  // plus an intentional transformed zoom during Crossing.
+  const m=await open({width:390,height:844});
+  await waitForFilm(m.page);
+  const mobileInitial=await m.page.evaluate(()=>{
+    const s=document.querySelector('[data-movx-v116="film"]'),v=s.querySelector('video'),plane=s.querySelector('.into-signal-film__plane'),pcs=getComputedStyle(plane);
+    return {mode:s.dataset.v116Mode,viewport:s.dataset.v116Viewport,duration:v.duration,canPlayH264:v.canPlayType('video/mp4; codecs="avc1.42E01E"'),src:v.currentSrc,display:getComputedStyle(v).display,sticky:getComputedStyle(s.querySelector('.into-signal-film__sticky')).position,planeCssWidth:parseFloat(pcs.width),planeRenderedWidth:plane.getBoundingClientRect().width,overflow:document.documentElement.scrollWidth-innerWidth};
   });
-  await mobile.goto(url,{waitUntil:'networkidle'});
-  await waitForFilm(mobile);
-  const mobileInitial=await mobile.evaluate(()=>{
-    const s=document.querySelector('[data-movx-v116="film"]');
-    const v=s.querySelector('video');
-    const plane=s.querySelector('.into-signal-film__plane');
-    return {mode:s.dataset.v116Mode,viewport:s.dataset.v116Viewport,duration:v.duration,readyState:v.readyState,networkState:v.networkState,canPlayH264:v.canPlayType('video/mp4; codecs="avc1.42E01E"'),src:v.currentSrc,display:getComputedStyle(v).display,sticky:getComputedStyle(s.querySelector('.into-signal-film__sticky')).position,planeWidth:plane.getBoundingClientRect().width,overflow:document.documentElement.scrollWidth-innerWidth};
-  });
-  if(mobileErrors.length||mobileRequests.length)throw Error(JSON.stringify({mobileErrors,mobileRequests,mobileAborted,mobileInitial}));
+  if(m.errors.length||m.requests.length)throw Error(JSON.stringify({mobileErrors:m.errors,mobileRequests:m.requests,mobileInitial}));
   if(mobileInitial.mode!=='scrub'||mobileInitial.viewport!=='mobile'||mobileInitial.duration<8||mobileInitial.duration>12||mobileInitial.canPlayH264==='no'||!isCloudinary(mobileInitial.src)||mobileInitial.display==='none'||mobileInitial.sticky!=='sticky'||mobileInitial.overflow>2)throw Error(JSON.stringify({mobileInitial}));
-  if(mobileInitial.planeWidth<370||mobileInitial.planeWidth>410)throw Error(JSON.stringify({mobilePlane:mobileInitial}));
-  report.push({mobileInitial,mobileAborted});
-  const mm=await filmMetrics(mobile);
-  const mobileStates=[];
-  for(const [label,p] of [['signal',.18],['crossing',.50],['archive',.78],['handoff',.97]])mobileStates.push(await sample(mobile,mm,label,p,'mobile'));
-  if(!(mobileStates[0].time<mobileStates[1].time&&mobileStates[1].time<mobileStates[2].time&&mobileStates[2].time<mobileStates[3].time))throw Error(JSON.stringify({mobileStates}));
-  if(mobileStates[0].time>2.1)throw Error(JSON.stringify({mobileOpeningNotHeld:mobileStates[0]}));
-  if(mobileStates[1].scale<1.25)throw Error(JSON.stringify({mobileCrossingNeedsDepth:mobileStates[1]}));
-  if(mobileStates[3].handoff<.65||mobileStates[3].opacity>.35)throw Error(JSON.stringify({mobileHandoff:mobileStates[3]}));
+  if(mobileInitial.planeCssWidth<370||mobileInitial.planeCssWidth>410)throw Error(JSON.stringify({mobileBasePlane:mobileInitial}));
+  report.push({mobileInitial,normalRangeAborts:m.getAborted()});
+  const mm=await metrics(m.page),ms=[];
+  for(const [label,p] of [['signal',.18],['crossing',.50],['archive',.78],['handoff',.97]])ms.push(await sample(m.page,mm,label,p,'mobile'));
+  if(!(ms[0].time<ms[1].time&&ms[1].time<ms[2].time&&ms[2].time<ms[3].time))throw Error(JSON.stringify({mobileNonMonotonic:ms}));
+  if(ms[0].time>2.1||ms[1].scale<1.25||ms[3].handoff<.65||ms[3].opacity>.35)throw Error(JSON.stringify({mobileTiming:ms}));
 
-  const reduced=await browser.newPage({viewport:{width:390,height:844},reducedMotion:'reduce'});
-  await reduced.goto(url,{waitUntil:'networkidle'});
-  const reducedState=await reduced.evaluate(()=>{
-    const s=document.querySelector('[data-movx-v116="film"]');
-    const v=s.querySelector('video');
+  // Accessibility fallback — no movie download when motion is explicitly reduced.
+  const r=await open({width:390,height:844},'reduce');
+  const reducedState=await r.page.evaluate(()=>{
+    const s=document.querySelector('[data-movx-v116="film"]'),v=s.querySelector('video');
     return {mode:s.dataset.v116Mode,src:v.getAttribute('src'),currentSrc:v.currentSrc,display:getComputedStyle(v).display,sticky:getComputedStyle(s.querySelector('.into-signal-film__sticky')).position,overflow:document.documentElement.scrollWidth-innerWidth};
   });
   if(reducedState.mode!=='static'||reducedState.src||reducedState.currentSrc||reducedState.display!=='none'||reducedState.sticky==='sticky'||reducedState.overflow>2)throw Error(JSON.stringify({reducedState}));
@@ -124,5 +91,5 @@ const fs=require('node:fs/promises');
 
   await fs.writeFile('_site/qa-v116-report.json',JSON.stringify(report,null,2));
   await browser.close();
-  console.log('MOVX v116: 9.75s Cloudinary H264 film scrubs in Google Chrome on desktop + mobile; CRT hold, crossing depth, archive handoff and reduced-motion fallback validated.');
+  console.log('MOVX v116: 9.75s Cloudinary H264 film scrubs in Google Chrome on desktop + mobile; CRT hold, Crossing zoom, archive handoff and reduced-motion fallback validated.');
 })().catch(e=>{console.error(e);process.exit(1)});
