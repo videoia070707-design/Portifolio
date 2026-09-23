@@ -3,7 +3,7 @@ from pathlib import Path, PurePosixPath
 import shutil, zipfile, re, subprocess, json
 root=Path(__file__).resolve().parents[1]
 out=root/'_site'
-release='v114-2-visible-process-field'
+release='v115-adaptive-process-owner'
 if out.exists():shutil.rmtree(out)
 shutil.copytree(root/'site',out,ignore=shutil.ignore_patterns('assets','vendor'))
 # Cache-bust authoritative stability layers. Build-only guards and the current
@@ -31,6 +31,8 @@ for html in out.glob('*.html'):
   text=text.replace('</head>',f'<link rel="stylesheet" href="v111-process-cleanroom.css?v={release}">\n</head>')
  if 'v112-process-polish.css' not in text:
   text=text.replace('</head>',f'<link rel="stylesheet" href="v112-process-polish.css?v={release}">\n</head>')
+ if 'v115-process-owner.css' not in text:
+  text=text.replace('</head>',f'<link rel="stylesheet" href="v115-process-owner.css?v={release}">\n</head>')
  if 'v106-dimensional.mjs' not in text:
   text=text.replace('</body>',f'<script type="module" src="v106-dimensional.mjs?v={release}"></script>\n</body>')
  if 'v107-scroll-sculpture.mjs' not in text:
@@ -39,8 +41,10 @@ for html in out.glob('*.html'):
   text=text.replace('</body>',f'<script type="module" src="v108-institutional-depth.mjs?v={release}"></script>\n</body>')
  if 'v110-process-legibility.mjs' not in text:
   text=text.replace('</body>',f'<script type="module" src="v110-process-legibility.mjs?v={release}"></script>\n</body>')
- if 'v111-process-cleanroom.mjs' not in text:
-  text=text.replace('</body>',f'<script type="module" src="v111-process-cleanroom.mjs?v={release}"></script>\n</body>')
+ # v111 runtime is intentionally retired in v115. Its CSS remains as the
+ # editorial presentation layer; v115 owns adaptive lifecycle and field state.
+ if 'v115-process-owner.mjs' not in text:
+  text=text.replace('</body>',f'<script type="module" src="v115-process-owner.mjs?v={release}"></script>\n</body>')
  html.write_text(text)
 archive=next(root.glob('MOVX_Portfolio_v18*.zip'))
 with zipfile.ZipFile(archive) as z:
