@@ -1,5 +1,6 @@
 const { chromium } = require('playwright');
 const { writeFile } = require('node:fs/promises');
+const { readFileSync } = require('node:fs');
 (async()=>{
 
 const release='v102-layout-integrity';
@@ -29,8 +30,21 @@ for(const cls of ['movx-v84','movx-v85','movx-v86','movx-v87','movx-v88']){
 }
 if(signature.build!==release||signature.release!==release) throw new Error('Release identity mismatch '+JSON.stringify(signature));
 if(signature.foldMarks!==0) throw new Error('Retired fold decoration mounted');
+// v119 may collapse the production CSS into one generated file. Preserve the
+// original QA intent by accepting a stylesheet only when it is either loaded
+// directly or explicitly listed by the bundler's source marker in the CSS that
+// the browser actually loaded.
+const loadedBundleCss=signature.styles
+  .filter(href=>/\/movx-css-[^/?]+\.css(?:\?|$)/.test(href))
+  .map(href=>{
+    const name=new URL(href).pathname.split('/').pop();
+    return readFileSync(`_site/${name}`,'utf8');
+  })
+  .join('\n');
 for(const sheet of ['v85-reference.css','v86-signature.css','v87-editorial.css','v88-chapter.css']){
-  if(!signature.styles.some(x=>x.includes(sheet))) throw new Error(`Missing production stylesheet ${sheet}`);
+  const direct=signature.styles.some(x=>x.includes(sheet));
+  const bundled=loadedBundleCss.includes(`/* MOVX bundle source: ${sheet} */`);
+  if(!direct&&!bundled) throw new Error(`Missing production stylesheet ${sheet}`);
 }
 
 async function sample(label){
