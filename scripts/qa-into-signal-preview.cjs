@@ -30,6 +30,19 @@ const fs=require('node:fs/promises');
   for(const id of ['01','02','03']){
     await desktop.locator(`[data-shot="${id}"]`).scrollIntoViewIfNeeded();
     await desktop.waitForTimeout(120);
+    if(id==='02'){
+      const clearance=await desktop.evaluate(()=>{
+        const crt=document.querySelector('.shot--02 .crt--hero')?.getBoundingClientRect();
+        const caption=document.querySelector('.shot--02 .shot__caption')?.getBoundingClientRect();
+        return crt&&caption?{
+          crtBottom:crt.bottom,
+          captionTop:caption.top,
+          gap:caption.top-crt.bottom
+        }:null;
+      });
+      if(!clearance||clearance.gap<24)throw Error(JSON.stringify({frame02Clearance:clearance,minGap:24}));
+      report.push({frame02Clearance:clearance});
+    }
     await desktop.screenshot({path:`_site/qa-into-signal-${id}.png`,fullPage:false});
   }
 
@@ -43,5 +56,5 @@ const fs=require('node:fs/promises');
 
   await fs.writeFile('_site/qa-into-signal-report.json',JSON.stringify(report,null,2));
   await browser.close();
-  console.log('MOVX Into the Signal: three-shot storyboard, real portfolio media, mobile flow, reduced motion and overflow validated.');
+  console.log('MOVX Into the Signal: three-shot storyboard, frame-02 caption clearance, real portfolio media, mobile flow, reduced motion and overflow validated.');
 })().catch(e=>{console.error(e);process.exit(1)});
