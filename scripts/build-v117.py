@@ -4,7 +4,7 @@ import runpy, json, re, shutil, subprocess, tempfile, urllib.request
 
 root=Path(__file__).resolve().parents[1]
 out=root/'_site'
-release='v131-mobile-wall-title-spacing'
+release='v132-clean-readable-scroll-story'
 surface_release='v128-pure-black-sections'
 source_url='https://res.cloudinary.com/gp3xbngz/video/upload/v1790173902/0923.mp4'
 clip_start='0.00'
@@ -38,9 +38,9 @@ def ensure_media():
     ffmpeg=shutil.which('ffmpeg')
     if not ffmpeg:
         raise SystemExit('MOVX performance media is missing and ffmpeg is unavailable')
-    with tempfile.TemporaryDirectory(prefix='movx-v131-') as tmpdir:
+    with tempfile.TemporaryDirectory(prefix='movx-v132-') as tmpdir:
         src=Path(tmpdir)/'0923-source.mp4'
-        req=urllib.request.Request(source_url,headers={'User-Agent':'MOVX-v131-builder/1.0'})
+        req=urllib.request.Request(source_url,headers={'User-Agent':'MOVX-v132-builder/1.0'})
         with urllib.request.urlopen(req,timeout=90) as response, src.open('wb') as target:
             shutil.copyfileobj(response,target)
         if src.stat().st_size<1024:
@@ -58,7 +58,7 @@ def ensure_media():
 
 def run_base_build_without_retired_v116():
     retired_names=('v116-scroll-film.html','v116-scroll-film.css','v116-scroll-film.mjs')
-    with tempfile.TemporaryDirectory(prefix='movx-v131-retired-') as tmpdir:
+    with tempfile.TemporaryDirectory(prefix='movx-v132-retired-') as tmpdir:
         retired=Path(tmpdir)
         moved=[]
         for name in retired_names:
@@ -148,6 +148,6 @@ for old in ('v116-scroll-film.html','v116-scroll-film.css','v116-scroll-film.mjs
 
 required=('v117-scroll-world.css','v117-scroll-world.mjs','v128-black-sections.css','v129-scroll-story.css','v129-scroll-story.mjs','v131-mobile-wall.css','assets/hero/soul-of-design-hero-clean.webp','media/movx-scroll-world-0923.mp4','media/movx-scroll-world-0923-mobile.mp4','media/movx-scroll-world-0923.webm','media/movx-scroll-world-0923-mobile.webm','media/movx-scroll-world-poster.jpg')
 missing=[name for name in required if not (out/name).exists()]
-if missing or not installed or not surface_pages:raise SystemExit(f'v131 invalid build: missing={missing}; scroll_pages={installed}; surface_pages={surface_pages}')
+if missing or not installed or not surface_pages:raise SystemExit(f'v132 invalid build: missing={missing}; scroll_pages={installed}; surface_pages={surface_pages}')
 media_sizes={key:path.stat().st_size for key,path in media_files.items()}
-print(json.dumps({'release':release,'surface_release':surface_release,'pages':installed,'surface_pages':surface_pages,'source':source_url,'source_trim_seconds':float(clip_start),'media_mode':media_mode,'hero':hero_stats,'media_bytes':media_sizes,'desktop':'full-video H264-first deferred blob scrub','mobile':'full-video H264-first deferred blob scrub','scroll_world':'full-bleed scroll-linked video + varied story positions','mobile_wall':'three-row CSS conveyor with reduced-motion swipe fallback','dark_sections':'pure #000 top-level surfaces; warm legacy section fills neutralized','missing':missing}))
+print(json.dumps({'release':release,'surface_release':surface_release,'pages':installed,'surface_pages':surface_pages,'source':source_url,'source_trim_seconds':float(clip_start),'media_mode':media_mode,'hero':hero_stats,'media_bytes':media_sizes,'desktop':'full-video H264-first deferred blob scrub','mobile':'full-video H264-first deferred blob scrub','scroll_world':'full-bleed scroll-linked video + seamless readable story overlays','mobile_wall':'three-row CSS conveyor with reduced-motion swipe fallback','dark_sections':'pure #000 top-level surfaces; warm legacy section fills neutralized','missing':missing}))
