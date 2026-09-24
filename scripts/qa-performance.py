@@ -57,18 +57,22 @@ if "rootMargin:'120% 0px'" not in scroll or "rootMargin:'0px'" not in scroll:err
 if "const response=await fetch(candidate.url" not in scroll or "const data=await response.blob()" not in scroll or "video.src=blobURL" not in scroll:errors.append('Scroll World deferred Blob delivery for reliable seeking is missing')
 if "canWebM" not in scroll or "canH264" not in scroll or "candidatesFor" not in scroll:errors.append('Scroll World codec negotiation/retry candidates are missing')
 if "if(canH264)items.push({codec:'h264-mp4'" not in scroll:errors.append('Scroll World no longer prefers H.264 for desktop scrub responsiveness')
-if "sourceTrim=1.20" not in scroll or "mappedTarget" not in scroll or "markFrameReady" not in scroll:errors.append('Scroll World encoded-trim scrub contract is missing')
+if "sourceTrim=0.00" not in scroll or "mappedTarget" not in scroll or "markFrameReady" not in scroll:errors.append('Scroll World must scrub the complete encoded source from 0.00s')
 if "retrying alternate codec" not in scroll:errors.append('Scroll World alternate codec retry is missing')
 if 'userEngaged' not in scroll or 'engagementThreshold' not in scroll or '!nearby' not in scroll:errors.append('Scroll World engagement-aware warm loading is missing')
 if 'video.play()' in scroll:errors.append('Scroll World must not depend on autoplay to expose real frames')
-if "dataset.spatialMode='camera-3d'" not in scroll or '--world-persp-x' not in scroll or '--world-persp-y' not in scroll:errors.append('Scroll World v125 camera-3d contract is missing')
-if '2.55' not in scroll or '330' not in scroll:errors.append('Scroll World v125 must include a visible camera pass-through, not subtle flat motion')
+if "dataset.spatialMode='camera-3d'" not in scroll or '--world-persp-x' not in scroll or '--world-persp-y' not in scroll:errors.append('Scroll World spatial scroll contract is missing')
+
+scroll_css=(out/'v117-scroll-world.css').read_text()
+if 'background:#000' not in scroll_css:errors.append('Scroll World pure black stage is missing')
+if '#050403' in scroll_css or '#080706' in scroll_css:errors.append('Scroll World still contains the old warm brown-black stage colors')
+if 'rgba(5,4,4' in scroll_css:errors.append('Scroll World veil still contains warm brown tint')
 
 fragment=(out/'index.html').read_text()
 if fragment.count('data-world-chapter-panel=')!=4:errors.append('Scroll World must render four scroll chapters')
-if 'movx-scroll-world-poster.jpg?v=v125-true-3d' not in fragment:errors.append('Scroll World v125 poster cache-bust is missing')
-if 'ROLE PARA ATRAVESSAR' not in fragment:errors.append('Scroll World v125 immersive interaction cue is missing')
+if 'movx-scroll-world-poster.jpg?v=v127-full-video-black' not in fragment:errors.append('Scroll World v127 dark-opening poster cache-bust is missing')
+if 'ROLE PARA ATRAVESSAR' not in fragment:errors.append('Scroll World immersive interaction cue is missing')
 
 if errors:
     raise SystemExit('MOVX performance QA failed: '+json.dumps(errors,ensure_ascii=False))
-print(json.dumps({'status':'passed','sizes':sizes,'css_bundles':css_bundles,'deferred_video_gate':True,'desktop_delivery':'camera-3d + trimmed-h264-first-blob-scrub','mobile_delivery':'camera-3d + trimmed-h264-first-blob-scrub','source_trim_seconds':1.20,'warm_margin':'120%','scroll_chapters':4,'spatial_mode':'camera-3d'},ensure_ascii=False))
+print(json.dumps({'status':'passed','sizes':sizes,'css_bundles':css_bundles,'deferred_video_gate':True,'desktop_delivery':'full-video h264-first blob scrub','mobile_delivery':'full-video h264-first blob scrub','source_trim_seconds':0.00,'stage_background':'#000','warm_margin':'120%','scroll_chapters':4},ensure_ascii=False))
