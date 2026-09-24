@@ -116,8 +116,10 @@
 }
 
 /* Accessibility fallback: reduced motion still exposes the whole wall instead of
-   freezing on one artwork. The user can swipe each row manually. */
+   freezing on one artwork. Match the higher-specificity v39 ownership selector so
+   the later swipe fallback wins even though both declarations use !important. */
 @media (max-width:767px) and (prefers-reduced-motion:reduce){
+  html.movx-v39 body[data-page="social"] #livingArchive .loop-row,
   body[data-page="social"] #livingArchive .loop-row{
     overflow-x:auto!important;
     overflow-y:hidden!important;
@@ -125,6 +127,7 @@
     scrollbar-width:none;
     -webkit-overflow-scrolling:touch;
   }
+  html.movx-v39 body[data-page="social"] #livingArchive .loop-row::-webkit-scrollbar,
   body[data-page="social"] #livingArchive .loop-row::-webkit-scrollbar{display:none}
   body[data-page="social"] #livingArchive .loop-track{
     animation:none!important;
