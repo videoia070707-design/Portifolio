@@ -11,7 +11,7 @@ budgets={
     'media/movx-scroll-world-0923.mp4':3_900_000,
     'media/movx-scroll-world-0923-mobile.mp4':1_850_000,
     'media/movx-scroll-world-0923.webm':3_600_000,
-    'media/movx-scroll-world-0923-mobile.webm':1_700_000,
+    'media/movx-scroll-world-0923-mobile.webm':1_750_000,
     'media/movx-scroll-world-poster.jpg':180_000,
 }
 errors=[]
