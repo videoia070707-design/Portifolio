@@ -65,26 +65,26 @@ const assert=require('node:assert/strict');
       assert.equal(state.backgroundImage,'none','story overlay must not create a panel/gradient card');
       assert.ok(state.left>=-2&&state.right<=1442&&state.top>=-2&&state.bottom<=902,`chapter ${chapter} story must stay inside viewport: ${JSON.stringify(state)}`);
       assert.equal(state.title,expectedTitle);
-      assert.ok(state.titleOpacity>.55&&state.lineOpacity>.45,`chapter ${chapter} title/support copy must be readable: ${JSON.stringify(state)}`);
+      assert.ok(state.titleOpacity>.72&&state.lineOpacity>.62,`chapter ${chapter} title/support copy must be readable: ${JSON.stringify(state)}`);
       assert.equal(state.titleColor,'rgb(255, 255, 255)',`chapter ${chapter} title should render white for maximum contrast`);
       assert.notEqual(state.titleShadow,'none',`chapter ${chapter} title needs a shadow against bright video frames`);
       assert.notEqual(state.lineShadow,'none',`chapter ${chapter} support copy needs a shadow against bright video frames`);
       assert.ok(state.titleSize>=42,`chapter ${chapter} title should keep editorial scale: ${state.titleSize}`);
       assert.ok(state.scrimBackground.includes('radial-gradient'),`chapter ${chapter} must use a soft edge-less contrast field, not a card`);
-      assert.ok(state.scrimOpacity>.45,`chapter ${chapter} contrast field must remain visible enough for legibility: ${state.scrimOpacity}`);
+      assert.ok(state.scrimOpacity>.68,`chapter ${chapter} contrast field must remain strong enough for legibility: ${state.scrimOpacity}`);
     };
 
     await seekTo(.32);
-    await assertStory(2,'Nada nasce de template');
-    await page.screenshot({path:'_site/qa-v130-story-ch2.png'});
+    await assertStory(2,'Sistema. Não template.');
+    await page.screenshot({path:'_site/qa-v132-story-ch2.png'});
 
     await seekTo(.62);
-    await assertStory(3,'Movimento também desenha');
-    await page.screenshot({path:'_site/qa-v130-story-ch3.png'});
+    await assertStory(3,'Movimento cria profundidade');
+    await page.screenshot({path:'_site/qa-v132-story-ch3.png'});
 
     await seekTo(.86);
-    await assertStory(4,'Uma linguagem. Muitos formatos.');
-    await page.screenshot({path:'_site/qa-v130-story-ch4.png'});
+    await assertStory(4,'Tudo fala a mesma língua');
+    await page.screenshot({path:'_site/qa-v132-story-ch4.png'});
 
     const mobile=await browser.newPage({viewport:{width:390,height:844},deviceScaleFactor:1,isMobile:true,hasTouch:true});
     await mobile.addInitScript(()=>localStorage.setItem('movx-theme','dark'));
@@ -100,10 +100,10 @@ const assert=require('node:assert/strict');
     const mobileBox=await mobileCard.boundingBox();
     assert.ok(mobileBox&&mobileBox.x>=0&&mobileBox.x+mobileBox.width<=391&&mobileBox.y>=0&&mobileBox.y+mobileBox.height<=845,`mobile story must stay in viewport: ${JSON.stringify(mobileBox)}`);
     const mobileLegibility=await mobileCard.evaluate(el=>({title:Number(getComputedStyle(el.querySelector('.movx-scroll-world__story-title')).opacity),line:Number(getComputedStyle(el.querySelector('.movx-scroll-world__story-line')).opacity),scrim:Number(getComputedStyle(el,'::before').opacity)}));
-    assert.ok(mobileLegibility.title>.55&&mobileLegibility.line>.45&&mobileLegibility.scrim>.45,`mobile story must stay legible: ${JSON.stringify(mobileLegibility)}`);
-    await mobile.screenshot({path:'_site/qa-v130-story-mobile.png'});
+    assert.ok(mobileLegibility.title>.72&&mobileLegibility.line>.62&&mobileLegibility.scrim>.68,`mobile story must stay legible: ${JSON.stringify(mobileLegibility)}`);
+    await mobile.screenshot({path:'_site/qa-v132-story-mobile.png'});
     await mobile.close();
 
-    console.log(JSON.stringify({status:'passed',stories:4,blackSections:blackTargets.length,desktopChapters:[2,3,4],mobileChapter:3,seams:'removed',legibility:'soft scrim + staged title reveal',mode:'full-bleed video background + cinematic scroll-linked editorial overlays'}));
+    console.log(JSON.stringify({status:'passed',stories:4,blackSections:blackTargets.length,desktopChapters:[2,3,4],mobileChapter:3,seams:'removed',legibility:'strong soft scrim + faster staged title reveal',mode:'full-bleed video background + cinematic scroll-linked editorial overlays'}));
   }finally{await browser.close()}
 })().catch(error=>{console.error(error);process.exitCode=1});
