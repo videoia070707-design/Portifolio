@@ -1,4 +1,4 @@
-/* MOVX v127 full-video Scroll World.
+/* MOVX v133 dark-entry Scroll World.
    Native scroll scrubs the complete source from its original dark opening frame.
    Full-bleed coverage and the established scroll/parallax behavior remain unchanged. */
 const root=document.querySelector('[data-movx-scroll-world="v117"]');
@@ -36,10 +36,14 @@ if(root){
     return clamp(-root.getBoundingClientRect().top/length);
   }
   function schedule(){if(!raf&&!disposed&&!document.hidden)raf=requestAnimationFrame(render)}
+  const introHold=()=>mobile.matches?.12:.10;
+  const introFade=()=>mobile.matches?.18:.16;
   function mappedTarget(p){
     if(duration<=0)return 0;
+    const hold=introHold();
+    const staged=ease((clamp(p)-hold)/Math.max(.001,1-hold));
     const end=Math.max(0,duration-1/30);
-    return end*clamp(p);
+    return end*staged;
   }
   function markFrameReady(){
     if(!failed&&video.readyState>=2&&video.videoWidth>0){
@@ -100,7 +104,9 @@ if(root){
     root.style.setProperty('--world-z',`${s.z.toFixed(2)}px`);
     root.style.setProperty('--world-persp-x',`${s.px.toFixed(2)}%`);
     root.style.setProperty('--world-persp-y',`${s.py.toFixed(2)}%`);
+    const entryDarken=(1-ease(clamp(p/introFade())));
     root.style.setProperty('--world-glow',s.glow.toFixed(3));
+    root.style.setProperty('--world-entry-darken',entryDarken.toFixed(4));
     root.style.setProperty('--world-exit',(1-exit).toFixed(4));
     root.style.setProperty('--world-progress',`${(p*100).toFixed(2)}%`);
     root.dataset.worldProgress=p.toFixed(4);
@@ -111,6 +117,7 @@ if(root){
     root.dataset.worldRotateZ=s.rz.toFixed(3);
     root.dataset.worldPerspectiveX=s.px.toFixed(2);
     root.dataset.worldPerspectiveY=s.py.toFixed(2);
+    root.dataset.worldEntryDarken=entryDarken.toFixed(4);
     root.dataset.spatialMode='camera-3d';
     updateChapter(p);
   }
