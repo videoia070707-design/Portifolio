@@ -60,10 +60,14 @@ if "rootMargin:'320px 0px'" not in runtime:
 scroll=(out/'v117-scroll-world.mjs').read_text()
 if "rootMargin:'0px'" not in scroll:
     errors.append('Scroll World intersection margin is not zero')
-if "const response=await fetch(urls[variant]" not in scroll or "const data=await response.blob()" not in scroll or "video.src=blobURL" not in scroll:
+if "const response=await fetch(candidate.url" not in scroll or "const data=await response.blob()" not in scroll or "video.src=blobURL" not in scroll:
     errors.append('Scroll World deferred Blob delivery for reliable seeking is missing')
-if "canWebM" not in scroll or "canH264" not in scroll:
-    errors.append('Scroll World codec negotiation is missing')
+if "canWebM" not in scroll or "canH264" not in scroll or "candidatesFor" not in scroll:
+    errors.append('Scroll World codec negotiation/retry candidates are missing')
+if "visibleStart=1.20" not in scroll or "mappedTarget" not in scroll or "markFrameReady" not in scroll:
+    errors.append('Scroll World visible-start frame contract is missing')
+if "retrying alternate codec" not in scroll:
+    errors.append('Scroll World alternate codec retry is missing')
 if 'userEngaged' not in scroll or 'engagementThreshold' not in scroll:
     errors.append('Scroll World explicit user-scroll gate is missing')
 if 'if(active){if(userEngaged)load();schedule()}' not in scroll:
@@ -72,7 +76,9 @@ if 'if(active){if(userEngaged)load();schedule()}' not in scroll:
 fragment=(out/'index.html').read_text()
 if fragment.count('data-world-chapter-panel=')!=4:
     errors.append('Scroll World must render four scroll chapters')
+if 'movx-scroll-world-poster.jpg?v=v121-visible-start' not in fragment:
+    errors.append('Scroll World visible poster cache-bust is missing')
 
 if errors:
     raise SystemExit('MOVX performance QA failed: '+json.dumps(errors,ensure_ascii=False))
-print(json.dumps({'status':'passed','sizes':sizes,'css_bundles':css_bundles,'deferred_video_gate':True,'desktop_delivery':'optimized-blob','mobile_delivery':'optimized-blob','scroll_chapters':4},ensure_ascii=False))
+print(json.dumps({'status':'passed','sizes':sizes,'css_bundles':css_bundles,'deferred_video_gate':True,'desktop_delivery':'optimized-blob-with-retry','mobile_delivery':'optimized-blob-with-retry','visible_start_seconds':1.20,'scroll_chapters':4},ensure_ascii=False))
