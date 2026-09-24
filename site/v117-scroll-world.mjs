@@ -1,6 +1,6 @@
-/* MOVX v125 true 3D Scroll World.
-   Scroll drives two things at once: the real video frame and a virtual camera path.
-   The film is a perspective plane that approaches, banks and passes the camera. */
+/* MOVX v127 full-video Scroll World.
+   Native scroll scrubs the complete source from its original dark opening frame.
+   Full-bleed coverage and the established scroll/parallax behavior remain unchanged. */
 const root=document.querySelector('[data-movx-scroll-world="v117"]');
 if(root){
   const video=root.querySelector('video');
@@ -11,7 +11,7 @@ if(root){
   const mobile=matchMedia('(max-width: 767px)');
   const canH264=video.canPlayType('video/mp4; codecs="avc1.640028"')!==''||video.canPlayType('video/mp4')!=='';
   const canWebM=video.canPlayType('video/webm; codecs="vp9"')!=='';
-  const sourceTrim=1.20;
+  const sourceTrim=0.00;
   const clamp=x=>Math.max(0,Math.min(1,x));
   const mix=(a,b,t)=>a+(b-a)*t;
   const ease=x=>{x=clamp(x);return x*x*(3-2*x)};
