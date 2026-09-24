@@ -9,7 +9,7 @@ const assert=require('node:assert/strict');
     const film=page.locator('[data-movx-scroll-world="v117"]');
     const plane=film.locator('.movx-scroll-world__plane');
     const sticky=film.locator('.movx-scroll-world__sticky');
-    assert.equal(await film.getAttribute('data-spatial-mode'),'css-3d','Scroll World must declare the spatial 3D owner');
+    assert.equal(await film.getAttribute('data-spatial-mode'),'camera-3d','Scroll World must declare the v125 camera 3D owner');
     assert.equal(await plane.evaluate(el=>getComputedStyle(el).transformStyle),'preserve-3d','film plane must keep a 3D transform context');
     assert.notEqual(await sticky.evaluate(el=>getComputedStyle(el).perspective),'none','sticky stage must expose perspective');
 
@@ -17,7 +17,7 @@ const assert=require('node:assert/strict');
       await film.evaluate((el,value)=>window.scrollTo({top:el.getBoundingClientRect().top+scrollY+(el.offsetHeight-innerHeight)*value,behavior:'instant'}),p);
       await page.waitForFunction(value=>{
         const el=document.querySelector('[data-movx-scroll-world="v117"]');
-        return el?.dataset.spatialMode==='css-3d'&&Math.abs(Number(el.dataset.worldProgress)-value)<.025;
+        return el?.dataset.spatialMode==='camera-3d'&&Math.abs(Number(el.dataset.worldProgress)-value)<.025;
       },p,{timeout:8000});
       return film.evaluate(el=>({
         p:Number(el.dataset.worldProgress),
@@ -53,6 +53,6 @@ const assert=require('node:assert/strict');
     await mobile.screenshot({path:'_site/qa-v123-spatial-mobile.png'});
     await mobile.close();
 
-    console.log(JSON.stringify({status:'passed',spatial:'css-3d scroll camera',intro,arc,dive,mobile:mobileState}));
+    console.log(JSON.stringify({status:'passed',spatial:'camera-3d scroll camera',intro,arc,dive,mobile:mobileState}));
   }finally{await browser.close()}
 })().catch(error=>{console.error(error);process.exitCode=1});
