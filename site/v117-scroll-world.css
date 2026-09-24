@@ -1,8 +1,13 @@
-/* MOVX v122: persistent real video scrub across multiple scroll chapters. */
+/* MOVX v123: spatial 3D Scroll World. Real video scrub stays scroll-linked, while the
+   film plane moves through perspective space instead of behaving like a flat PNG. */
 .movx-scroll-world{
-  --world-scale:1.04;
-  --world-turn:0deg;
-  --world-lift:0vh;
+  --world-scale:.94;
+  --world-rx:3.8deg;
+  --world-ry:-5.5deg;
+  --world-rz:-.65deg;
+  --world-x:-3.8vw;
+  --world-y:2.8vh;
+  --world-z:-105px;
   --world-exit:1;
   --world-progress:0%;
   position:relative;
@@ -18,19 +23,44 @@
   height:100svh;
   overflow:hidden;
   background:#080706;
-  perspective:1400px;
+  perspective:1450px;
+  perspective-origin:50% 48%;
+  transform-style:preserve-3d;
 }
-.movx-scroll-world__space{position:absolute;inset:0;display:grid;place-items:center;perspective:inherit}
-.movx-scroll-world__plane{
+.movx-scroll-world__space{
   position:absolute;
   inset:0;
+  display:grid;
+  place-items:center;
+  perspective:inherit;
+  transform-style:preserve-3d;
+}
+.movx-scroll-world__plane{
+  position:absolute;
+  inset:-5vh -5vw;
   overflow:hidden;
   background:#080706;
-  transform:translate3d(0,var(--world-lift),0) rotateY(var(--world-turn)) scale(var(--world-scale));
+  transform-style:preserve-3d;
+  transform:
+    translate3d(var(--world-x),var(--world-y),var(--world-z))
+    rotateX(var(--world-rx))
+    rotateY(var(--world-ry))
+    rotateZ(var(--world-rz))
+    scale(var(--world-scale));
   transform-origin:center;
   opacity:var(--world-exit);
   backface-visibility:hidden;
   will-change:transform,opacity;
+}
+.movx-scroll-world__plane::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:4;
+  pointer-events:none;
+  border:1px solid rgba(255,255,255,.035);
+  box-shadow:0 28px 90px rgba(0,0,0,.34);
+  transform:translateZ(.6px);
 }
 .movx-scroll-world__poster,.movx-scroll-world__video{
   position:absolute;
@@ -41,6 +71,7 @@
   object-fit:cover;
   object-position:center;
   background:#080706;
+  transform:translateZ(.2px);
 }
 .movx-scroll-world__poster{z-index:1;opacity:1;transition:opacity .10s linear}
 .movx-scroll-world__video{z-index:2;opacity:0;transition:opacity .10s linear;will-change:opacity}
@@ -54,13 +85,15 @@
   inset:0;
   pointer-events:none;
   background:
-    linear-gradient(180deg,rgba(5,4,4,.19) 0%,rgba(5,4,4,.01) 38%,rgba(5,4,4,.05) 72%,rgba(5,4,4,.32) 100%),
-    linear-gradient(90deg,rgba(5,4,4,.10),transparent 27%,transparent 73%,rgba(5,4,4,.10));
+    radial-gradient(76% 76% at 50% 48%,transparent 48%,rgba(5,4,4,.24) 100%),
+    linear-gradient(180deg,rgba(5,4,4,.16) 0%,rgba(5,4,4,.01) 34%,rgba(5,4,4,.04) 72%,rgba(5,4,4,.28) 100%),
+    linear-gradient(90deg,rgba(5,4,4,.08),transparent 24%,transparent 76%,rgba(5,4,4,.08));
+  transform:translateZ(.4px);
 }
 .movx-scroll-world__chrome{
   position:absolute;
   inset:auto clamp(18px,3.4vw,58px) clamp(32px,5vh,54px);
-  z-index:4;
+  z-index:5;
   display:flex;
   justify-content:space-between;
   align-items:center;
@@ -74,7 +107,7 @@
 .movx-scroll-world__chrome i{font-style:normal;color:#b45749;padding:0 8px}
 .movx-scroll-world__hint b{font-size:15px;font-weight:400;margin-left:8px}
 .movx-scroll-world__count b{font:inherit;font-weight:700}
-.movx-scroll-world__progress{position:absolute;z-index:5;left:0;bottom:0;width:100%;height:2px;background:rgba(255,255,255,.12)}
+.movx-scroll-world__progress{position:absolute;z-index:6;left:0;bottom:0;width:100%;height:2px;background:rgba(255,255,255,.12)}
 .movx-scroll-world__progress span{display:block;width:var(--world-progress);height:100%;background:#a94a3d}
 
 .movx-scroll-world__chapters{
@@ -95,7 +128,7 @@
   margin-bottom:clamp(54px,8vh,92px);
   font:500 clamp(42px,7vw,104px)/.82 Arial,sans-serif;
   letter-spacing:-.06em;
-  color:rgba(243,238,233,.065);
+  color:rgba(243,238,233,.055);
   text-shadow:0 2px 24px rgba(0,0,0,.16);
   user-select:none;
 }
@@ -108,8 +141,18 @@
 .movx-scroll-world[data-mode="fallback"] .movx-scroll-world__progress{display:none}
 
 @media (max-width:767px){
+  .movx-scroll-world{
+    --world-scale:.98;
+    --world-rx:2.2deg;
+    --world-ry:-2.8deg;
+    --world-rz:-.35deg;
+    --world-x:-1.5vw;
+    --world-y:1.4vh;
+    --world-z:-55px;
+  }
+  .movx-scroll-world__sticky{perspective:1050px}
+  .movx-scroll-world__plane{inset:-2vh -3vw}
   .movx-scroll-world__poster,.movx-scroll-world__video{object-fit:contain}
-  .movx-scroll-world__plane{transform:none}
   .movx-scroll-world__chrome{font-size:9px;letter-spacing:.1em;bottom:calc(30px + env(safe-area-inset-bottom))}
   .movx-scroll-world__chapter{min-height:86svh;padding:20px}
   .movx-scroll-world__chapters{margin-top:-100svh;padding-top:14svh}
