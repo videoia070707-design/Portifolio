@@ -29,16 +29,16 @@ if(world){
       const start=index/n;
       const end=(index+1)/n;
       const local=clamp((p-start)/(end-start));
-      const enter=phase(local,.025,reduced.matches?.08:.20);
+      const enter=phase(local,.025,reduced.matches ? .08 : .20);
       const leaveStart=index===n-1?.88:.78;
       const leave=1-phase(local,leaveStart,Math.max(.01,1-leaveStart));
       const alpha=clamp(enter*leave);
       const direction=index<2?-1:1;
       const exit=phase(local,leaveStart,Math.max(.01,1-leaveStart));
 
-      const kickerIn=phase(local,.02,reduced.matches?.06:.12);
-      const titleIn=phase(local,.055,reduced.matches?.08:.18);
-      const lineIn=phase(local,.15,reduced.matches?.08:.18);
+      const kickerIn=phase(local,.02,reduced.matches ? .06 : .12);
+      const titleIn=phase(local,.055,reduced.matches ? .08 : .18);
+      const lineIn=phase(local,.15,reduced.matches ? .08 : .18);
       const kickerAlpha=clamp(kickerIn*leave);
       const titleAlpha=clamp(titleIn*leave);
       const lineAlpha=clamp(lineIn*leave);
