@@ -1,7 +1,6 @@
-/* MOVX v126: full-bleed Scroll World.
-   The video is the entire pinned section background. Native scroll scrubs the real
-   video frames while a restrained overscanned camera drift keeps the image moving
-   without ever revealing a boxed screen or empty margins. */
+/* MOVX v127: full-bleed Scroll World with pure black stage.
+   The complete source video owns the entire pinned section background while native
+   scroll scrubs its real frames. Background/veil neutrals are pure black. */
 .movx-scroll-world{
   --world-scale:.66;
   --world-rx:8deg;
@@ -17,7 +16,7 @@
   --world-glow:.28;
   position:relative;
   min-height:420svh;
-  background:#050403;
+  background:#000;
   color:#f3eee9;
   isolation:isolate;
   z-index:2;
@@ -31,7 +30,7 @@
   height:100svh;
   min-height:100svh;
   overflow:hidden;
-  background:#050403;
+  background:#000;
   perspective:1280px;
   perspective-origin:var(--world-persp-x) var(--world-persp-y);
   transform-style:preserve-3d;
@@ -43,9 +42,8 @@
   overflow:hidden;
   perspective:inherit;
   transform-style:preserve-3d;
-  background:#050403;
+  background:#000;
 }
-/* v126 removes the decorative side planes: the film itself owns the whole section. */
 .movx-scroll-world__space::before,
 .movx-scroll-world__space::after{display:none}
 .movx-scroll-world__plane{
@@ -57,7 +55,7 @@
   max-height:none;
   aspect-ratio:auto;
   overflow:hidden;
-  background:#080706;
+  background:#000;
   transform-style:preserve-3d;
   transform:
     translate3d(var(--world-x),var(--world-y),0)
@@ -69,7 +67,6 @@
   will-change:transform,opacity;
   box-shadow:none;
 }
-/* No frame/border/shadow: this is a background, not a floating video card. */
 .movx-scroll-world__plane::before,
 .movx-scroll-world__plane::after{display:none}
 .movx-scroll-world__poster,.movx-scroll-world__video{
@@ -80,7 +77,7 @@
   display:block;
   object-fit:cover;
   object-position:center center;
-  background:#080706;
+  background:#000;
   transform:translateZ(.4px);
 }
 .movx-scroll-world__poster{z-index:1;opacity:1;transition:opacity .10s linear}
@@ -95,8 +92,8 @@
   inset:0;
   pointer-events:none;
   background:
-    radial-gradient(92% 86% at 50% 48%,transparent 50%,rgba(5,4,4,.18) 100%),
-    linear-gradient(180deg,rgba(5,4,4,.10),transparent 24%,transparent 72%,rgba(5,4,4,.24));
+    radial-gradient(92% 86% at 50% 48%,transparent 50%,rgba(0,0,0,.18) 100%),
+    linear-gradient(180deg,rgba(0,0,0,.10),transparent 24%,transparent 72%,rgba(0,0,0,.24));
   transform:translateZ(.8px);
 }
 .movx-scroll-world__chrome{
