@@ -206,7 +206,7 @@
   }
   .movx-scroll-world__sticky{perspective:980px}
   .movx-scroll-world__plane{width:94vw;max-height:74svh;aspect-ratio:16/10;border-radius:0}
-  .movx-scroll-world__poster,.movx-scroll-world__video{object-fit:cover}
+  .movx-scroll-world__poster,.movx-scroll-world__video{object-fit:contain}
   .movx-scroll-world__space::before,.movx-scroll-world__space::after{width:30vw;height:58vh;top:20vh;opacity:.10}
   .movx-scroll-world__chrome{font-size:9px;letter-spacing:.1em;bottom:calc(28px + env(safe-area-inset-bottom))}
   .movx-scroll-world__hint{display:none}
