@@ -1,10 +1,11 @@
-"""Build MOVX v127 full-video Scroll World with seek-friendly media."""
+"""Build MOVX v127 full-video Scroll World with v128 pure-black section surfaces."""
 from pathlib import Path
 import runpy, json, re, shutil, subprocess, tempfile, urllib.request
 
 root=Path(__file__).resolve().parents[1]
 out=root/'_site'
 release='v127-full-video-black'
+surface_release='v128-pure-black-sections'
 source_url='https://res.cloudinary.com/gp3xbngz/video/upload/v1790173902/0923.mp4'
 clip_start='0.00'
 media=root/'site'/'media'
@@ -107,6 +108,19 @@ def optimize_runtime():
     text=text.replace(warm,"rootMargin:'320px 0px'",1)
     runtime.write_text(text)
 
+def install_black_surfaces():
+    href=f'v128-black-sections.css?v={surface_release}'
+    installed=[]
+    for html in out.glob('*.html'):
+        content=html.read_text()
+        if '<body' not in content or '</head>' not in content:
+            continue
+        if href not in content:
+            content=content.replace('</head>',f'<link rel="stylesheet" href="{href}">\n</head>',1)
+            html.write_text(content)
+        installed.append(html.name)
+    return installed
+
 media_mode=ensure_media()
 run_base_build_without_retired_v116()
 hero_stats=optimize_hero()
@@ -127,11 +141,13 @@ for name in ('index.html','latest.html','social-media.html'):
     html.write_text(content)
     installed.append(name)
 
+surface_pages=install_black_surfaces()
+
 for old in ('v116-scroll-film.html','v116-scroll-film.css','v116-scroll-film.mjs','media/movx-crt-scroll.mp4','media/movx-crt-poster.jpg'):
     (out/old).unlink(missing_ok=True)
 
-required=('v117-scroll-world.css','v117-scroll-world.mjs','assets/hero/soul-of-design-hero-clean.webp','media/movx-scroll-world-0923.mp4','media/movx-scroll-world-0923-mobile.mp4','media/movx-scroll-world-0923.webm','media/movx-scroll-world-0923-mobile.webm','media/movx-scroll-world-poster.jpg')
+required=('v117-scroll-world.css','v117-scroll-world.mjs','v128-black-sections.css','assets/hero/soul-of-design-hero-clean.webp','media/movx-scroll-world-0923.mp4','media/movx-scroll-world-0923-mobile.mp4','media/movx-scroll-world-0923.webm','media/movx-scroll-world-0923-mobile.webm','media/movx-scroll-world-poster.jpg')
 missing=[name for name in required if not (out/name).exists()]
-if missing or not installed:raise SystemExit(f'v127 invalid build: missing={missing}; installed={installed}')
+if missing or not installed or not surface_pages:raise SystemExit(f'v128 invalid build: missing={missing}; scroll_pages={installed}; surface_pages={surface_pages}')
 media_sizes={key:path.stat().st_size for key,path in media_files.items()}
-print(json.dumps({'release':release,'pages':installed,'source':source_url,'source_trim_seconds':float(clip_start),'media_mode':media_mode,'hero':hero_stats,'media_bytes':media_sizes,'desktop':'full-video H264-first deferred blob scrub','mobile':'full-video H264-first deferred blob scrub','scroll_world':'full-bleed scroll-linked video from original frame zero + 4 chapters','missing':missing}))
+print(json.dumps({'release':release,'surface_release':surface_release,'pages':installed,'surface_pages':surface_pages,'source':source_url,'source_trim_seconds':float(clip_start),'media_mode':media_mode,'hero':hero_stats,'media_bytes':media_sizes,'desktop':'full-video H264-first deferred blob scrub','mobile':'full-video H264-first deferred blob scrub','scroll_world':'full-bleed scroll-linked video from original frame zero + 4 chapters','dark_sections':'pure #000 top-level surfaces; warm legacy section fills neutralized','missing':missing}))
