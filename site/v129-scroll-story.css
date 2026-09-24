@@ -1,5 +1,5 @@
-/* MOVX v131 — cinematic editorial story over the full-bleed scroll-scrub video.
-   The film remains the hero. Typography uses soft, edge-less contrast fields rather than cards. */
+/* MOVX v132 — cinematic editorial story over the full-bleed scroll-scrub video.
+   The film remains the hero. Copy uses soft edge-less contrast fields, no cards, no section seams. */
 .movx-scroll-world__story{
   position:absolute;
   inset:0;
@@ -11,23 +11,23 @@
 .movx-scroll-world__story-card{
   --story-opacity:0;
   --story-x:0px;
-  --story-y:28px;
-  --story-scale:.975;
+  --story-y:22px;
+  --story-scale:.985;
   --story-rot:0deg;
   --story-scrim-opacity:0;
   --story-kicker-opacity:0;
-  --story-kicker-y:12px;
+  --story-kicker-y:10px;
   --story-title-opacity:0;
-  --story-title-y:28px;
-  --story-title-blur:8px;
-  --story-title-clip:26%;
+  --story-title-y:22px;
+  --story-title-blur:5px;
+  --story-title-clip:18%;
   --story-line-opacity:0;
-  --story-line-y:18px;
+  --story-line-y:14px;
   --story-scrim-anchor:30%;
   position:absolute;
-  width:min(39vw,590px);
+  width:min(40vw,610px);
   display:grid;
-  gap:clamp(8px,1.15vh,13px);
+  gap:clamp(8px,1.05vh,12px);
   isolation:isolate;
   opacity:var(--story-opacity);
   transform:translate3d(var(--story-x),var(--story-y),150px) scale(var(--story-scale)) rotate(var(--story-rot));
@@ -40,93 +40,116 @@
   content:"";
   position:absolute;
   z-index:-1;
-  inset:-52px -82px -48px;
+  inset:-72px -106px -64px;
   pointer-events:none;
   opacity:var(--story-scrim-opacity);
-  background:radial-gradient(ellipse at var(--story-scrim-anchor) 50%,rgba(0,0,0,.78) 0%,rgba(0,0,0,.58) 34%,rgba(0,0,0,.28) 58%,rgba(0,0,0,.08) 72%,rgba(0,0,0,0) 84%);
-  filter:blur(15px);
-  transform:scale(1.035);
+  background:
+    radial-gradient(ellipse at var(--story-scrim-anchor) 50%,rgba(0,0,0,.92) 0%,rgba(0,0,0,.76) 28%,rgba(0,0,0,.46) 49%,rgba(0,0,0,.20) 66%,rgba(0,0,0,0) 84%);
+  filter:blur(18px);
+  transform:scale(1.045);
 }
 
-/* Deliberately asymmetrical chapter placement: the copy now travels around the frame
-   instead of alternating between four mechanically mirrored corners. */
-.movx-scroll-world__story-card[data-world-story="1"]{left:clamp(30px,5.6vw,92px);top:62%}
-.movx-scroll-world__story-card[data-world-story="2"]{left:clamp(92px,14.5vw,250px);top:12%}
-.movx-scroll-world__story-card[data-world-story="3"]{right:clamp(36px,7.4vw,126px);top:31%;text-align:right;transform-origin:right center;--story-scrim-anchor:70%}
-.movx-scroll-world__story-card[data-world-story="4"]{right:clamp(96px,15vw,258px);top:59%;text-align:right;transform-origin:right center;--story-scrim-anchor:70%}
+.movx-scroll-world__story-card[data-world-story="1"]{left:clamp(34px,5.8vw,96px);top:61%}
+.movx-scroll-world__story-card[data-world-story="2"]{left:clamp(88px,13.5vw,232px);top:12%}
+.movx-scroll-world__story-card[data-world-story="3"]{right:clamp(38px,7vw,118px);top:30%;text-align:right;transform-origin:right center;--story-scrim-anchor:70%}
+.movx-scroll-world__story-card[data-world-story="4"]{right:clamp(86px,13.5vw,232px);top:60%;text-align:right;transform-origin:right center;--story-scrim-anchor:70%}
 
 .movx-scroll-world__story-kicker{
   display:block;
   opacity:var(--story-kicker-opacity);
   transform:translate3d(0,var(--story-kicker-y),0);
-  font:750 clamp(9px,.66vw,11px)/1.2 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  font:760 clamp(9px,.66vw,11px)/1.2 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
   letter-spacing:.19em;
   text-transform:uppercase;
-  color:rgba(255,255,255,.84);
-  text-shadow:0 2px 14px rgba(0,0,0,.94),0 8px 28px rgba(0,0,0,.64);
+  color:rgba(255,255,255,.91);
+  text-shadow:0 2px 12px rgba(0,0,0,1),0 8px 28px rgba(0,0,0,.86);
   will-change:transform,opacity;
 }
 .movx-scroll-world__story-title{
   display:block;
-  max-width:12.2ch;
+  max-width:12ch;
   margin:0;
   opacity:var(--story-title-opacity);
   transform:translate3d(0,var(--story-title-y),0);
   filter:blur(var(--story-title-blur));
   clip-path:inset(0 0 var(--story-title-clip) 0);
   font-family:Arial,Helvetica,sans-serif;
-  font-size:clamp(42px,5.15vw,84px);
-  font-weight:850;
+  font-size:clamp(40px,4.9vw,80px);
+  font-weight:860;
   font-style:normal;
-  line-height:.84;
-  letter-spacing:-.072em;
+  line-height:.88;
+  letter-spacing:-.067em;
   text-wrap:balance;
   color:#fff;
-  text-shadow:0 2px 2px rgba(0,0,0,.68),0 8px 24px rgba(0,0,0,.72),0 18px 54px rgba(0,0,0,.48);
+  -webkit-text-stroke:.25px rgba(0,0,0,.42);
+  text-shadow:0 1px 2px rgba(0,0,0,.92),0 6px 18px rgba(0,0,0,.88),0 16px 42px rgba(0,0,0,.68);
   will-change:transform,opacity,filter,clip-path;
 }
 .movx-scroll-world__story-title em{
   font-family:Georgia,"Times New Roman",serif;
   font-weight:400;
   font-style:italic;
-  letter-spacing:-.055em;
-  color:#f6e4df;
+  letter-spacing:-.045em;
+  color:#f8e8e3;
+  text-shadow:0 1px 2px rgba(0,0,0,.96),0 8px 24px rgba(0,0,0,.84),0 18px 44px rgba(0,0,0,.62);
 }
 .movx-scroll-world__story-card:nth-child(3) .movx-scroll-world__story-title,
 .movx-scroll-world__story-card:nth-child(4) .movx-scroll-world__story-title{margin-left:auto}
 .movx-scroll-world__story-line{
   display:block;
-  max-width:38ch;
+  max-width:36ch;
   opacity:var(--story-line-opacity);
   transform:translate3d(0,var(--story-line-y),0);
-  font:600 clamp(12px,.95vw,15px)/1.45 Arial,Helvetica,sans-serif;
-  letter-spacing:.015em;
-  color:rgba(255,255,255,.9);
-  text-shadow:0 2px 14px rgba(0,0,0,.96),0 8px 28px rgba(0,0,0,.72);
+  font:620 clamp(12px,.94vw,15px)/1.46 Arial,Helvetica,sans-serif;
+  letter-spacing:.012em;
+  color:rgba(255,255,255,.96);
+  text-shadow:0 2px 10px rgba(0,0,0,1),0 8px 24px rgba(0,0,0,.88);
   will-change:transform,opacity;
 }
 .movx-scroll-world__story-card:nth-child(3) .movx-scroll-world__story-line,
 .movx-scroll-world__story-card:nth-child(4) .movx-scroll-world__story-line{margin-left:auto}
 
-/* Remove the red progress rule and every chapter seam. The video must read as one continuous canvas. */
-.movx-scroll-world__progress{display:none!important}
+.movx-scroll-world,
+.movx-scroll-world__sticky,
+.movx-scroll-world__space,
+.movx-scroll-world__plane,
+.movx-scroll-world__chapters,
 .movx-scroll-world__chapter{
   border:0!important;
+  border-top:0!important;
+  border-bottom:0!important;
   outline:0!important;
   box-shadow:none!important;
+}
+.movx-scroll-world__progress{display:none!important}
+.movx-scroll-world__chapter{
   background:transparent!important;
   background-image:none!important;
 }
 .movx-scroll-world__chapter::before,
-.movx-scroll-world__chapter::after{content:none!important;display:none!important}
+.movx-scroll-world__chapter::after,
+.movx-scroll-world__chapters::before,
+.movx-scroll-world__chapters::after{content:none!important;display:none!important}
 .movx-scroll-world__chapter-mark{display:none!important}
 
-/* Keep the minimal chrome legible without turning it into a UI panel. */
-.movx-scroll-world__chrome{
-  color:rgba(255,255,255,.84);
-  text-shadow:0 2px 14px rgba(0,0,0,.96),0 8px 30px rgba(0,0,0,.62);
+.movx-scroll-world + section,
+.movx-scroll-world + .living-archive,
+.movx-scroll-world + [class*="section"]{
+  border-top:0!important;
+  outline:0!important;
+  box-shadow:none!important;
 }
-.movx-scroll-world__chrome i{color:#f0c6bc!important}
+.movx-scroll-world + section::before,
+.movx-scroll-world + .living-archive::before,
+.movx-scroll-world + [class*="section"]::before{
+  border-top:0!important;
+}
+
+.movx-scroll-world__chrome{
+  color:rgba(255,255,255,.88);
+  text-shadow:0 2px 12px rgba(0,0,0,1),0 8px 28px rgba(0,0,0,.78);
+}
+.movx-scroll-world__chrome i{color:#f0d5cf!important}
 
 @media (min-width:768px) and (max-width:1100px){
   .movx-scroll-world__story-card[data-world-story="1"]{left:5vw;top:63%}
@@ -147,25 +170,26 @@
     transform-origin:left center;
     --story-scrim-anchor:28%;
   }
-  .movx-scroll-world__story-card[data-world-story="1"]{left:18px;right:28px;bottom:calc(104px + env(safe-area-inset-bottom))}
-  .movx-scroll-world__story-card[data-world-story="2"]{left:34px;right:18px;bottom:calc(192px + env(safe-area-inset-bottom))}
-  .movx-scroll-world__story-card[data-world-story="3"]{left:18px;right:34px;bottom:calc(138px + env(safe-area-inset-bottom))}
-  .movx-scroll-world__story-card[data-world-story="4"]{left:30px;right:20px;bottom:calc(218px + env(safe-area-inset-bottom))}
+  .movx-scroll-world__story-card[data-world-story="1"]{left:18px;right:24px;bottom:calc(106px + env(safe-area-inset-bottom))}
+  .movx-scroll-world__story-card[data-world-story="2"]{left:28px;right:18px;bottom:calc(184px + env(safe-area-inset-bottom))}
+  .movx-scroll-world__story-card[data-world-story="3"]{left:18px;right:28px;bottom:calc(136px + env(safe-area-inset-bottom))}
+  .movx-scroll-world__story-card[data-world-story="4"]{left:28px;right:18px;bottom:calc(204px + env(safe-area-inset-bottom))}
   .movx-scroll-world__story-card::before{
-    inset:-42px -34px -38px;
-    filter:blur(13px);
+    inset:-48px -40px -44px;
+    filter:blur(15px);
   }
   .movx-scroll-world__story-title,
   .movx-scroll-world__story-card:nth-child(3) .movx-scroll-world__story-title,
   .movx-scroll-world__story-card:nth-child(4) .movx-scroll-world__story-title{
     margin-left:0;
-    max-width:10.5ch;
-    font-size:clamp(39px,12.3vw,58px);
-    line-height:.86;
+    max-width:10.7ch;
+    font-size:clamp(37px,11.8vw,55px);
+    line-height:.9;
+    letter-spacing:-.058em;
   }
   .movx-scroll-world__story-card:nth-child(3) .movx-scroll-world__story-line,
   .movx-scroll-world__story-card:nth-child(4) .movx-scroll-world__story-line{margin-left:0}
-  .movx-scroll-world__story-line{max-width:31ch;font-size:12px}
+  .movx-scroll-world__story-line{max-width:30ch;font-size:12px;line-height:1.42}
 }
 
 @media (prefers-reduced-motion:reduce){
