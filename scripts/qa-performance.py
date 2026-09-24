@@ -44,43 +44,31 @@ for name in ('index.html','latest.html','social-media.html'):
         errors.append(f'{name} does not load a MOVX CSS bundle: {local_styles[0]}')
     else:
         bundle=out/local_styles[0]
-        if not bundle.exists():
-            errors.append(f'{name} references missing CSS bundle {local_styles[0]}')
-        else:
-            css_bundles[local_styles[0]]=bundle.stat().st_size
+        if not bundle.exists():errors.append(f'{name} references missing CSS bundle {local_styles[0]}')
+        else:css_bundles[local_styles[0]]=bundle.stat().st_size
 
 runtime=(out/'script.js').read_text()
-if 'loading="${itemIndex < 2 ? \'eager\' : \'lazy\'}"' in runtime:
-    errors.append('conveyor still promotes below-fold artwork to eager')
-if 'loading="lazy" fetchpriority="low"' not in runtime:
-    errors.append('conveyor low-priority image policy is missing')
-if "rootMargin:'320px 0px'" not in runtime:
-    errors.append('archive predecode margin was not reduced')
+if 'loading="${itemIndex < 2 ? \'eager\' : \'lazy\'}"' in runtime:errors.append('conveyor still promotes below-fold artwork to eager')
+if 'loading="lazy" fetchpriority="low"' not in runtime:errors.append('conveyor low-priority image policy is missing')
+if "rootMargin:'320px 0px'" not in runtime:errors.append('archive predecode margin was not reduced')
 
 scroll=(out/'v117-scroll-world.mjs').read_text()
-if "rootMargin:'120% 0px'" not in scroll or "rootMargin:'0px'" not in scroll:
-    errors.append('Scroll World warm-load plus viewport observers are missing')
-if "const response=await fetch(candidate.url" not in scroll or "const data=await response.blob()" not in scroll or "video.src=blobURL" not in scroll:
-    errors.append('Scroll World deferred Blob delivery for reliable seeking is missing')
-if "canWebM" not in scroll or "canH264" not in scroll or "candidatesFor" not in scroll:
-    errors.append('Scroll World codec negotiation/retry candidates are missing')
-if "if(canH264)items.push({codec:'h264-mp4'" not in scroll:
-    errors.append('Scroll World no longer prefers H.264 for desktop scrub responsiveness')
-if "sourceTrim=1.20" not in scroll or "mappedTarget" not in scroll or "markFrameReady" not in scroll:
-    errors.append('Scroll World encoded-trim scrub contract is missing')
-if "retrying alternate codec" not in scroll:
-    errors.append('Scroll World alternate codec retry is missing')
-if 'userEngaged' not in scroll or 'engagementThreshold' not in scroll or '!nearby' not in scroll:
-    errors.append('Scroll World engagement-aware warm loading is missing')
-if 'video.play()' in scroll:
-    errors.append('Scroll World must not depend on autoplay to expose real frames')
+if "rootMargin:'120% 0px'" not in scroll or "rootMargin:'0px'" not in scroll:errors.append('Scroll World warm-load plus viewport observers are missing')
+if "const response=await fetch(candidate.url" not in scroll or "const data=await response.blob()" not in scroll or "video.src=blobURL" not in scroll:errors.append('Scroll World deferred Blob delivery for reliable seeking is missing')
+if "canWebM" not in scroll or "canH264" not in scroll or "candidatesFor" not in scroll:errors.append('Scroll World codec negotiation/retry candidates are missing')
+if "if(canH264)items.push({codec:'h264-mp4'" not in scroll:errors.append('Scroll World no longer prefers H.264 for desktop scrub responsiveness')
+if "sourceTrim=1.20" not in scroll or "mappedTarget" not in scroll or "markFrameReady" not in scroll:errors.append('Scroll World encoded-trim scrub contract is missing')
+if "retrying alternate codec" not in scroll:errors.append('Scroll World alternate codec retry is missing')
+if 'userEngaged' not in scroll or 'engagementThreshold' not in scroll or '!nearby' not in scroll:errors.append('Scroll World engagement-aware warm loading is missing')
+if 'video.play()' in scroll:errors.append('Scroll World must not depend on autoplay to expose real frames')
+if "dataset.spatialMode='camera-3d'" not in scroll or '--world-persp-x' not in scroll or '--world-persp-y' not in scroll:errors.append('Scroll World v125 camera-3d contract is missing')
+if '2.55' not in scroll or '330' not in scroll:errors.append('Scroll World v125 must include a visible camera pass-through, not subtle flat motion')
 
 fragment=(out/'index.html').read_text()
-if fragment.count('data-world-chapter-panel=')!=4:
-    errors.append('Scroll World must render four scroll chapters')
-if 'movx-scroll-world-poster.jpg?v=v122-real-scrub' not in fragment:
-    errors.append('Scroll World v122 poster cache-bust is missing')
+if fragment.count('data-world-chapter-panel=')!=4:errors.append('Scroll World must render four scroll chapters')
+if 'movx-scroll-world-poster.jpg?v=v125-true-3d' not in fragment:errors.append('Scroll World v125 poster cache-bust is missing')
+if 'ROLE PARA ATRAVESSAR' not in fragment:errors.append('Scroll World v125 immersive interaction cue is missing')
 
 if errors:
     raise SystemExit('MOVX performance QA failed: '+json.dumps(errors,ensure_ascii=False))
-print(json.dumps({'status':'passed','sizes':sizes,'css_bundles':css_bundles,'deferred_video_gate':True,'desktop_delivery':'trimmed-h264-first-blob-scrub','mobile_delivery':'trimmed-h264-first-blob-scrub','source_trim_seconds':1.20,'warm_margin':'120%','scroll_chapters':4},ensure_ascii=False))
+print(json.dumps({'status':'passed','sizes':sizes,'css_bundles':css_bundles,'deferred_video_gate':True,'desktop_delivery':'camera-3d + trimmed-h264-first-blob-scrub','mobile_delivery':'camera-3d + trimmed-h264-first-blob-scrub','source_trim_seconds':1.20,'warm_margin':'120%','scroll_chapters':4,'spatial_mode':'camera-3d'},ensure_ascii=False))
