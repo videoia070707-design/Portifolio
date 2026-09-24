@@ -1,7 +1,7 @@
-/* MOVX v123 spatial Scroll World.
-   The optimized film remains scroll-scrubbed, but the visible surface is no longer a
-   flat sticky video. Scroll also drives a damped perspective camera choreography:
-   translateZ, rotateX/Y/Z, lateral dolly and a close fly-through before handoff. */
+/* MOVX v124 spatial Scroll World.
+   The signature scene is controlled directly by scroll, never autoplay. A system
+   reduced-motion preference no longer silently collapses it into a static poster;
+   the poster is reserved for real media/network/decode failure only. */
 const root=document.querySelector('[data-movx-scroll-world="v117"]');
 if(root){
   const video=root.querySelector('video');
@@ -51,7 +51,7 @@ if(root){
     }
   }
   function seek(){
-    if(!active||failed||reduced.matches||duration<=0||video.readyState<1||video.seeking)return;
+    if(!active||failed||duration<=0||video.readyState<1||video.seeking)return;
     if(Math.abs(video.currentTime-target)>1/45){
       try{video.currentTime=target}catch{}
     }else{
@@ -114,7 +114,7 @@ if(root){
   }
   function render(now=performance.now()){
     raf=0;
-    if(disposed||reduced.matches)return;
+    if(disposed)return;
     targetProgress=progress();
     const dt=lastStamp?Math.min(64,now-lastStamp):16.7;
     lastStamp=now;
@@ -146,7 +146,7 @@ if(root){
   function fallback(error){
     loading=false;
     const next=mediaAttempt+1;
-    if(!disposed&&!reduced.matches&&next<mediaCandidates.length){
+    if(!disposed&&next<mediaCandidates.length){
       mediaAttempt=next;
       console.warn('MOVX scroll world: retrying alternate codec',error);
       loadCandidate(mediaAttempt);
@@ -156,10 +156,10 @@ if(root){
     root.dataset.mode='fallback';
     root.dataset.frameReady='false';
     root.dataset.scrubLive='false';
-    console.warn('MOVX scroll world: poster fallback',error);
+    console.warn('MOVX scroll world: poster fallback after real media failure',error);
   }
   async function loadCandidate(index){
-    if(disposed||reduced.matches||!userEngaged||!nearby||!mediaVariant)return;
+    if(disposed||!userEngaged||!nearby||!mediaVariant)return;
     const candidate=mediaCandidates[index];
     if(!candidate){fallback(new Error('no compatible media candidate'));return}
     releaseSource(true);
@@ -172,7 +172,7 @@ if(root){
       const response=await fetch(candidate.url,{signal:controller.signal,cache:'force-cache'});
       if(!response.ok)throw new Error(`media status ${response.status}`);
       const data=await response.blob();
-      if(disposed||reduced.matches||!nearby||mediaCandidates[index]!==candidate)return;
+      if(disposed||!nearby||mediaCandidates[index]!==candidate)return;
       blobURL=URL.createObjectURL(data);
       video.preload='auto';
       video.src=blobURL;
@@ -183,7 +183,7 @@ if(root){
     }
   }
   function load(){
-    if(disposed||reduced.matches||!userEngaged||!nearby)return;
+    if(disposed||!userEngaged||!nearby)return;
     const variant=mobile.matches?'mobile':'desktop';
     if(mediaVariant===variant&&(loading||blobURL||video.currentSrc||video.getAttribute('src')))return;
     clearMedia();
@@ -220,6 +220,7 @@ if(root){
   root.dataset.sourceTrim=sourceTrim.toFixed(2);
   root.dataset.scrubLive='false';
   root.dataset.spatialMode='css-3d';
+  root.dataset.motionPreference=reduced.matches?'system-reduce-scroll-controlled':'full-scroll-controlled';
   video.muted=true;video.playsInline=true;video.disableRemotePlayback=true;
 
   video.addEventListener('loadedmetadata',()=>{
@@ -249,13 +250,16 @@ if(root){
     firstVisual=true;lastStamp=0;schedule();
   },{passive:true});
   reduced.addEventListener('change',()=>{
-    if(reduced.matches){clearMedia();failed=false;root.dataset.mode='fallback'}
-    else{failed=false;root.dataset.mode='loading';firstVisual=true;if(nearby&&userEngaged)load();schedule()}
+    root.dataset.motionPreference=reduced.matches?'system-reduce-scroll-controlled':'full-scroll-controlled';
+    firstVisual=true;lastStamp=0;
+    if(nearby&&userEngaged&&!failed)load();
+    schedule();
   });
   mobile.addEventListener('change',()=>{failed=false;firstVisual=true;if(nearby&&userEngaged)load();schedule()});
   document.addEventListener('visibilitychange',()=>{if(!document.hidden){firstVisual=true;schedule()}else video.pause()});
   window.addEventListener('pagehide',()=>{
     disposed=true;observer.disconnect();warmObserver.disconnect();cancelAnimationFrame(raf);clearMedia();
   });
-  if(reduced.matches){root.dataset.mode='fallback'}else{applySpatial(progress());schedule()}
+  applySpatial(progress());
+  schedule();
 }

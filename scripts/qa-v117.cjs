@@ -130,18 +130,35 @@ const publicMetric=metric=>({mean:metric.mean,brightRatio:metric.brightRatio,wid
     const mobileSource=await mobileVideo.evaluate(v=>v.currentSrc);
     await mobilePage.close();
 
-    const reduced=await browser.newPage({viewport:{width:1440,height:900},reducedMotion:'reduce'});
-    await reduced.goto('http://127.0.0.1:4173/',{waitUntil:'networkidle'});
-    const reducedFilm=reduced.locator('[data-movx-scroll-world="v117"]');
-    assert.equal(await reducedFilm.getAttribute('data-mode'),'fallback');
-    assert.equal(await reducedFilm.locator('.movx-scroll-world__video').getAttribute('src'),null);
-    await reducedFilm.scrollIntoViewIfNeeded();
-    await reduced.waitForFunction(()=>document.querySelector('.movx-scroll-world__poster')?.naturalWidth>0,null,{timeout:10000});
-    const posterFrame=await pixelMetric(reducedFilm.locator('.movx-scroll-world__poster'));
-    assert.ok(posterFrame.mean>12&&posterFrame.brightRatio>.04,`fallback poster must remain a visible source frame: ${JSON.stringify(publicMetric(posterFrame))}`);
-    await reduced.screenshot({path:path.resolve('qa-v117-fallback-visible.png')});
-    await reduced.close();
+    const reducedPage=await browser.newPage({viewport:{width:1440,height:900},reducedMotion:'reduce'});
+    await reducedPage.goto('http://127.0.0.1:4173/',{waitUntil:'networkidle'});
+    const reducedFilm=reducedPage.locator('[data-movx-scroll-world="v117"]');
+    const reducedVideo=reducedFilm.locator('video');
+    assert.equal(await reducedFilm.getAttribute('data-motion-preference'),'system-reduce-scroll-controlled','system reduced-motion preference must stay scroll-controlled rather than static');
+    assert.equal(await reducedVideo.getAttribute('src'),null,'reduced-motion path must still avoid loading before user scroll');
+    const reducedSeek=async p=>{
+      await reducedFilm.evaluate((element,value)=>window.scrollTo({top:element.getBoundingClientRect().top+window.scrollY+(element.offsetHeight-innerHeight)*value,behavior:'instant'}),p);
+      await reducedPage.waitForFunction(value=>{
+        const el=document.querySelector('[data-movx-scroll-world="v117"]');
+        const v=el?.querySelector('video');
+        return el?.dataset.mode==='scrub'&&el?.dataset.scrubLive==='true'&&el?.dataset.frameReady==='true'&&v?.currentSrc&&Math.abs(Number(el.dataset.worldProgress)-value)<.035;
+      },p,{timeout:18000});
+    };
+    await reducedSeek(.18);
+    const reducedStartTime=await reducedVideo.evaluate(v=>v.currentTime);
+    const reducedStartFrame=await pixelMetric(reducedVideo);
+    const reducedStartDepth=Number(await reducedFilm.getAttribute('data-world-depth'));
+    await reducedSeek(.66);
+    const reducedEndTime=await reducedVideo.evaluate(v=>v.currentTime);
+    const reducedEndFrame=await pixelMetric(reducedVideo);
+    const reducedEndDepth=Number(await reducedFilm.getAttribute('data-world-depth'));
+    const reducedDelta=frameDelta(reducedStartFrame,reducedEndFrame);
+    assert.ok(reducedEndTime>reducedStartTime+2,`reduced-motion preference must not freeze film time: ${reducedStartTime} -> ${reducedEndTime}`);
+    assert.ok(reducedDelta>5,`reduced-motion preference must not turn Scroll World into a PNG: delta=${reducedDelta}`);
+    assert.ok(Math.abs(reducedEndDepth-reducedStartDepth)>80,`reduced-motion preference must keep scroll-linked depth: ${reducedStartDepth} -> ${reducedEndDepth}`);
+    await reducedPage.screenshot({path:'_site/qa-v124-reduced-scroll-controlled.png'});
+    await reducedPage.close();
 
-    console.log(JSON.stringify({status:'passed',initialMediaRequests:0,chapters:4,desktopCodec,mobileCodec,desktopSource,sourceTrim:1.20,desktopDelta,laterDelta,mobileDelta,firstFrame:publicMetric(firstFrame),middleFrame:publicMetric(middleFrame),posterFrame:publicMetric(posterFrame),forward:[first,middle,last],reverse,mobileSource,reduced:'poster only for reduced-motion/failure'}));
+    console.log(JSON.stringify({status:'passed',initialMediaRequests:0,chapters:4,desktopCodec,mobileCodec,desktopSource,sourceTrim:1.20,desktopDelta,laterDelta,mobileDelta,reducedDelta,firstFrame:publicMetric(firstFrame),middleFrame:publicMetric(middleFrame),forward:[first,middle,last],reverse,mobileSource,reduced:'scroll-controlled 3D retained; poster only for decode/network failure'}));
   }finally{await browser.close()}
 })().catch(error=>{console.error(error);process.exitCode=1});
