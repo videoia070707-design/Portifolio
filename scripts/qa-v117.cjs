@@ -45,7 +45,7 @@ const publicMetric=metric=>({mean:metric.mean,brightRatio:metric.brightRatio,wid
     assert.equal(await film.locator('.movx-scroll-world__sticky').evaluate(el=>getComputedStyle(el).position),'sticky','film must remain a sticky background');
     assert.equal(await video.evaluate(v=>getComputedStyle(v).objectFit),'cover','desktop film must cover the viewport as a background');
     assert.equal(await video.getAttribute('src'),null,'Scroll World video must not compete with first paint');
-    assert.equal(await film.getAttribute('data-source-trim'),'1.20','runtime must declare the source trim used by the encoded clip');
+    assert.equal(await film.getAttribute('data-source-trim'),'0.00','runtime must preserve the source from the original frame zero');
     assert.equal(mediaRequests.length,0,'Scroll World media must stay idle before real user scroll');
 
     const seekTo=async p=>{
@@ -64,7 +64,7 @@ const publicMetric=metric=>({mean:metric.mean,brightRatio:metric.brightRatio,wid
       });
     };
 
-    await seekTo(.10);
+    await seekTo(.005);
     const desktopSource=await video.evaluate(v=>v.currentSrc);
     const desktopCodec=await film.getAttribute('data-media-codec');
     assert.ok(desktopSource.startsWith('blob:'),'desktop must use the deferred Blob source for reliable scrub seeking');
@@ -73,12 +73,22 @@ const publicMetric=metric=>({mean:metric.mean,brightRatio:metric.brightRatio,wid
     if(desktopCodec==='vp9-webm'){
       assert.ok(mediaRequests.some(url=>/movx-scroll-world-0923\.webm/.test(url)),'desktop must fetch the VP9 fallback if H.264 cannot decode');
     }
-    const first=await video.evaluate(v=>v.currentTime);
-    const firstFrame=await pixelMetric(video);
-    assert.ok(firstFrame.mean>12&&firstFrame.brightRatio>.04,`desktop frame must contain visible video content: ${JSON.stringify(publicMetric(firstFrame))}`);
+    const openingTime=await video.evaluate(v=>v.currentTime);
+    const openingFrame=await pixelMetric(video);
+    assert.ok(openingFrame.mean<18,`the Scroll World opening must retain the original dark/closed screen: ${JSON.stringify(publicMetric(openingFrame))}`);
     assert.ok(Number(await video.evaluate(el=>getComputedStyle(el).opacity))>.95,'real video layer must own the rendered image');
     assert.ok(Number(await poster.evaluate(el=>getComputedStyle(el).opacity))<.05,'poster must disappear once a real decoded frame exists');
     assert.equal(await poster.evaluate(el=>getComputedStyle(el).visibility),'hidden','poster must not remain visually stacked over the live scrub');
+    await page.screenshot({path:path.resolve('qa-v117-dark-opening.png')});
+
+    await seekTo(.30);
+    const first=await video.evaluate(v=>v.currentTime);
+    const firstFrame=await pixelMetric(video);
+    const openingDelta=frameDelta(openingFrame,firstFrame);
+    assert.ok(firstFrame.mean>12&&firstFrame.brightRatio>.04,`scrolling must reveal visible video content after the dark opening: ${JSON.stringify(publicMetric(firstFrame))}`);
+    assert.ok(openingDelta>7,`scroll must visibly leave the original dark opening: delta=${openingDelta}`);
+    assert.ok(first>openingTime+.8,`scroll must advance from the original beginning: ${openingTime} -> ${first}`);
+    assert.equal(await film.getAttribute('data-world-chapter'),'2');
     await page.screenshot({path:path.resolve('qa-v117-desktop.png')});
 
     await seekTo(.62);
@@ -87,7 +97,7 @@ const publicMetric=metric=>({mean:metric.mean,brightRatio:metric.brightRatio,wid
     const desktopDelta=frameDelta(firstFrame,middleFrame);
     assert.ok(middleFrame.mean>12&&middleFrame.brightRatio>.04,`chapter 3 frame must remain visibly rendered: ${JSON.stringify(publicMetric(middleFrame))}`);
     assert.ok(desktopDelta>7,`real scroll must visibly change video pixels instead of leaving a fixed PNG: delta=${desktopDelta}`);
-    assert.ok(middle>first+2,`scroll must advance actual clip time: ${first} -> ${middle}`);
+    assert.ok(middle>first+1,`scroll must advance actual clip time: ${first} -> ${middle}`);
     assert.equal(await film.getAttribute('data-world-chapter'),'3','chapter counter must follow scroll progress');
     await page.screenshot({path:path.resolve('qa-v117-chapter-3.png')});
 
@@ -124,7 +134,7 @@ const publicMetric=metric=>({mean:metric.mean,brightRatio:metric.brightRatio,wid
     await mobilePage.waitForFunction(()=>{const el=document.querySelector('[data-movx-scroll-world="v117"]');return Number(el?.dataset.worldProgress)>.55&&el.dataset.scrubLive==='true'&&Number(el.dataset.worldChapter)>=3});
     const mobileMiddle=await pixelMetric(mobileVideo);
     const mobileDelta=frameDelta(mobileStart,mobileMiddle);
-    assert.ok(mobileStart.mean>10&&mobileMiddle.mean>10,`mobile frames must stay visible`);
+    assert.ok(mobileMiddle.mean>10,`mobile scrolling must reveal visible frames`);
     assert.ok(mobileDelta>5,`mobile scroll must visibly change the film: delta=${mobileDelta}`);
     await mobilePage.screenshot({path:path.resolve('qa-v117-mobile.png')});
     const mobileSource=await mobileVideo.evaluate(v=>v.currentSrc);
@@ -159,6 +169,6 @@ const publicMetric=metric=>({mean:metric.mean,brightRatio:metric.brightRatio,wid
     await reducedPage.screenshot({path:'_site/qa-v124-reduced-scroll-controlled.png'});
     await reducedPage.close();
 
-    console.log(JSON.stringify({status:'passed',initialMediaRequests:0,chapters:4,desktopCodec,mobileCodec,desktopSource,sourceTrim:1.20,desktopDelta,laterDelta,mobileDelta,reducedDelta,firstFrame:publicMetric(firstFrame),middleFrame:publicMetric(middleFrame),forward:[first,middle,last],reverse,mobileSource,reduced:'scroll-controlled full-bleed video retained; poster only for decode/network failure'}));
+    console.log(JSON.stringify({status:'passed',initialMediaRequests:0,chapters:4,desktopCodec,mobileCodec,desktopSource,sourceTrim:0.00,openingFrame:publicMetric(openingFrame),openingDelta,desktopDelta,laterDelta,mobileDelta,reducedDelta,firstFrame:publicMetric(firstFrame),middleFrame:publicMetric(middleFrame),forward:[openingTime,first,middle,last],reverse,mobileSource,reduced:'scroll-controlled full-bleed video retained; original dark opening preserved'}));
   }finally{await browser.close()}
 })().catch(error=>{console.error(error);process.exitCode=1});
