@@ -1,6 +1,7 @@
-/* MOVX v125: true spatial 3D Scroll World.
-   The film is a real perspective plane inside a camera space instead of a full-screen
-   flat layer. Scroll drives both the video frame and the virtual camera. */
+/* MOVX v126: full-bleed Scroll World.
+   The video is the entire pinned section background. Native scroll scrubs the real
+   video frames while a restrained overscanned camera drift keeps the image moving
+   without ever revealing a boxed screen or empty margins. */
 .movx-scroll-world{
   --world-scale:.66;
   --world-rx:8deg;
@@ -16,7 +17,7 @@
   --world-glow:.28;
   position:relative;
   min-height:420svh;
-  background:#060504;
+  background:#050403;
   color:#f3eee9;
   isolation:isolate;
   z-index:2;
@@ -26,10 +27,11 @@
   position:sticky;
   top:0;
   z-index:0;
+  width:100%;
   height:100svh;
+  min-height:100svh;
   overflow:hidden;
-  background:
-    radial-gradient(110% 92% at 50% 52%,#16100d 0%,#090706 42%,#050403 78%,#030302 100%);
+  background:#050403;
   perspective:1280px;
   perspective-origin:var(--world-persp-x) var(--world-persp-y);
   transform-style:preserve-3d;
@@ -37,78 +39,39 @@
 .movx-scroll-world__space{
   position:absolute;
   inset:0;
-  display:grid;
-  place-items:center;
+  display:block;
+  overflow:hidden;
   perspective:inherit;
   transform-style:preserve-3d;
-  overflow:visible;
+  background:#050403;
 }
+/* v126 removes the decorative side planes: the film itself owns the whole section. */
 .movx-scroll-world__space::before,
-.movx-scroll-world__space::after{
-  content:"";
-  position:absolute;
-  width:min(22vw,320px);
-  height:72vh;
-  top:14vh;
-  border:1px solid rgba(255,255,255,.045);
-  background:linear-gradient(180deg,rgba(255,255,255,.035),rgba(255,255,255,.008));
-  box-shadow:0 30px 100px rgba(0,0,0,.42);
-  opacity:calc(.12 + var(--world-glow) * .25);
-  transform-style:preserve-3d;
-  pointer-events:none;
-  will-change:transform,opacity;
-}
-.movx-scroll-world__space::before{
-  left:-6vw;
-  transform:translate3d(calc(var(--world-x) * -.35),calc(var(--world-y) * -.22),calc(var(--world-z) - 220px)) rotateY(58deg) rotateX(-2deg);
-}
-.movx-scroll-world__space::after{
-  right:-6vw;
-  transform:translate3d(calc(var(--world-x) * .28),calc(var(--world-y) * -.18),calc(var(--world-z) - 280px)) rotateY(-58deg) rotateX(2deg);
-}
+.movx-scroll-world__space::after{display:none}
 .movx-scroll-world__plane{
-  position:relative;
-  width:min(88vw,1500px);
-  aspect-ratio:16/9;
-  max-height:82vh;
+  position:absolute;
+  inset:-9vh -9vw;
+  width:auto;
+  height:auto;
+  max-width:none;
+  max-height:none;
+  aspect-ratio:auto;
   overflow:hidden;
   background:#080706;
   transform-style:preserve-3d;
   transform:
-    translate3d(var(--world-x),var(--world-y),var(--world-z))
-    rotateX(var(--world-rx))
-    rotateY(var(--world-ry))
+    translate3d(var(--world-x),var(--world-y),0)
     rotateZ(var(--world-rz))
-    scale(var(--world-scale));
+    scale(1.11);
   transform-origin:center center;
   opacity:var(--world-exit);
   backface-visibility:hidden;
   will-change:transform,opacity;
-  box-shadow:
-    0 52px 150px rgba(0,0,0,.62),
-    0 0 calc(40px + 90px * var(--world-glow)) rgba(150,72,52,calc(.08 + .10 * var(--world-glow)));
+  box-shadow:none;
 }
-.movx-scroll-world__plane::before{
-  content:"";
-  position:absolute;
-  inset:-2px;
-  z-index:5;
-  pointer-events:none;
-  border:1px solid rgba(255,255,255,.12);
-  box-shadow:inset 0 0 0 1px rgba(0,0,0,.55),inset 0 0 55px rgba(0,0,0,.30);
-  transform:translateZ(1.4px);
-}
-.movx-scroll-world__plane::after{
-  content:"";
-  position:absolute;
-  left:5%;right:5%;bottom:-5.5%;height:10%;
-  z-index:-1;
-  background:rgba(0,0,0,.7);
-  filter:blur(24px);
-  transform:translateZ(-70px) rotateX(82deg);
-  opacity:.82;
-  pointer-events:none;
-}
+/* No frame/border/shadow: this is a background, not a floating video card. */
+.movx-scroll-world__plane::before,
+.movx-scroll-world__plane::after{display:none}
 .movx-scroll-world__poster,.movx-scroll-world__video{
   position:absolute;
   inset:0;
@@ -116,7 +79,7 @@
   height:100%;
   display:block;
   object-fit:cover;
-  object-position:center;
+  object-position:center center;
   background:#080706;
   transform:translateZ(.4px);
 }
@@ -132,8 +95,8 @@
   inset:0;
   pointer-events:none;
   background:
-    radial-gradient(80% 76% at 50% 47%,transparent 42%,rgba(5,4,4,.28) 100%),
-    linear-gradient(180deg,rgba(5,4,4,.14),transparent 30%,transparent 68%,rgba(5,4,4,.30));
+    radial-gradient(92% 86% at 50% 48%,transparent 50%,rgba(5,4,4,.18) 100%),
+    linear-gradient(180deg,rgba(5,4,4,.10),transparent 24%,transparent 72%,rgba(5,4,4,.24));
   transform:translateZ(.8px);
 }
 .movx-scroll-world__chrome{
@@ -146,7 +109,7 @@
   gap:16px;
   font:600 10px/1.4 Arial,sans-serif;
   letter-spacing:.16em;
-  text-shadow:0 1px 8px #080706;
+  text-shadow:0 1px 10px rgba(0,0,0,.78);
   pointer-events:none;
   opacity:var(--world-exit);
   transform:translateZ(140px);
@@ -179,7 +142,7 @@
   font:500 clamp(44px,7vw,106px)/.82 Arial,sans-serif;
   letter-spacing:-.06em;
   color:rgba(243,238,233,.075);
-  text-shadow:0 2px 28px rgba(0,0,0,.32);
+  text-shadow:0 2px 28px rgba(0,0,0,.38);
   user-select:none;
   transform:translate3d(0,0,180px);
   will-change:transform,opacity;
@@ -205,9 +168,15 @@
     min-height:360svh;
   }
   .movx-scroll-world__sticky{perspective:980px}
-  .movx-scroll-world__plane{width:94vw;max-height:74svh;aspect-ratio:16/10;border-radius:0}
-  .movx-scroll-world__poster,.movx-scroll-world__video{object-fit:contain}
-  .movx-scroll-world__space::before,.movx-scroll-world__space::after{width:30vw;height:58vh;top:20vh;opacity:.10}
+  .movx-scroll-world__plane{
+    inset:-11vh -15vw;
+    width:auto;
+    height:auto;
+    max-height:none;
+    aspect-ratio:auto;
+    transform:translate3d(var(--world-x),var(--world-y),0) rotateZ(var(--world-rz)) scale(1.10);
+  }
+  .movx-scroll-world__poster,.movx-scroll-world__video{object-fit:cover;object-position:center center}
   .movx-scroll-world__chrome{font-size:9px;letter-spacing:.1em;bottom:calc(28px + env(safe-area-inset-bottom))}
   .movx-scroll-world__hint{display:none}
   .movx-scroll-world__chapter{min-height:86svh;padding:20px}
