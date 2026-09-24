@@ -1,0 +1,135 @@
+/* MOVX v131 — mobile living archive ownership.
+   This final layer removes legacy 3D conflicts on small screens so the artwork wall
+   remains a real multi-card conveyor instead of collapsing to a single static piece. */
+
+@media (max-width:767px){
+  body[data-page="social"] #livingArchive .loop-wall{
+    display:grid!important;
+    gap:12px!important;
+    width:100%!important;
+    max-width:none!important;
+    margin-left:0!important;
+    margin-right:0!important;
+    padding:4px 0 8px!important;
+    overflow:hidden!important;
+    perspective:none!important;
+    transform:none!important;
+  }
+  body[data-page="social"] #livingArchive .loop-wall::before,
+  body[data-page="social"] #livingArchive .loop-wall::after{
+    width:14px!important;
+    min-width:14px!important;
+    opacity:.7!important;
+  }
+  html.movx-v39 body[data-page="social"] #livingArchive .loop-row,
+  body[data-page="social"] #livingArchive .loop-row{
+    position:relative!important;
+    display:block!important;
+    width:100%!important;
+    max-width:100%!important;
+    min-height:0!important;
+    overflow:hidden!important;
+    opacity:1!important;
+    visibility:visible!important;
+    transform:none!important;
+    transform-style:flat!important;
+    filter:none!important;
+    mask-image:none!important;
+    -webkit-mask-image:none!important;
+    contain:layout paint!important;
+  }
+  body[data-page="social"] #livingArchive .loop-row::before,
+  body[data-page="social"] #livingArchive .loop-row::after{
+    content:none!important;
+    display:none!important;
+  }
+  body[data-page="social"] #livingArchive .loop-track{
+    display:flex!important;
+    flex-flow:row nowrap!important;
+    align-items:stretch!important;
+    gap:12px!important;
+    width:max-content!important;
+    min-width:max-content!important;
+    max-width:none!important;
+    opacity:1!important;
+    visibility:visible!important;
+    will-change:transform!important;
+    animation-name:v131-mobile-wall-left!important;
+    animation-duration:34s!important;
+    animation-delay:-4s!important;
+    animation-timing-function:linear!important;
+    animation-iteration-count:infinite!important;
+    animation-direction:normal!important;
+    animation-fill-mode:both!important;
+    animation-play-state:running!important;
+  }
+  body[data-page="social"] #livingArchive .loop-row:nth-child(2) .loop-track{
+    animation-name:v131-mobile-wall-right!important;
+    animation-duration:39s!important;
+    animation-delay:-15s!important;
+  }
+  body[data-page="social"] #livingArchive .loop-row:nth-child(3) .loop-track{
+    animation-name:v131-mobile-wall-left!important;
+    animation-duration:36s!important;
+    animation-delay:-23s!important;
+  }
+  body[data-page="social"] #livingArchive .loop-card,
+  html.movx-v31 body[data-page="social"] #livingArchive .loop-card{
+    position:relative!important;
+    display:block!important;
+    flex:0 0 min(58vw,232px)!important;
+    width:min(58vw,232px)!important;
+    min-width:min(58vw,232px)!important;
+    max-width:none!important;
+    aspect-ratio:4/5!important;
+    opacity:1!important;
+    visibility:visible!important;
+    transform:none!important;
+    filter:none!important;
+    border-radius:0!important;
+    scroll-snap-align:start;
+  }
+  body[data-page="social"] #livingArchive .loop-card img{
+    display:block!important;
+    width:100%!important;
+    height:100%!important;
+    min-width:100%!important;
+    object-fit:cover!important;
+    opacity:1!important;
+    visibility:visible!important;
+    transform:none!important;
+  }
+  body[data-page="social"] #livingArchive .loop-wall:hover .loop-card,
+  body[data-page="social"] #livingArchive .loop-wall:has(.loop-card:hover) .loop-card{
+    opacity:1!important;
+    filter:none!important;
+  }
+}
+
+@keyframes v131-mobile-wall-left{
+  from{transform:translate3d(0,0,0)}
+  to{transform:translate3d(calc(-50% - 6px),0,0)}
+}
+@keyframes v131-mobile-wall-right{
+  from{transform:translate3d(calc(-50% - 6px),0,0)}
+  to{transform:translate3d(0,0,0)}
+}
+
+/* Accessibility fallback: reduced motion still exposes the whole wall instead of
+   freezing on one artwork. The user can swipe each row manually. */
+@media (max-width:767px) and (prefers-reduced-motion:reduce){
+  body[data-page="social"] #livingArchive .loop-row{
+    overflow-x:auto!important;
+    overflow-y:hidden!important;
+    scroll-snap-type:x proximity;
+    scrollbar-width:none;
+    -webkit-overflow-scrolling:touch;
+  }
+  body[data-page="social"] #livingArchive .loop-row::-webkit-scrollbar{display:none}
+  body[data-page="social"] #livingArchive .loop-track{
+    animation:none!important;
+    transform:none!important;
+    will-change:auto!important;
+    padding-inline:14px;
+  }
+}

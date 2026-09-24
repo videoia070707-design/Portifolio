@@ -1,4 +1,4 @@
-/* MOVX v130 — cinematic editorial story over the full-bleed scroll-scrub video.
+/* MOVX v131 — cinematic editorial story over the full-bleed scroll-scrub video.
    The film remains the hero. Typography uses soft, edge-less contrast fields rather than cards. */
 .movx-scroll-world__story{
   position:absolute;
@@ -47,10 +47,13 @@
   filter:blur(15px);
   transform:scale(1.035);
 }
-.movx-scroll-world__story-card[data-world-story="1"]{left:clamp(28px,5.4vw,86px);top:59%}
-.movx-scroll-world__story-card[data-world-story="2"]{left:clamp(28px,6.4vw,104px);top:15%}
-.movx-scroll-world__story-card[data-world-story="3"]{right:clamp(28px,5.4vw,86px);top:16%;text-align:right;transform-origin:right center;--story-scrim-anchor:70%}
-.movx-scroll-world__story-card[data-world-story="4"]{right:clamp(28px,5.4vw,86px);top:57%;text-align:right;transform-origin:right center;--story-scrim-anchor:70%}
+
+/* Deliberately asymmetrical chapter placement: the copy now travels around the frame
+   instead of alternating between four mechanically mirrored corners. */
+.movx-scroll-world__story-card[data-world-story="1"]{left:clamp(30px,5.6vw,92px);top:62%}
+.movx-scroll-world__story-card[data-world-story="2"]{left:clamp(92px,14.5vw,250px);top:12%}
+.movx-scroll-world__story-card[data-world-story="3"]{right:clamp(36px,7.4vw,126px);top:31%;text-align:right;transform-origin:right center;--story-scrim-anchor:70%}
+.movx-scroll-world__story-card[data-world-story="4"]{right:clamp(96px,15vw,258px);top:59%;text-align:right;transform-origin:right center;--story-scrim-anchor:70%}
 
 .movx-scroll-world__story-kicker{
   display:block;
@@ -125,21 +128,29 @@
 }
 .movx-scroll-world__chrome i{color:#f0c6bc!important}
 
+@media (min-width:768px) and (max-width:1100px){
+  .movx-scroll-world__story-card[data-world-story="1"]{left:5vw;top:63%}
+  .movx-scroll-world__story-card[data-world-story="2"]{left:9vw;top:13%}
+  .movx-scroll-world__story-card[data-world-story="3"]{right:5vw;top:32%}
+  .movx-scroll-world__story-card[data-world-story="4"]{right:9vw;top:60%}
+}
+
 @media (max-width:767px){
   .movx-scroll-world__story-card,
   .movx-scroll-world__story-card[data-world-story="1"],
   .movx-scroll-world__story-card[data-world-story="2"],
   .movx-scroll-world__story-card[data-world-story="3"],
   .movx-scroll-world__story-card[data-world-story="4"]{
-    left:20px;
-    right:20px;
     top:auto;
-    bottom:calc(104px + env(safe-area-inset-bottom));
     width:auto;
     text-align:left;
     transform-origin:left center;
     --story-scrim-anchor:28%;
   }
+  .movx-scroll-world__story-card[data-world-story="1"]{left:18px;right:28px;bottom:calc(104px + env(safe-area-inset-bottom))}
+  .movx-scroll-world__story-card[data-world-story="2"]{left:34px;right:18px;bottom:calc(192px + env(safe-area-inset-bottom))}
+  .movx-scroll-world__story-card[data-world-story="3"]{left:18px;right:34px;bottom:calc(138px + env(safe-area-inset-bottom))}
+  .movx-scroll-world__story-card[data-world-story="4"]{left:30px;right:20px;bottom:calc(218px + env(safe-area-inset-bottom))}
   .movx-scroll-world__story-card::before{
     inset:-42px -34px -38px;
     filter:blur(13px);
