@@ -14,8 +14,24 @@ html[data-theme="dark"] body[data-page] > .site-footer{
   background-image:none!important;
 }
 
+/* High-specificity ownership: old versioned layers must never reintroduce warm/dark-gray section fills. */
+html[data-layout="stable"][data-theme="dark"] body[data-page] main :is(
+  #livingArchive,
+  #nicheIndex,
+  #archiveControls,
+  .projects-list,
+  #about,
+  #services,
+  #process,
+  #contact
+){
+  background:#000!important;
+  background-color:#000!important;
+  background-image:none!important;
+}
+
 /* Social page legacy editorial pass used warm brown section fills. */
-html[data-theme="dark"] body[data-page="social"] :is(
+html[data-layout="stable"][data-theme="dark"] body[data-page="social"] :is(
   .living-archive,
   .niche-index,
   .work-archive,
@@ -28,11 +44,13 @@ html[data-theme="dark"] body[data-page="social"] :is(
   .velocity-strip--social
 ){
   background:#000!important;
+  background-color:#000!important;
+  background-image:none!important;
   color:var(--fg)!important;
 }
 
 /* Remove the brown/red tint from section seams. */
-html[data-theme="dark"] body[data-page="social"] :is(
+html[data-layout="stable"][data-theme="dark"] body[data-page="social"] :is(
   .niche-index,
   .living-archive,
   .work-archive,
@@ -42,20 +60,20 @@ html[data-theme="dark"] body[data-page="social"] :is(
 }
 
 /* The moving archive edge fades must blend into true black. */
-html[data-theme="dark"] body[data-page="social"] .loop-wall::before{
+html[data-layout="stable"][data-theme="dark"] body[data-page="social"] .loop-wall::before{
   background:linear-gradient(90deg,#000 0%,rgba(0,0,0,.88) 48%,transparent 100%)!important;
 }
-html[data-theme="dark"] body[data-page="social"] .loop-wall::after{
+html[data-layout="stable"][data-theme="dark"] body[data-page="social"] .loop-wall::after{
   background:linear-gradient(270deg,#000 0%,rgba(0,0,0,.88) 48%,transparent 100%)!important;
 }
 
 /* Neutralize warm panel tints that can read as brown inside black sections. */
-html[data-theme="dark"] body[data-page="social"] .niche-card{
+html[data-layout="stable"][data-theme="dark"] body[data-page="social"] .niche-card{
   background:#080808!important;
   border-color:rgba(255,255,255,.14)!important;
   box-shadow:0 20px 44px rgba(0,0,0,.28)!important;
 }
-html[data-theme="dark"] body[data-page="social"] .niche-card:is(:hover,.active){
+html[data-layout="stable"][data-theme="dark"] body[data-page="social"] .niche-card:is(:hover,.active){
   border-color:rgba(255,255,255,.34)!important;
 }
 
