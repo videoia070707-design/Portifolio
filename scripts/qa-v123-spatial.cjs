@@ -40,7 +40,7 @@ const assert=require('node:assert/strict');
     assert.ok(dive.z>130,`fly-through must push the film toward the viewer: ${dive.z}`);
     assert.notEqual(intro.transform,arc.transform,'3D transform must change between intro and arc');
     assert.notEqual(arc.transform,dive.transform,'3D transform must change again during the dive');
-    await page.screenshot({path:'qa-v123-spatial-dive.png'});
+    await page.screenshot({path:'_site/qa-v123-spatial-dive.png'});
     await page.close();
 
     const mobile=await browser.newPage({viewport:{width:390,height:844},deviceScaleFactor:1,isMobile:true,hasTouch:true});
@@ -50,7 +50,7 @@ const assert=require('node:assert/strict');
     await mobile.waitForFunction(()=>{const el=document.querySelector('[data-movx-scroll-world="v117"]');return Number(el?.dataset.worldProgress)>.75},null,{timeout:8000});
     const mobileState=await mobileFilm.evaluate(el=>({z:Number(el.dataset.worldDepth),scale:Number(el.dataset.worldScale),ry:Number(el.dataset.worldRotateY)}));
     assert.ok(mobileState.z>80&&mobileState.scale>1.6,`mobile must preserve a real spatial fly-through: ${JSON.stringify(mobileState)}`);
-    await mobile.screenshot({path:'qa-v123-spatial-mobile.png'});
+    await mobile.screenshot({path:'_site/qa-v123-spatial-mobile.png'});
     await mobile.close();
 
     console.log(JSON.stringify({status:'passed',spatial:'css-3d scroll camera',intro,arc,dive,mobile:mobileState}));
