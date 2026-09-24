@@ -1,5 +1,6 @@
-/* MOVX v123: spatial 3D Scroll World. Real video scrub stays scroll-linked, while the
-   film plane moves through perspective space instead of behaving like a flat PNG. */
+/* MOVX v124: spatial 3D Scroll World. The film remains directly controlled by the
+   user's scroll. Reduced-motion no longer collapses the signature scene into a PNG;
+   only codec/network failure may use the static poster fallback. */
 .movx-scroll-world{
   --world-scale:.94;
   --world-rx:3.8deg;
@@ -159,7 +160,7 @@
   .movx-scroll-world__chapter-mark{margin-bottom:72px;font-size:clamp(40px,18vw,74px)}
 }
 @media (prefers-reduced-motion:reduce){
-  .movx-scroll-world__plane{transform:none!important;opacity:1!important}
-  .movx-scroll-world__video,.movx-scroll-world__progress,.movx-scroll-world__hint{display:none!important}
-  .movx-scroll-world__poster{opacity:1!important;visibility:visible!important}
+  /* This scene has no autoplay: every frame is controlled by the user's own scroll.
+     Keep the experience interactive instead of silently replacing it with a poster. */
+  .movx-scroll-world__poster,.movx-scroll-world__video{transition:none}
 }
