@@ -118,7 +118,7 @@ const publicMetric=metric=>({mean:metric.mean,brightRatio:metric.brightRatio,wid
     await mobilePage.waitForFunction(()=>{const el=document.querySelector('[data-movx-scroll-world="v117"]');const v=el?.querySelector('video');return el?.dataset.scrubLive==='true'&&v?.videoWidth>700&&v.videoWidth<1000},null,{timeout:18000});
     const mobileCodec=await mobileFilm.getAttribute('data-media-codec');
     assert.match(mobileCodec||'',/^(h264-mp4|vp9-webm)$/,'mobile must settle on a supported optimized codec');
-    assert.equal(await mobileVideo.evaluate(v=>getComputedStyle(v).objectFit),'contain');
+    assert.equal(await mobileVideo.evaluate(v=>getComputedStyle(v).objectFit),'cover','mobile film must also own the full section background');
     const mobileStart=await pixelMetric(mobileVideo);
     await mobileFilm.evaluate(element=>window.scrollTo({top:element.getBoundingClientRect().top+window.scrollY+(element.offsetHeight-innerHeight)*.58,behavior:'instant'}));
     await mobilePage.waitForFunction(()=>{const el=document.querySelector('[data-movx-scroll-world="v117"]');return Number(el?.dataset.worldProgress)>.55&&el.dataset.scrubLive==='true'&&Number(el.dataset.worldChapter)>=3});
@@ -159,6 +159,6 @@ const publicMetric=metric=>({mean:metric.mean,brightRatio:metric.brightRatio,wid
     await reducedPage.screenshot({path:'_site/qa-v124-reduced-scroll-controlled.png'});
     await reducedPage.close();
 
-    console.log(JSON.stringify({status:'passed',initialMediaRequests:0,chapters:4,desktopCodec,mobileCodec,desktopSource,sourceTrim:1.20,desktopDelta,laterDelta,mobileDelta,reducedDelta,firstFrame:publicMetric(firstFrame),middleFrame:publicMetric(middleFrame),forward:[first,middle,last],reverse,mobileSource,reduced:'scroll-controlled 3D retained; poster only for decode/network failure'}));
+    console.log(JSON.stringify({status:'passed',initialMediaRequests:0,chapters:4,desktopCodec,mobileCodec,desktopSource,sourceTrim:1.20,desktopDelta,laterDelta,mobileDelta,reducedDelta,firstFrame:publicMetric(firstFrame),middleFrame:publicMetric(middleFrame),forward:[first,middle,last],reverse,mobileSource,reduced:'scroll-controlled full-bleed video retained; poster only for decode/network failure'}));
   }finally{await browser.close()}
 })().catch(error=>{console.error(error);process.exitCode=1});
