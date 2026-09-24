@@ -8,14 +8,28 @@ const assert=require('node:assert/strict');
     await desktop.addInitScript(()=>localStorage.setItem('movx-theme','dark'));
     await desktop.goto('http://127.0.0.1:4173/',{waitUntil:'networkidle'});
 
-    const storyCards=desktop.locator('[data-movx-scroll-world="v117"] [data-world-story]');
+    const world=desktop.locator('[data-movx-scroll-world="v117"]');
+    const storyCards=world.locator('[data-world-story]');
     assert.equal(await storyCards.count(),4,'v131 must keep four video story beats');
+
+    /* Activate the sticky scene before reading viewport coordinates. Measuring these
+       cards while the Scroll World is still below the fold reports document-space
+       offsets rather than their actual composition inside the video stage. */
+    await world.evaluate(element=>window.scrollTo({
+      top:element.getBoundingClientRect().top+window.scrollY+(element.offsetHeight-innerHeight)*.5,
+      behavior:'instant'
+    }));
+    await desktop.waitForFunction(()=>{
+      const el=document.querySelector('[data-movx-scroll-world="v117"]');
+      return Math.abs(Number(el?.dataset.worldProgress||0)-.5)<.05;
+    },null,{timeout:18000});
+
     const positions=await storyCards.evaluateAll(cards=>cards.map(card=>{
       const r=card.getBoundingClientRect();
       return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:r.width,height:r.height};
     }));
     positions.forEach((box,index)=>{
-      assert.ok(box.left>=-2&&box.right<=1442&&box.top>=-2&&box.bottom<=902,`story ${index+1} must remain inside the desktop viewport: ${JSON.stringify(box)}`);
+      assert.ok(box.left>=-2&&box.right<=1442&&box.top>=-2&&box.bottom<=902,`story ${index+1} must remain inside the active desktop video viewport: ${JSON.stringify(box)}`);
     });
     assert.ok(Math.abs(positions[1].left-positions[0].left)>90,`story 1/2 should not share the same left rail: ${JSON.stringify(positions)}`);
     assert.ok(Math.abs(positions[2].top-positions[1].top)>100,`story 2/3 should occupy visibly different vertical zones: ${JSON.stringify(positions)}`);
