@@ -56,22 +56,37 @@ const assert=require('node:assert/strict');
       const track=row.locator('.loop-track');
       const before=await track.evaluate(el=>{
         const s=getComputedStyle(el);
-        return {transform:s.transform,animationName:s.animationName,animationPlayState:s.animationPlayState,display:s.display,width:el.scrollWidth};
+        const animation=el.getAnimations().find(item=>item.playState==='running')||el.getAnimations()[0]||null;
+        return {
+          transform:s.transform,
+          animationName:s.animationName,
+          animationPlayState:s.animationPlayState,
+          animationCurrentTime:animation?.currentTime??null,
+          animationPlayStateApi:animation?.playState??null,
+          display:s.display,
+          width:el.scrollWidth
+        };
       });
       assert.ok(before.animationName.includes('v131-mobile-wall-'),`row ${index+1} must use the v131 mobile conveyor animation: ${JSON.stringify(before)}`);
       assert.equal(before.animationPlayState,'running',`row ${index+1} mobile conveyor must be running`);
+      assert.equal(before.animationPlayStateApi,'running',`row ${index+1} Web Animations clock must be running`);
       assert.equal(before.display,'flex',`row ${index+1} track must stay a flex conveyor`);
+      assert.ok(Number.isFinite(before.animationCurrentTime),`row ${index+1} must expose a live animation clock: ${JSON.stringify(before)}`);
       const visibleCards=await cards.evaluateAll(nodes=>nodes.filter(node=>{
         const r=node.getBoundingClientRect();
         return r.right>0&&r.left<innerWidth;
       }).length);
       assert.ok(visibleCards>=2,`row ${index+1} should expose more than one artwork across the mobile viewport, got ${visibleCards}`);
-      movement.push({track,before:before.transform});
+      movement.push({track,beforeTime:before.animationCurrentTime});
     }
     await mobile.waitForTimeout(900);
     for(let index=0;index<movement.length;index++){
-      const after=await movement[index].track.evaluate(el=>getComputedStyle(el).transform);
-      assert.notEqual(after,movement[index].before,`mobile wall row ${index+1} must visibly advance over time`);
+      const after=await movement[index].track.evaluate(el=>{
+        const animation=el.getAnimations().find(item=>item.playState==='running')||el.getAnimations()[0]||null;
+        return {currentTime:animation?.currentTime??null,playState:animation?.playState??null,transform:getComputedStyle(el).transform};
+      });
+      assert.equal(after.playState,'running',`mobile wall row ${index+1} animation must remain running`);
+      assert.ok(Number.isFinite(after.currentTime)&&after.currentTime>movement[index].beforeTime+250,`mobile wall row ${index+1} animation clock must advance over time: ${JSON.stringify({before:movement[index].beforeTime,after})}`);
     }
     await mobile.screenshot({path:'_site/qa-v131-mobile-wall.png',fullPage:false});
     await mobile.close();
@@ -94,7 +109,7 @@ const assert=require('node:assert/strict');
     assert.ok(reducedState.cards>=12,'reduced-motion fallback must preserve the full duplicated row');
     await reduced.close();
 
-    console.log(JSON.stringify({status:'passed',desktopStoryPositions:'varied',mobileRows:3,mobileMotion:'continuous',reducedMotion:'swipeable multi-art fallback'}));
+    console.log(JSON.stringify({status:'passed',desktopStoryPositions:'varied',mobileRows:3,mobileMotion:'continuous animation clock',reducedMotion:'swipeable multi-art fallback'}));
   }finally{
     await browser.close();
   }
