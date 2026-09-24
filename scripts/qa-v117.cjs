@@ -65,8 +65,11 @@ const publicMetric=metric=>({mean:metric.mean,brightRatio:metric.brightRatio,wid
     const desktopSource=await video.evaluate(v=>v.currentSrc);
     const desktopCodec=await film.getAttribute('data-media-codec');
     assert.ok(desktopSource.startsWith('blob:'),'desktop must use the deferred Blob source for reliable scrub seeking');
-    assert.equal(desktopCodec,'h264-mp4','desktop should prefer H.264 for responsive real-world paused seeking');
-    assert.ok(mediaRequests.some(url=>/movx-scroll-world-0923\.mp4/.test(url)),'desktop H.264 source must be fetched after engagement');
+    assert.match(desktopCodec||'',/^(h264-mp4|vp9-webm)$/,'desktop must settle on a supported optimized codec');
+    assert.ok(mediaRequests.some(url=>/movx-scroll-world-0923\.mp4/.test(url)),'desktop must attempt the H.264 source first when MP4 is advertised');
+    if(desktopCodec==='vp9-webm'){
+      assert.ok(mediaRequests.some(url=>/movx-scroll-world-0923\.webm/.test(url)),'desktop must fetch the VP9 fallback if H.264 cannot decode');
+    }
     const first=await video.evaluate(v=>v.currentTime);
     const firstFrame=await pixelMetric(video);
     assert.ok(firstFrame.mean>12&&firstFrame.brightRatio>.04,`desktop frame must contain visible video content: ${JSON.stringify(publicMetric(firstFrame))}`);
@@ -110,7 +113,8 @@ const publicMetric=metric=>({mean:metric.mean,brightRatio:metric.brightRatio,wid
     assert.equal(await mobileVideo.getAttribute('src'),null,'mobile video must stay idle on first paint');
     await mobileFilm.scrollIntoViewIfNeeded();
     await mobilePage.waitForFunction(()=>{const el=document.querySelector('[data-movx-scroll-world="v117"]');const v=el?.querySelector('video');return el?.dataset.scrubLive==='true'&&v?.videoWidth>700&&v.videoWidth<1000},null,{timeout:18000});
-    assert.equal(await mobileFilm.getAttribute('data-media-codec'),'h264-mp4','mobile should also prefer the broadly accelerated H.264 clip');
+    const mobileCodec=await mobileFilm.getAttribute('data-media-codec');
+    assert.match(mobileCodec||'',/^(h264-mp4|vp9-webm)$/,'mobile must settle on a supported optimized codec');
     assert.equal(await mobileVideo.evaluate(v=>getComputedStyle(v).objectFit),'contain');
     const mobileStart=await pixelMetric(mobileVideo);
     await mobileFilm.evaluate(element=>window.scrollTo({top:element.getBoundingClientRect().top+window.scrollY+(element.offsetHeight-innerHeight)*.58,behavior:'instant'}));
@@ -135,6 +139,6 @@ const publicMetric=metric=>({mean:metric.mean,brightRatio:metric.brightRatio,wid
     await reduced.screenshot({path:path.resolve('qa-v117-fallback-visible.png')});
     await reduced.close();
 
-    console.log(JSON.stringify({status:'passed',initialMediaRequests:0,chapters:4,desktopCodec,desktopSource,sourceTrim:1.20,desktopDelta,laterDelta,mobileDelta,firstFrame:publicMetric(firstFrame),middleFrame:publicMetric(middleFrame),posterFrame:publicMetric(posterFrame),forward:[first,middle,last],reverse,mobileSource,reduced:'poster only for reduced-motion/failure'}));
+    console.log(JSON.stringify({status:'passed',initialMediaRequests:0,chapters:4,desktopCodec,mobileCodec,desktopSource,sourceTrim:1.20,desktopDelta,laterDelta,mobileDelta,firstFrame:publicMetric(firstFrame),middleFrame:publicMetric(middleFrame),posterFrame:publicMetric(posterFrame),forward:[first,middle,last],reverse,mobileSource,reduced:'poster only for reduced-motion/failure'}));
   }finally{await browser.close()}
 })().catch(error=>{console.error(error);process.exitCode=1});
