@@ -53,10 +53,13 @@ const publicMetric=metric=>({mean:metric.mean,brightRatio:metric.brightRatio,wid
       await page.waitForFunction(value=>{
         const el=document.querySelector('[data-movx-scroll-world="v117"]');
         const v=el?.querySelector('video');
+        const poster=el?.querySelector('.movx-scroll-world__poster');
         const t=Number(el?.dataset.worldTarget||0);
-        return el?.dataset.mode==='scrub'&&el?.dataset.scrubLive==='true'&&el?.dataset.frameReady==='true'&&v?.currentSrc&&v.seekable.length>0&&Math.abs(v.currentTime-t)<.35&&Math.abs(Number(el.dataset.worldProgress)-value)<.03;
+        const videoOwnsFrame=v&&Number(getComputedStyle(v).opacity)>.95;
+        const posterReleased=poster&&getComputedStyle(poster).visibility==='hidden'&&Number(getComputedStyle(poster).opacity)<.05;
+        return el?.dataset.mode==='scrub'&&el?.dataset.scrubLive==='true'&&el?.dataset.frameReady==='true'&&v?.currentSrc&&v.seekable.length>0&&Math.abs(v.currentTime-t)<.35&&Math.abs(Number(el.dataset.worldProgress)-value)<.03&&videoOwnsFrame&&posterReleased;
       },p,{timeout:18000}).catch(async error=>{
-        const state=await film.evaluate(el=>({mode:el.dataset.mode,p:el.dataset.worldProgress,target:el.dataset.worldTarget,chapter:el.dataset.worldChapter,codec:el.dataset.mediaCodec,attempt:el.dataset.mediaAttempt,trim:el.dataset.sourceTrim,nearby:el.dataset.nearby,ready:el.dataset.frameReady,live:el.dataset.scrubLive,source:el.querySelector('video').currentSrc,time:el.querySelector('video').currentTime,seekable:el.querySelector('video').seekable.length,readyState:el.querySelector('video').readyState,error:el.querySelector('video').error?.message}));
+        const state=await film.evaluate(el=>({mode:el.dataset.mode,p:el.dataset.worldProgress,target:el.dataset.worldTarget,chapter:el.dataset.worldChapter,codec:el.dataset.mediaCodec,attempt:el.dataset.mediaAttempt,trim:el.dataset.sourceTrim,nearby:el.dataset.nearby,ready:el.dataset.frameReady,live:el.dataset.scrubLive,source:el.querySelector('video').currentSrc,time:el.querySelector('video').currentTime,seekable:el.querySelector('video').seekable.length,readyState:el.querySelector('video').readyState,videoOpacity:getComputedStyle(el.querySelector('video')).opacity,posterOpacity:getComputedStyle(el.querySelector('.movx-scroll-world__poster')).opacity,posterVisibility:getComputedStyle(el.querySelector('.movx-scroll-world__poster')).visibility,error:el.querySelector('video').error?.message}));
         throw new Error(`${error.message}\n${JSON.stringify(state)}`);
       });
     };
