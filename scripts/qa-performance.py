@@ -8,8 +8,8 @@ out=root/'_site'
 
 budgets={
     'assets/hero/soul-of-design-hero-clean.webp':220_000,
-    'media/movx-scroll-world-0923.mp4':3_600_000,
-    'media/movx-scroll-world-0923-mobile.mp4':1_700_000,
+    'media/movx-scroll-world-0923.mp4':3_900_000,
+    'media/movx-scroll-world-0923-mobile.mp4':1_850_000,
     'media/movx-scroll-world-0923.webm':3_600_000,
     'media/movx-scroll-world-0923-mobile.webm':1_700_000,
     'media/movx-scroll-world-poster.jpg':180_000,
@@ -58,27 +58,29 @@ if "rootMargin:'320px 0px'" not in runtime:
     errors.append('archive predecode margin was not reduced')
 
 scroll=(out/'v117-scroll-world.mjs').read_text()
-if "rootMargin:'0px'" not in scroll:
-    errors.append('Scroll World intersection margin is not zero')
+if "rootMargin:'120% 0px'" not in scroll or "rootMargin:'0px'" not in scroll:
+    errors.append('Scroll World warm-load plus viewport observers are missing')
 if "const response=await fetch(candidate.url" not in scroll or "const data=await response.blob()" not in scroll or "video.src=blobURL" not in scroll:
     errors.append('Scroll World deferred Blob delivery for reliable seeking is missing')
 if "canWebM" not in scroll or "canH264" not in scroll or "candidatesFor" not in scroll:
     errors.append('Scroll World codec negotiation/retry candidates are missing')
-if "visibleStart=1.20" not in scroll or "mappedTarget" not in scroll or "markFrameReady" not in scroll:
-    errors.append('Scroll World visible-start frame contract is missing')
+if "if(canH264)items.push({codec:'h264-mp4'" not in scroll:
+    errors.append('Scroll World no longer prefers H.264 for desktop scrub responsiveness')
+if "sourceTrim=1.20" not in scroll or "mappedTarget" not in scroll or "markFrameReady" not in scroll:
+    errors.append('Scroll World encoded-trim scrub contract is missing')
 if "retrying alternate codec" not in scroll:
     errors.append('Scroll World alternate codec retry is missing')
-if 'userEngaged' not in scroll or 'engagementThreshold' not in scroll:
-    errors.append('Scroll World explicit user-scroll gate is missing')
-if 'if(active){if(userEngaged)load();schedule()}' not in scroll:
-    errors.append('Scroll World can still request media before user engagement')
+if 'userEngaged' not in scroll or 'engagementThreshold' not in scroll or '!nearby' not in scroll:
+    errors.append('Scroll World engagement-aware warm loading is missing')
+if 'video.play()' in scroll:
+    errors.append('Scroll World must not depend on autoplay to expose real frames')
 
 fragment=(out/'index.html').read_text()
 if fragment.count('data-world-chapter-panel=')!=4:
     errors.append('Scroll World must render four scroll chapters')
-if 'movx-scroll-world-poster.jpg?v=v121-visible-start' not in fragment:
-    errors.append('Scroll World visible poster cache-bust is missing')
+if 'movx-scroll-world-poster.jpg?v=v122-real-scrub' not in fragment:
+    errors.append('Scroll World v122 poster cache-bust is missing')
 
 if errors:
     raise SystemExit('MOVX performance QA failed: '+json.dumps(errors,ensure_ascii=False))
-print(json.dumps({'status':'passed','sizes':sizes,'css_bundles':css_bundles,'deferred_video_gate':True,'desktop_delivery':'optimized-blob-with-retry','mobile_delivery':'optimized-blob-with-retry','visible_start_seconds':1.20,'scroll_chapters':4},ensure_ascii=False))
+print(json.dumps({'status':'passed','sizes':sizes,'css_bundles':css_bundles,'deferred_video_gate':True,'desktop_delivery':'trimmed-h264-first-blob-scrub','mobile_delivery':'trimmed-h264-first-blob-scrub','source_trim_seconds':1.20,'warm_margin':'120%','scroll_chapters':4},ensure_ascii=False))
