@@ -1,4 +1,4 @@
-/* MOVX v130 — scroll-linked cinematic editorial choreography.
+/* MOVX v131 — scroll-linked cinematic editorial choreography.
    Reads the existing Scroll World progress; it never drives the video itself. */
 const world=document.querySelector('[data-movx-scroll-world="v117"]');
 if(world){
@@ -38,7 +38,9 @@ if(world){
 
       const kickerIn=phase(local,.02,reduced.matches ? .06 : .12);
       const titleIn=phase(local,.055,reduced.matches ? .08 : .18);
-      const lineIn=phase(local,.15,reduced.matches ? .08 : .18);
+      /* Support copy starts sooner than v130 so it never spends the readable title
+         phase effectively invisible on fast/mobile scrolls. */
+      const lineIn=phase(local,.075,reduced.matches ? .06 : .12);
       const kickerAlpha=clamp(kickerIn*leave);
       const titleAlpha=clamp(titleIn*leave);
       const lineAlpha=clamp(lineIn*leave);
