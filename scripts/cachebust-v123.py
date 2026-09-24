@@ -1,27 +1,23 @@
 from pathlib import Path
+import re
 
 root=Path(__file__).resolve().parents[1]
 out=root/'_site'
 pages=('index.html','latest.html','social-media.html')
-new='v117-scroll-world.mjs?v=v127-full-video-black'
-legacy=(
-    'v117-scroll-world.mjs?v=v122-real-scroll-scrub',
-    'v117-scroll-world.mjs?v=v124-never-static-scroll-world',
-    'v117-scroll-world.mjs?v=v125-true-3d-scroll',
-    'v117-scroll-world.mjs?v=v126-full-bleed-scroll',
-)
+release='v129-story-overlays'
+targets=('v117-scroll-world.mjs','v129-scroll-story.mjs')
 rewritten=[]
+
 for name in pages:
     path=out/name
     text=path.read_text()
-    if new not in text:
-        matched=False
-        for old in legacy:
-            if old in text:
-                text=text.replace(old,new)
-                matched=True
-        if not matched:
-            raise SystemExit(f'MOVX v127 cache-bust target missing in {name}')
+    for target in targets:
+        pattern=rf'{re.escape(target)}\?v=[^"\']+'
+        replacement=f'{target}?v={release}'
+        text,count=re.subn(pattern,replacement,text)
+        if count!=1:
+            raise SystemExit(f'MOVX {release} cache-bust target {target} missing/duplicated in {name}: {count}')
     path.write_text(text)
     rewritten.append(name)
-print({'release':'v127-full-video-black','runtime_cache_bust':new,'pages':rewritten})
+
+print({'release':release,'runtime_cache_bust':list(targets),'pages':rewritten})
