@@ -1,0 +1,65 @@
+/* MOVX v128 — pure-black section surfaces.
+   Neutralizes legacy warm/brown section backgrounds in dark mode without touching project artwork. */
+
+html[data-theme="dark"] body[data-page]{
+  --bg:#000;
+  --bg-2:#000;
+}
+
+/* Every top-level portfolio section is pure black in dark mode. */
+html[data-theme="dark"] body[data-page] > main > section,
+html[data-theme="dark"] body[data-page] > main > .velocity-strip,
+html[data-theme="dark"] body[data-page] > .site-footer{
+  background-color:#000!important;
+  background-image:none!important;
+}
+
+/* Social page legacy editorial pass used warm brown section fills. */
+html[data-theme="dark"] body[data-page="social"] :is(
+  .living-archive,
+  .niche-index,
+  .work-archive,
+  .projects-list,
+  .about-section,
+  .services-section,
+  .process-section,
+  .contact-section,
+  .site-footer,
+  .velocity-strip--social
+){
+  background:#000!important;
+  color:var(--fg)!important;
+}
+
+/* Remove the brown/red tint from section seams. */
+html[data-theme="dark"] body[data-page="social"] :is(
+  .niche-index,
+  .living-archive,
+  .work-archive,
+  .projects-list
+)::before{
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.13),transparent)!important;
+}
+
+/* The moving archive edge fades must blend into true black. */
+html[data-theme="dark"] body[data-page="social"] .loop-wall::before{
+  background:linear-gradient(90deg,#000 0%,rgba(0,0,0,.88) 48%,transparent 100%)!important;
+}
+html[data-theme="dark"] body[data-page="social"] .loop-wall::after{
+  background:linear-gradient(270deg,#000 0%,rgba(0,0,0,.88) 48%,transparent 100%)!important;
+}
+
+/* Neutralize warm panel tints that can read as brown inside black sections. */
+html[data-theme="dark"] body[data-page="social"] .niche-card{
+  background:#080808!important;
+  border-color:rgba(255,255,255,.14)!important;
+  box-shadow:0 20px 44px rgba(0,0,0,.28)!important;
+}
+html[data-theme="dark"] body[data-page="social"] .niche-card:is(:hover,.active){
+  border-color:rgba(255,255,255,.34)!important;
+}
+
+/* Keep the dark header/menu connected to the same black canvas. */
+html[data-theme="dark"] :is(.site-header,.mobile-menu){
+  background-color:#000!important;
+}
