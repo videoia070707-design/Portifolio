@@ -1,4 +1,4 @@
-/* MOVX v127: full-bleed Scroll World with pure black stage.
+/* MOVX v133: full-bleed Scroll World with dark-entry hold and pure black stage.
    The complete source video owns the entire pinned section background while native
    scroll scrubs its real frames. Background/veil neutrals are pure black. */
 .movx-scroll-world{
@@ -14,6 +14,7 @@
   --world-exit:1;
   --world-progress:0%;
   --world-glow:.28;
+  --world-entry-darken:1;
   position:relative;
   min-height:420svh;
   background:#000;
@@ -95,6 +96,15 @@
     radial-gradient(92% 86% at 50% 48%,transparent 50%,rgba(0,0,0,.18) 100%),
     linear-gradient(180deg,rgba(0,0,0,.10),transparent 24%,transparent 72%,rgba(0,0,0,.24));
   transform:translateZ(.8px);
+}
+.movx-scroll-world__veil::before{
+  content:'';
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:linear-gradient(180deg,rgba(0,0,0,.92),rgba(0,0,0,.58) 28%,rgba(0,0,0,.18) 62%,rgba(0,0,0,0) 100%);
+  opacity:var(--world-entry-darken);
+  transition:opacity .18s linear;
 }
 .movx-scroll-world__chrome{
   position:absolute;

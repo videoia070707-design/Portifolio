@@ -4,7 +4,7 @@ import re
 root=Path(__file__).resolve().parents[1]
 out=root/'_site'
 pages=('index.html','latest.html','social-media.html')
-release='v132-clean-readable-scroll-story'
+release='v133-dark-entry-scroll-world'
 targets=('v117-scroll-world.mjs','v129-scroll-story.mjs')
 rewritten=[]
 
