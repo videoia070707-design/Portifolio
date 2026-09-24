@@ -49,9 +49,12 @@ const assert=require('node:assert/strict');
         const line=el.querySelector('.movx-scroll-world__story-line');
         const lineStyle=getComputedStyle(line);
         const scrim=getComputedStyle(el,'::before');
+        const titleClone=title?.cloneNode(true);
+        titleClone?.querySelectorAll('br').forEach(br=>br.replaceWith(' '));
+        const titleText=titleClone?.textContent?.replace(/\s+/g,' ').trim()||'';
         return {
           opacity:Number(s.opacity),backgroundColor:s.backgroundColor,backgroundImage:s.backgroundImage,
-          left:r.left,right:r.right,top:r.top,bottom:r.bottom,title:title?.textContent?.replace(/\s+/g,' ').trim()||'',
+          left:r.left,right:r.right,top:r.top,bottom:r.bottom,title:titleText,
           titleOpacity:Number(titleStyle.opacity),titleColor:titleStyle.color,titleShadow:titleStyle.textShadow,titleSize:parseFloat(titleStyle.fontSize),
           lineOpacity:Number(lineStyle.opacity),lineColor:lineStyle.color,lineShadow:lineStyle.textShadow,
           scrimBackground:scrim.backgroundImage,scrimOpacity:Number(scrim.opacity)
