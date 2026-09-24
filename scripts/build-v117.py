@@ -21,7 +21,7 @@ media_budgets={
     'desktop_mp4':3_900_000,
     'mobile_mp4':1_850_000,
     'desktop_webm':3_600_000,
-    'mobile_webm':1_700_000,
+    'mobile_webm':1_750_000,
     'poster':180_000,
 }
 
