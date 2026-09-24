@@ -1,6 +1,6 @@
-/* MOVX v120: one persistent film background across multiple scroll chapters. */
+/* MOVX v122: persistent real video scrub across multiple scroll chapters. */
 .movx-scroll-world{
-  --world-scale:1.035;
+  --world-scale:1.04;
   --world-turn:0deg;
   --world-lift:0vh;
   --world-exit:1;
@@ -42,17 +42,20 @@
   object-position:center;
   background:#080706;
 }
-.movx-scroll-world__poster{opacity:1;transition:opacity .24s linear}
-.movx-scroll-world__video{opacity:0;transition:opacity .24s linear}
-.movx-scroll-world[data-frame-ready="true"] .movx-scroll-world__video{opacity:1}
-.movx-scroll-world[data-frame-ready="true"] .movx-scroll-world__poster{opacity:0}
+.movx-scroll-world__poster{z-index:1;opacity:1;transition:opacity .10s linear}
+.movx-scroll-world__video{z-index:2;opacity:0;transition:opacity .10s linear;will-change:opacity}
+.movx-scroll-world[data-frame-ready="true"] .movx-scroll-world__video,
+.movx-scroll-world[data-scrub-live="true"] .movx-scroll-world__video{opacity:1}
+.movx-scroll-world[data-frame-ready="true"] .movx-scroll-world__poster,
+.movx-scroll-world[data-scrub-live="true"] .movx-scroll-world__poster{opacity:0;visibility:hidden}
 .movx-scroll-world__veil{
   position:absolute;
+  z-index:3;
   inset:0;
   pointer-events:none;
   background:
-    linear-gradient(180deg,rgba(5,4,4,.24) 0%,rgba(5,4,4,.02) 38%,rgba(5,4,4,.08) 72%,rgba(5,4,4,.42) 100%),
-    linear-gradient(90deg,rgba(5,4,4,.14),transparent 27%,transparent 73%,rgba(5,4,4,.14));
+    linear-gradient(180deg,rgba(5,4,4,.19) 0%,rgba(5,4,4,.01) 38%,rgba(5,4,4,.05) 72%,rgba(5,4,4,.32) 100%),
+    linear-gradient(90deg,rgba(5,4,4,.10),transparent 27%,transparent 73%,rgba(5,4,4,.10));
 }
 .movx-scroll-world__chrome{
   position:absolute;
@@ -74,7 +77,6 @@
 .movx-scroll-world__progress{position:absolute;z-index:5;left:0;bottom:0;width:100%;height:2px;background:rgba(255,255,255,.12)}
 .movx-scroll-world__progress span{display:block;width:var(--world-progress);height:100%;background:#a94a3d}
 
-/* The sticky film occupies the viewport; the chapters overlap it and provide the scroll distance. */
 .movx-scroll-world__chapters{
   position:relative;
   z-index:2;
@@ -93,15 +95,15 @@
   margin-bottom:clamp(54px,8vh,92px);
   font:500 clamp(42px,7vw,104px)/.82 Arial,sans-serif;
   letter-spacing:-.06em;
-  color:rgba(243,238,233,.11);
-  text-shadow:0 2px 24px rgba(0,0,0,.2);
+  color:rgba(243,238,233,.065);
+  text-shadow:0 2px 24px rgba(0,0,0,.16);
   user-select:none;
 }
 .movx-scroll-world__chapter:nth-child(even){justify-content:flex-end}
 .movx-scroll-world__chapter:nth-child(even) .movx-scroll-world__chapter-mark{text-align:right}
 
 .movx-scroll-world[data-mode="fallback"] .movx-scroll-world__video{display:none}
-.movx-scroll-world[data-mode="fallback"] .movx-scroll-world__poster{opacity:1}
+.movx-scroll-world[data-mode="fallback"] .movx-scroll-world__poster{opacity:1;visibility:visible}
 .movx-scroll-world[data-mode="fallback"] .movx-scroll-world__hint,
 .movx-scroll-world[data-mode="fallback"] .movx-scroll-world__progress{display:none}
 
@@ -116,5 +118,5 @@
 @media (prefers-reduced-motion:reduce){
   .movx-scroll-world__plane{transform:none!important;opacity:1!important}
   .movx-scroll-world__video,.movx-scroll-world__progress,.movx-scroll-world__hint{display:none!important}
-  .movx-scroll-world__poster{opacity:1!important}
+  .movx-scroll-world__poster{opacity:1!important;visibility:visible!important}
 }
