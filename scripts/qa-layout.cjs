@@ -3,14 +3,15 @@ const fs=require('node:fs/promises');
 (async()=>{
  const browser=await chromium.launch({headless:true});
  const report=[];
- const page=await browser.newPage({reducedMotion:'reduce'});
- const errors=[];page.on('pageerror',e=>errors.push(String(e)));
- for(const width of [390,768,1024,1280,1440]){
-  await page.setViewportSize({width,height:900});
-  for(const path of ['social-media.html','video-editor.html','ai-creator.html','ui-ux.html']){
-   // Do not gate layout QA on global network-idle: MOVX pages intentionally own
-   // deferred media/WebGL/video work that may keep requests alive. DOM readiness
-   // plus the footer discipline marker below is the deterministic UI-ready gate.
+ const errors=[];
+
+ async function testPath(width,path){
+  // A fresh page per route prevents the Social/WebGL/video surface from holding
+  // resources while the next discipline page navigates. This makes the legacy
+  // layout matrix deterministic without weakening any assertions.
+  const page=await browser.newPage({viewport:{width,height:900},reducedMotion:'reduce'});
+  page.on('pageerror',e=>errors.push(`${path}@${width}: ${String(e)}`));
+  try{
    await page.goto('http://127.0.0.1:4173/'+path,{waitUntil:'domcontentloaded',timeout:30000});
    await page.locator('.v65-footer-disciplines a').last().waitFor({state:'attached',timeout:20000});
    for(const lang of ['pt','en','es']){
@@ -114,7 +115,13 @@ const fs=require('node:fs/promises');
     await page.locator('.v65-mobile-disciplines a[href="ui-ux.html"]').waitFor({state:'visible'});
    }
    await page.screenshot({path:`_site/qa-layout-${path}-${width}.png`});
+  } finally {
+   await page.close();
   }
+ }
+
+ for(const width of [390,768,1024,1280,1440]){
+  for(const path of ['social-media.html','video-editor.html','ai-creator.html','ui-ux.html'])await testPath(width,path);
  }
  if(errors.length)throw Error(errors.join('\n'));
  await fs.writeFile('_site/qa-layout-report.json',JSON.stringify(report,null,2));
