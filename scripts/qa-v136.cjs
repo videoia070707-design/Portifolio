@@ -2,7 +2,7 @@ const {chromium}=require('playwright');
 const assert=require('node:assert/strict');
 
 (async()=>{
- const browser=await chromium.launch({headless:true});
+ const browser=await chromium.launch({headless:true,args:['--use-angle=swiftshader','--enable-webgl','--ignore-gpu-blocklist']});
  try{
   const page=await browser.newPage({viewport:{width:1440,height:1000},deviceScaleFactor:1,reducedMotion:'no-preference'});
   await page.addInitScript(()=>localStorage.setItem('movx-theme','dark'));
@@ -39,7 +39,8 @@ const assert=require('node:assert/strict');
         const top=el.getBoundingClientRect().top+scrollY;
         scrollTo({top:top+(el.offsetHeight-innerHeight)*r,behavior:'instant'});
       },ratio);
-      await page.waitForFunction(exp=>document.documentElement.dataset.v136State===exp,expected,{timeout:2200});
+      await page.waitForFunction(exp=>document.documentElement.dataset.v136State===exp,expected,{timeout:5000});
+      await page.waitForTimeout(120);
       const state=await page.evaluate(()=>document.documentElement.dataset.v136State);
       assert.equal(state,expected,`state at ${ratio} should be ${expected}`);
     }
