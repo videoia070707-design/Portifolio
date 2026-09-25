@@ -10,9 +10,10 @@ root=Path(__file__).resolve().parents[1]
 out=root/'_site'
 release='v136-fluid-morph'
 css='v136-fluid-morph.css'
+compat_css='v136-layout-compat.css'
 runtime='v136-fluid-morph.mjs'
 
-for name in (css,runtime):
+for name in (css,compat_css,runtime):
     src=root/'site'/name
     dst=out/name
     if not src.exists():
@@ -47,6 +48,17 @@ fragment='''<section class="v136-fluid-hero" id="fluidHero" aria-label="MOVX —
   </div>
 </section>'''
 
+# Tiny cross-page layout guard must be present before the CSS bundler runs,
+# including on legacy QA pages such as v93.html.
+compat_installed=[]
+for path in out.glob('*.html'):
+    text=path.read_text()
+    href=f'{compat_css}?v={release}'
+    if href not in text and '</head>' in text:
+        text=text.replace('</head>',f'<link rel="stylesheet" href="{href}">\n</head>',1)
+        path.write_text(text)
+    compat_installed.append(path.name)
+
 installed=[]
 for name in ('index.html','latest.html','social-media.html'):
     path=out/name
@@ -69,9 +81,9 @@ for name in ('index.html','latest.html','social-media.html'):
     path.write_text(text)
     installed.append(name)
 
-required=[out/css,out/runtime,vendor/'three.module.js']
+required=[out/css,out/compat_css,out/runtime,vendor/'three.module.js']
 missing=[str(p) for p in required if not p.exists()]
 if missing or len(installed)<3:
     raise SystemExit(f'MOVX v136 invalid install: missing={missing}; pages={installed}')
 
-print(json.dumps({'release':release,'pages':installed,'hero':'procedural fixed-topology LIQUID -> RING -> TOWER -> INFINITY','three':'pinned npm build copied locally','protected':['hero-index','Scroll World','living archive','archive directory','v135 about/services'],'binary_asset':'none; geometry is generated deterministically in-browser'}))
+print(json.dumps({'release':release,'pages':installed,'compat_pages':compat_installed,'hero':'procedural fixed-topology LIQUID -> RING -> TOWER -> INFINITY','three':'pinned npm build copied locally','protected':['hero-index','Scroll World','living archive','archive directory','v135 about/services'],'binary_asset':'none; geometry is generated deterministically in-browser'}))
