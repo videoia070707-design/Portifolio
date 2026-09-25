@@ -1,0 +1,8 @@
+/* MOVX v136 cross-page compatibility guard.
+   Keeps the previously approved v135 About pillars inside legacy page viewports.
+   This stylesheet is intentionally tiny and is installed on every built HTML page. */
+html.movx-v135 body[data-page="social"] #about .v135-about-pillars{width:100%;max-width:100%;min-width:0;grid-template-columns:repeat(3,minmax(0,1fr))!important}
+html.movx-v135 body[data-page="social"] #about .v135-about-pillar{min-width:0;padding-right:10px!important}
+html.movx-v135 body[data-page="social"] #about .v135-about-pillar strong{display:block;max-width:100%;font-size:clamp(15px,1.05vw,20px)!important;line-height:1.1!important;white-space:normal!important;overflow-wrap:anywhere;word-break:normal}
+html.movx-v135 body[data-page="social"] #about .about-copy{min-width:0;max-width:100%!important}
+@media(max-width:900px){html.movx-v135 body[data-page="social"] #about .v135-about-pillar strong{font-size:18px!important}}
