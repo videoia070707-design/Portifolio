@@ -8,8 +8,11 @@ const fs=require('node:fs/promises');
  for(const width of [390,768,1024,1280,1440]){
   await page.setViewportSize({width,height:900});
   for(const path of ['social-media.html','video-editor.html','ai-creator.html','ui-ux.html']){
-   await page.goto('http://127.0.0.1:4173/'+path,{waitUntil:'networkidle'});
-   await page.locator('.v65-footer-disciplines a').last().waitFor();
+   // Do not gate layout QA on global network-idle: MOVX pages intentionally own
+   // deferred media/WebGL/video work that may keep requests alive. DOM readiness
+   // plus the footer discipline marker below is the deterministic UI-ready gate.
+   await page.goto('http://127.0.0.1:4173/'+path,{waitUntil:'domcontentloaded',timeout:30000});
+   await page.locator('.v65-footer-disciplines a').last().waitFor({state:'attached',timeout:20000});
    for(const lang of ['pt','en','es']){
     await page.locator('.language-switcher [data-lang="'+lang+'"]').click();
     const data=await page.evaluate(()=>{
