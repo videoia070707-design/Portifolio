@@ -1,0 +1,27 @@
+/* MOVX v345 — Physical Logo focus / stage 1.
+   Only the hero MOVX GLB is touched here. Other 3D slots remain frozen. */
+html.v345-logo-focus [data-model-slot="hero-movx-logo"]{isolation:isolate}
+
+@media(min-width:981px){
+  html.v345-logo-focus [data-model-slot="hero-movx-logo"]{min-height:min(76vh,840px)}
+  html.v345-logo-focus [data-model-slot="hero-movx-logo"].v322-runtime-active .v322-model-renderer{inset:-4% -5%}
+}
+
+html.v345-logo-focus [data-model-slot="hero-movx-logo"] .v322-model-renderer canvas{
+  opacity:0;
+  transform:scale(.965) translateY(8px);
+  transform-origin:50% 52%;
+  transition:opacity .48s ease,transform .82s cubic-bezier(.22,.78,.2,1),filter .45s ease;
+  filter:drop-shadow(0 24px 30px rgba(24,20,17,.18));
+}
+html.v345-logo-focus [data-model-slot="hero-movx-logo"][data-logo-focus-ready="true"] .v322-model-renderer canvas{
+  opacity:1;
+  transform:scale(1) translateY(0);
+}
+
+@media(max-width:720px){
+  html.v345-logo-focus [data-model-slot="hero-movx-logo"].v322-runtime-active .v322-model-renderer{inset:0 -2%}
+}
+@media(prefers-reduced-motion:reduce){
+  html.v345-logo-focus [data-model-slot="hero-movx-logo"] .v322-model-renderer canvas{transition:none;transform:none}
+}
