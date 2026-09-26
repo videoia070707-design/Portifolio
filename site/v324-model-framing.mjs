@@ -1,33 +1,34 @@
 /* MOVX v324 framing + v331 smooth scroll choreography for the six real Tripo GLBs.
-   v336.1 adds a narrow-mobile safe fit only for the physical MOVX logo. The approved
-   DOM/layout and desktop framing stay untouched; this layer only calibrates model/camera motion. */
+   v336.1 keeps the physical MOVX logo safe on narrow mobile. v339 increases only the
+   desktop Creative Machine presence while preserving its previous mobile framing. */
 const root=document.documentElement;
 const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const coarse=matchMedia('(pointer:coarse)').matches;
 const narrowMobile=matchMedia('(max-width:720px)').matches;
 const motionScale=reduced?0:(coarse?.62:1);
 const FRAMING_REVISION='v3361-mobile-logo-safe-fit';
+const MACHINE_DESKTOP_REVISION='v339-desktop-machine-presence';
 const CHOREOGRAPHY_REVISION='v331-smooth-handoffs';
 root.classList.add('v324');
 root.dataset.modelFraming='v324-model-framing';
 root.dataset.modelFramingRevision=FRAMING_REVISION;
+root.dataset.machineDesktopFraming=MACHINE_DESKTOP_REVISION;
 root.dataset.modelChoreography=CHOREOGRAPHY_REVISION;
 
 const TUNING={
   'hero-movx-logo':{scale:1.12,cameraZ:3.0,fov:31,modelY:-0.01,modelYaw:0.0,exposure:1.12},
   'x-portal':{scale:1.08,cameraZ:3.55,fov:40,modelY:-0.025,modelYaw:0.0,exposure:1.08},
-  'creative-machine':{scale:1.30,cameraZ:3.12,fov:33,modelY:-0.025,modelYaw:-0.035,exposure:1.12},
+  'creative-machine':{scale:1.38,cameraZ:3.04,fov:33,modelY:-0.05,modelYaw:-0.035,exposure:1.12},
   'play-camera':{scale:.86,cameraZ:3.38,fov:31,modelY:-0.04,modelYaw:-0.13,exposure:1.08},
   'play-cube':{scale:.82,cameraZ:3.42,fov:31,modelY:-0.03,modelYaw:-0.12,exposure:1.1},
   'spatial-studio':{scale:1.34,cameraZ:2.85,fov:40,modelY:-0.06,modelYaw:.045,exposure:1.02}
 };
 
-/* The physical-logo GLB is extremely wide relative to the portrait mobile canvas.
-   v336's first mobile pass still exceeded the 390px camera frustum. This second pass
-   intentionally makes the logo materially smaller only on <=720px, leaving desktop
-   untouched and retaining generous edge reserve through the complete v331 yaw/dolly. */
+/* Narrow mobile overrides preserve the v336.1 logo safe-fit and intentionally keep
+   the pre-v339 Creative Machine framing. v339 is a desktop-only visual calibration. */
 const MOBILE_TUNING={
-  'hero-movx-logo':{scale:.60,cameraZ:3.65,fov:33,modelY:-0.01,modelYaw:0.0,exposure:1.12}
+  'hero-movx-logo':{scale:.60,cameraZ:3.65,fov:33,modelY:-0.01,modelYaw:0.0,exposure:1.12},
+  'creative-machine':{scale:1.30,cameraZ:3.12,fov:33,modelY:-0.025,modelYaw:-0.035,exposure:1.12}
 };
 const tuningFor=name=>(narrowMobile&&MOBILE_TUNING[name])?MOBILE_TUNING[name]:TUNING[name];
 
@@ -67,10 +68,12 @@ function apply(name,instance){
   instance.element.dataset.modelFramingRevision=FRAMING_REVISION;
   instance.element.dataset.modelChoreography='v331';
   if(name==='hero-movx-logo')instance.element.dataset.mobileLogoFit=narrowMobile?'v3361':'desktop';
+  if(name==='creative-machine')instance.element.dataset.machineDesktopFraming=narrowMobile?'preserved-mobile':MACHINE_DESKTOP_REVISION;
   instance.v324Tuning={...cfg};
   instance.v324Tuned=true;
   instance.v336MobileLogoFit=name==='hero-movx-logo'&&narrowMobile;
   instance.v3361MobileLogoSafeFit=name==='hero-movx-logo'&&narrowMobile;
+  instance.v339DesktopMachinePresence=name==='creative-machine'&&!narrowMobile;
   instance.v330Section=instance.element.closest('.scene')||instance.element;
   instance.v330Base={
     x:instance.model.position.x,y:instance.model.position.y,z:instance.model.position.z,
@@ -143,6 +146,8 @@ function tick(now){
     runtime.framingTuning=TUNING;
     runtime.mobileFramingTuning=MOBILE_TUNING;
     runtime.mobileLogoFit=narrowMobile?'v3361':'desktop';
+    runtime.machineDesktopFraming=MACHINE_DESKTOP_REVISION;
+    runtime.machineDesktopFramingActive=!narrowMobile;
     runtime.choreographyVersion=CHOREOGRAPHY_REVISION;
     runtime.choreographyTuning=CHOREOGRAPHY;
     runtime.choreographyMotionScale=motionScale;
