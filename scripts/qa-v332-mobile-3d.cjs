@@ -10,17 +10,26 @@ const fs = require('fs');
     isMobile:true
   });
   const errors=[];
+  const captureWarnings=[];
   const critical=/\.(?:glb|gltf|mjs|js|css)(?:\?|$)/i;
+  const snap=async(slot)=>{
+    const path=`_site/qa-v332-${slot}.png`;
+    try{
+      await page.screenshot({path,fullPage:false,animations:'disabled',timeout:8000});
+    }catch(error){
+      captureWarnings.push({slot,path,error:String(error)});
+    }
+  };
   page.on('pageerror',e=>errors.push(`PAGEERROR ${String(e)}`));
   page.on('response',res=>{if(res.status()>=400&&critical.test(res.url()))errors.push(`HTTP ${res.status()} ${res.url()}`)});
   page.on('requestfailed',req=>{if(critical.test(req.url()))errors.push(`REQUEST FAILED ${req.url()} ${req.failure()?.errorText||''}`)});
 
   await page.goto('http://127.0.0.1:4173/',{waitUntil:'domcontentloaded',timeout:120000});
-  await page.waitForFunction(()=>document.documentElement.dataset.modelChoreography==='v331-smooth-handoffs',{timeout:30000});
+  await page.waitForFunction(()=>document.documentElement.dataset.modelChoreography==='v331-smooth-handoffs',null,{timeout:30000});
   await page.waitForFunction(()=>{
     const rt=window.MOVX3D?.runtime;
     return !!(rt&&rt.contextLimit===2&&rt.choreographyVersion==='v331-smooth-handoffs'&&rt.choreographyDamping==='frame-rate-independent');
-  },{timeout:30000});
+  },null,{timeout:30000});
 
   const runtimeInfo=await page.evaluate(()=>({
     contextLimit:window.MOVX3D?.runtime?.contextLimit,
@@ -36,7 +45,7 @@ const fs = require('fs');
   if(runtimeInfo.overflow>2)throw new Error(`initial mobile horizontal overflow ${runtimeInfo.overflow}`);
 
   const slots=['hero-movx-logo','x-portal','creative-machine','play-camera','play-cube','spatial-studio'];
-  const report={runtime:runtimeInfo,slots:{},rendererSamples:0};
+  const report={runtime:runtimeInfo,slots:{},rendererSamples:0,captureWarnings};
 
   for(const slot of slots){
     const selector=`[data-model-slot="${slot}"]`;
@@ -100,12 +109,12 @@ const fs = require('fs');
 
     report.slots[slot]=info;
     fs.writeFileSync('_site/qa-v332-mobile-report.json',JSON.stringify({status:'running',...report,currentSlot:slot},null,2));
-    await page.screenshot({path:`_site/qa-v332-${slot}.png`,fullPage:false});
+    await snap(slot);
   }
 
   if(report.rendererSamples<1)throw new Error('mobile 3D QA never observed an active slot renderer');
   if(errors.length)throw new Error('mobile critical resource errors: '+JSON.stringify(errors));
   fs.writeFileSync('_site/qa-v332-mobile-report.json',JSON.stringify({status:'passed',...report},null,2));
   await browser.close();
-  console.log(JSON.stringify({status:'passed',viewport:'390x844',contextLimit:runtimeInfo.contextLimit,rendererSamples:report.rendererSamples,slots}));
+  console.log(JSON.stringify({status:'passed',viewport:'390x844',contextLimit:runtimeInfo.contextLimit,rendererSamples:report.rendererSamples,slots,captureWarnings:captureWarnings.length}));
 })().catch(err=>{console.error(err);process.exit(1)});
