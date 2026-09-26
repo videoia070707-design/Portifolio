@@ -1,7 +1,7 @@
 /* MOVX v347 — single-model GLB runtime gate.
    The storyboard keeps every future 3D slot as DOM/CSS fallback, but production
-   WebGL is intentionally limited to the first approved model until that model is
-   visually signed off. Current active slot: hero-movx-logo (Physical Logo). */
+   WebGL is intentionally limited to the FIRST storyboard model until it is signed
+   off. Current active slot: boot-tv (CRT / Y2K TV opening). */
 const root=document.documentElement;
 const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const coarse=matchMedia('(pointer:coarse)').matches;
@@ -20,7 +20,7 @@ const PARAMS={
   'spatial-studio':'studioModel',
   'closing-window':'contactModel',
 };
-const ACTIVE_MODEL_SLOTS=new Set(['hero-movx-logo']);
+const ACTIVE_MODEL_SLOTS=new Set(['boot-tv']);
 const MAX_TRIANGLES=220000;
 const CONTEXT_LIMIT=coarse?2:3;
 const runtime={
@@ -29,12 +29,14 @@ const runtime={
   errors:[],
   contextLimit:CONTEXT_LIMIT,
   activeSlots:[...ACTIVE_MODEL_SLOTS],
+  awaitingSlots:[],
+  deferredSlots:[],
   singleModelMode:true,
 };
 window.MOVX3D=window.MOVX3D||{};
 window.MOVX3D.runtime=runtime;
 root.dataset.v322Glb='booting';
-root.dataset.movx3dScope='hero-movx-logo';
+root.dataset.movx3dScope='boot-tv';
 
 const manifest=(()=>{
   const direct=window.MOVX3D_MODELS;
@@ -191,12 +193,17 @@ function deferSlot(name,slot){
   slot.element.dataset.modelDeferred='true';
   slot.element.classList.remove('v322-model-requested','v322-runtime-active');
   try{slot.restoreFallback?.()}catch{}
-  runtime.deferredSlots=runtime.deferredSlots||[];
   runtime.deferredSlots.push(name);
 }
 function register(name,slot){
   if(!ACTIVE_MODEL_SLOTS.has(name)){deferSlot(name,slot);return}
-  const src=sourceFor(name,slot);if(!src)return;
+  const src=sourceFor(name,slot);
+  if(!src){
+    slot.element.dataset.glbState='awaiting-model';
+    slot.element.dataset.modelAwaiting='true';
+    runtime.awaitingSlots.push(name);
+    return;
+  }
   const url=safeURL(src);
   if(!url){slot.element.dataset.glbState='error';runtime.errors.push({slot:name,src,error:'unsupported URL'});return}
   const instance={name,slot,element:slot.element,src,url,visible:false,loading:false,loaded:false,renderer:null,lastSeen:0};
@@ -219,8 +226,8 @@ function frame(t){
   for(const instance of Object.values(runtime.instances)){
     if(!instance.visible||!instance.renderer||!instance.scene)continue;
     resize(instance);instance.lastSeen=t;
-    const px=parseFloat(getComputedStyle(root).getPropertyValue('--logo-px'))||0;
-    const py=parseFloat(getComputedStyle(root).getPropertyValue('--logo-py'))||0;
+    const px=parseFloat(getComputedStyle(root).getPropertyValue('--crt-px'))||0;
+    const py=parseFloat(getComputedStyle(root).getPropertyValue('--crt-py'))||0;
     if(!reduced){
       instance.group.rotation.y=px*.055;
       instance.group.rotation.x=-py*.035;
