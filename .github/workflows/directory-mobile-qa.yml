@@ -33,13 +33,15 @@ jobs:
           import { chromium } from 'playwright';
           import { writeFile } from 'node:fs/promises';
 
-          const base='https://videoia070707-design.github.io/Portifolio/';
+          // The production homepage is now the spatial storyboard. The project
+          // directory is intentionally preserved on the Social Media page.
+          const base='https://videoia070707-design.github.io/Portifolio/social-media.html';
           const viewports=[
             {id:'mobile-390',width:390,height:844},
             {id:'mobile-430',width:430,height:932}
           ];
           const browser=await chromium.launch({headless:true,args:['--use-angle=swiftshader','--enable-webgl','--ignore-gpu-blocklist']});
-          const report={pages:[],interactions:[]};
+          const report={page:base,pages:[],interactions:[]};
 
           const inspect=async page=>page.evaluate(()=>{
             const section=document.querySelector('#archiveControls');
