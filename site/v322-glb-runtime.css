@@ -1,0 +1,19 @@
+/* MOVX v322 — real-model surface. Fallbacks remain untouched until runtime-ready. */
+.v322-model-renderer{position:absolute;inset:0;z-index:12;display:block;overflow:visible;pointer-events:none;transform-style:preserve-3d;transform-origin:50% 50%;contain:layout paint style;will-change:transform}
+.v322-model-renderer canvas{display:block;width:100%!important;height:100%!important;max-width:none!important;outline:0;background:transparent!important;pointer-events:none}
+[data-model-slot].v322-model-requested{position:relative}
+[data-model-slot].v322-runtime-active>:not(.v322-model-renderer){visibility:hidden!important;pointer-events:none!important}
+[data-model-slot].v322-runtime-active::before,[data-model-slot].v322-runtime-active::after{opacity:0!important}
+[data-model-slot].v322-runtime-active{color:transparent!important}
+[data-model-slot="boot-tv"].v322-runtime-active,[data-model-slot^="play-"].v322-runtime-active{background:transparent!important;border-color:transparent!important;box-shadow:none!important}
+[data-model-slot="boot-tv"].v322-runtime-active .v322-model-renderer{transform:rotateX(calc(var(--crt-py,0) * -1.4deg)) rotateY(calc(var(--crt-px,0) * 2.6deg)) scale(calc(.985 + var(--crt-progress,0) * .018))}
+[data-model-slot="hero-movx-logo"].v322-runtime-active .v322-model-renderer{transform:rotateX(calc(var(--logo-py,0) * -1.5deg)) rotateY(calc(var(--logo-px,0) * 2.8deg + var(--logo-tilt,0) * 1deg)) scale(calc(.985 + var(--logo-progress,0) * .026))}
+[data-model-slot="x-portal"].v322-runtime-active .v322-model-renderer{transform:translate3d(calc(var(--portal-px,0) * 4px),calc(var(--portal-py,0) * 3px),0) scale(calc(.88 + var(--portal-progress,0) * .22))}
+[data-model-slot="creative-machine"].v322-runtime-active .v322-model-renderer{transform:rotateX(calc(var(--machine-py,0) * -1deg)) rotateY(calc(var(--machine-px,0) * 1.8deg)) scale(calc(.99 + var(--machine-progress,0) * .012))}
+[data-model-slot="spatial-studio"].v322-runtime-active .v322-model-renderer{transform:translate3d(calc(var(--studio-px,0) * 5px),calc(var(--studio-py,0) * 3px),0) scale(calc(.99 + var(--studio-progress,0) * .016))}
+[data-model-slot="closing-window"].v322-runtime-active .v322-model-renderer{transform:scale(calc(.99 + var(--exit-progress,0) * .018))}
+[data-model-slot^="play-"].v322-runtime-active .v322-model-renderer{inset:-10%;transform:scale(.92)}
+[data-model-slot][data-glb-state="loading"] .v322-model-renderer{opacity:0}
+[data-model-slot][data-glb-state="ready"] .v322-model-renderer{opacity:1;transition:opacity .28s ease}
+@media(max-width:720px){.v322-model-renderer{contain:layout paint}.v322-model-renderer canvas{image-rendering:auto}[data-model-slot^="play-"].v322-runtime-active .v322-model-renderer{inset:-14%;transform:scale(.88)}}
+@media(prefers-reduced-motion:reduce){.v322-model-renderer{transform:none!important;transition:none!important}}
