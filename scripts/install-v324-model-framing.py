@@ -1,4 +1,4 @@
-"""Install MOVX v324 framing, v336.1 mobile logo safe fit, and v331 smooth choreography after v323 model pack."""
+"""Install MOVX v324 framing, v336.1 mobile logo safe fit, v339 desktop Machine presence, and v331 smooth choreography after v323 model pack."""
 from pathlib import Path
 import json, shutil
 
@@ -7,7 +7,7 @@ out=root/'_site'
 release='v324-model-framing'
 revision='v3361-mobile-logo-safe-fit'
 choreography='v331-smooth-handoffs'
-cache=revision
+cache='v339-desktop-machine-presence'
 css='v324-model-framing.css'
 js='v324-model-framing.mjs'
 
@@ -32,4 +32,4 @@ for name in ('index.html','latest.html'):
     text=text.replace('data-model-pack="v323-tripo-model-pack"',f'data-model-pack="v323-tripo-model-pack" data-model-framing="{release}" data-model-framing-revision="{revision}"',1)
     path.write_text(text)
 
-print(json.dumps({'release':release,'revision':revision,'choreography':choreography,'css':css,'runtime':js,'pages':['index.html','latest.html']}))
+print(json.dumps({'release':release,'revision':revision,'cache':cache,'choreography':choreography,'css':css,'runtime':js,'pages':['index.html','latest.html']}))
