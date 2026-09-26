@@ -1,0 +1,123 @@
+/* v310.1 composition hotfix — based on visual review at ~1365x768 */
+.v310 .world-cut{
+  height:64vh;
+  min-height:520px;
+  padding:9vh var(--pad) 8vh;
+  display:grid;
+  grid-template-rows:1fr 1fr;
+  align-content:center;
+  place-items:stretch;
+  background:
+    radial-gradient(circle at 72% 70%,rgba(255,90,24,.12),transparent 30%),
+    linear-gradient(180deg,#060606,#080604 66%,#060606);
+}
+.v310 .world-cut:before{
+  content:"05B / SHIFT";
+  position:absolute;
+  left:var(--pad);
+  top:7vh;
+  font:800 9px/1 monospace;
+  letter-spacing:.16em;
+  color:#777;
+}
+.v310 .world-cut:after{
+  content:"";
+  position:absolute;
+  left:var(--pad);
+  right:var(--pad);
+  top:50%;
+  height:1px;
+  background:linear-gradient(90deg,rgba(255,255,255,.16),rgba(255,90,24,.35),rgba(255,255,255,.05));
+  opacity:.7;
+}
+.v310 .world-cut span,
+.v310 .world-cut b{
+  position:relative;
+  inset:auto;
+  display:block;
+  width:max-content;
+  max-width:100%;
+  font-size:clamp(54px,7.6vw,132px);
+  line-height:.88;
+  letter-spacing:-.07em;
+  white-space:nowrap;
+  text-transform:uppercase;
+  will-change:transform,opacity;
+}
+.v310 .world-cut span{
+  align-self:end;
+  justify-self:start;
+  color:#f2efe8;
+  opacity:.3;
+  transform:translate3d(calc(-5vw + var(--scene-p)*5vw),0,0);
+}
+.v310 .world-cut b{
+  align-self:start;
+  justify-self:end;
+  padding-top:2.6vh;
+  color:#ff5a18;
+  transform:translate3d(calc(6vw - var(--scene-p)*6vw),0,0);
+}
+
+/* Studio now has a protected typography zone and a separate media zone */
+.v310 .studio__copy{
+  width:min(1800px,calc(100% - var(--pad)*2));
+  margin-inline:auto;
+  padding-bottom:10vh;
+  align-items:flex-start;
+}
+.v310 .studio__copy .display{
+  width:min(47vw,680px);
+  max-width:none;
+  font-size:clamp(48px,5.15vw,92px);
+  line-height:.91;
+  letter-spacing:-.065em;
+}
+.v310 .studio__copy .copy{
+  width:min(42vw,430px);
+  margin-top:3vh;
+  font-size:clamp(16px,1.15vw,20px);
+  line-height:1.6;
+}
+.v310 .room__screen{
+  right:5.5vw;
+  top:16%;
+  width:min(39vw,540px);
+  transform:translate3d(calc(1.6vw - var(--studio-p)*1.6vw),calc(4vh - var(--studio-p)*4vh),120px) scale(calc(.91 + var(--studio-p)*.08));
+}
+.v310 .room__wall.a{
+  left:-13%;
+  top:7%;
+  width:40%;
+  height:86%;
+}
+.v310 .room__wall.b{
+  right:-10%;
+  top:6%;
+  width:41%;
+  height:86%;
+}
+.v310 .room__slit{left:52%}
+.v310 .room__floor{opacity:.72}
+
+@media (max-width:1280px){
+  .v310 .world-cut span,.v310 .world-cut b{font-size:clamp(50px,7.2vw,96px)}
+  .v310 .studio__copy .display{width:46vw;font-size:clamp(46px,4.9vw,74px)}
+  .v310 .studio__copy .copy{width:40vw}
+  .v310 .room__screen{right:4vw;width:39vw}
+}
+@media (max-width:900px){
+  .v310 .world-cut{height:52vh;min-height:430px;padding:8vh var(--pad) 7vh}
+  .v310 .world-cut:before{top:5vh}
+  .v310 .world-cut span,.v310 .world-cut b{font-size:clamp(48px,13.5vw,92px);white-space:normal}
+  .v310 .world-cut span{transform:translate3d(calc(-3vw + var(--scene-p)*3vw),0,0)}
+  .v310 .world-cut b{transform:translate3d(calc(3vw - var(--scene-p)*3vw),0,0)}
+  .v310 .studio__copy .display{width:72vw;font-size:clamp(46px,12vw,82px);line-height:.9}
+  .v310 .studio__copy .copy{width:70vw}
+  .v310 .room__screen{right:-8vw;top:13%;width:68vw;opacity:.72}
+  .v310 .room__wall.a{left:-30%;width:64%}
+  .v310 .room__wall.b{right:-26%;width:62%}
+}
+@media (prefers-reduced-motion:reduce){
+  .v310 .world-cut span,.v310 .world-cut b,.v310 .room__screen{transform:none!important}
+}
