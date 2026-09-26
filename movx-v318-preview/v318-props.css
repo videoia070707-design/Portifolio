@@ -1,0 +1,46 @@
+/* MOVX v318 — Playground Props production pass
+   Scene 05 / ZERO GRAVITY. Keeps the existing drag engine and upgrades only object materiality. */
+html.v318{--prop-orange:#ff5a18;--prop-cream:#ded8cd;--prop-graphite:#1b1a18}
+html.v318 .play311{position:relative;overflow:hidden;isolation:isolate}
+html.v318 .float-zone{position:relative;isolation:isolate}
+html.v318 .float-zone:before{content:"";position:absolute;inset:8% 6%;pointer-events:none;background:radial-gradient(circle at 54% 48%,rgba(255,90,24,.055),transparent 26%),radial-gradient(circle at 32% 60%,rgba(0,0,0,.035),transparent 31%);filter:blur(26px);z-index:-1}
+html.v318 .float{cursor:grab;user-select:none;touch-action:none;will-change:transform,left,top;transition:filter .2s ease,box-shadow .2s ease}
+html.v318 .float.dragging{cursor:grabbing;filter:brightness(1.04) drop-shadow(0 24px 30px rgba(0,0,0,.16))}
+html.v318 .float:focus-visible{outline:2px solid #ff5a18;outline-offset:5px}
+
+/* Cassette */
+html.v318 .float.cassette{display:grid;place-items:end center;width:clamp(118px,11vw,168px);height:clamp(76px,7vw,108px);padding:0 0 12px!important;border:1px solid rgba(59,54,49,.25)!important;border-radius:13px!important;background:linear-gradient(150deg,#e4ded3,#c8c1b6 68%,#afa79d)!important;color:#332f2b!important;font:700 8px/1 "Courier New",monospace!important;letter-spacing:.16em!important;box-shadow:inset 0 1px rgba(255,255,255,.72),inset 0 -2px rgba(73,65,58,.11),0 18px 30px rgba(38,32,28,.16)!important}
+html.v318 .float.cassette:before{content:"";position:absolute;left:14%;right:14%;top:20%;height:38%;border-radius:9px;background:radial-gradient(circle at 25% 50%,#292725 0 12%,#746f68 13% 20%,#171615 21% 32%,transparent 33%),radial-gradient(circle at 75% 50%,#292725 0 12%,#746f68 13% 20%,#171615 21% 32%,transparent 33%),linear-gradient(#48443f,#252321);box-shadow:inset 0 0 0 1px rgba(0,0,0,.28),0 1px rgba(255,255,255,.24)}
+html.v318 .float.cassette:after{content:"MOVX / TAPE";position:absolute;left:14%;right:14%;top:8%;font:700 5px/1 "Courier New",monospace;letter-spacing:.15em;color:#746e66;text-align:left}
+
+/* Camera */
+html.v318 .float.camera{width:clamp(112px,10vw,158px);height:clamp(78px,7vw,112px);border:1px solid rgba(54,49,45,.28)!important;border-radius:20px 16px 18px 20px!important;background:linear-gradient(145deg,#d8d3ca 0%,#aaa49a 46%,#77716a 47% 52%,#282624 53% 100%)!important;box-shadow:inset 0 1px rgba(255,255,255,.62),0 18px 34px rgba(25,22,20,.2)!important}
+html.v318 .float.camera:before{content:"";position:absolute;width:46%;aspect-ratio:1;right:8%;top:19%;border-radius:50%;background:radial-gradient(circle at 40% 36%,rgba(114,142,150,.8) 0 7%,#101416 19%,#263339 28%,#090b0c 44%,#77736d 46% 51%,#2b2927 52% 64%,#111 65%);box-shadow:inset 0 0 0 2px rgba(255,255,255,.07),0 4px 9px rgba(0,0,0,.28)}
+html.v318 .float.camera:after{content:"REC";position:absolute;left:13%;top:18%;padding-left:9px;font:700 6px/1 "Courier New",monospace;letter-spacing:.12em;color:#4d4944}
+
+/* Cube */
+html.v318 .float.cube{width:clamp(82px,7.4vw,116px);height:clamp(82px,7.4vw,116px);border-radius:18px!important;border:1px solid rgba(83,37,18,.2)!important;background:linear-gradient(145deg,#ff8754 0%,#ff5a18 44%,#d3410c 68%,#8f2a09 100%)!important;box-shadow:inset 0 1px rgba(255,218,198,.55),inset -9px -12px 20px rgba(100,26,4,.16),0 22px 34px rgba(94,33,11,.19)!important}
+html.v318 .float.cube:before{content:"X";position:absolute;inset:0;display:grid;place-items:center;font:900 clamp(34px,3.6vw,54px)/1 Arial,sans-serif;color:#f4efe7;text-shadow:0 2px 0 rgba(135,41,8,.28);transform:translateZ(1px)}
+html.v318 .float.cube:after{content:"";position:absolute;left:12%;right:12%;top:12%;height:26%;border-radius:14px;background:linear-gradient(130deg,rgba(255,255,255,.28),transparent 66%);pointer-events:none}
+
+/* CD */
+html.v318 .float.cd{width:clamp(104px,9vw,144px);height:clamp(104px,9vw,144px);border-radius:50%!important;border:1px solid rgba(74,70,64,.23)!important;background:radial-gradient(circle,#151515 0 7%,#d4cec4 8% 13%,transparent 14%),conic-gradient(from 18deg,#d6d1ca,#a5c0c2,#e8d0bc,#b7b2d2,#e6e1d7,#b4c7bc,#d6d1ca)!important;box-shadow:inset 0 0 0 1px rgba(255,255,255,.44),inset 0 0 18px rgba(255,255,255,.28),0 20px 34px rgba(30,28,25,.16)!important}
+html.v318 .float.cd:before{content:"MOVX";position:absolute;left:50%;top:17%;transform:translateX(-50%);font:900 8px/1 Arial,sans-serif;letter-spacing:-.04em;color:#554f49;opacity:.65}
+html.v318 .float.cd:after{content:"";position:absolute;inset:8%;border-radius:50%;background:linear-gradient(120deg,transparent 0 33%,rgba(255,255,255,.38) 38%,transparent 44% 100%);mix-blend-mode:screen;pointer-events:none}
+
+/* Window / portable screen */
+html.v318 .float.window{width:clamp(138px,13vw,190px);height:clamp(98px,8.7vw,132px);border:1px solid rgba(52,48,44,.28)!important;border-radius:15px!important;background:linear-gradient(#dad5cc 0 18%,#1c1d1b 19% 100%)!important;box-shadow:inset 0 1px rgba(255,255,255,.75),0 20px 35px rgba(31,27,24,.18)!important}
+html.v318 .float.window:before{content:"MOVX PLAY / 05";position:absolute;left:12px;top:8px;font:700 5px/1 "Courier New",monospace;letter-spacing:.13em;color:#676159}
+html.v318 .float.window:after{content:"";position:absolute;left:9%;right:9%;top:28%;bottom:12%;border-radius:8px;background:radial-gradient(circle at 60% 42%,rgba(255,90,24,.22),transparent 28%),linear-gradient(150deg,#0e1110,#1f2622 52%,#0b0d0c);box-shadow:inset 0 0 0 1px rgba(255,255,255,.05),inset 0 0 24px rgba(0,0,0,.8)}
+
+/* Cursor */
+html.v318 .float.cursor{width:48px;height:58px;border:0!important;background:transparent!important;box-shadow:none!important}
+html.v318 .float.cursor:before{content:"";position:absolute;left:7px;top:4px;width:26px;height:38px;background:#ff5a18;clip-path:polygon(0 0,100% 66%,61% 70%,78% 100%,61% 100%,45% 73%,18% 100%);filter:drop-shadow(0 7px 7px rgba(91,28,6,.23))}
+html.v318 .float.cursor:after{content:"";position:absolute;left:11px;top:8px;width:15px;height:22px;background:linear-gradient(145deg,rgba(255,255,255,.45),transparent 66%);clip-path:polygon(0 0,100% 66%,55% 68%,33% 91%)}
+
+html.v318 .float.has-runtime-model{background:transparent!important;border-color:transparent!important;box-shadow:none!important;color:transparent!important}
+html.v318 .float.has-runtime-model:before,html.v318 .float.has-runtime-model:after{display:none!important}
+html.v318 .float [data-runtime-prop]{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;z-index:5}
+html.v318 .play-copy:after{content:"OBJECT SET 05 / PLAYGROUND PROPS";display:block;margin-top:18px;font:700 7px/1 "Courier New",monospace;letter-spacing:.18em;color:#827d75}
+@media(max-width:640px){html.v318 .float-zone{min-height:520px}html.v318 .float.cassette{width:112px;height:74px}html.v318 .float.camera{width:108px;height:76px}html.v318 .float.cd{width:98px;height:98px}html.v318 .float.cube{width:78px;height:78px}html.v318 .float.window{width:130px;height:92px}}
+@media(prefers-reduced-motion:reduce){html.v318 .float{transition:none!important}}
