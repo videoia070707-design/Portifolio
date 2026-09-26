@@ -1,0 +1,48 @@
+name: MOVX PR Static Validation
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/**'
+      - 'scripts/qa-*.cjs'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  static-validation:
+    name: Static workflow and QA syntax
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Validate QA JavaScript syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          find scripts -maxdepth 1 -type f -name 'qa-*.cjs' -print0 | xargs -0 -n1 node --check
+
+      - name: Validate workflow YAML syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          ruby -e 'require "yaml"; Dir[".github/workflows/*.{yml,yaml}"].sort.each { |file| YAML.load_file(file); puts "OK #{file}" }'
+
+      - name: Guard against absolute tmp artifact paths
+        shell: bash
+        run: |
+          set -euo pipefail
+          if grep -R -nE '^[[:space:]]+/tmp/' .github/workflows; then
+            echo 'Absolute /tmp artifact path found in workflow upload paths.' >&2
+            exit 1
+          fi
+
+# Static-only gate: no Chromium, WebGL or model loading here.

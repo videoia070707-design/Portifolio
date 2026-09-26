@@ -1,85 +1,303 @@
 name: Deploy MOVX Portfolio
+
 on:
   push:
     branches: [main]
   workflow_dispatch:
+
 permissions:
   contents: read
+  actions: read
   pages: write
   id-token: write
+
 concurrency:
   group: pages
   cancel-in-progress: true
+
 jobs:
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+  build:
+    name: Build once
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
         with:
           node-version: '22'
           cache: npm
+
       - name: Install pinned dependencies
         run: npm ci --no-audit --no-fund
+
       - name: Ensure FFmpeg for optimized media
         run: ffmpeg -version || (sudo apt-get update && sudo apt-get install -y ffmpeg)
+
       - name: Build optimized MOVX source
         run: npm run build
+
       - name: Enforce performance budgets
         run: python3 scripts/qa-performance.py
-      - name: Validate real Tripo GLBs, framing, storyboard and preserved social hero
+
+      - name: Store immutable build for downstream jobs
+        uses: actions/upload-artifact@v4
+        with:
+          name: movx-built-site
+          path: _site
+          if-no-files-found: error
+          retention-days: 1
+
+  qa-desktop-3d:
+    name: QA desktop 3D (${{ matrix.shard }})
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - shard: d1
+            slots: hero-movx-logo,x-portal
+          - shard: d2
+            slots: creative-machine,play-camera
+          - shard: d3
+            slots: play-cube,spatial-studio
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Restore built site
+        uses: actions/download-artifact@v4
+        with:
+          name: movx-built-site
+          path: _site
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Validate desktop GLB shard
+        shell: bash
+        env:
+          MOVX_QA_MODE: desktop
+          MOVX_QA_SHARD: ${{ matrix.shard }}
+          MOVX_QA_SLOTS: ${{ matrix.slots }}
         run: |
-          npx playwright install --with-deps chromium
-          python3 -m http.server 4173 --directory _site >/tmp/movx-preview.log 2>&1 &
+          set -euo pipefail
+          mkdir -p _site/qa-logs
+          python3 -m http.server 4173 --directory _site >"_site/qa-logs/desktop-${MOVX_QA_SHARD}.log" 2>&1 &
           SERVER_PID=$!
           trap 'kill $SERVER_PID 2>/dev/null || true' EXIT
-          npm run qa:v324
-          npm run qa:v332
+          node scripts/qa-v341-3d-shard.cjs
+
+      - name: Save desktop shard evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: movx-qa-desktop-${{ matrix.shard }}
+          path: |
+            _site/qa-v341-desktop-${{ matrix.shard }}-*
+            _site/qa-logs/desktop-${{ matrix.shard }}.log
+          if-no-files-found: warn
+          retention-days: 7
+
+  qa-mobile-3d:
+    name: QA mobile 3D (${{ matrix.shard }})
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - shard: m1
+            slots: hero-movx-logo,x-portal
+          - shard: m2
+            slots: creative-machine,play-camera
+          - shard: m3
+            slots: play-cube,spatial-studio
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Restore built site
+        uses: actions/download-artifact@v4
+        with:
+          name: movx-built-site
+          path: _site
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Validate mobile GLB shard
+        shell: bash
+        env:
+          MOVX_QA_MODE: mobile
+          MOVX_QA_SHARD: ${{ matrix.shard }}
+          MOVX_QA_SLOTS: ${{ matrix.slots }}
+        run: |
+          set -euo pipefail
+          mkdir -p _site/qa-logs
+          python3 -m http.server 4173 --directory _site >"_site/qa-logs/mobile-${MOVX_QA_SHARD}.log" 2>&1 &
+          SERVER_PID=$!
+          trap 'kill $SERVER_PID 2>/dev/null || true' EXIT
+          node scripts/qa-v341-3d-shard.cjs
+
+      - name: Save mobile shard evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: movx-qa-mobile-${{ matrix.shard }}
+          path: |
+            _site/qa-v341-mobile-${{ matrix.shard }}-*
+            _site/qa-logs/mobile-${{ matrix.shard }}.log
+          if-no-files-found: warn
+          retention-days: 7
+
+  qa-logo-projection:
+    name: QA physical logo mobile projection
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Restore built site
+        uses: actions/download-artifact@v4
+        with:
+          name: movx-built-site
+          path: _site
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Validate logo safe framing through full scroll choreography
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p _site/qa-logs
+          python3 -m http.server 4173 --directory _site >_site/qa-logs/logo-projection.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill $SERVER_PID 2>/dev/null || true' EXIT
+          node scripts/qa-v341-logo-projection.cjs
+
+      - name: Save logo projection evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: movx-qa-logo-projection
+          path: |
+            _site/qa-v341-logo-projection-*
+            _site/qa-logs/logo-projection.log
+          if-no-files-found: warn
+          retention-days: 7
+
+  qa-contracts:
+    name: QA runtime contracts
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Restore built site
+        uses: actions/download-artifact@v4
+        with:
+          name: movx-built-site
+          path: _site
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Validate runtime and storyboard contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p _site/qa-logs
+          python3 -m http.server 4173 --directory _site >_site/qa-logs/contracts.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill $SERVER_PID 2>/dev/null || true' EXIT
           node scripts/qa-v322-runtime.cjs
           node scripts/qa-v321-production.cjs
           node scripts/qa-v137-reference.cjs
           node scripts/qa-v136.cjs
-      - name: Save production validation evidence
+
+      - name: Save contract evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: movx-production-validation
+          name: movx-qa-contracts
           path: |
-            _site/qa-v324-*
-            _site/qa-v332-*
             _site/qa-v322-*
             _site/qa-v321-*
             _site/qa-v138-*
+            _site/qa-logs/contracts.log
           if-no-files-found: warn
+          retention-days: 7
+
+  deploy:
+    name: Publish Pages
+    needs: [build, qa-desktop-3d, qa-mobile-3d, qa-logo-projection, qa-contracts]
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Restore validated build
+        uses: actions/download-artifact@v4
+        with:
+          name: movx-built-site
+          path: _site
+
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
-      - name: Upload full site
+
+      - name: Upload validated site
         uses: actions/upload-pages-artifact@v3
         with:
           path: _site
+
       - name: Deploy
         id: deployment
         uses: actions/deploy-pages@v4
-      - name: Run extended MOVX regression suite after deploy
-        continue-on-error: true
-        run: |
-          python3 -m http.server 4173 --directory _site >/tmp/movx-regression.log 2>&1 &
-          SERVER_PID=$!
-          trap 'kill $SERVER_PID 2>/dev/null || true' EXIT
-          npm run qa
-          node scripts/qa-layout.cjs
-          node scripts/qa-v106.cjs
-          node scripts/qa-v108.cjs
-          node scripts/qa-v109.cjs
-          node scripts/qa-v110.cjs
-          node scripts/qa-v111.cjs
-          node scripts/qa-v112.cjs
-          node scripts/qa-v114.cjs
-          node scripts/qa-v115.cjs
-          node scripts/qa-v115-mobile-first.cjs
-          node scripts/qa-into-signal-preview.cjs
-          echo 'Archived v117 Scroll World QA is intentionally excluded from the v321+ storyboard homepage regression.'
