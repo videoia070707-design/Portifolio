@@ -46,5 +46,8 @@ html.v318 .play-copy:after{content:"OBJECT SET 05 / PLAYGROUND PROPS";display:bl
 /* v340.1 — restore the camera's original desktop presence without changing touch/mobile. */
 @media(min-width:721px){html.v318 .float.camera{width:clamp(170px,12.5vw,190px);height:clamp(112px,8.2vw,125px)}}
 
+/* v342 — restore the X Cube's original desktop presence without changing touch/mobile. */
+@media(min-width:721px){html.v318 .float.cube{width:clamp(128px,9vw,140px);height:clamp(128px,9vw,140px)}}
+
 @media(max-width:640px){html.v318 .float-zone{min-height:520px}html.v318 .float.cassette{width:112px;height:74px}html.v318 .float.camera{width:108px;height:76px}html.v318 .float.cd{width:98px;height:98px}html.v318 .float.cube{width:78px;height:78px}html.v318 .float.window{width:130px;height:92px}}
 @media(prefers-reduced-motion:reduce){html.v318 .float{transition:none!important}}
