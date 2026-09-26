@@ -6,8 +6,7 @@ const fs=require('node:fs');
   const fixture='_site/qa-v322-model.gltf';
   const browser=await chromium.launch({headless:true,args:['--use-angle=swiftshader','--enable-webgl','--ignore-gpu-blocklist']});
   try{
-    // Explicit query override stays generic: it must not inherit the production
-    // Tripo mesh-isolation rule.
+    // Generic query override remains a one-triangle GLTF smoke test.
     const page=await browser.newPage({viewport:{width:1440,height:1000},deviceScaleFactor:1});
     const errors=[];page.on('pageerror',e=>errors.push(String(e)));
     await page.goto('http://127.0.0.1:4173/?crtModel=qa-v322-model.gltf',{waitUntil:'domcontentloaded',timeout:30000});
@@ -54,7 +53,7 @@ const fs=require('node:fs');
     await page.screenshot({path:'_site/qa-v322-glb-desktop.png',fullPage:false});
     await page.close();
 
-    // Production path: must render the real Tripo TV, isolated from the prop pack.
+    // Production path: complete standalone vintage TV. No mesh extraction allowed.
     const prod=await browser.newPage({viewport:{width:1440,height:1000},deviceScaleFactor:1});
     const prodErrors=[];prod.on('pageerror',e=>prodErrors.push(String(e)));
     await prod.goto('http://127.0.0.1:4173/',{waitUntil:'domcontentloaded',timeout:30000});
@@ -68,6 +67,7 @@ const fs=require('node:fs');
         requested:document.documentElement.dataset.v322Requested,
         scope:document.documentElement.dataset.modelScope,
         runtimeScope:document.documentElement.dataset.movx3dScope,
+        asset:document.documentElement.dataset.crtAsset,
         crt3d:document.documentElement.dataset.crt3d,
         crtSource:document.documentElement.dataset.crtSource,
         renderers:document.querySelectorAll('.v322-model-renderer').length,
@@ -97,23 +97,23 @@ const fs=require('node:fs');
     assert.equal(productionState.requested,'1','production must register exactly the Scene-01 model');
     assert.equal(productionState.scope,'v350-crt-only','production model scope marker mismatch');
     assert.equal(productionState.runtimeScope,'boot-tv','runtime scope must be the first storyboard slot');
+    assert.equal(productionState.asset,'v352-standalone-vintage-computer','standalone CRT build marker missing');
     assert.deepEqual(productionState.instances,['boot-tv'],'only the first storyboard model may be registered');
     assert.deepEqual(productionState.manifest,{'boot-tv':'models/movx-crt-tv.glb'},'production manifest must expose only canonical CRT GLB');
     assert.equal(productionState.awaiting.includes('boot-tv'),false,'real CRT must not be awaiting a model');
     assert.equal(productionState.bootState,'ready','real CRT did not become ready');
     assert.equal(productionState.kind,'glb','production is still using procedural CRT instead of real GLB');
     assert.equal(productionState.crt3d,'glb-ready','root real-CRT state mismatch');
-    assert.equal(productionState.crtSource,'tripo-source-pack','wrong real CRT source marker');
     assert.equal(productionState.renderers,1,'production should mount exactly one 3D renderer');
     assert.ok(productionState.canvas,'real CRT canvas missing');
-    assert.equal(productionState.sourceMeshes,25,'unexpected source prop-pack mesh count');
-    assert.equal(productionState.sourceTriangles,155609,'unexpected source prop-pack triangle count');
-    assert.equal(productionState.meshes,3,'TV isolation should leave exactly three Tripo meshes');
-    assert.ok(productionState.triangles>1000,'isolated TV geometry is unexpectedly sparse');
-    assert.equal(productionState.version,'v350-real-crt','real CRT version mismatch');
+    assert.ok(productionState.sourceMeshes>0,'standalone TV source has no meshes');
+    assert.ok(productionState.sourceTriangles>1000,'standalone TV source is unexpectedly sparse');
+    assert.equal(productionState.meshes,productionState.sourceMeshes,'standalone TV must preserve every source mesh');
+    assert.equal(productionState.triangles,productionState.sourceTriangles,'standalone TV must preserve every source triangle');
+    assert.equal(productionState.version,'v352-standalone-crt','standalone CRT version mismatch');
     assert.equal(productionState.fit,'full-product','CRT fit contract missing');
-    assert.deepEqual(productionState.crtParts,['tripo_part_7','tripo_part_13','tripo_part_18'],'wrong TV mesh cluster');
-    assert.equal(productionState.removedParts,22,'non-TV prop meshes were not fully removed');
+    assert.deepEqual(productionState.crtParts,[],'legacy prop-pack TV extraction is still active');
+    assert.equal(productionState.removedParts,0,'standalone TV must not remove any mesh');
     assert.ok(productionState.cameraZ>=4.6,'CRT camera is still too close');
     assert.ok(productionState.cameraFov<=29,'CRT camera FOV is too wide for product framing');
     assert.equal(productionState.slotTransform,'none','legacy CRT CSS transform still compounds WebGL perspective');
@@ -131,14 +131,14 @@ const fs=require('node:fs');
     await mobile.goto('http://127.0.0.1:4173/',{waitUntil:'domcontentloaded',timeout:30000});
     await mobile.waitForFunction(()=>document.querySelector('[data-model-slot="boot-tv"]')?.dataset.glbState==='ready',null,{timeout:30000});
     const mobileState=await mobile.evaluate(()=>({
+      asset:document.documentElement.dataset.crtAsset,
       kind:document.querySelector('[data-model-slot="boot-tv"]')?.dataset.modelKind,
       renderers:document.querySelectorAll('.v322-model-renderer').length,
       overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth,
       slotTransform:getComputedStyle(document.querySelector('[data-model-slot="boot-tv"]')).transform,
-      crtSource:document.documentElement.dataset.crtSource,
     }));
+    assert.equal(mobileState.asset,'v352-standalone-vintage-computer');
     assert.equal(mobileState.kind,'glb');
-    assert.equal(mobileState.crtSource,'tripo-source-pack');
     assert.equal(mobileState.renderers,1);
     assert.equal(mobileState.slotTransform,'none');
     assert.ok(mobileState.overflow<=2,'production mobile overflow regression');
@@ -146,7 +146,7 @@ const fs=require('node:fs');
     await mobile.screenshot({path:'_site/qa-v350-real-crt-mobile.png',fullPage:false});
     await mobile.close();
 
-    console.log(JSON.stringify({qa:'v350-real-crt',status:'PASS',glbOverride:state,production:productionState,mobile:mobileState}));
+    console.log(JSON.stringify({qa:'v352-standalone-crt-runtime',status:'PASS',glbOverride:state,production:productionState,mobile:mobileState}));
   } finally {
     await browser.close();
     try{fs.unlinkSync(fixture)}catch{}
