@@ -1,9 +1,8 @@
-"""MOVX v347 — publish only the first approved Tripo GLB.
+"""MOVX v347 — publish only the FIRST approved Tripo GLB.
 
-The one-by-one implementation rule is enforced here: source files for future
-models may remain in the repository, but production publishes only the Physical
-Logo until that first scene is approved. All later slots keep their DOM/CSS
-fallback and are not registered in the WebGL manifest.
+The one-by-one implementation rule is enforced here. The first storyboard model
+is the CRT / Y2K TV opening (`boot-tv`). Later GLBs may remain stored in source,
+but production does not publish or register them until the CRT pass is finished.
 """
 from pathlib import Path
 import json, shutil
@@ -13,10 +12,10 @@ out=root/'_site'
 src_models=root/'site'/'models'
 dst_models=out/'models'
 release='v323-tripo-model-pack'
-scope='v347-physical-logo-only'
+scope='v347-crt-only'
 
 MODEL_MAP={
-    'hero-movx-logo':'movx-physical-logo.glb',
+    'boot-tv':'movx-crt-tv.glb',
 }
 
 manifest={}
@@ -32,8 +31,8 @@ for slot,filename in MODEL_MAP.items():
     shutil.copy2(src,dst)
     manifest[slot]=f'models/{filename}'
 
-if set(manifest)-{'hero-movx-logo'}:
-    raise SystemExit('MOVX v347 production model scope escaped hero-movx-logo')
+if set(manifest)-{'boot-tv'}:
+    raise SystemExit('MOVX v347 production model scope escaped boot-tv')
 
 manifest_script='<script>window.MOVX3D_MODELS='+json.dumps(manifest,separators=(',',':'))+';</script>'
 for name in ('index.html','latest.html'):
@@ -53,5 +52,5 @@ print(json.dumps({
     'scope':scope,
     'installed':manifest,
     'missing':missing,
-    'mode':'one model at a time; later slots remain DOM/CSS fallbacks'
+    'mode':'CRT first; later model GLBs are not published yet'
 },ensure_ascii=False))
