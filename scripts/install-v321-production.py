@@ -64,8 +64,8 @@ work=(root/'movx-v312-preview'/'v312-work.js').read_text().replace('../assets/',
 (out/'v321-work.js').write_text(work)
 
 # Keep the storyboard release cache stable and bust only the Playground props
-# stylesheet changed by the camera/cube/cassette desktop-presence passes.
-cache_versions={'movx-v318-preview/v318-props.css':'v343-cassette-slot-safe'}
+# stylesheet changed by the camera/cube/cassette/CD desktop-presence passes.
+cache_versions={'movx-v318-preview/v318-props.css':'v344-cd-slot-safe'}
 styles='\n'.join(f'<link rel="stylesheet" href="{href}?v={cache_versions.get(href,release)}">' for href in css)
 scripts='\n'.join(f'<script src="{src}?v={release}"></script>' for src in js)
 classes='v312 v313 v314 v315 v316 v317 v318 v319 v320'
