@@ -21,6 +21,7 @@ const fs = require('fs');
     const rt=window.MOVX3D?.runtime;
     return !!(rt&&rt.contextLimit===2&&rt.choreographyVersion==='v331-smooth-handoffs'&&rt.choreographyDamping==='frame-rate-independent');
   },{timeout:30000});
+
   const runtimeInfo=await page.evaluate(()=>({
     contextLimit:window.MOVX3D?.runtime?.contextLimit,
     motionScale:window.MOVX3D?.runtime?.choreographyMotionScale,
@@ -35,11 +36,13 @@ const fs = require('fs');
   if(runtimeInfo.overflow>2)throw new Error(`initial mobile horizontal overflow ${runtimeInfo.overflow}`);
 
   const slots=['hero-movx-logo','x-portal','creative-machine','play-camera','play-cube','spatial-studio'];
-  const report={runtime:runtimeInfo,slots:{}};
+  const report={runtime:runtimeInfo,slots:{},rendererSamples:0};
+
   for(const slot of slots){
     const selector=`[data-model-slot="${slot}"]`;
     const loc=page.locator(selector).first();
     if(await loc.count()!==1)throw new Error(`missing mobile slot ${slot}`);
+
     await page.evaluate(sel=>{
       const el=document.querySelector(sel);if(!el)return;
       const r=el.getBoundingClientRect();
@@ -47,14 +50,20 @@ const fs = require('fs');
       window.scrollTo({top,behavior:'instant'});
     },selector);
     await page.waitForTimeout(1100);
+
     await page.waitForFunction(name=>{
       const i=window.MOVX3D?.runtime?.instances?.[name];
       return !!(i?.loaded||i?.error);
     },slot,{timeout:90000});
+
+    // On touch the runtime intentionally keeps only two WebGL contexts alive.
+    // A successfully loaded model may therefore be hibernated while a nearby
+    // storyboard slot is mounted. Validate the loaded/choreography contract
+    // rather than incorrectly requiring every model to keep a renderer alive.
     await page.waitForFunction(name=>{
       const i=window.MOVX3D?.runtime?.instances?.[name];
-      return !!(i?.error||(i?.renderer&&i?.v331ChoreographyReady&&Number.isFinite(i?.v331Progress)));
-    },slot,{timeout:15000});
+      return !!(i?.error||(i?.loaded&&i?.v331ChoreographyReady&&Number.isFinite(i?.v331Progress)));
+    },slot,{timeout:20000});
 
     const info=await page.evaluate(name=>{
       const rt=window.MOVX3D.runtime;
@@ -63,27 +72,40 @@ const fs = require('fs');
       const canvas=i.canvas?.getBoundingClientRect?.();
       const live=Object.values(rt.instances).filter(x=>x.renderer).length;
       return {
-        loaded:i.loaded,error:i.error||null,liveRenderers:live,
-        glbState:i.element.dataset.glbState,
+        loaded:i.loaded,error:i.error||null,liveRenderers:live,hasRenderer:!!i.renderer,
+        stats:i.stats||null,glbState:i.element.dataset.glbState,
         choreography:i.element.dataset.modelChoreography||null,
-        progress:i.v331Progress,target:i.v331TargetProgress,
+        progress:Number.isFinite(i.v331Progress)?i.v331Progress:null,
+        target:Number.isFinite(i.v331TargetProgress)?i.v331TargetProgress:null,
         slotRect:{left:r.left,right:r.right,width:r.width,height:r.height},
         canvas:canvas?{width:canvas.width,height:canvas.height}:null,
         overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth
       };
     },slot);
+
     if(info.error)throw new Error(`${slot} mobile GLB failed: ${info.error}`);
     if(!info.loaded)throw new Error(`${slot} mobile GLB did not load`);
+    if(!info.stats?.triangles)throw new Error(`${slot} mobile GLB stats missing`);
     if(info.liveRenderers>2)throw new Error(`${slot} exceeded mobile WebGL context policy: ${info.liveRenderers}`);
-    if(info.choreography!=='v331')throw new Error(`${slot} missing v331 choreography`);
-    if(!info.canvas||info.canvas.width<2||info.canvas.height<2)throw new Error(`${slot} invalid mobile canvas ${JSON.stringify(info.canvas)}`);
+    if(info.liveRenderers<1)throw new Error(`${slot} has no active mobile WebGL renderer`);
+    if(info.choreography!=='v331'||info.progress===null||info.target===null)throw new Error(`${slot} missing v331 choreography state`);
+    if(info.hasRenderer){
+      if(!info.canvas||info.canvas.width<2||info.canvas.height<2)throw new Error(`${slot} invalid mobile canvas ${JSON.stringify(info.canvas)}`);
+      report.rendererSamples++;
+    }else if(info.glbState!=='hibernated'){
+      throw new Error(`${slot} renderer absent outside valid hibernation state: ${info.glbState}`);
+    }
     if(info.overflow>2)throw new Error(`${slot} introduced horizontal overflow ${info.overflow}`);
     if(info.slotRect.left<-3||info.slotRect.right>393)throw new Error(`${slot} slot exceeds mobile viewport ${JSON.stringify(info.slotRect)}`);
+
     report.slots[slot]=info;
+    fs.writeFileSync('_site/qa-v332-mobile-report.json',JSON.stringify({status:'running',...report,currentSlot:slot},null,2));
     await page.screenshot({path:`_site/qa-v332-${slot}.png`,fullPage:false});
   }
+
+  if(report.rendererSamples<1)throw new Error('mobile 3D QA never observed an active slot renderer');
   if(errors.length)throw new Error('mobile critical resource errors: '+JSON.stringify(errors));
   fs.writeFileSync('_site/qa-v332-mobile-report.json',JSON.stringify({status:'passed',...report},null,2));
   await browser.close();
-  console.log(JSON.stringify({status:'passed',viewport:'390x844',contextLimit:runtimeInfo.contextLimit,slots}));
+  console.log(JSON.stringify({status:'passed',viewport:'390x844',contextLimit:runtimeInfo.contextLimit,rendererSamples:report.rendererSamples,slots}));
 })().catch(err=>{console.error(err);process.exit(1)});
