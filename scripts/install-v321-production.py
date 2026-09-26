@@ -63,7 +63,10 @@ app=app.replace(injection,'',1)
 work=(root/'movx-v312-preview'/'v312-work.js').read_text().replace('../assets/','assets/')
 (out/'v321-work.js').write_text(work)
 
-styles='\n'.join(f'<link rel="stylesheet" href="{href}?v={release}">' for href in css)
+# Keep the storyboard release cache stable and bust only the camera-prop stylesheet
+# changed in v340.1, avoiding unnecessary reloads of every historical layer.
+cache_versions={'movx-v318-preview/v318-props.css':'v3401-camera-slot-safe'}
+styles='\n'.join(f'<link rel="stylesheet" href="{href}?v={cache_versions.get(href,release)}">' for href in css)
 scripts='\n'.join(f'<script src="{src}?v={release}"></script>' for src in js)
 classes='v312 v313 v314 v315 v316 v317 v318 v319 v320'
 production=f'''<!doctype html>
@@ -93,4 +96,4 @@ if 'href="#work"' not in production or 'href="#contact"' not in production:raise
 if '../assets/' in production or '../assets/' in work:raise SystemExit('MOVX v321 production still contains parent-relative asset paths')
 if "polish.href='v312-polish.css?v=312'" in app:raise SystemExit('MOVX v321 production app still contains root polish injection')
 
-print(json.dumps({'release':release,'homepage':'v320 storyboard promoted to /','preserved':['social-media.html','v93.html','legacy editorial QA'],'preview_dirs':preview_dirs,'model_slots':required_slots,'css_layers':len(css),'js_layers':len(js),'production_app':'v321-app.js'}))
+print(json.dumps({'release':release,'homepage':'v320 storyboard promoted to /','preserved':['social-media.html','v93.html','legacy editorial QA'],'preview_dirs':preview_dirs,'model_slots':required_slots,'css_layers':len(css),'js_layers':len(js),'production_app':'v321-app.js','cache_overrides':cache_versions}))
