@@ -42,5 +42,9 @@ html.v318 .float.has-runtime-model{background:transparent!important;border-color
 html.v318 .float.has-runtime-model:before,html.v318 .float.has-runtime-model:after{display:none!important}
 html.v318 .float [data-runtime-prop]{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;z-index:5}
 html.v318 .play-copy:after{content:"OBJECT SET 05 / PLAYGROUND PROPS";display:block;margin-top:18px;font:700 7px/1 "Courier New",monospace;letter-spacing:.18em;color:#827d75}
+
+/* v340.1 — restore the camera's original desktop presence without changing touch/mobile. */
+@media(min-width:721px){html.v318 .float.camera{width:clamp(170px,12.5vw,190px);height:clamp(112px,8.2vw,125px)}}
+
 @media(max-width:640px){html.v318 .float-zone{min-height:520px}html.v318 .float.cassette{width:112px;height:74px}html.v318 .float.camera{width:108px;height:76px}html.v318 .float.cd{width:98px;height:98px}html.v318 .float.cube{width:78px;height:78px}html.v318 .float.window{width:130px;height:92px}}
 @media(prefers-reduced-motion:reduce){html.v318 .float{transition:none!important}}
