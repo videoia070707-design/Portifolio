@@ -27,8 +27,6 @@ function recenter(){
     return true;
   }
 
-  // Freeze choreography while measuring. The current v350 group has no scale;
-  // resetting its tiny pointer/scroll rotation makes the bbox correction exact.
   const rotation=instance.group.rotation.clone();
   instance.group.rotation.set(0,0,0);
   instance.group.updateMatrixWorld(true);
@@ -42,9 +40,9 @@ function recenter(){
   }
   const before=beforeBox.getCenter(new THREE.Vector3());
 
-  // Critical correction: subtract the center AFTER the model's normalization
-  // scale has already been applied. This removes the residual center*(scale-1)
-  // offset that caused the real TV to be clipped by the right side of its canvas.
+  // Correct the residual center*(scale-1) offset left by v350. Because the GLB
+  // is already scaled here, the bbox center is in the same world-space units as
+  // model.position and can be removed directly.
   instance.model.position.sub(before);
   instance.model.updateMatrixWorld(true);
 
@@ -62,7 +60,8 @@ function recenter(){
     size:vec(size),
     attempts,
   };
-  instance.stats.fit='full-product-centered';
+  // Keep the v350 `full-product` fit contract intact. v351 is a centering
+  // correction layered on top, exposed separately through recenter/crtFit.
   root.dataset.crtRecenter='ready';
   root.dataset.crtFit='v351-scaled-center';
   completed=true;
