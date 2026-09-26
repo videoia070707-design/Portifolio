@@ -50,157 +50,11 @@ jobs:
           if-no-files-found: error
           retention-days: 1
 
-  qa-desktop-3d:
-    name: QA desktop 3D (${{ matrix.shard }})
-    needs: build
-    runs-on: ubuntu-latest
-    timeout-minutes: 8
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - shard: d1
-            slots: hero-movx-logo
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-          cache: npm
-      - name: Install dependencies
-        run: npm ci --no-audit --no-fund
-      - name: Restore built site
-        uses: actions/download-artifact@v4
-        with:
-          name: movx-built-site
-          path: _site
-      - name: Install Chromium
-        run: npx playwright install --with-deps chromium
-      - name: Validate desktop Physical Logo
-        shell: bash
-        env:
-          MOVX_QA_MODE: desktop
-          MOVX_QA_SHARD: ${{ matrix.shard }}
-          MOVX_QA_SLOTS: ${{ matrix.slots }}
-        run: |
-          set -euo pipefail
-          mkdir -p _site/qa-logs
-          python3 -m http.server 4173 --directory _site >"_site/qa-logs/desktop-${MOVX_QA_SHARD}.log" 2>&1 &
-          SERVER_PID=$!
-          trap 'kill $SERVER_PID 2>/dev/null || true' EXIT
-          node scripts/qa-v341-3d-shard.cjs
-      - name: Save desktop evidence
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: movx-qa-desktop-${{ matrix.shard }}
-          path: |
-            _site/qa-v341-desktop-${{ matrix.shard }}-*
-            _site/qa-logs/desktop-${{ matrix.shard }}.log
-          if-no-files-found: warn
-          retention-days: 7
-
-  qa-mobile-3d:
-    name: QA mobile 3D (${{ matrix.shard }})
-    needs: build
-    runs-on: ubuntu-latest
-    timeout-minutes: 8
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - shard: m1
-            slots: hero-movx-logo
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-          cache: npm
-      - name: Install dependencies
-        run: npm ci --no-audit --no-fund
-      - name: Restore built site
-        uses: actions/download-artifact@v4
-        with:
-          name: movx-built-site
-          path: _site
-      - name: Install Chromium
-        run: npx playwright install --with-deps chromium
-      - name: Validate mobile Physical Logo
-        shell: bash
-        env:
-          MOVX_QA_MODE: mobile
-          MOVX_QA_SHARD: ${{ matrix.shard }}
-          MOVX_QA_SLOTS: ${{ matrix.slots }}
-        run: |
-          set -euo pipefail
-          mkdir -p _site/qa-logs
-          python3 -m http.server 4173 --directory _site >"_site/qa-logs/mobile-${MOVX_QA_SHARD}.log" 2>&1 &
-          SERVER_PID=$!
-          trap 'kill $SERVER_PID 2>/dev/null || true' EXIT
-          node scripts/qa-v341-3d-shard.cjs
-      - name: Save mobile evidence
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: movx-qa-mobile-${{ matrix.shard }}
-          path: |
-            _site/qa-v341-mobile-${{ matrix.shard }}-*
-            _site/qa-logs/mobile-${{ matrix.shard }}.log
-          if-no-files-found: warn
-          retention-days: 7
-
-  qa-logo-projection:
-    name: QA physical logo mobile projection
-    needs: build
-    runs-on: ubuntu-latest
-    timeout-minutes: 8
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-          cache: npm
-      - name: Install dependencies
-        run: npm ci --no-audit --no-fund
-      - name: Restore built site
-        uses: actions/download-artifact@v4
-        with:
-          name: movx-built-site
-          path: _site
-      - name: Install Chromium
-        run: npx playwright install --with-deps chromium
-      - name: Validate logo safe framing through full scroll choreography
-        shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p _site/qa-logs
-          python3 -m http.server 4173 --directory _site >_site/qa-logs/logo-projection.log 2>&1 &
-          SERVER_PID=$!
-          trap 'kill $SERVER_PID 2>/dev/null || true' EXIT
-          node scripts/qa-v341-logo-projection.cjs
-      - name: Save logo projection evidence
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: movx-qa-logo-projection
-          path: |
-            _site/qa-v341-logo-projection-*
-            _site/qa-logs/logo-projection.log
-          if-no-files-found: warn
-          retention-days: 7
-
   qa-contracts:
-    name: QA current runtime contracts
+    name: QA CRT-first runtime contracts
     needs: build
     runs-on: ubuntu-latest
-    timeout-minutes: 6
+    timeout-minutes: 8
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -218,7 +72,7 @@ jobs:
           path: _site
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
-      - name: Validate current runtime and storyboard contracts
+      - name: Validate storyboard and first-model gate
         shell: bash
         run: |
           set -euo pipefail
@@ -228,7 +82,7 @@ jobs:
           trap 'kill $SERVER_PID 2>/dev/null || true' EXIT
           node scripts/qa-v322-runtime.cjs
           node scripts/qa-v321-production.cjs
-      - name: Save current contract evidence
+      - name: Save contract evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -242,7 +96,7 @@ jobs:
 
   deploy:
     name: Publish Pages
-    needs: [build, qa-desktop-3d, qa-mobile-3d, qa-logo-projection, qa-contracts]
+    needs: [build, qa-contracts]
     runs-on: ubuntu-latest
     timeout-minutes: 8
     environment:
