@@ -1,13 +1,14 @@
-/* MOVX v324 — surface framing for real Tripo models. */
-html.v324 [data-model-slot="hero-movx-logo"].v322-runtime-active .v322-model-renderer{inset:-2% -3%}
-html.v324 [data-model-slot="x-portal"].v322-runtime-active .v322-model-renderer{inset:-5% -4%}
+/* MOVX v324 — surface framing for real Tripo models.
+   v327 pass 2 keeps the hero logo and portal inside their intended frames. */
+html.v324 [data-model-slot="hero-movx-logo"].v322-runtime-active .v322-model-renderer{inset:0}
+html.v324 [data-model-slot="x-portal"].v322-runtime-active .v322-model-renderer{inset:-1%}
 html.v324 [data-model-slot="creative-machine"].v322-runtime-active .v322-model-renderer{inset:-3% -2%}
 html.v324 [data-model-slot="play-camera"].v322-runtime-active .v322-model-renderer,
 html.v324 [data-model-slot="play-cube"].v322-runtime-active .v322-model-renderer{inset:-8%}
 html.v324 [data-model-slot="spatial-studio"].v322-runtime-active .v322-model-renderer{inset:-7% -5%}
 @media(max-width:720px){
-  html.v324 [data-model-slot="hero-movx-logo"].v322-runtime-active .v322-model-renderer{inset:-1% -5%}
-  html.v324 [data-model-slot="x-portal"].v322-runtime-active .v322-model-renderer{inset:-3% -7%}
+  html.v324 [data-model-slot="hero-movx-logo"].v322-runtime-active .v322-model-renderer{inset:0 -2%}
+  html.v324 [data-model-slot="x-portal"].v322-runtime-active .v322-model-renderer{inset:-1% -3%}
   html.v324 [data-model-slot="creative-machine"].v322-runtime-active .v322-model-renderer{inset:-1% -4%}
   html.v324 [data-model-slot="spatial-studio"].v322-runtime-active .v322-model-renderer{inset:-5% -8%}
 }
