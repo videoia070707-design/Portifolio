@@ -1,6 +1,7 @@
-/* MOVX v322 — unified GLB runtime.
-   Loads real 3D assets only when a slot explicitly requests a model. The approved
-   DOM/CSS storyboard remains the fallback until a GLTF/GLB parses successfully. */
+/* MOVX v347 — single-model GLB runtime gate.
+   The storyboard keeps every future 3D slot as DOM/CSS fallback, but production
+   WebGL is intentionally limited to the first approved model until that model is
+   visually signed off. Current active slot: hero-movx-logo (Physical Logo). */
 const root=document.documentElement;
 const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const coarse=matchMedia('(pointer:coarse)').matches;
@@ -19,19 +20,28 @@ const PARAMS={
   'spatial-studio':'studioModel',
   'closing-window':'contactModel',
 };
+const ACTIVE_MODEL_SLOTS=new Set(['hero-movx-logo']);
 const MAX_TRIANGLES=220000;
 const CONTEXT_LIMIT=coarse?2:3;
-const runtime={version:'v322-unified-glb-runtime',instances:{},errors:[],contextLimit:CONTEXT_LIMIT};
+const runtime={
+  version:'v347-single-model-runtime',
+  instances:{},
+  errors:[],
+  contextLimit:CONTEXT_LIMIT,
+  activeSlots:[...ACTIVE_MODEL_SLOTS],
+  singleModelMode:true,
+};
 window.MOVX3D=window.MOVX3D||{};
 window.MOVX3D.runtime=runtime;
 root.dataset.v322Glb='booting';
+root.dataset.movx3dScope='hero-movx-logo';
 
 const manifest=(()=>{
   const direct=window.MOVX3D_MODELS;
   if(direct&&typeof direct==='object')return direct;
   const node=document.querySelector('#movx-3d-manifest[type="application/json"]');
   if(!node)return {};
-  try{return JSON.parse(node.textContent||'{}')}catch(error){console.warn('[MOVX v322] Invalid model manifest',error);return {}}
+  try{return JSON.parse(node.textContent||'{}')}catch(error){console.warn('[MOVX v347] Invalid model manifest',error);return {}}
 })();
 
 let THREE,GLTFLoader,loader;
@@ -39,7 +49,7 @@ async function modules(){
   if(THREE&&GLTFLoader)return {THREE,GLTFLoader};
   const [threeMod,loaderMod]=await Promise.all([
     import('./vendor/three.module.js'),
-    import('./vendor/three-addons/loaders/GLTFLoader.js?v=v322-unified-glb-runtime')
+    import('./vendor/three-addons/loaders/GLTFLoader.js?v=v347-single-model-runtime')
   ]);
   THREE=threeMod;GLTFLoader=loaderMod.GLTFLoader;loader=new GLTFLoader();
   return {THREE,GLTFLoader};
@@ -64,7 +74,7 @@ function statsFor(object){
     const g=node.geometry;
     if(!g)return;
     const count=g.index?.count ?? g.attributes?.position?.count ?? 0;
-    triangles+=g.index?Math.floor(count/3):Math.floor(count/3);
+    triangles+=Math.floor(count/3);
   });
   return {meshes,triangles};
 }
@@ -83,8 +93,8 @@ function normalizeModel(object){
 function createStage(instance){
   const scene=new THREE.Scene();
   const group=new THREE.Group();scene.add(group);group.add(instance.model);
-  const camera=new THREE.PerspectiveCamera(instance.name==='x-portal'?42:34,1,.05,30);
-  camera.position.set(0,0,instance.name==='x-portal'?3.05:3.2);
+  const camera=new THREE.PerspectiveCamera(34,1,.05,30);
+  camera.position.set(0,0,3.2);
   scene.add(new THREE.HemisphereLight(0xfff2e8,0x16110e,2.15));
   const key=new THREE.DirectionalLight(0xfff7ef,4.4);key.position.set(3.2,4.4,5);scene.add(key);
   const fill=new THREE.DirectionalLight(0xff8a45,1.35);fill.position.set(-3,.8,2.2);scene.add(fill);
@@ -161,7 +171,7 @@ async function load(instance){
   }catch(error){
     instance.loading=false;instance.error=String(error?.message||error);instance.element.dataset.glbState='error';
     runtime.errors.push({slot:instance.name,src:instance.src,error:instance.error});
-    console.warn(`[MOVX v322] ${instance.name} fallback preserved`,error);
+    console.warn(`[MOVX v347] ${instance.name} fallback preserved`,error);
     try{instance.slot.restoreFallback?.()}catch{}
   }
 }
@@ -175,7 +185,17 @@ const resizeObserver=new ResizeObserver(entries=>entries.forEach(entry=>{
   const name=entry.target.dataset.modelSlot;const instance=runtime.instances[name];if(instance)resize(instance);
 }));
 
+function deferSlot(name,slot){
+  if(!slot?.element)return;
+  slot.element.dataset.glbState='deferred';
+  slot.element.dataset.modelDeferred='true';
+  slot.element.classList.remove('v322-model-requested','v322-runtime-active');
+  try{slot.restoreFallback?.()}catch{}
+  runtime.deferredSlots=runtime.deferredSlots||[];
+  runtime.deferredSlots.push(name);
+}
 function register(name,slot){
+  if(!ACTIVE_MODEL_SLOTS.has(name)){deferSlot(name,slot);return}
   const src=sourceFor(name,slot);if(!src)return;
   const url=safeURL(src);
   if(!url){slot.element.dataset.glbState='error';runtime.errors.push({slot:name,src,error:'unsupported URL'});return}
@@ -189,6 +209,7 @@ function initialize(){
   Object.entries(slots).forEach(([name,slot])=>{if(slot?.element)register(name,slot)});
   root.dataset.v322Glb='ready';
   root.dataset.v322Requested=String(Object.keys(runtime.instances).length);
+  root.dataset.v347ActiveModels=String(Object.keys(runtime.instances).length);
 }
 initialize();
 
@@ -198,13 +219,11 @@ function frame(t){
   for(const instance of Object.values(runtime.instances)){
     if(!instance.visible||!instance.renderer||!instance.scene)continue;
     resize(instance);instance.lastSeen=t;
-    const el=instance.element;
-    const px=parseFloat(getComputedStyle(root).getPropertyValue(instance.name==='boot-tv'?'--crt-px':instance.name==='hero-movx-logo'?'--logo-px':instance.name==='x-portal'?'--portal-px':instance.name==='creative-machine'?'--machine-px':instance.name==='spatial-studio'?'--studio-px':'--mx'))||0;
-    const py=parseFloat(getComputedStyle(root).getPropertyValue(instance.name==='boot-tv'?'--crt-py':instance.name==='hero-movx-logo'?'--logo-py':instance.name==='x-portal'?'--portal-py':instance.name==='creative-machine'?'--machine-py':instance.name==='spatial-studio'?'--studio-py':'--my'))||0;
+    const px=parseFloat(getComputedStyle(root).getPropertyValue('--logo-px'))||0;
+    const py=parseFloat(getComputedStyle(root).getPropertyValue('--logo-py'))||0;
     if(!reduced){
-      if(instance.name==='spatial-studio'){instance.camera.position.x=px*.075;instance.camera.position.y=-py*.05;}
-      else if(instance.name==='closing-window'){instance.group.rotation.y=px*.018;instance.group.rotation.x=-py*.012;}
-      else if(!instance.name.startsWith('play-')){instance.group.rotation.y=px*.055;instance.group.rotation.x=-py*.035;}
+      instance.group.rotation.y=px*.055;
+      instance.group.rotation.x=-py*.035;
     }
     instance.renderer.render(instance.scene,instance.camera);
   }
