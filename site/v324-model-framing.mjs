@@ -24,10 +24,10 @@ const TUNING={
 
 /* The logo GLB is very wide (roughly 3.9:1). On <=720px canvases the desktop
    camera clips M/X even when the DOM slot itself is fully in-bounds. This override
-   is intentionally isolated to the logo: ~15% horizontal frustum reserve remains
-   at 390px after the v331 yaw choreography, while desktop keeps the approved framing. */
+   is intentionally isolated to the logo and preserves a safe horizontal edge reserve
+   at 390px through the v331 yaw choreography; desktop keeps the approved framing. */
 const MOBILE_TUNING={
-  'hero-movx-logo':{scale:.90,cameraZ:3.60,fov:33,modelY:-0.01,modelYaw:0.0,exposure:1.12}
+  'hero-movx-logo':{scale:.88,cameraZ:3.60,fov:33,modelY:-0.01,modelYaw:0.0,exposure:1.12}
 };
 const tuningFor=name=>(narrowMobile&&MOBILE_TUNING[name])?MOBILE_TUNING[name]:TUNING[name];
 
