@@ -68,25 +68,20 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: '22'
           cache: npm
-
       - name: Install dependencies
         run: npm ci --no-audit --no-fund
-
       - name: Restore built site
         uses: actions/download-artifact@v4
         with:
           name: movx-built-site
           path: _site
-
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
-
       - name: Validate desktop GLB shard
         shell: bash
         env:
@@ -100,7 +95,6 @@ jobs:
           SERVER_PID=$!
           trap 'kill $SERVER_PID 2>/dev/null || true' EXIT
           node scripts/qa-v341-3d-shard.cjs
-
       - name: Save desktop shard evidence
         if: always()
         uses: actions/upload-artifact@v4
@@ -130,25 +124,20 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: '22'
           cache: npm
-
       - name: Install dependencies
         run: npm ci --no-audit --no-fund
-
       - name: Restore built site
         uses: actions/download-artifact@v4
         with:
           name: movx-built-site
           path: _site
-
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
-
       - name: Validate mobile GLB shard
         shell: bash
         env:
@@ -162,7 +151,6 @@ jobs:
           SERVER_PID=$!
           trap 'kill $SERVER_PID 2>/dev/null || true' EXIT
           node scripts/qa-v341-3d-shard.cjs
-
       - name: Save mobile shard evidence
         if: always()
         uses: actions/upload-artifact@v4
@@ -182,25 +170,20 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: '22'
           cache: npm
-
       - name: Install dependencies
         run: npm ci --no-audit --no-fund
-
       - name: Restore built site
         uses: actions/download-artifact@v4
         with:
           name: movx-built-site
           path: _site
-
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
-
       - name: Validate logo safe framing through full scroll choreography
         shell: bash
         run: |
@@ -210,7 +193,6 @@ jobs:
           SERVER_PID=$!
           trap 'kill $SERVER_PID 2>/dev/null || true' EXIT
           node scripts/qa-v341-logo-projection.cjs
-
       - name: Save logo projection evidence
         if: always()
         uses: actions/upload-artifact@v4
@@ -223,33 +205,28 @@ jobs:
           retention-days: 7
 
   qa-contracts:
-    name: QA runtime contracts
+    name: QA current runtime contracts
     needs: build
     runs-on: ubuntu-latest
-    timeout-minutes: 8
+    timeout-minutes: 6
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: '22'
           cache: npm
-
       - name: Install dependencies
         run: npm ci --no-audit --no-fund
-
       - name: Restore built site
         uses: actions/download-artifact@v4
         with:
           name: movx-built-site
           path: _site
-
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
-
-      - name: Validate runtime and storyboard contracts
+      - name: Validate current runtime and storyboard contracts
         shell: bash
         run: |
           set -euo pipefail
@@ -259,10 +236,7 @@ jobs:
           trap 'kill $SERVER_PID 2>/dev/null || true' EXIT
           node scripts/qa-v322-runtime.cjs
           node scripts/qa-v321-production.cjs
-          node scripts/qa-v137-reference.cjs
-          node scripts/qa-v136.cjs
-
-      - name: Save contract evidence
+      - name: Save current contract evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -270,7 +244,6 @@ jobs:
           path: |
             _site/qa-v322-*
             _site/qa-v321-*
-            _site/qa-v138-*
             _site/qa-logs/contracts.log
           if-no-files-found: warn
           retention-days: 7
@@ -289,15 +262,12 @@ jobs:
         with:
           name: movx-built-site
           path: _site
-
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
-
       - name: Upload validated site
         uses: actions/upload-pages-artifact@v3
         with:
           path: _site
-
       - name: Deploy
         id: deployment
         uses: actions/deploy-pages@v4

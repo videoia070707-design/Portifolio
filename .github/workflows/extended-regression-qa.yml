@@ -21,16 +21,13 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event_name == 'workflow_dispatch' && github.sha || github.event.workflow_run.head_sha }}
-
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: '22'
           cache: npm
-
       - name: Install dependencies
         run: npm ci --no-audit --no-fund
-
       - name: Download deployed Pages artifact
         if: github.event_name != 'workflow_dispatch'
         uses: actions/download-artifact@v4
@@ -40,11 +37,9 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           repository: ${{ github.repository }}
           run-id: ${{ github.event.workflow_run.id }}
-
       - name: Ensure FFmpeg for manual regression build
         if: github.event_name == 'workflow_dispatch'
         run: ffmpeg -version || (sudo apt-get update && sudo apt-get install -y ffmpeg)
-
       - name: Restore deployed site
         shell: bash
         run: |
@@ -58,10 +53,8 @@ jobs:
           fi
           test -s _site/index.html
           mkdir -p _site/qa-logs
-
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
-
       - name: Run core regression shard
         shell: bash
         run: |
@@ -74,7 +67,6 @@ jobs:
           node scripts/qa-v106.cjs
           node scripts/qa-v108.cjs
           node scripts/qa-v109.cjs
-
       - name: Upload core regression evidence
         if: always()
         uses: actions/upload-artifact@v4
@@ -96,16 +88,13 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event_name == 'workflow_dispatch' && github.sha || github.event.workflow_run.head_sha }}
-
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: '22'
           cache: npm
-
       - name: Install dependencies
         run: npm ci --no-audit --no-fund
-
       - name: Download deployed Pages artifact
         if: github.event_name != 'workflow_dispatch'
         uses: actions/download-artifact@v4
@@ -115,11 +104,9 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           repository: ${{ github.repository }}
           run-id: ${{ github.event.workflow_run.id }}
-
       - name: Ensure FFmpeg for manual regression build
         if: github.event_name == 'workflow_dispatch'
         run: ffmpeg -version || (sudo apt-get update && sudo apt-get install -y ffmpeg)
-
       - name: Restore deployed site
         shell: bash
         run: |
@@ -133,10 +120,8 @@ jobs:
           fi
           test -s _site/index.html
           mkdir -p _site/qa-logs
-
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
-
       - name: Run motion/mobile regression shard
         shell: bash
         run: |
@@ -151,7 +136,6 @@ jobs:
           node scripts/qa-v115.cjs
           node scripts/qa-v115-mobile-first.cjs
           node scripts/qa-into-signal-preview.cjs
-
       - name: Upload motion regression evidence
         if: always()
         uses: actions/upload-artifact@v4
@@ -160,5 +144,69 @@ jobs:
           path: |
             _site/qa-*
             _site/qa-logs/regression-motion.log
+          if-no-files-found: warn
+          retention-days: 7
+
+  regression-legacy-reference:
+    name: Regression preserved legacy hero/reference
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout audited commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && github.sha || github.event.workflow_run.head_sha }}
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Download deployed Pages artifact
+        if: github.event_name != 'workflow_dispatch'
+        uses: actions/download-artifact@v4
+        with:
+          name: github-pages
+          path: _artifact
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          repository: ${{ github.repository }}
+          run-id: ${{ github.event.workflow_run.id }}
+      - name: Ensure FFmpeg for manual regression build
+        if: github.event_name == 'workflow_dispatch'
+        run: ffmpeg -version || (sudo apt-get update && sudo apt-get install -y ffmpeg)
+      - name: Restore deployed site
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            npm run build
+          else
+            mkdir -p _site
+            test -s _artifact/artifact.tar
+            tar -xf _artifact/artifact.tar -C _site
+          fi
+          test -s _site/index.html
+          mkdir -p _site/qa-logs
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Validate preserved legacy hero/reference
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m http.server 4173 --directory _site >_site/qa-logs/regression-legacy-reference.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill $SERVER_PID 2>/dev/null || true' EXIT
+          node scripts/qa-v137-reference.cjs
+          node scripts/qa-v136.cjs
+      - name: Upload legacy reference evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: movx-regression-legacy-reference
+          path: |
+            _site/qa-v138-*
+            _site/qa-logs/regression-legacy-reference.log
           if-no-files-found: warn
           retention-days: 7
