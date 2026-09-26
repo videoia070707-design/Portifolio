@@ -17,15 +17,21 @@ const fs = require('fs');
 
   await page.goto('http://127.0.0.1:4173/',{waitUntil:'domcontentloaded',timeout:120000});
   await page.waitForFunction(()=>document.documentElement.dataset.modelChoreography==='v331-smooth-handoffs',{timeout:30000});
+  await page.waitForFunction(()=>{
+    const rt=window.MOVX3D?.runtime;
+    return !!(rt&&rt.contextLimit===2&&rt.choreographyVersion==='v331-smooth-handoffs'&&rt.choreographyDamping==='frame-rate-independent');
+  },{timeout:30000});
   const runtimeInfo=await page.evaluate(()=>({
     contextLimit:window.MOVX3D?.runtime?.contextLimit,
     motionScale:window.MOVX3D?.runtime?.choreographyMotionScale,
     version:window.MOVX3D?.runtime?.choreographyVersion,
+    damping:window.MOVX3D?.runtime?.choreographyDamping,
     coarse:matchMedia('(pointer:coarse)').matches,
     overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth
   }));
   if(runtimeInfo.contextLimit!==2)throw new Error(`mobile context limit must be 2, got ${runtimeInfo.contextLimit}`);
   if(runtimeInfo.version!=='v331-smooth-handoffs')throw new Error(`wrong choreography ${runtimeInfo.version}`);
+  if(runtimeInfo.damping!=='frame-rate-independent')throw new Error(`wrong damping contract ${runtimeInfo.damping}`);
   if(runtimeInfo.overflow>2)throw new Error(`initial mobile horizontal overflow ${runtimeInfo.overflow}`);
 
   const slots=['hero-movx-logo','x-portal','creative-machine','play-camera','play-cube','spatial-studio'];
