@@ -82,4 +82,4 @@ jobs:
           node scripts/qa-v115.cjs
           node scripts/qa-v115-mobile-first.cjs
           node scripts/qa-into-signal-preview.cjs
-          npm run qa:v117
+          echo 'Archived v117 Scroll World QA is intentionally excluded from the v321+ storyboard homepage regression.'

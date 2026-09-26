@@ -39,7 +39,17 @@ jobs:
             {id:'mobile-430',width:430,height:932}
           ];
           const browser=await chromium.launch({headless:true,args:['--use-angle=swiftshader','--enable-webgl','--ignore-gpu-blocklist']});
-          const report={page:base,pages:[],cases:[]};
+          const report={page:base,pages:[],cases:[],captureWarnings:[]};
+
+          const snap=async(page,path)=>{
+            try{
+              await page.screenshot({path,fullPage:false,animations:'disabled',timeout:10000});
+              return true;
+            }catch(error){
+              report.captureWarnings.push({path,error:String(error)});
+              return false;
+            }
+          };
 
           const inspect=async page=>page.evaluate(()=>{
             const viewer=document.querySelector('#caseViewer');
@@ -63,54 +73,62 @@ jobs:
             };
           });
 
-          for(const viewport of viewports){
-            const page=await browser.newPage({viewport:{width:viewport.width,height:viewport.height},deviceScaleFactor:1,hasTouch:true,isMobile:true});
-            const errors=[]; page.on('pageerror',error=>errors.push(String(error)));
-            await page.goto(`${base}?qa-case-mobile=${Date.now()}`,{waitUntil:'networkidle',timeout:45000});
-            const opener=page.locator('[data-open-project]').first();
-            await opener.waitFor({state:'visible',timeout:15000});
-            await opener.tap();
-            await page.waitForSelector('#caseViewer.open',{state:'visible',timeout:12000});
-            await page.waitForTimeout(900);
+          try{
+            for(const viewport of viewports){
+              const page=await browser.newPage({viewport:{width:viewport.width,height:viewport.height},deviceScaleFactor:1,hasTouch:true,isMobile:true});
+              const errors=[]; page.on('pageerror',error=>errors.push(String(error)));
+              await page.goto(`${base}?qa-case-mobile=${Date.now()}`,{waitUntil:'networkidle',timeout:45000});
+              const opener=page.locator('[data-open-project]').first();
+              await opener.waitFor({state:'visible',timeout:15000});
+              await opener.tap();
+              await page.waitForSelector('#caseViewer.open',{state:'visible',timeout:12000});
+              await page.waitForTimeout(900);
 
-            const hero=await inspect(page);
-            if(!hero.open||hero.ariaHidden!=='false'||hero.ariaModal!=='true') throw new Error(`${viewport.id}: viewer accessibility state wrong ${JSON.stringify(hero)}`);
-            if(hero.overflow>2) throw new Error(`${viewport.id}: case overflow ${hero.overflow}`);
-            if(!hero.title||hero.title.left<-4||hero.title.right>viewport.width+4) throw new Error(`${viewport.id}: case title clipped ${JSON.stringify(hero.title)}`);
-            if(!hero.media||hero.media.width<viewport.width*.45) throw new Error(`${viewport.id}: hero media collapsed ${JSON.stringify(hero.media)}`);
-            if(!hero.actions||hero.actions.right>viewport.width+4) throw new Error(`${viewport.id}: case actions clipped ${JSON.stringify(hero.actions)}`);
-            if(!hero.closeVisible||!hero.prevVisible||!hero.nextVisible) throw new Error(`${viewport.id}: case navigation missing`);
-            if(hero.slideCount<1) throw new Error(`${viewport.id}: no case slides`);
-            if(errors.length) throw new Error(`${viewport.id}: page errors ${errors.join(' | ')}`);
-            await page.screenshot({path:`qa-case-mobile/${viewport.id}-hero.png`,fullPage:false});
+              const hero=await inspect(page);
+              if(!hero.open||hero.ariaHidden!=='false'||hero.ariaModal!=='true') throw new Error(`${viewport.id}: viewer accessibility state wrong ${JSON.stringify(hero)}`);
+              if(hero.overflow>2) throw new Error(`${viewport.id}: case overflow ${hero.overflow}`);
+              if(!hero.title||hero.title.left<-4||hero.title.right>viewport.width+4) throw new Error(`${viewport.id}: case title clipped ${JSON.stringify(hero.title)}`);
+              if(!hero.media||hero.media.width<viewport.width*.45) throw new Error(`${viewport.id}: hero media collapsed ${JSON.stringify(hero.media)}`);
+              if(!hero.actions||hero.actions.right>viewport.width+4) throw new Error(`${viewport.id}: case actions clipped ${JSON.stringify(hero.actions)}`);
+              if(!hero.closeVisible||!hero.prevVisible||!hero.nextVisible) throw new Error(`${viewport.id}: case navigation missing`);
+              if(hero.slideCount<1) throw new Error(`${viewport.id}: no case slides`);
+              if(errors.length) throw new Error(`${viewport.id}: page errors ${errors.join(' | ')}`);
+              await snap(page,`qa-case-mobile/${viewport.id}-hero.png`);
 
-            await page.evaluate(()=>{const v=document.querySelector('#caseViewer'),i=document.querySelector('#caseInfo');v.scrollTop=Math.max(0,i.offsetTop-64);});
-            await page.waitForTimeout(700);
-            const info=await inspect(page);
-            if(!info.info||info.info.left<-4||info.info.right>viewport.width+4) throw new Error(`${viewport.id}: case info clipped ${JSON.stringify(info.info)}`);
-            await page.screenshot({path:`qa-case-mobile/${viewport.id}-info.png`,fullPage:false});
+              await page.evaluate(()=>{const v=document.querySelector('#caseViewer'),i=document.querySelector('#caseInfo');v.scrollTop=Math.max(0,i.offsetTop-64);});
+              await page.waitForTimeout(700);
+              const info=await inspect(page);
+              if(!info.info||info.info.left<-4||info.info.right>viewport.width+4) throw new Error(`${viewport.id}: case info clipped ${JSON.stringify(info.info)}`);
+              await snap(page,`qa-case-mobile/${viewport.id}-info.png`);
 
-            await page.evaluate(()=>{const v=document.querySelector('#caseViewer'),s=document.querySelector('#caseSlides figure, #caseSlides .case-slide-frame');if(s)v.scrollTop=Math.max(0,s.offsetTop-74);});
-            await page.waitForTimeout(900);
-            const slides=await inspect(page);
-            if(slides.loadedSlides<1) throw new Error(`${viewport.id}: first slide did not load ${JSON.stringify(slides)}`);
-            await page.screenshot({path:`qa-case-mobile/${viewport.id}-slide.png`,fullPage:false});
+              await page.evaluate(()=>{const v=document.querySelector('#caseViewer'),s=document.querySelector('#caseSlides figure, #caseSlides .case-slide-frame');if(s)v.scrollTop=Math.max(0,s.offsetTop-74);});
+              await page.waitForTimeout(900);
+              const slides=await inspect(page);
+              if(slides.loadedSlides<1) throw new Error(`${viewport.id}: first slide did not load ${JSON.stringify(slides)}`);
+              await snap(page,`qa-case-mobile/${viewport.id}-slide.png`);
 
-            const before=hero.titleText;
-            await page.locator('#caseNext').tap();
-            await page.waitForTimeout(850);
-            const next=await inspect(page);
-            if(!next.titleText||next.titleText===before) throw new Error(`${viewport.id}: next case did not change ${JSON.stringify(next)}`);
-            if(!next.title||next.title.left<-4||next.title.right>viewport.width+4||next.overflow>2) throw new Error(`${viewport.id}: next case title/overflow regression ${JSON.stringify(next)}`);
-            await page.screenshot({path:`qa-case-mobile/${viewport.id}-next.png`,fullPage:false});
+              const before=hero.titleText;
+              await page.locator('#caseNext').tap();
+              await page.waitForTimeout(850);
+              const next=await inspect(page);
+              if(!next.titleText||next.titleText===before) throw new Error(`${viewport.id}: next case did not change ${JSON.stringify(next)}`);
+              if(!next.title||next.title.left<-4||next.title.right>viewport.width+4||next.overflow>2) throw new Error(`${viewport.id}: next case title/overflow regression ${JSON.stringify(next)}`);
+              await snap(page,`qa-case-mobile/${viewport.id}-next.png`);
 
-            await page.locator('#caseClose').tap();
-            await page.waitForFunction(()=>!document.querySelector('#caseViewer').classList.contains('open'),null,{timeout:8000});
-            const closed=await page.evaluate(()=>({hidden:document.querySelector('#caseViewer').getAttribute('aria-hidden'),open:document.querySelector('#caseViewer').classList.contains('open')}));
-            if(closed.hidden!=='true'||closed.open) throw new Error(`${viewport.id}: case did not close cleanly ${JSON.stringify(closed)}`);
+              await page.locator('#caseClose').tap();
+              await page.waitForFunction(()=>!document.querySelector('#caseViewer').classList.contains('open'),null,{timeout:8000});
+              const closed=await page.evaluate(()=>({hidden:document.querySelector('#caseViewer').getAttribute('aria-hidden'),open:document.querySelector('#caseViewer').classList.contains('open')}));
+              if(closed.hidden!=='true'||closed.open) throw new Error(`${viewport.id}: case did not close cleanly ${JSON.stringify(closed)}`);
 
-            report.pages.push({viewport,hero,info,slides,next,closed,errors});
-            await page.close();
+              report.pages.push({viewport,hero,info,slides,next,closed,errors});
+              await writeFile('qa-case-mobile/report.json',JSON.stringify(report,null,2));
+              await page.close();
+            }
+          }catch(error){
+            report.error=String(error);
+            await writeFile('qa-case-mobile/report.json',JSON.stringify(report,null,2));
+            await browser.close();
+            throw error;
           }
 
           await writeFile('qa-case-mobile/report.json',JSON.stringify(report,null,2));
@@ -118,8 +136,10 @@ jobs:
           NODE
 
       - name: Upload mobile case QA
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: movx-case-mobile-qa
           path: qa-case-mobile
+          if-no-files-found: warn
           retention-days: 7
