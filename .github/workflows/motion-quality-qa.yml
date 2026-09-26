@@ -36,6 +36,7 @@ jobs:
           test -s _artifact/artifact.tar
           tar -xf _artifact/artifact.tar -C _site
           test -s _site/index.html
+          test -s _site/social-media.html
           test -s _site/v88-chapter.js
           grep -q 'v98-continuous-media-response' _site/v88-chapter.js
 
@@ -60,16 +61,16 @@ jobs:
           import { writeFile } from 'node:fs/promises';
 
           const detail='v98-continuous-media-response';
+          const pagePath='social-media.html';
           const browser=await chromium.launch({headless:true,args:['--use-angle=swiftshader','--enable-webgl','--ignore-gpu-blocklist']});
-          const report={detail,desktop:{},reduced:{},errors:[]};
-
+          const report={detail,page:pagePath,desktop:{},reduced:{},errors:[]};
           const parsePx=value=>Number.parseFloat(value)||0;
 
           try{
             const page=await browser.newPage({viewport:{width:1440,height:900},deviceScaleFactor:1});
             const pageErrors=[];
             page.on('pageerror',err=>pageErrors.push(String(err)));
-            await page.goto('http://127.0.0.1:4181/index.html',{waitUntil:'networkidle'});
+            await page.goto(`http://127.0.0.1:4181/${pagePath}`,{waitUntil:'networkidle'});
             await page.waitForFunction(expected=>document.documentElement.dataset.movxMotionDetail===expected,detail,{timeout:15000});
 
             const card=page.locator('#nicheGrid .niche-card').first();
@@ -109,7 +110,7 @@ jobs:
             await page.close();
 
             const staticPage=await browser.newPage({viewport:{width:1440,height:900},deviceScaleFactor:1});
-            await staticPage.goto('http://127.0.0.1:4181/index.html?static=1',{waitUntil:'networkidle'});
+            await staticPage.goto(`http://127.0.0.1:4181/${pagePath}?static=1`,{waitUntil:'networkidle'});
             await staticPage.waitForFunction(expected=>document.documentElement.dataset.movxMotionDetail===expected,detail,{timeout:15000});
             const staticMarker=await staticPage.locator('#nicheGrid .niche-card__media').first().getAttribute('data-v98-pointer');
             if(staticMarker==='smooth') throw new Error('reduced-motion page still binds v98 pointer owner');
