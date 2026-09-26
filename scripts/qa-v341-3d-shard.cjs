@@ -54,6 +54,18 @@ if(!['desktop','mobile'].includes(mode)) throw new Error(`Unsupported MOVX_QA_MO
   await page.waitForFunction(()=>document.documentElement.dataset.modelChoreography==='v331-smooth-handoffs',null,{timeout:20000});
   await page.waitForFunction(()=>!!window.MOVX3D?.runtime,null,{timeout:20000});
 
+  // The framing module stamps DOM markers before its first requestAnimationFrame tick.
+  // Wait for that tick to populate the runtime choreography contract so shards do not
+  // race startup and fail with choreographyVersion === undefined.
+  await page.waitForFunction((isMobile)=>{
+    const rt=window.MOVX3D?.runtime;
+    if(!rt) return false;
+    if(rt.choreographyVersion!=='v331-smooth-handoffs') return false;
+    if(rt.choreographyDamping!=='frame-rate-independent') return false;
+    if(isMobile && rt.contextLimit!==2) return false;
+    return true;
+  },mobile,{timeout:20000});
+
   report.runtime = await page.evaluate(()=>({
     contextLimit:window.MOVX3D.runtime.contextLimit,
     choreographyVersion:window.MOVX3D.runtime.choreographyVersion,
