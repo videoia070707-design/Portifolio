@@ -6,7 +6,8 @@ const fs=require('node:fs');
   const fixture='_site/qa-v322-model.gltf';
   const browser=await chromium.launch({headless:true,args:['--use-angle=swiftshader','--enable-webgl','--ignore-gpu-blocklist']});
   try{
-    // Replacement-path QA: an explicit CRT GLB must still replace the procedural model.
+    // Explicit query override stays generic: it must not inherit the production
+    // Tripo mesh-isolation rule.
     const page=await browser.newPage({viewport:{width:1440,height:1000},deviceScaleFactor:1});
     const errors=[];page.on('pageerror',e=>errors.push(String(e)));
     await page.goto('http://127.0.0.1:4173/?crtModel=qa-v322-model.gltf',{waitUntil:'domcontentloaded',timeout:30000});
@@ -53,14 +54,12 @@ const fs=require('node:fs');
     await page.screenshot({path:'_site/qa-v322-glb-desktop.png',fullPage:false});
     await page.close();
 
-    // Production-path QA: the first slot renders the corrected procedural CRT.
-    // Legacy CSS perspective must be neutralized and the camera must be pulled
-    // back enough to keep the whole product silhouette inside the frame.
+    // Production path: must render the real Tripo TV, isolated from the prop pack.
     const prod=await browser.newPage({viewport:{width:1440,height:1000},deviceScaleFactor:1});
     const prodErrors=[];prod.on('pageerror',e=>prodErrors.push(String(e)));
     await prod.goto('http://127.0.0.1:4173/',{waitUntil:'domcontentloaded',timeout:30000});
     await prod.waitForFunction(()=>document.documentElement.dataset.v322Glb==='ready',null,{timeout:10000});
-    await prod.waitForFunction(()=>document.querySelector('[data-model-slot="boot-tv"]')?.dataset.glbState==='ready',null,{timeout:20000});
+    await prod.waitForFunction(()=>document.querySelector('[data-model-slot="boot-tv"]')?.dataset.glbState==='ready',null,{timeout:30000});
     const productionState=await prod.evaluate(()=>{
       const el=document.querySelector('[data-model-slot="boot-tv"]');
       const host=el?.querySelector('.v322-model-renderer');
@@ -70,6 +69,7 @@ const fs=require('node:fs');
         scope:document.documentElement.dataset.modelScope,
         runtimeScope:document.documentElement.dataset.movx3dScope,
         crt3d:document.documentElement.dataset.crt3d,
+        crtSource:document.documentElement.dataset.crtSource,
         renderers:document.querySelectorAll('.v322-model-renderer').length,
         instances:Object.keys(window.MOVX3D?.runtime?.instances||{}).sort(),
         awaiting:window.MOVX3D?.runtime?.awaitingSlots||[],
@@ -81,8 +81,12 @@ const fs=require('node:fs');
         canvas:!!host?.querySelector('canvas'),
         meshes:inst?.stats?.meshes||0,
         triangles:inst?.stats?.triangles||0,
+        sourceMeshes:inst?.stats?.sourceMeshes||0,
+        sourceTriangles:inst?.stats?.sourceTriangles||0,
         version:inst?.stats?.version||null,
         fit:inst?.stats?.fit||null,
+        crtParts:inst?.stats?.crtParts||[],
+        removedParts:inst?.stats?.removedParts||0,
         cameraZ:inst?.camera?.position?.z||0,
         cameraFov:inst?.camera?.fov||0,
         slotTransform:el?getComputedStyle(el).transform:null,
@@ -90,22 +94,27 @@ const fs=require('node:fs');
         runtimeErrors:window.MOVX3D?.runtime?.errors||[],
       };
     });
-    assert.equal(productionState.requested,'1','procedural CRT should register as the one active model');
-    assert.equal(productionState.scope,'v348-crt-only','production model scope marker mismatch');
+    assert.equal(productionState.requested,'1','production must register exactly the Scene-01 model');
+    assert.equal(productionState.scope,'v350-crt-only','production model scope marker mismatch');
     assert.equal(productionState.runtimeScope,'boot-tv','runtime scope must be the first storyboard slot');
     assert.deepEqual(productionState.instances,['boot-tv'],'only the first storyboard model may be registered');
-    assert.equal(Object.keys(productionState.manifest).length,0,'later GLBs leaked into production manifest');
-    assert.ok(productionState.awaiting.includes('boot-tv'),'CRT should still be marked as awaiting final GLB');
-    assert.equal(productionState.bootState,'ready','procedural CRT did not become ready');
-    assert.equal(productionState.kind,'procedural-crt','wrong production CRT renderer kind');
-    assert.equal(productionState.crt3d,'procedural-ready','root procedural CRT state mismatch');
+    assert.deepEqual(productionState.manifest,{'boot-tv':'models/movx-crt-tv.glb'},'production manifest must expose only canonical CRT GLB');
+    assert.equal(productionState.awaiting.includes('boot-tv'),false,'real CRT must not be awaiting a model');
+    assert.equal(productionState.bootState,'ready','real CRT did not become ready');
+    assert.equal(productionState.kind,'glb','production is still using procedural CRT instead of real GLB');
+    assert.equal(productionState.crt3d,'glb-ready','root real-CRT state mismatch');
+    assert.equal(productionState.crtSource,'tripo-source-pack','wrong real CRT source marker');
     assert.equal(productionState.renderers,1,'production should mount exactly one 3D renderer');
-    assert.ok(productionState.canvas,'procedural CRT canvas missing');
-    assert.ok(productionState.meshes>=20,'procedural CRT is unexpectedly sparse');
-    assert.ok(productionState.triangles>100,'procedural CRT geometry did not build');
-    assert.equal(productionState.version,'v349','procedural CRT version mismatch');
+    assert.ok(productionState.canvas,'real CRT canvas missing');
+    assert.equal(productionState.sourceMeshes,25,'unexpected source prop-pack mesh count');
+    assert.equal(productionState.sourceTriangles,155609,'unexpected source prop-pack triangle count');
+    assert.equal(productionState.meshes,3,'TV isolation should leave exactly three Tripo meshes');
+    assert.ok(productionState.triangles>1000,'isolated TV geometry is unexpectedly sparse');
+    assert.equal(productionState.version,'v350-real-crt','real CRT version mismatch');
     assert.equal(productionState.fit,'full-product','CRT fit contract missing');
-    assert.ok(productionState.cameraZ>=5.2,'CRT camera is still too close');
+    assert.deepEqual(productionState.crtParts,['tripo_part_7','tripo_part_13','tripo_part_18'],'wrong TV mesh cluster');
+    assert.equal(productionState.removedParts,22,'non-TV prop meshes were not fully removed');
+    assert.ok(productionState.cameraZ>=4.6,'CRT camera is still too close');
     assert.ok(productionState.cameraFov<=29,'CRT camera FOV is too wide for product framing');
     assert.equal(productionState.slotTransform,'none','legacy CRT CSS transform still compounds WebGL perspective');
     assert.equal(productionState.hostTransform,'none','renderer host still adds a second perspective transform');
@@ -114,28 +123,30 @@ const fs=require('node:fs');
     assert.ok(productionState.overflow<=2,'production desktop overflow regression');
     assert.equal(productionState.runtimeErrors.length,0,'production runtime errors: '+JSON.stringify(productionState.runtimeErrors));
     assert.equal(prodErrors.length,0,'production page errors: '+prodErrors.join(' | '));
-    await prod.screenshot({path:'_site/qa-v349-crt-fit-desktop.png',fullPage:false});
+    await prod.screenshot({path:'_site/qa-v350-real-crt-desktop.png',fullPage:false});
     await prod.close();
 
     const mobile=await browser.newPage({viewport:{width:390,height:844},deviceScaleFactor:1});
     const mobileErrors=[];mobile.on('pageerror',e=>mobileErrors.push(String(e)));
     await mobile.goto('http://127.0.0.1:4173/',{waitUntil:'domcontentloaded',timeout:30000});
-    await mobile.waitForFunction(()=>document.querySelector('[data-model-slot="boot-tv"]')?.dataset.glbState==='ready',null,{timeout:20000});
+    await mobile.waitForFunction(()=>document.querySelector('[data-model-slot="boot-tv"]')?.dataset.glbState==='ready',null,{timeout:30000});
     const mobileState=await mobile.evaluate(()=>({
       kind:document.querySelector('[data-model-slot="boot-tv"]')?.dataset.modelKind,
       renderers:document.querySelectorAll('.v322-model-renderer').length,
       overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth,
       slotTransform:getComputedStyle(document.querySelector('[data-model-slot="boot-tv"]')).transform,
+      crtSource:document.documentElement.dataset.crtSource,
     }));
-    assert.equal(mobileState.kind,'procedural-crt');
+    assert.equal(mobileState.kind,'glb');
+    assert.equal(mobileState.crtSource,'tripo-source-pack');
     assert.equal(mobileState.renderers,1);
     assert.equal(mobileState.slotTransform,'none');
     assert.ok(mobileState.overflow<=2,'production mobile overflow regression');
     assert.equal(mobileErrors.length,0,'mobile page errors: '+mobileErrors.join(' | '));
-    await mobile.screenshot({path:'_site/qa-v349-crt-fit-mobile.png',fullPage:false});
+    await mobile.screenshot({path:'_site/qa-v350-real-crt-mobile.png',fullPage:false});
     await mobile.close();
 
-    console.log(JSON.stringify({qa:'v349-crt-fit',status:'PASS',glbReplacement:state,production:productionState,mobile:mobileState}));
+    console.log(JSON.stringify({qa:'v350-real-crt',status:'PASS',glbOverride:state,production:productionState,mobile:mobileState}));
   } finally {
     await browser.close();
     try{fs.unlinkSync(fixture)}catch{}
