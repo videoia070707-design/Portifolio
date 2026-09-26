@@ -14,7 +14,7 @@ html.v318 .float.cassette:before{content:"";position:absolute;left:14%;right:14%
 html.v318 .float.cassette:after{content:"MOVX / TAPE";position:absolute;left:14%;right:14%;top:8%;font:700 5px/1 "Courier New",monospace;letter-spacing:.15em;color:#746e66;text-align:left}
 
 /* Camera */
-html.v318 .float.camera{width:clamp(112px,10vw,158px);height:clamp(78px,7vw,112px);border:1px solid rgba(54,49,45,.28)!important;border-radius:20px 16px 18px 20px!important;background:linear-gradient(145deg,#d8d3ca 0%,#aaa49a 46%,#77716a 47% 52%,#282624 53% 100%)!important;box-shadow:inset 0 1px rgba(255,255,255,.62),0 18px 34px rgba(25,22,20,.2)!important}
+html.v318 .float.camera{width:clamp(170px,13.5vw,210px);height:clamp(112px,8.5vw,140px);border:1px solid rgba(54,49,45,.28)!important;border-radius:20px 16px 18px 20px!important;background:linear-gradient(145deg,#d8d3ca 0%,#aaa49a 46%,#77716a 47% 52%,#282624 53% 100%)!important;box-shadow:inset 0 1px rgba(255,255,255,.62),0 18px 34px rgba(25,22,20,.2)!important}
 html.v318 .float.camera:before{content:"";position:absolute;width:46%;aspect-ratio:1;right:8%;top:19%;border-radius:50%;background:radial-gradient(circle at 40% 36%,rgba(114,142,150,.8) 0 7%,#101416 19%,#263339 28%,#090b0c 44%,#77736d 46% 51%,#2b2927 52% 64%,#111 65%);box-shadow:inset 0 0 0 2px rgba(255,255,255,.07),0 4px 9px rgba(0,0,0,.28)}
 html.v318 .float.camera:after{content:"REC";position:absolute;left:13%;top:18%;padding-left:9px;font:700 6px/1 "Courier New",monospace;letter-spacing:.12em;color:#4d4944}
 
