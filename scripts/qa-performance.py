@@ -1,9 +1,9 @@
 """Static performance budgets for the deployed MOVX artifact.
 
-v347 enforces the one-model-at-a-time rollout. Scene 01 / BOOT (`boot-tv`) is
-the only GLB slot eligible for production. Until `movx-crt-tv.glb` is supplied,
-the production artifact intentionally contains zero GLBs and keeps the CRT
-DOM/CSS fallback. Later model files must not leak into the public build.
+v348 enforces the one-model-at-a-time rollout. Scene 01 / BOOT (`boot-tv`) is
+the only 3D slot eligible for production. Until `movx-crt-tv.glb` is supplied,
+the production artifact contains zero GLBs and renders the procedural WebGL CRT.
+Later model files must not leak into the public build.
 """
 from pathlib import Path
 import json
@@ -57,8 +57,9 @@ else:
     if 'data-movx-production="v321-production-storyboard"' not in home_text:errors.append('index.html is not the v321 production storyboard')
     if 'data-storyboard="v320"' not in home_text:errors.append('index.html missing v320 storyboard marker')
     if 'data-glb-runtime="v322-unified-glb-runtime"' not in home_text:errors.append('index.html missing v322 GLB runtime marker')
+    if 'data-crt-runtime="v348-procedural"' not in home_text:errors.append('index.html missing v348 procedural CRT marker')
     if 'data-model-pack="v323-tripo-model-pack"' not in home_text:errors.append('index.html missing v323 model-pack marker')
-    if 'data-model-scope="v347-crt-only"' not in home_text:errors.append('index.html missing CRT-only production scope marker')
+    if 'data-model-scope="v348-crt-only"' not in home_text:errors.append('index.html missing CRT-only production scope marker')
     if 'data-model-framing="v324-model-framing"' not in home_text:errors.append('index.html missing v324 framing marker')
     if 'data-logo-focus=' in home_text:errors.append('second-model Physical Logo focus is still active')
     if '../assets/' in home_text:errors.append('index.html contains parent-relative asset paths')
@@ -85,8 +86,6 @@ else:
     for slot in ('boot-tv','hero-movx-logo','x-portal','creative-machine','play-cassette','play-camera','play-cube','play-cd','play-window','spatial-studio','closing-window'):
         if f'data-model-slot="{slot}"' not in home_text:errors.append(f'index.html missing storyboard model slot {slot}')
 
-# Stage-1 production GLB policy: zero models before the CRT file is supplied,
-# exactly one afterwards, and it must be the CRT. Every later GLB is forbidden.
 crt_name='movx-crt-tv.glb'
 deferred_model_files=(
     'movx-physical-logo.glb','movx-x-portal.glb','movx-creative-machine.glb',
@@ -116,8 +115,11 @@ if not loader.exists():errors.append('local GLTFLoader.js is missing')
 addon_bytes=sum(p.stat().st_size for p in addon_root.rglob('*.js')) if addon_root.exists() else 0
 if addon_bytes>350_000:errors.append(f'v322 Three addon modules are {addon_bytes} bytes; budget is 350000')
 if loader.exists() and re.search(r"from\s+['\"]three['\"]",loader.read_text()):errors.append('GLTFLoader still has a bare three import')
-for required in ('v322-glb-runtime.mjs','v322-glb-runtime.css','v324-model-framing.mjs','v324-model-framing.css'):
+for required in ('v322-glb-runtime.mjs','v322-glb-runtime.css','v348-crt-procedural.mjs','v324-model-framing.mjs','v324-model-framing.css'):
     if not (out/required).exists():errors.append(f'{required} is missing')
+procedural_path=out/'v348-crt-procedural.mjs'
+procedural_bytes=procedural_path.stat().st_size if procedural_path.exists() else 0
+if procedural_bytes>35_000:errors.append(f'v348 procedural CRT module is {procedural_bytes} bytes; budget is 35000')
 
 runtime=(out/'script.js').read_text()
 if 'loading="${itemIndex < 2 ? \'eager\' : \'lazy\'}"' in runtime:errors.append('conveyor still promotes below-fold artwork to eager')
@@ -145,4 +147,4 @@ if legacy_text:
     if 'ROLE PARA ATRAVESSAR' not in legacy_text:errors.append('social-media Scroll World interaction cue is missing')
 
 if errors:raise SystemExit('MOVX performance QA failed: '+json.dumps(errors,ensure_ascii=False))
-print(json.dumps({'status':'passed','sizes':sizes,'storyboard':{'css_layers':len(home_styles),'css_bytes':home_css_bytes,'js_layers':len(home_scripts),'js_bytes':home_js_bytes},'glb_runtime':{'active_slot':'boot-tv','production_models':len(published_glbs),'published_glbs':published_glbs,'model_bytes':model_sizes,'model_total_bytes':model_total,'later_models':'forbidden until CRT approval'},'legacy_editorial':'social-media.html','deferred_video_gate':True,'desktop_delivery':'full-video h264-first blob scrub','mobile_delivery':'full-video h264-first blob scrub','source_trim_seconds':0.00,'stage_background':'#000','warm_margin':'120%','scroll_chapters':4},ensure_ascii=False))
+print(json.dumps({'status':'passed','sizes':sizes,'storyboard':{'css_layers':len(home_styles),'css_bytes':home_css_bytes,'js_layers':len(home_scripts),'js_bytes':home_js_bytes},'crt3d':{'active_slot':'boot-tv','procedural_module_bytes':procedural_bytes,'production_glbs':len(published_glbs),'published_glbs':published_glbs,'model_bytes':model_sizes,'model_total_bytes':model_total,'later_models':'forbidden until CRT approval'},'legacy_editorial':'social-media.html','deferred_video_gate':True,'desktop_delivery':'full-video h264-first blob scrub','mobile_delivery':'full-video h264-first blob scrub','source_trim_seconds':0.00,'stage_background':'#000','warm_margin':'120%','scroll_chapters':4},ensure_ascii=False))
