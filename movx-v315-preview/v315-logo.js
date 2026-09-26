@@ -6,12 +6,14 @@
 
   let slot=document.querySelector('[data-model-slot="hero-movx-logo"]');
   if(!slot){
-    const host=hero.querySelector('.hero-visual,.hero-stage,.hero-media,.hero-object,.hero-right')||hero;
+    const host=hero.querySelector('.hero-visual,.hero-stage,.hero-media,.hero-object,.hero-right,.hero-grid')||hero;
     slot=document.createElement('div');
     slot.className='v315-logo-slot';
     slot.setAttribute('data-model-slot','hero-movx-logo');
     host.appendChild(slot);
   }
+  slot.classList.add('v315-active-slot');
+  slot.dataset.modelState='dom-fallback';
 
   if(!slot.querySelector('.v315-logo-stage')){
     const stage=document.createElement('div');
@@ -91,6 +93,13 @@
     restoreFallback(){
       stage.style.visibility='';
       slot.dataset.modelState='dom-fallback';
+      return true;
+    },
+    disableV315Fallback(){
+      stage.style.visibility='hidden';
+      slot.classList.remove('v315-active-slot');
+      slot.dataset.modelState='legacy-fallback';
+      return true;
     }
   };
 })();
