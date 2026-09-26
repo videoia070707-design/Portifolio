@@ -3,7 +3,7 @@ import shutil
 
 root = Path(__file__).resolve().parents[1]
 out = root / '_site'
-previews = ('movx-v308-preview', 'movx-v309-preview', 'movx-v310-preview', 'movx-v311-preview', 'movx-v312-preview')
+previews = ('movx-v308-preview', 'movx-v309-preview', 'movx-v310-preview', 'movx-v311-preview', 'movx-v312-preview', 'movx-v313-preview')
 for name in previews:
     src = root / name
     dst = out / name
