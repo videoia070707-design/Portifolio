@@ -1,13 +1,17 @@
 /* MOVX v324 framing + v331 smooth scroll choreography for the six real Tripo GLBs.
-   The approved DOM/layout stays untouched; this layer only calibrates model/camera motion. */
+   v336 adds a narrow-mobile fit only for the physical MOVX logo. The approved
+   DOM/layout and desktop framing stay untouched; this layer only calibrates model/camera motion. */
 const root=document.documentElement;
 const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const coarse=matchMedia('(pointer:coarse)').matches;
+const narrowMobile=matchMedia('(max-width:720px)').matches;
 const motionScale=reduced?0:(coarse?.62:1);
+const FRAMING_REVISION='v336-mobile-logo-fit';
+const CHOREOGRAPHY_REVISION='v331-smooth-handoffs';
 root.classList.add('v324');
 root.dataset.modelFraming='v324-model-framing';
-root.dataset.modelFramingRevision='v331-smooth-handoffs';
-root.dataset.modelChoreography='v331-smooth-handoffs';
+root.dataset.modelFramingRevision=FRAMING_REVISION;
+root.dataset.modelChoreography=CHOREOGRAPHY_REVISION;
 
 const TUNING={
   'hero-movx-logo':{scale:1.12,cameraZ:3.0,fov:31,modelY:-0.01,modelYaw:0.0,exposure:1.12},
@@ -17,6 +21,15 @@ const TUNING={
   'play-cube':{scale:.82,cameraZ:3.42,fov:31,modelY:-0.03,modelYaw:-0.12,exposure:1.1},
   'spatial-studio':{scale:1.34,cameraZ:2.85,fov:40,modelY:-0.06,modelYaw:.045,exposure:1.02}
 };
+
+/* The logo GLB is very wide (roughly 3.9:1). On <=720px canvases the desktop
+   camera clips M/X even when the DOM slot itself is fully in-bounds. This override
+   is intentionally isolated to the logo and preserves a safe horizontal edge reserve
+   at 390px through the v331 yaw choreography; desktop keeps the approved framing. */
+const MOBILE_TUNING={
+  'hero-movx-logo':{scale:.88,cameraZ:3.60,fov:33,modelY:-0.01,modelYaw:0.0,exposure:1.12}
+};
+const tuningFor=name=>(narrowMobile&&MOBILE_TUNING[name])?MOBILE_TUNING[name]:TUNING[name];
 
 const CHOREOGRAPHY={
   'hero-movx-logo':{kind:'identity-reveal',yaw:[-.10,.10],pitchMid:.025,yMid:.035,cameraZ:[.12,-.06],damping:7.8},
@@ -40,7 +53,7 @@ function rawProgressFor(instance){
 }
 
 function apply(name,instance){
-  const cfg=TUNING[name];
+  const cfg=tuningFor(name);
   if(!cfg||!instance?.loaded||!instance.model||!instance.camera||tuned.has(name))return false;
   instance.model.scale.multiplyScalar(cfg.scale);
   instance.model.position.y+=cfg.modelY||0;
@@ -51,10 +64,12 @@ function apply(name,instance){
   instance.camera.updateProjectionMatrix();
   if(instance.renderer)instance.renderer.toneMappingExposure=cfg.exposure;
   instance.element.dataset.modelFraming='v324';
-  instance.element.dataset.modelFramingRevision='v331-smooth-handoffs';
+  instance.element.dataset.modelFramingRevision=FRAMING_REVISION;
   instance.element.dataset.modelChoreography='v331';
+  if(name==='hero-movx-logo')instance.element.dataset.mobileLogoFit=narrowMobile?'v336':'desktop';
   instance.v324Tuning={...cfg};
   instance.v324Tuned=true;
+  instance.v336MobileLogoFit=name==='hero-movx-logo'&&narrowMobile;
   instance.v330Section=instance.element.closest('.scene')||instance.element;
   instance.v330Base={
     x:instance.model.position.x,y:instance.model.position.y,z:instance.model.position.z,
@@ -123,9 +138,11 @@ function tick(now){
       if(instance.loaded)choreograph(name,instance,dt);
     }
     runtime.framingVersion='v324-model-framing';
-    runtime.framingRevision='v331-smooth-handoffs';
+    runtime.framingRevision=FRAMING_REVISION;
     runtime.framingTuning=TUNING;
-    runtime.choreographyVersion='v331-smooth-handoffs';
+    runtime.mobileFramingTuning=MOBILE_TUNING;
+    runtime.mobileLogoFit=narrowMobile?'v336':'desktop';
+    runtime.choreographyVersion=CHOREOGRAPHY_REVISION;
     runtime.choreographyTuning=CHOREOGRAPHY;
     runtime.choreographyMotionScale=motionScale;
     runtime.choreographyDamping='frame-rate-independent';

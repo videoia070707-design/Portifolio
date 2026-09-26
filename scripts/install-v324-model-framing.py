@@ -1,11 +1,13 @@
-"""Install MOVX v324 framing + v331 smooth scroll choreography after v323 model pack."""
+"""Install MOVX v324 framing, v336 mobile logo fit, and v331 smooth choreography after v323 model pack."""
 from pathlib import Path
 import json, shutil
 
 root=Path(__file__).resolve().parents[1]
 out=root/'_site'
 release='v324-model-framing'
-cache='v331-smooth-handoffs'
+revision='v336-mobile-logo-fit'
+choreography='v331-smooth-handoffs'
+cache=revision
 css='v324-model-framing.css'
 js='v324-model-framing.mjs'
 
@@ -27,7 +29,7 @@ for name in ('index.html','latest.html'):
     if css_tag not in text:text=text.replace('</head>',css_tag+'\n</head>',1)
     if js_tag not in text:text.replace('</body>',js_tag+'\n</body>',1)
     if js_tag not in text:text=text.replace('</body>',js_tag+'\n</body>',1)
-    text=text.replace('data-model-pack="v323-tripo-model-pack"',f'data-model-pack="v323-tripo-model-pack" data-model-framing="{release}"',1)
+    text=text.replace('data-model-pack="v323-tripo-model-pack"',f'data-model-pack="v323-tripo-model-pack" data-model-framing="{release}" data-model-framing-revision="{revision}"',1)
     path.write_text(text)
 
-print(json.dumps({'release':release,'choreography':cache,'css':css,'runtime':js,'pages':['index.html','latest.html']}))
+print(json.dumps({'release':release,'revision':revision,'choreography':choreography,'css':css,'runtime':js,'pages':['index.html','latest.html']}))
