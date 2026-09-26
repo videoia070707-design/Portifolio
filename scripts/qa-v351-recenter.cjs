@@ -35,7 +35,7 @@ const assert=require('node:assert/strict');
       assert.equal(state.fit,'v351-scaled-center');
       assert.equal(state.source,'tripo-source-pack');
       assert.equal(state.kind,'glb');
-      assert.equal(state.runtimeFit,'full-product-centered');
+      assert.equal(state.runtimeFit,'full-product');
       assert.ok(state.recenter,'v351 recenter stats missing');
       assert.equal(state.recenter.revision,'v351-scaled-center');
       assert.ok(Math.abs(state.recenter.after.x)<0.002,'CRT remains horizontally off-center: '+state.recenter.after.x);
