@@ -62,6 +62,18 @@ jobs:
               report.captureWarnings.push({path,error:String(error)});
             }
           };
+          const focusSlot=async(page,selector)=>{
+            const found=await page.evaluate(sel=>{
+              const el=document.querySelector(sel);
+              if(!el)return false;
+              const r=el.getBoundingClientRect();
+              const top=Math.max(0,window.scrollY+r.top-(window.innerHeight-r.height)/2);
+              window.scrollTo({top,behavior:'instant'});
+              return true;
+            },selector);
+            if(!found)throw new Error(`Published slot missing during focus: ${selector}`);
+            await page.waitForTimeout(400);
+          };
           const save=()=>writeFile('qa-published-home/report.json',JSON.stringify(report,null,2));
 
           try{
@@ -88,10 +100,8 @@ jobs:
 
             for(const slot of productionSlots){
               const selector=`[data-model-slot="${slot}"]`;
-              const loc=page.locator(selector).first();
-              if(await loc.count()!==1) throw new Error(`Published slot missing: ${slot}`);
-              await loc.scrollIntoViewIfNeeded();
-              await page.waitForTimeout(350);
+              if(await page.locator(selector).count()!==1) throw new Error(`Published slot missing: ${slot}`);
+              await focusSlot(page,selector);
               await page.waitForFunction(name=>{
                 const i=window.MOVX3D?.runtime?.instances?.[name];
                 return !!(i?.loaded||i?.error);
@@ -128,9 +138,9 @@ jobs:
             const mobileResponse=await mobile.goto(`${base}?qa-published-mobile=${Date.now()}`,{waitUntil:'domcontentloaded',timeout:60000});
             if(!mobileResponse||mobileResponse.status()>=400) throw new Error(`Published mobile homepage HTTP failure: ${mobileResponse?.status()??'no response'}`);
             await mobile.waitForFunction(()=>document.documentElement.dataset.modelFramingRevision==='v3361-mobile-logo-safe-fit',null,{timeout:30000});
-            const hero=mobile.locator('[data-model-slot="hero-movx-logo"]').first();
-            if(await hero.count()!==1) throw new Error('Published mobile hero logo slot missing');
-            await hero.scrollIntoViewIfNeeded();
+            const heroSelector='[data-model-slot="hero-movx-logo"]';
+            if(await mobile.locator(heroSelector).count()!==1) throw new Error('Published mobile hero logo slot missing');
+            await focusSlot(mobile,heroSelector);
             await mobile.waitForFunction(()=>{
               const i=window.MOVX3D?.runtime?.instances?.['hero-movx-logo'];
               return !!(i?.loaded||i?.error);
