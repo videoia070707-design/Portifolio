@@ -1,14 +1,14 @@
 /* MOVX v324 — per-model framing calibration for real Tripo GLBs.
-   v327 pass 2 recalibrates against CI screenshots from the real uploaded assets. */
+   v328 final pass calibrated against all six real uploaded GLB screenshots. */
 const root=document.documentElement;
 root.classList.add('v324');
 root.dataset.modelFraming='v324-model-framing';
-root.dataset.modelFramingRevision='v327-pass2';
+root.dataset.modelFramingRevision='v328-final';
 
 const TUNING={
   'hero-movx-logo':{scale:1.12,cameraZ:3.0,fov:31,modelY:-0.01,modelYaw:0.0,exposure:1.12},
   'x-portal':{scale:1.08,cameraZ:3.55,fov:40,modelY:-0.025,modelYaw:0.0,exposure:1.08},
-  'creative-machine':{scale:1.48,cameraZ:2.85,fov:31,modelY:-0.045,modelYaw:-0.035,exposure:1.12},
+  'creative-machine':{scale:1.30,cameraZ:3.12,fov:33,modelY:-0.025,modelYaw:-0.035,exposure:1.12},
   'play-camera':{scale:.86,cameraZ:3.38,fov:31,modelY:-0.04,modelYaw:-0.13,exposure:1.08},
   'play-cube':{scale:.82,cameraZ:3.42,fov:31,modelY:-0.03,modelYaw:-0.12,exposure:1.1},
   'spatial-studio':{scale:1.34,cameraZ:2.85,fov:40,modelY:-0.06,modelYaw:.045,exposure:1.02}
@@ -27,7 +27,7 @@ function apply(name,instance){
   instance.camera.updateProjectionMatrix();
   if(instance.renderer)instance.renderer.toneMappingExposure=cfg.exposure;
   instance.element.dataset.modelFraming='v324';
-  instance.element.dataset.modelFramingRevision='v327-pass2';
+  instance.element.dataset.modelFramingRevision='v328-final';
   instance.v324Tuning={...cfg};
   instance.v324Tuned=true;
   tuned.add(name);
@@ -39,7 +39,7 @@ function tick(){
   if(runtime){
     for(const [name,instance] of Object.entries(runtime.instances||{}))apply(name,instance);
     runtime.framingVersion='v324-model-framing';
-    runtime.framingRevision='v327-pass2';
+    runtime.framingRevision='v328-final';
     runtime.framingTuning=TUNING;
     root.dataset.v324Tuned=String(tuned.size);
   }
