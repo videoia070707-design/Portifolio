@@ -53,8 +53,9 @@ const fs=require('node:fs');
     await page.screenshot({path:'_site/qa-v322-glb-desktop.png',fullPage:false});
     await page.close();
 
-    // Production-path QA: without the final GLB, the first slot must render the
-    // real procedural WebGL CRT. Later storyboard models remain deferred.
+    // Production-path QA: the first slot renders the corrected procedural CRT.
+    // Legacy CSS perspective must be neutralized and the camera must be pulled
+    // back enough to keep the whole product silhouette inside the frame.
     const prod=await browser.newPage({viewport:{width:1440,height:1000},deviceScaleFactor:1});
     const prodErrors=[];prod.on('pageerror',e=>prodErrors.push(String(e)));
     await prod.goto('http://127.0.0.1:4173/',{waitUntil:'domcontentloaded',timeout:30000});
@@ -62,6 +63,7 @@ const fs=require('node:fs');
     await prod.waitForFunction(()=>document.querySelector('[data-model-slot="boot-tv"]')?.dataset.glbState==='ready',null,{timeout:20000});
     const productionState=await prod.evaluate(()=>{
       const el=document.querySelector('[data-model-slot="boot-tv"]');
+      const host=el?.querySelector('.v322-model-renderer');
       const inst=window.MOVX3D?.runtime?.instances?.['boot-tv'];
       return {
         requested:document.documentElement.dataset.v322Requested,
@@ -76,10 +78,15 @@ const fs=require('node:fs');
         manifest:window.MOVX3D_MODELS||{},
         bootState:el?.dataset.glbState||null,
         kind:el?.dataset.modelKind||null,
-        canvas:!!el?.querySelector('.v322-model-renderer canvas'),
+        canvas:!!host?.querySelector('canvas'),
         meshes:inst?.stats?.meshes||0,
         triangles:inst?.stats?.triangles||0,
         version:inst?.stats?.version||null,
+        fit:inst?.stats?.fit||null,
+        cameraZ:inst?.camera?.position?.z||0,
+        cameraFov:inst?.camera?.fov||0,
+        slotTransform:el?getComputedStyle(el).transform:null,
+        hostTransform:host?getComputedStyle(host).transform:null,
         runtimeErrors:window.MOVX3D?.runtime?.errors||[],
       };
     });
@@ -96,16 +103,20 @@ const fs=require('node:fs');
     assert.ok(productionState.canvas,'procedural CRT canvas missing');
     assert.ok(productionState.meshes>=20,'procedural CRT is unexpectedly sparse');
     assert.ok(productionState.triangles>100,'procedural CRT geometry did not build');
-    assert.equal(productionState.version,'v348','procedural CRT version mismatch');
+    assert.equal(productionState.version,'v349','procedural CRT version mismatch');
+    assert.equal(productionState.fit,'full-product','CRT fit contract missing');
+    assert.ok(productionState.cameraZ>=5.2,'CRT camera is still too close');
+    assert.ok(productionState.cameraFov<=29,'CRT camera FOV is too wide for product framing');
+    assert.equal(productionState.slotTransform,'none','legacy CRT CSS transform still compounds WebGL perspective');
+    assert.equal(productionState.hostTransform,'none','renderer host still adds a second perspective transform');
     assert.ok(productionState.deferred.includes('hero-movx-logo'),'Physical Logo must remain deferred');
     assert.ok(productionState.deferred.includes('x-portal'),'X Portal must remain deferred');
     assert.ok(productionState.overflow<=2,'production desktop overflow regression');
     assert.equal(productionState.runtimeErrors.length,0,'production runtime errors: '+JSON.stringify(productionState.runtimeErrors));
     assert.equal(prodErrors.length,0,'production page errors: '+prodErrors.join(' | '));
-    await prod.screenshot({path:'_site/qa-v348-crt-procedural-desktop.png',fullPage:false});
+    await prod.screenshot({path:'_site/qa-v349-crt-fit-desktop.png',fullPage:false});
     await prod.close();
 
-    // Mobile smoke test for the same first model.
     const mobile=await browser.newPage({viewport:{width:390,height:844},deviceScaleFactor:1});
     const mobileErrors=[];mobile.on('pageerror',e=>mobileErrors.push(String(e)));
     await mobile.goto('http://127.0.0.1:4173/',{waitUntil:'domcontentloaded',timeout:30000});
@@ -114,15 +125,17 @@ const fs=require('node:fs');
       kind:document.querySelector('[data-model-slot="boot-tv"]')?.dataset.modelKind,
       renderers:document.querySelectorAll('.v322-model-renderer').length,
       overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth,
+      slotTransform:getComputedStyle(document.querySelector('[data-model-slot="boot-tv"]')).transform,
     }));
     assert.equal(mobileState.kind,'procedural-crt');
     assert.equal(mobileState.renderers,1);
+    assert.equal(mobileState.slotTransform,'none');
     assert.ok(mobileState.overflow<=2,'production mobile overflow regression');
     assert.equal(mobileErrors.length,0,'mobile page errors: '+mobileErrors.join(' | '));
-    await mobile.screenshot({path:'_site/qa-v348-crt-procedural-mobile.png',fullPage:false});
+    await mobile.screenshot({path:'_site/qa-v349-crt-fit-mobile.png',fullPage:false});
     await mobile.close();
 
-    console.log(JSON.stringify({qa:'v348-crt-procedural',status:'PASS',glbReplacement:state,production:productionState,mobile:mobileState}));
+    console.log(JSON.stringify({qa:'v349-crt-fit',status:'PASS',glbReplacement:state,production:productionState,mobile:mobileState}));
   } finally {
     await browser.close();
     try{fs.unlinkSync(fixture)}catch{}
