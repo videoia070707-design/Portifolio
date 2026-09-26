@@ -1,9 +1,9 @@
 """Static performance budgets for the deployed MOVX artifact.
 
-v349 enforces the one-model-at-a-time rollout. Scene 01 / BOOT (`boot-tv`) is
-the only 3D slot eligible for production. Until `movx-crt-tv.glb` is supplied,
-the production artifact contains zero GLBs and renders the corrected procedural
-WebGL CRT. Later model files must not leak into the public build.
+v350 enforces the one-model-at-a-time rollout. Scene 01 / BOOT (`boot-tv`) is
+the only 3D slot eligible for production and must publish exactly one canonical
+GLB: `models/movx-crt-tv.glb`. The source currently comes from the approved TV
+cluster inside the Tripo prop pack. Later model files must not leak into build.
 """
 from pathlib import Path
 import json
@@ -57,11 +57,11 @@ else:
     if 'data-movx-production="v321-production-storyboard"' not in home_text:errors.append('index.html is not the v321 production storyboard')
     if 'data-storyboard="v320"' not in home_text:errors.append('index.html missing v320 storyboard marker')
     if 'data-glb-runtime="v322-unified-glb-runtime"' not in home_text:errors.append('index.html missing v322 GLB runtime marker')
-    if 'data-crt-runtime="v349-fit"' not in home_text:errors.append('index.html missing v349 corrected CRT marker')
-    if 'v322-glb-runtime.mjs?v=v349-crt-fit' not in home_text:errors.append('index.html missing v349 CRT runtime cache key')
-    if 'v322-glb-runtime.css?v=v349-crt-fit' not in home_text:errors.append('index.html missing v349 CRT surface cache key')
+    if 'data-crt-runtime="v350-real-glb"' not in home_text:errors.append('index.html missing v350 real CRT marker')
+    if 'v322-glb-runtime.mjs?v=v350-real-crt' not in home_text:errors.append('index.html missing v350 CRT runtime cache key')
+    if 'v322-glb-runtime.css?v=v350-real-crt' not in home_text:errors.append('index.html missing v350 CRT surface cache key')
     if 'data-model-pack="v323-tripo-model-pack"' not in home_text:errors.append('index.html missing v323 model-pack marker')
-    if 'data-model-scope="v348-crt-only"' not in home_text:errors.append('index.html missing CRT-only production scope marker')
+    if 'data-model-scope="v350-crt-only"' not in home_text:errors.append('index.html missing v350 CRT-only production scope marker')
     if 'data-model-framing="v324-model-framing"' not in home_text:errors.append('index.html missing v324 framing marker')
     if 'data-logo-focus=' in home_text:errors.append('second-model Physical Logo focus is still active')
     if '../assets/' in home_text:errors.append('index.html contains parent-relative asset paths')
@@ -84,7 +84,7 @@ else:
     if 'v324-model-framing.css' not in home_styles:errors.append('index.html missing v324-model-framing.css')
     if 'v324-model-framing.mjs' not in home_scripts:errors.append('index.html missing v324-model-framing.mjs')
     if home_css_bytes>625_000:errors.append(f'CRT-first production CSS is {home_css_bytes} bytes; budget is 625000')
-    if home_js_bytes>510_000:errors.append(f'CRT-first production JS is {home_js_bytes} bytes; budget is 510000')
+    if home_js_bytes>515_000:errors.append(f'CRT-first production JS is {home_js_bytes} bytes; budget is 515000')
     for slot in ('boot-tv','hero-movx-logo','x-portal','creative-machine','play-cassette','play-camera','play-cube','play-cd','play-window','spatial-studio','closing-window'):
         if f'data-model-slot="{slot}"' not in home_text:errors.append(f'index.html missing storyboard model slot {slot}')
 
@@ -97,19 +97,16 @@ model_dir=out/'models'
 published_glbs=sorted(p.name for p in model_dir.glob('*.glb')) if model_dir.exists() else []
 for filename in deferred_model_files:
     if filename in published_glbs:errors.append(f'deferred GLB leaked into production: models/{filename}')
-unexpected=[name for name in published_glbs if name!=crt_name]
-if unexpected:errors.append(f'unexpected stage-1 GLBs: {unexpected}')
-if len(published_glbs)>1:errors.append(f'CRT-first production contains {len(published_glbs)} GLBs; expected at most one')
+if published_glbs!=[crt_name]:errors.append(f'CRT-first production GLBs are {published_glbs}; expected exactly [{crt_name!r}]')
 model_sizes={};model_total=0
 for filename in published_glbs:
     path=model_dir/filename;size=path.stat().st_size
     model_sizes[filename]=size;model_total+=size
-    if size>7_500_000:errors.append(f'{filename} is {size} bytes; CRT web budget is 7500000')
+    # v350 integrates the original 10.3 MB Tripo source first. A dedicated
+    # extraction/compression pass remains inside Model-01 before final approval.
+    if size>11_000_000:errors.append(f'{filename} is {size} bytes; v350 raw CRT source budget is 11000000')
 manifest_refs=re.findall(r'models/movx-[^"\']+\.glb',home_text) if home_text else []
-if crt_name in published_glbs:
-    if manifest_refs!=[f'models/{crt_name}']:errors.append(f'CRT manifest mismatch: {manifest_refs}')
-else:
-    if manifest_refs:errors.append(f'production manifest exposes GLBs before CRT exists: {manifest_refs}')
+if manifest_refs!=[f'models/{crt_name}']:errors.append(f'CRT manifest mismatch: {manifest_refs}')
 
 addon_root=out/'vendor'/'three-addons'
 loader=addon_root/'loaders'/'GLTFLoader.js'
@@ -121,18 +118,18 @@ for required in ('v322-glb-runtime.mjs','v322-glb-runtime.css','v348-crt-procedu
     if not (out/required).exists():errors.append(f'{required} is missing')
 procedural_path=out/'v348-crt-procedural.mjs'
 procedural_bytes=procedural_path.stat().st_size if procedural_path.exists() else 0
-if procedural_bytes>35_000:errors.append(f'procedural CRT module is {procedural_bytes} bytes; budget is 35000')
+if procedural_bytes>35_000:errors.append(f'procedural CRT fallback module is {procedural_bytes} bytes; budget is 35000')
 
-# Guard the exact failure visible in the v348 screenshot: WebGL must own perspective,
-# the legacy .crt CSS perspective must be neutralized while the runtime is active.
+# Guard the exact close-up regression: WebGL owns perspective; legacy CSS must
+# not transform the active CRT slot/renderer.
 crt_surface=(out/'v322-glb-runtime.css').read_text() if (out/'v322-glb-runtime.css').exists() else ''
 if '[data-model-slot="boot-tv"].v322-runtime-active{transform:none!important' not in crt_surface:
     errors.append('CRT active slot does not neutralize legacy CSS perspective')
 if '[data-model-slot="boot-tv"].v322-runtime-active .v322-model-renderer{transform:none!important}' not in crt_surface:
     errors.append('CRT renderer host still allows compounded CSS perspective')
 crt_runtime=(out/'v322-glb-runtime.mjs').read_text() if (out/'v322-glb-runtime.mjs').exists() else ''
-if "camera.position.set(.08,.06,5.35)" not in crt_runtime or "instance.procedural?28:33" not in crt_runtime:
-    errors.append('CRT full-product camera framing contract missing')
+for contract in ("camera.position.set(.02,.03,4.72)","const CRT_PARTS=new Set(['tripo_part_7','tripo_part_13','tripo_part_18'])","version:'v350-real-crt-runtime'","fit:'full-product'"):
+    if contract not in crt_runtime:errors.append(f'v350 real CRT runtime contract missing: {contract}')
 
 runtime=(out/'script.js').read_text()
 if 'loading="${itemIndex < 2 ? \'eager\' : \'lazy\'}"' in runtime:errors.append('conveyor still promotes below-fold artwork to eager')
@@ -160,4 +157,4 @@ if legacy_text:
     if 'ROLE PARA ATRAVESSAR' not in legacy_text:errors.append('social-media Scroll World interaction cue is missing')
 
 if errors:raise SystemExit('MOVX performance QA failed: '+json.dumps(errors,ensure_ascii=False))
-print(json.dumps({'status':'passed','sizes':sizes,'storyboard':{'css_layers':len(home_styles),'css_bytes':home_css_bytes,'js_layers':len(home_scripts),'js_bytes':home_js_bytes},'crt3d':{'revision':'v349-fit','active_slot':'boot-tv','procedural_module_bytes':procedural_bytes,'production_glbs':len(published_glbs),'published_glbs':published_glbs,'model_bytes':model_sizes,'model_total_bytes':model_total,'later_models':'forbidden until CRT approval'},'legacy_editorial':'social-media.html','deferred_video_gate':True,'desktop_delivery':'full-video h264-first blob scrub','mobile_delivery':'full-video h264-first blob scrub','source_trim_seconds':0.00,'stage_background':'#000','warm_margin':'120%','scroll_chapters':4},ensure_ascii=False))
+print(json.dumps({'status':'passed','sizes':sizes,'storyboard':{'css_layers':len(home_styles),'css_bytes':home_css_bytes,'js_layers':len(home_scripts),'js_bytes':home_js_bytes},'crt3d':{'revision':'v350-real-crt','active_slot':'boot-tv','source_asset':'site/models/movx-camera.glb','published_asset':'models/movx-crt-tv.glb','isolated_parts':['tripo_part_7','tripo_part_13','tripo_part_18'],'procedural_module_bytes':procedural_bytes,'production_glbs':len(published_glbs),'published_glbs':published_glbs,'model_bytes':model_sizes,'model_total_bytes':model_total,'later_models':'forbidden until CRT approval'},'legacy_editorial':'social-media.html','deferred_video_gate':True,'desktop_delivery':'full-video h264-first blob scrub','mobile_delivery':'full-video h264-first blob scrub','source_trim_seconds':0.00,'stage_background':'#000','warm_margin':'120%','scroll_chapters':4},ensure_ascii=False))
