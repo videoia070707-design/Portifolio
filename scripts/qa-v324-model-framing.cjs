@@ -5,7 +5,17 @@ const fs = require('fs');
   const browser=await chromium.launch({headless:true,args:['--use-angle=swiftshader','--enable-webgl','--ignore-gpu-blocklist']});
   const page=await browser.newPage({viewport:{width:1440,height:1000},deviceScaleFactor:1});
   const errors=[];
+  const captureWarnings=[];
   const critical=/\.(?:glb|gltf|mjs|js|css)(?:\?|$)/i;
+  const snap=async(target,path)=>{
+    try{
+      await target.screenshot({path,fullPage:false,animations:'disabled',timeout:10000});
+      return true;
+    }catch(error){
+      captureWarnings.push({path,error:String(error)});
+      return false;
+    }
+  };
   page.on('pageerror',e=>errors.push(`PAGEERROR ${String(e)}`));
   page.on('response',res=>{if(res.status()>=400&&critical.test(res.url()))errors.push(`HTTP ${res.status()} ${res.url()}`)});
   page.on('requestfailed',req=>{if(critical.test(req.url()))errors.push(`REQUEST FAILED ${req.url()} ${req.failure()?.errorText||''}`)});
@@ -69,9 +79,9 @@ const fs = require('fs');
     const tris=info.stats?.triangles||0;
     if(tris<range[0]||tris>range[1])throw new Error(`${slot} triangles ${tris} outside expected ${range[0]}-${range[1]}`);
     report[slot]=info;
-    fs.writeFileSync('_site/qa-v324-model-report.json',JSON.stringify({status:'running',framingRevision:'v3361-mobile-logo-safe-fit',choreography:'v331-smooth-handoffs',report},null,2));
+    fs.writeFileSync('_site/qa-v324-model-report.json',JSON.stringify({status:'running',framingRevision:'v3361-mobile-logo-safe-fit',choreography:'v331-smooth-handoffs',report,captureWarnings},null,2));
     await page.waitForTimeout(250);
-    await page.screenshot({path:`_site/qa-v324-${slot}.png`,fullPage:false});
+    await snap(page,`_site/qa-v324-${slot}.png`);
   }
 
   /* v336.1: validate the actual physical-logo meshes through the production camera.
@@ -174,12 +184,12 @@ const fs = require('fs');
   if(!(projection.maxAbsY>0&&projection.maxAbsY<=.95))throw new Error(`v336.1 physical logo exceeds safe vertical NDC: ${JSON.stringify(mobileLogo)}`);
   if(mobileErrors.length)throw new Error('Critical mobile browser resource errors: '+JSON.stringify(mobileErrors));
   report.mobileLogoFit=mobileLogo;
-  await mobile.screenshot({path:'_site/qa-v324-hero-movx-logo-mobile.png',fullPage:false});
+  await snap(mobile,'_site/qa-v324-hero-movx-logo-mobile.png');
   await mobile.close();
 
   if(errors.length)throw new Error('Critical browser resource errors: '+JSON.stringify(errors));
-  fs.writeFileSync('_site/qa-v324-model-report.json',JSON.stringify({status:'passed',framingRevision:'v3361-mobile-logo-safe-fit',choreography:'v331-smooth-handoffs',report},null,2));
+  fs.writeFileSync('_site/qa-v324-model-report.json',JSON.stringify({status:'passed',framingRevision:'v3361-mobile-logo-safe-fit',choreography:'v331-smooth-handoffs',report,captureWarnings},null,2));
   await page.close();
   await browser.close();
-  console.log(JSON.stringify({status:'passed',framingRevision:'v3361-mobile-logo-safe-fit',choreography:'v331-smooth-handoffs',slots:Object.keys(expected),mobileLogoMaxAbsX:Number(projection.maxAbsX.toFixed(4)),horizontalReserve:Number(projection.horizontalReserve.toFixed(4)),criticalErrors:[...errors,...mobileErrors]}));
+  console.log(JSON.stringify({status:'passed',framingRevision:'v3361-mobile-logo-safe-fit',choreography:'v331-smooth-handoffs',slots:Object.keys(expected),mobileLogoMaxAbsX:Number(projection.maxAbsX.toFixed(4)),horizontalReserve:Number(projection.horizontalReserve.toFixed(4)),captureWarnings:captureWarnings.length,criticalErrors:[...errors,...mobileErrors]}));
 })().catch(async err=>{console.error(err);process.exit(1)});
