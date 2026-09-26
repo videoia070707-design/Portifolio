@@ -1,7 +1,7 @@
-/* MOVX v349 — single-model runtime / CRT fit correction.
-   Scene 01 / boot-tv remains the only eligible 3D slot. If the final CRT GLB is
-   absent, production renders the procedural CRT. v349 removes the close-up
-   camera/framing error from the first integration pass. */
+/* MOVX v350 — real CRT integration, single-model gate.
+   Scene 01 / boot-tv is the only production 3D slot. The approved TV is stored
+   inside the original Tripo prop pack; production publishes that source as
+   movx-crt-tv.glb and removes every non-TV mesh before framing/rendering. */
 const root=document.documentElement;
 const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const coarse=matchMedia('(pointer:coarse)').matches;
@@ -21,10 +21,14 @@ const PARAMS={
   'closing-window':'contactModel',
 };
 const ACTIVE_MODEL_SLOTS=new Set(['boot-tv']);
+const CRT_SOURCE_BASENAME='movx-crt-tv.glb';
+// Identified from the Tripo source-pack QA. These three meshes are the TV body,
+// screen/front assembly and lower/base assembly. Everything else is another prop.
+const CRT_PARTS=new Set(['tripo_part_7','tripo_part_13','tripo_part_18']);
 const MAX_TRIANGLES=220000;
 const CONTEXT_LIMIT=coarse?2:3;
 const runtime={
-  version:'v349-crt-fit-runtime',
+  version:'v350-real-crt-runtime',
   instances:{},
   errors:[],
   contextLimit:CONTEXT_LIMIT,
@@ -33,6 +37,7 @@ const runtime={
   deferredSlots:[],
   singleModelMode:true,
   fallback3D:'procedural-crt',
+  crtParts:[...CRT_PARTS],
 };
 window.MOVX3D=window.MOVX3D||{};
 window.MOVX3D.runtime=runtime;
@@ -45,7 +50,7 @@ const manifest=(()=>{
   if(direct&&typeof direct==='object')return direct;
   const node=document.querySelector('#movx-3d-manifest[type="application/json"]');
   if(!node)return {};
-  try{return JSON.parse(node.textContent||'{}')}catch(error){console.warn('[MOVX v349] Invalid model manifest',error);return {}}
+  try{return JSON.parse(node.textContent||'{}')}catch(error){console.warn('[MOVX v350] Invalid model manifest',error);return {}}
 })();
 
 let THREE,GLTFLoader,loader,proceduralFactory;
@@ -53,14 +58,14 @@ async function modules(){
   if(THREE&&GLTFLoader)return {THREE,GLTFLoader};
   const [threeMod,loaderMod]=await Promise.all([
     import('./vendor/three.module.js'),
-    import('./vendor/three-addons/loaders/GLTFLoader.js?v=v349-crt-fit')
+    import('./vendor/three-addons/loaders/GLTFLoader.js?v=v350-real-crt')
   ]);
   THREE=threeMod;GLTFLoader=loaderMod.GLTFLoader;loader=new GLTFLoader();
   return {THREE,GLTFLoader};
 }
 async function getProceduralFactory(){
   if(proceduralFactory)return proceduralFactory;
-  const mod=await import('./v348-crt-procedural.mjs?v=v349-crt-fit');
+  const mod=await import('./v348-crt-procedural.mjs?v=v350-real-crt');
   proceduralFactory=mod.createProceduralCRT;
   return proceduralFactory;
 }
@@ -88,7 +93,22 @@ function statsFor(object){
   });
   return {meshes,triangles};
 }
+function isolateProductionCRT(object){
+  const keep=[];
+  const remove=[];
+  object.traverse(node=>{
+    if(!node.isMesh)return;
+    if(CRT_PARTS.has(node.name))keep.push(node.name);
+    else remove.push(node);
+  });
+  remove.forEach(node=>node.parent?.remove(node));
+  if(keep.length!==CRT_PARTS.size){
+    throw new Error(`CRT isolation mismatch: expected ${CRT_PARTS.size} meshes, kept ${keep.length} (${keep.join(',')})`);
+  }
+  return {parts:keep,removed:remove.length};
+}
 function normalizeModel(object,target=1.65){
+  object.updateMatrixWorld(true);
   const box=new THREE.Box3().setFromObject(object);
   if(box.isEmpty())throw new Error('Model bounding box is empty');
   const center=box.getCenter(new THREE.Vector3());
@@ -103,22 +123,23 @@ function normalizeModel(object,target=1.65){
 function createStage(instance){
   const scene=new THREE.Scene();
   const group=new THREE.Group();scene.add(group);group.add(instance.model);
-  const camera=new THREE.PerspectiveCamera(instance.procedural?28:33,1,.05,30);
-  if(instance.procedural){
-    camera.position.set(.08,.06,5.35);
+  const isCRT=instance.name==='boot-tv';
+  const camera=new THREE.PerspectiveCamera(isCRT?28:33,1,.05,30);
+  if(isCRT){
+    camera.position.set(.02,.03,4.72);
     camera.lookAt(0,0,0);
-    group.position.set(.04,.02,0);
+    group.position.set(0,-.015,0);
   }else{
     camera.position.set(0,0,3.45);
   }
-  const hemi=new THREE.HemisphereLight(0xfff4e8,0x17130f,instance.procedural?2.28:2.15);scene.add(hemi);
-  const key=new THREE.DirectionalLight(0xfff7ef,instance.procedural?4.55:4.4);key.position.set(3.2,4.4,5);key.castShadow=!coarse;scene.add(key);
-  const fill=new THREE.DirectionalLight(0xff8a45,instance.procedural?.72:1.35);fill.position.set(-3,.8,2.2);scene.add(fill);
-  const rim=new THREE.DirectionalLight(0xc9d9ff,instance.procedural?.52:.25);rim.position.set(-1.5,2,-4);scene.add(rim);
-  if(instance.procedural){
-    const shadowMat=new THREE.ShadowMaterial({color:0x1c1712,transparent:true,opacity:.15});
+  const hemi=new THREE.HemisphereLight(0xfff4e8,0x17130f,isCRT?2.18:2.15);scene.add(hemi);
+  const key=new THREE.DirectionalLight(0xfff7ef,isCRT?4.05:4.4);key.position.set(3.2,4.4,5);key.castShadow=!coarse;scene.add(key);
+  const fill=new THREE.DirectionalLight(0xff8a45,isCRT?.72:1.35);fill.position.set(-3,.8,2.2);scene.add(fill);
+  const rim=new THREE.DirectionalLight(0xc9d9ff,isCRT?.48:.25);rim.position.set(-1.5,2,-4);scene.add(rim);
+  if(isCRT){
+    const shadowMat=new THREE.ShadowMaterial({color:0x1c1712,transparent:true,opacity:.13});
     const floor=new THREE.Mesh(new THREE.PlaneGeometry(4.8,3.4),shadowMat);
-    floor.rotation.x=-Math.PI/2;floor.position.set(0,-1.03,0);floor.receiveShadow=true;scene.add(floor);
+    floor.rotation.x=-Math.PI/2;floor.position.set(0,-1.0,0);floor.receiveShadow=true;scene.add(floor);
   }
   return {scene,group,camera};
 }
@@ -144,12 +165,12 @@ function mount(instance){
   enforceLimit(instance);
   const host=document.createElement('div');host.className='v322-model-renderer';
   host.dataset.runtimeModel=instance.name;
-  if(instance.procedural)host.dataset.modelKind='procedural-crt';
+  host.dataset.modelKind=instance.procedural?'procedural-crt':'glb';
   const canvas=document.createElement('canvas');canvas.setAttribute('aria-hidden','true');host.appendChild(canvas);
   const renderer=new THREE.WebGLRenderer({canvas,alpha:true,antialias:!coarse,powerPreference:'high-performance'});
   renderer.setClearColor(0x000000,0);
   renderer.setPixelRatio(Math.min(devicePixelRatio||1,coarse?1.05:1.5));
-  renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=instance.procedural?1.05:1.15;
+  renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=instance.procedural?1.05:1.08;
   renderer.shadowMap.enabled=!coarse;
   if(renderer.shadowMap.enabled)renderer.shadowMap.type=THREE.PCFSoftShadowMap;
   if('outputColorSpace'in renderer&&THREE.SRGBColorSpace)renderer.outputColorSpace=THREE.SRGBColorSpace;
@@ -159,7 +180,10 @@ function mount(instance){
   instance.element.classList.add('v322-runtime-active');
   instance.element.dataset.glbState='ready';
   instance.element.dataset.modelKind=instance.procedural?'procedural-crt':'glb';
-  if(instance.procedural)root.dataset.crt3d='procedural-ready';
+  if(instance.name==='boot-tv'){
+    root.dataset.crt3d=instance.procedural?'procedural-ready':'glb-ready';
+    root.dataset.crtSource=instance.procedural?'fallback':'tripo-source-pack';
+  }
   resize(instance);
 }
 function resize(instance){
@@ -197,10 +221,15 @@ async function load(instance){
       const gltf=await loader.loadAsync(instance.url);
       const model=gltf.scene||gltf.scenes?.[0];
       if(!model)throw new Error('GLTF contains no scene');
+      const rawStats=statsFor(model);
+      if(rawStats.triangles>MAX_TRIANGLES){disposeObject(model);throw new Error(`Model exceeds ${MAX_TRIANGLES} triangles (${rawStats.triangles})`)}
+      const productionCRT=instance.name==='boot-tv' && instance.url.includes(CRT_SOURCE_BASENAME);
+      const isolation=productionCRT?isolateProductionCRT(model):null;
       const stats=statsFor(model);
-      if(stats.triangles>MAX_TRIANGLES){disposeObject(model);throw new Error(`Model exceeds ${MAX_TRIANGLES} triangles (${stats.triangles})`)}
-      const fit=normalizeModel(model,instance.name==='boot-tv'?1.95:1.65);
-      instance.model=model;instance.stats={...stats,...fit,animations:gltf.animations?.length||0,kind:'glb'};
+      model.traverse(node=>{if(node.isMesh){node.castShadow=!coarse;node.receiveShadow=!coarse;}});
+      const fit=normalizeModel(model,instance.name==='boot-tv'?2.02:1.65);
+      instance.model=model;
+      instance.stats={...stats,...fit,sourceMeshes:rawStats.meshes,sourceTriangles:rawStats.triangles,animations:gltf.animations?.length||0,kind:'glb',version:productionCRT?'v350-real-crt':'fixture',fit:'full-product',crtParts:isolation?.parts||[],removedParts:isolation?.removed||0};
     }
     const stage=createStage(instance);Object.assign(instance,stage);
     instance.loaded=true;instance.loading=false;
@@ -209,7 +238,7 @@ async function load(instance){
     instance.loading=false;instance.error=String(error?.message||error);instance.element.dataset.glbState='error';
     runtime.errors.push({slot:instance.name,src:instance.src||'procedural',error:instance.error});
     root.dataset.crt3d='error';
-    console.warn(`[MOVX v349] ${instance.name} fallback preserved`,error);
+    console.warn(`[MOVX v350] ${instance.name} fallback preserved`,error);
     try{instance.slot.restoreFallback?.()}catch{}
   }
 }
@@ -247,10 +276,11 @@ function register(name,slot){
     runtime.awaitingSlots.push(name);
     return;
   }
-  const instance={name,slot,element:slot.element,src:src||'procedural://movx-crt-v349',url,procedural,visible:false,loading:false,loaded:false,renderer:null,lastSeen:0};
+  const instance={name,slot,element:slot.element,src:src||'procedural://movx-crt-fallback',url,procedural,visible:false,loading:false,loaded:false,renderer:null,lastSeen:0};
   runtime.instances[name]=instance;
   slot.element.dataset.glbState='queued';slot.element.classList.add('v322-model-requested');
   if(procedural)slot.element.dataset.modelAwaiting='final-glb';
+  else slot.element.removeAttribute('data-model-awaiting');
   observer.observe(slot.element);resizeObserver.observe(slot.element);
 }
 
@@ -259,9 +289,7 @@ function initialize(){
   Object.entries(slots).forEach(([name,slot])=>{if(slot?.element)register(name,slot)});
   root.dataset.v322Glb='ready';
   root.dataset.v322Requested=String(Object.keys(runtime.instances).length);
-  root.dataset.v347ActiveModels=String(Object.keys(runtime.instances).length);
-  root.dataset.v348ActiveModels=String(Object.keys(runtime.instances).length);
-  root.dataset.v349ActiveModels=String(Object.keys(runtime.instances).length);
+  root.dataset.v350ActiveModels=String(Object.keys(runtime.instances).length);
 }
 initialize();
 
@@ -279,8 +307,8 @@ function frame(t){
     if(instance.procedural){
       instance.proceduralUpdate?.({time:t,progress,active,pointerX:px,pointerY:py});
     }else if(!reduced){
-      instance.group.rotation.y=px*.035 + (progress-.5)*.022;
-      instance.group.rotation.x=-py*.022;
+      instance.group.rotation.y=px*.03 + (progress-.5)*.018;
+      instance.group.rotation.x=-py*.018;
     }
     instance.renderer.render(instance.scene,instance.camera);
   }
