@@ -2,7 +2,16 @@ const {chromium}=require('playwright');
 const fs=require('node:fs');
 const path=require('node:path');
 
-const models=['movx-camera.glb'];
+// MOVX Scene-01 identification pass: render every source GLB individually.
+// Do not trust filenames alone; Tripo packs can contain several props in one file.
+const models=[
+  'movx-camera.glb',
+  'movx-creative-machine.glb',
+  'movx-physical-logo.glb',
+  'movx-spatial-studio.glb',
+  'movx-x-cube.glb',
+  'movx-x-portal.glb',
+];
 
 const viewer=`<!doctype html>
 <html><head><meta charset="utf-8"><style>
@@ -55,10 +64,13 @@ try{
       await page.waitForFunction(()=>document.documentElement.dataset.ready==='1'||document.documentElement.dataset.ready==='error',null,{timeout:30000});
       const state=await page.evaluate(()=>({ready:document.documentElement.dataset.ready,error:document.documentElement.dataset.error||null,meshes:Number(document.documentElement.dataset.meshes||0),triangles:Number(document.documentElement.dataset.triangles||0),size:[Number(document.documentElement.dataset.sx||0),Number(document.documentElement.dataset.sy||0),Number(document.documentElement.dataset.sz||0)],meshDetails:window.__meshDetails||[]}));
       report.push({name,view:'front',...state});
-      if(state.ready==='1')await page.screenshot({path:path.join(out,'qa-model-movx-camera-front.png'),fullPage:false});
+      if(state.ready==='1'){
+        const slug=name.replace(/\.glb$/,'');
+        await page.screenshot({path:path.join(out,`qa-model-${slug}-front.png`),fullPage:false});
+      }
       await page.close();
     }
   }finally{await browser.close()}
   fs.writeFileSync(path.join(out,'qa-model-identification.json'),JSON.stringify(report,null,2));
-  console.log(JSON.stringify({qa:'identify-camera-crt-cluster',models:report}));
+  console.log(JSON.stringify({qa:'identify-all-scene01-candidates',models:report.map(m=>({name:m.name,ready:m.ready,meshes:m.meshes,triangles:m.triangles,size:m.size}))}));
 })().catch(e=>{console.error(e);process.exit(1)});
