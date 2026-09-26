@@ -1,9 +1,9 @@
-"""MOVX v348 — publish only the FIRST approved Tripo GLB.
+"""MOVX v349 — publish only the FIRST approved Tripo GLB.
 
 The one-by-one implementation rule is enforced here. The first storyboard model
 is the CRT / Y2K TV opening (`boot-tv`). Later GLBs may remain stored in source,
 but production removes them from `_site` until the CRT pass is finished.
-While the CRT GLB is missing, v348 renders its procedural WebGL replacement.
+While the CRT GLB is missing, v349 renders its corrected procedural WebGL replacement.
 """
 from pathlib import Path
 import json, shutil
@@ -37,15 +37,15 @@ for slot,filename in MODEL_MAP.items():
     manifest[slot]=f'models/{filename}'
 
 if set(manifest)-{'boot-tv'}:
-    raise SystemExit('MOVX v348 production model scope escaped boot-tv')
+    raise SystemExit('MOVX v349 production model scope escaped boot-tv')
 
 manifest_script='<script>window.MOVX3D_MODELS='+json.dumps(manifest,separators=(',',':'))+';</script>'
 for name in ('index.html','latest.html'):
     path=out/name
     text=path.read_text()
-    marker='<script type="module" src="v322-glb-runtime.mjs?v=v348-crt-procedural"></script>'
+    marker='<script type="module" src="v322-glb-runtime.mjs?v=v349-crt-fit"></script>'
     if marker not in text:
-        raise SystemExit(f'MOVX v348 expected CRT runtime marker in {name}')
+        raise SystemExit(f'MOVX v349 expected CRT runtime marker in {name}')
     if 'window.MOVX3D_MODELS=' not in text:
         text=text.replace(marker,manifest_script+'\n'+marker,1)
     text=text.replace('data-glb-runtime="v322-unified-glb-runtime"',
@@ -57,7 +57,7 @@ published_glbs=[] if not dst_models.exists() else sorted(p.name for p in dst_mod
 allowed=set(MODEL_MAP.values())
 unexpected=[name for name in published_glbs if name not in allowed]
 if unexpected:
-    raise SystemExit(f'MOVX v348 deferred GLBs leaked into production: {unexpected}')
+    raise SystemExit(f'MOVX v349 deferred GLBs leaked into production: {unexpected}')
 
 print(json.dumps({
     'release':release,
@@ -66,5 +66,6 @@ print(json.dumps({
     'published_glbs':published_glbs,
     'missing':missing,
     'procedural_fallback':'v348-crt-procedural.mjs' if missing else None,
-    'mode':'CRT first; later model GLBs stripped from public build'
+    'runtime_cache':'v349-crt-fit',
+    'mode':'CRT first; corrected full-product fit; later model GLBs stripped from public build'
 },ensure_ascii=False))
