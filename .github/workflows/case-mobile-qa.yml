@@ -33,13 +33,13 @@ jobs:
           import { chromium } from 'playwright';
           import { writeFile } from 'node:fs/promises';
 
-          const base='https://videoia070707-design.github.io/Portifolio/';
+          const base='https://videoia070707-design.github.io/Portifolio/social-media.html';
           const viewports=[
             {id:'mobile-390',width:390,height:844},
             {id:'mobile-430',width:430,height:932}
           ];
           const browser=await chromium.launch({headless:true,args:['--use-angle=swiftshader','--enable-webgl','--ignore-gpu-blocklist']});
-          const report={pages:[],cases:[]};
+          const report={page:base,pages:[],cases:[]};
 
           const inspect=async page=>page.evaluate(()=>{
             const viewer=document.querySelector('#caseViewer');
@@ -96,7 +96,6 @@ jobs:
             if(slides.loadedSlides<1) throw new Error(`${viewport.id}: first slide did not load ${JSON.stringify(slides)}`);
             await page.screenshot({path:`qa-case-mobile/${viewport.id}-slide.png`,fullPage:false});
 
-            /* Exercise next-case transition on touch and make sure the next title is still readable. */
             const before=hero.titleText;
             await page.locator('#caseNext').tap();
             await page.waitForTimeout(850);
