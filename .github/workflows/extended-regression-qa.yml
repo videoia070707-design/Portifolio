@@ -1,0 +1,154 @@
+name: MOVX Extended Regression QA
+
+on:
+  workflow_run:
+    workflows: ["Deploy MOVX Portfolio"]
+    types: [completed]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  regression-core:
+    name: Regression core
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout audited commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && github.sha || github.event.workflow_run.head_sha }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Download deployed Pages artifact
+        if: github.event_name != 'workflow_dispatch'
+        uses: actions/download-artifact@v4
+        with:
+          name: github-pages
+          path: _artifact
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          repository: ${{ github.repository }}
+          run-id: ${{ github.event.workflow_run.id }}
+
+      - name: Restore deployed site
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            npm run build
+          else
+            mkdir -p _site
+            test -s _artifact/artifact.tar
+            tar -xf _artifact/artifact.tar -C _site
+          fi
+          test -s _site/index.html
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Run core regression shard
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m http.server 4173 --directory _site >/tmp/movx-regression-core.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill $SERVER_PID 2>/dev/null || true' EXIT
+          npm run qa
+          node scripts/qa-layout.cjs
+          node scripts/qa-v106.cjs
+          node scripts/qa-v108.cjs
+          node scripts/qa-v109.cjs
+
+      - name: Upload core regression logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: movx-regression-core
+          path: |
+            _site/qa-*
+            /tmp/movx-regression-core.log
+          if-no-files-found: warn
+          retention-days: 7
+
+  regression-motion:
+    name: Regression motion and mobile
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout audited commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && github.sha || github.event.workflow_run.head_sha }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Download deployed Pages artifact
+        if: github.event_name != 'workflow_dispatch'
+        uses: actions/download-artifact@v4
+        with:
+          name: github-pages
+          path: _artifact
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          repository: ${{ github.repository }}
+          run-id: ${{ github.event.workflow_run.id }}
+
+      - name: Restore deployed site
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            npm run build
+          else
+            mkdir -p _site
+            test -s _artifact/artifact.tar
+            tar -xf _artifact/artifact.tar -C _site
+          fi
+          test -s _site/index.html
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Run motion/mobile regression shard
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m http.server 4173 --directory _site >/tmp/movx-regression-motion.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill $SERVER_PID 2>/dev/null || true' EXIT
+          node scripts/qa-v110.cjs
+          node scripts/qa-v111.cjs
+          node scripts/qa-v112.cjs
+          node scripts/qa-v114.cjs
+          node scripts/qa-v115.cjs
+          node scripts/qa-v115-mobile-first.cjs
+          node scripts/qa-into-signal-preview.cjs
+
+      - name: Upload motion regression logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: movx-regression-motion
+          path: |
+            _site/qa-*
+            /tmp/movx-regression-motion.log
+          if-no-files-found: warn
+          retention-days: 7
