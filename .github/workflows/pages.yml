@@ -38,6 +38,7 @@ jobs:
           SERVER_PID=$!
           trap 'kill $SERVER_PID 2>/dev/null || true' EXIT
           npm run qa:v324
+          npm run qa:v332
           node scripts/qa-v322-runtime.cjs
           node scripts/qa-v321-production.cjs
           node scripts/qa-v137-reference.cjs
@@ -49,6 +50,7 @@ jobs:
           name: movx-production-validation
           path: |
             _site/qa-v324-*
+            _site/qa-v332-*
             _site/qa-v322-*
             _site/qa-v321-*
             _site/qa-v138-*
