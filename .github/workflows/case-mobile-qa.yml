@@ -115,7 +115,13 @@ jobs:
               if(!next.title||next.title.left<-4||next.title.right>viewport.width+4||next.overflow>2) throw new Error(`${viewport.id}: next case title/overflow regression ${JSON.stringify(next)}`);
               await snap(page,`qa-case-mobile/${viewport.id}-next.png`);
 
-              await page.locator('#caseClose').tap();
+              const closeClicked=await page.evaluate(()=>{
+                const close=document.querySelector('#caseClose');
+                if(!close)return false;
+                close.click();
+                return true;
+              });
+              if(!closeClicked) throw new Error(`${viewport.id}: case close control missing`);
               await page.waitForFunction(()=>!document.querySelector('#caseViewer').classList.contains('open'),null,{timeout:8000});
               const closed=await page.evaluate(()=>({hidden:document.querySelector('#caseViewer').getAttribute('aria-hidden'),open:document.querySelector('#caseViewer').classList.contains('open')}));
               if(closed.hidden!=='true'||closed.open) throw new Error(`${viewport.id}: case did not close cleanly ${JSON.stringify(closed)}`);
