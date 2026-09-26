@@ -1,9 +1,9 @@
 """Static performance budgets for the deployed MOVX artifact.
 
 v321 promotes the spatial storyboard to /, v322 adds the local GLTF runtime,
-v323 installs the approved Tripo model manifest, and v324 adds a small
-per-model framing layer. Budgets remain explicit so new layers cannot appear
-silently.
+v323 installs the approved Tripo model manifest, v324 adds per-model framing,
+and v345 adds the isolated Physical Logo focus layer. Budgets remain explicit so
+new layers cannot appear silently.
 """
 from pathlib import Path
 import json
@@ -72,8 +72,8 @@ else:
         home_scripts.append(ref);path=out/ref
         if not path.exists():errors.append(f'index.html references missing JS {ref}')
         else:home_js_bytes+=path.stat().st_size
-    if len(home_styles)!=14:errors.append(f'index.html loads {len(home_styles)} production CSS layers; expected 14')
-    if len(home_scripts)!=12:errors.append(f'index.html loads {len(home_scripts)} production JS layers; expected 12')
+    if len(home_styles)!=15:errors.append(f'index.html loads {len(home_styles)} production CSS layers; expected 15')
+    if len(home_scripts)!=13:errors.append(f'index.html loads {len(home_scripts)} production JS layers; expected 13')
     if 'v324-model-framing.css' not in home_styles:errors.append('index.html missing v324-model-framing.css')
     if 'v324-model-framing.mjs' not in home_scripts:errors.append('index.html missing v324-model-framing.mjs')
     if home_css_bytes>625_000:errors.append(f'v324 production CSS is {home_css_bytes} bytes; budget is 625000')
