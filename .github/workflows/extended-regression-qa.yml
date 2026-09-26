@@ -41,6 +41,10 @@ jobs:
           repository: ${{ github.repository }}
           run-id: ${{ github.event.workflow_run.id }}
 
+      - name: Ensure FFmpeg for manual regression build
+        if: github.event_name == 'workflow_dispatch'
+        run: ffmpeg -version || (sudo apt-get update && sudo apt-get install -y ffmpeg)
+
       - name: Restore deployed site
         shell: bash
         run: |
@@ -53,6 +57,7 @@ jobs:
             tar -xf _artifact/artifact.tar -C _site
           fi
           test -s _site/index.html
+          mkdir -p _site/qa-logs
 
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
@@ -61,7 +66,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          python3 -m http.server 4173 --directory _site >/tmp/movx-regression-core.log 2>&1 &
+          python3 -m http.server 4173 --directory _site >_site/qa-logs/regression-core.log 2>&1 &
           SERVER_PID=$!
           trap 'kill $SERVER_PID 2>/dev/null || true' EXIT
           npm run qa
@@ -70,14 +75,14 @@ jobs:
           node scripts/qa-v108.cjs
           node scripts/qa-v109.cjs
 
-      - name: Upload core regression logs
+      - name: Upload core regression evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: movx-regression-core
           path: |
             _site/qa-*
-            /tmp/movx-regression-core.log
+            _site/qa-logs/regression-core.log
           if-no-files-found: warn
           retention-days: 7
 
@@ -111,6 +116,10 @@ jobs:
           repository: ${{ github.repository }}
           run-id: ${{ github.event.workflow_run.id }}
 
+      - name: Ensure FFmpeg for manual regression build
+        if: github.event_name == 'workflow_dispatch'
+        run: ffmpeg -version || (sudo apt-get update && sudo apt-get install -y ffmpeg)
+
       - name: Restore deployed site
         shell: bash
         run: |
@@ -123,6 +132,7 @@ jobs:
             tar -xf _artifact/artifact.tar -C _site
           fi
           test -s _site/index.html
+          mkdir -p _site/qa-logs
 
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
@@ -131,7 +141,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          python3 -m http.server 4173 --directory _site >/tmp/movx-regression-motion.log 2>&1 &
+          python3 -m http.server 4173 --directory _site >_site/qa-logs/regression-motion.log 2>&1 &
           SERVER_PID=$!
           trap 'kill $SERVER_PID 2>/dev/null || true' EXIT
           node scripts/qa-v110.cjs
@@ -142,13 +152,13 @@ jobs:
           node scripts/qa-v115-mobile-first.cjs
           node scripts/qa-into-signal-preview.cjs
 
-      - name: Upload motion regression logs
+      - name: Upload motion regression evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: movx-regression-motion
           path: |
             _site/qa-*
-            /tmp/movx-regression-motion.log
+            _site/qa-logs/regression-motion.log
           if-no-files-found: warn
           retention-days: 7
