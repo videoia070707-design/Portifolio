@@ -1,11 +1,11 @@
-"""Install MOVX v324 framing, v336 mobile logo fit, and v331 smooth choreography after v323 model pack."""
+"""Install MOVX v324 framing, v336.1 mobile logo safe fit, and v331 smooth choreography after v323 model pack."""
 from pathlib import Path
 import json, shutil
 
 root=Path(__file__).resolve().parents[1]
 out=root/'_site'
 release='v324-model-framing'
-revision='v336-mobile-logo-fit'
+revision='v3361-mobile-logo-safe-fit'
 choreography='v331-smooth-handoffs'
 cache=revision
 css='v324-model-framing.css'
