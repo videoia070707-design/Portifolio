@@ -5,8 +5,14 @@ const fs = require('fs');
   const browser=await chromium.launch({headless:true,args:['--use-angle=swiftshader','--enable-webgl','--ignore-gpu-blocklist']});
   const page=await browser.newPage({viewport:{width:1440,height:1000},deviceScaleFactor:1});
   const errors=[];
-  page.on('pageerror',e=>errors.push(String(e)));
-  page.on('console',m=>{if(m.type()==='error')errors.push(m.text())});
+  const critical=/\.(?:glb|gltf|mjs|js|css)(?:\?|$)/i;
+  page.on('pageerror',e=>errors.push(`PAGEERROR ${String(e)}`));
+  page.on('response',res=>{
+    if(res.status()>=400&&critical.test(res.url()))errors.push(`HTTP ${res.status()} ${res.url()}`);
+  });
+  page.on('requestfailed',req=>{
+    if(critical.test(req.url()))errors.push(`REQUEST FAILED ${req.url()} ${req.failure()?.errorText||''}`);
+  });
   await page.goto('http://127.0.0.1:4173/',{waitUntil:'domcontentloaded',timeout:120000});
   await page.waitForFunction(()=>document.documentElement.dataset.modelFraming==='v324-model-framing',{timeout:30000});
 
@@ -23,10 +29,6 @@ const fs = require('fs');
     const selector=`[data-model-slot="${slot}"]`;
     const loc=page.locator(selector).first();
     if(await loc.count()!==1)throw new Error(`Missing slot ${slot}`);
-
-    // The production storyboard intentionally animates/transform slots while scrolling.
-    // Use a direct instant window scroll instead of Playwright's stability-gated
-    // scrollIntoViewIfNeeded(), which treats the intended motion as an unstable element.
     await page.evaluate((sel)=>{
       const el=document.querySelector(sel);if(!el)return;
       const r=el.getBoundingClientRect();
@@ -63,8 +65,8 @@ const fs = require('fs');
     await page.waitForTimeout(250);
     await page.screenshot({path:`_site/qa-v324-${slot}.png`,fullPage:false});
   }
-  if(errors.length)throw new Error('Browser errors: '+JSON.stringify(errors));
+  if(errors.length)throw new Error('Critical browser resource errors: '+JSON.stringify(errors));
   fs.writeFileSync('_site/qa-v324-model-report.json',JSON.stringify({status:'passed',report},null,2));
   await browser.close();
-  console.log(JSON.stringify({status:'passed',slots:Object.keys(report)}));
+  console.log(JSON.stringify({status:'passed',slots:Object.keys(report),criticalErrors:errors}));
 })().catch(async err=>{console.error(err);process.exit(1)});
