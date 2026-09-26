@@ -20,8 +20,14 @@ const assert=require('node:assert/strict');
         const hr=host?.getBoundingClientRect();
         return {
           fit:document.documentElement.dataset.crtFit,
+          asset:document.documentElement.dataset.crtAsset,
           source:document.documentElement.dataset.crtSource,
           kind:el?.dataset.modelKind,
+          version:inst?.stats?.version||null,
+          meshes:inst?.stats?.meshes??null,
+          sourceMeshes:inst?.stats?.sourceMeshes??null,
+          removedParts:inst?.stats?.removedParts??null,
+          crtParts:inst?.stats?.crtParts||[],
           recenter:inst?.stats?.recenter||null,
           runtimeFit:inst?.stats?.fit||null,
           slotRect:r?{x:r.x,y:r.y,width:r.width,height:r.height}:null,
@@ -33,23 +39,27 @@ const assert=require('node:assert/strict');
         };
       });
       assert.equal(state.fit,'v351-scaled-center');
-      assert.equal(state.source,'tripo-source-pack');
+      assert.equal(state.asset,'v352-standalone-vintage-computer');
       assert.equal(state.kind,'glb');
+      assert.equal(state.version,'v352-standalone-crt');
       assert.equal(state.runtimeFit,'full-product');
-      assert.ok(state.recenter,'v351 recenter stats missing');
+      assert.ok(state.meshes>0,'standalone CRT has no meshes');
+      assert.equal(state.meshes,state.sourceMeshes,'standalone CRT must preserve every source mesh');
+      assert.equal(state.removedParts,0,'standalone CRT must not remove meshes');
+      assert.equal(state.crtParts.length,0,'legacy prop-pack mesh extraction is still active');
+      assert.ok(state.recenter,'CRT recenter stats missing');
       assert.equal(state.recenter.revision,'v351-scaled-center');
       assert.ok(Math.abs(state.recenter.after.x)<0.002,'CRT remains horizontally off-center: '+state.recenter.after.x);
       assert.ok(Math.abs(state.recenter.after.y)<0.002,'CRT remains vertically off-center: '+state.recenter.after.y);
       assert.ok(Math.abs(state.recenter.after.z)<0.002,'CRT remains depth-offset: '+state.recenter.after.z);
-      assert.ok(Math.abs(state.recenter.before.x)>.2,'QA did not reproduce v350 scaled-center drift');
       assert.equal(state.renderers,1,'more than one 3D renderer active');
       assert.ok(state.deferred.includes('hero-movx-logo')&&state.deferred.includes('x-portal'),'later models must remain deferred');
       assert.equal(state.errors.length,0,'runtime errors: '+JSON.stringify(state.errors));
       assert.ok(state.overflow<=2,'horizontal overflow regression');
       assert.equal(errors.length,0,'page errors: '+errors.join(' | '));
-      await page.waitForTimeout(150);
+      await page.waitForTimeout(250);
       await page.screenshot({path:`_site/qa-v351-real-crt-centered-${cfg.name}.png`,fullPage:false});
-      console.log(JSON.stringify({qa:'v351-crt-recenter',viewport:cfg.name,status:'PASS',state}));
+      console.log(JSON.stringify({qa:'v352-standalone-crt',viewport:cfg.name,status:'PASS',state}));
       await page.close();
     }
   }finally{await browser.close()}
