@@ -36,6 +36,7 @@ jobs:
           test -s _artifact/artifact.tar
           tar -xf _artifact/artifact.tar -C _site
           test -s _site/index.html
+          test -s _site/social-media.html
           test -s _site/v88-chapter.js
           grep -q 'v96-normalized-damped-continuity' _site/v88-chapter.js
           grep -q 'v98-continuous-media-response' _site/v88-chapter.js
@@ -62,8 +63,9 @@ jobs:
 
           const motion='v96-normalized-damped-continuity';
           const detail='v98-continuous-media-response';
+          const pagePath='social-media.html';
           const browser = await chromium.launch({headless:true,args:['--use-angle=swiftshader','--enable-webgl','--ignore-gpu-blocklist']});
-          const report = {motion,detail,desktop:[],mobile:[],errors:[]};
+          const report = {motion,detail,page:pagePath,desktop:[],mobile:[],errors:[]};
 
           const sections = [
             ['#heroTop','hero'],
@@ -81,7 +83,7 @@ jobs:
             const page = await browser.newPage({viewport,deviceScaleFactor:1});
             const pageErrors=[];
             page.on('pageerror',err=>pageErrors.push(String(err)));
-            await page.goto('http://127.0.0.1:4180/index.html',{waitUntil:'networkidle'});
+            await page.goto(`http://127.0.0.1:4180/${pagePath}`,{waitUntil:'networkidle'});
             await page.waitForFunction(()=>window.__MOVX_V57_AUDIT__,null,{timeout:20000});
             await page.waitForFunction(expected=>document.documentElement.dataset.movxMotion===expected,motion,{timeout:10000});
             await page.waitForFunction(expected=>document.documentElement.dataset.movxMotionDetail===expected,detail,{timeout:10000});

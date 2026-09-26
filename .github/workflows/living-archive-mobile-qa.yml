@@ -41,66 +41,94 @@ jobs:
           const browser=await chromium.launch({headless:true,args:['--use-angle=swiftshader','--enable-webgl','--ignore-gpu-blocklist']});
           const report={page:base,pages:[]};
 
-          for(const viewport of viewports){
-            const page=await browser.newPage({viewport:{width:viewport.width,height:viewport.height},deviceScaleFactor:1});
-            const errors=[];
-            page.on('pageerror',error=>errors.push(String(error)));
-            await page.goto(`${base}?qa-living=${Date.now()}`,{waitUntil:'networkidle',timeout:45000});
-            await page.waitForSelector('#livingArchive',{state:'attached',timeout:15000});
-            await page.waitForSelector('#livingArchive .loop-card',{state:'attached',timeout:15000});
-            await page.evaluate(()=>{
-              const section=document.querySelector('#livingArchive');
-              const top=window.scrollY+section.getBoundingClientRect().top;
-              window.scrollTo(0,Math.max(0,top-68));
-            });
-            await page.waitForTimeout(1500);
+          try{
+            for(const viewport of viewports){
+              const page=await browser.newPage({viewport:{width:viewport.width,height:viewport.height},deviceScaleFactor:1});
+              const errors=[];
+              const imageFailures=[];
+              const imageLike=/\.(?:avif|gif|jpe?g|png|webp)(?:\?|$)/i;
+              page.on('pageerror',error=>errors.push(String(error)));
+              page.on('response',response=>{
+                if(response.status()>=400&&imageLike.test(response.url())) imageFailures.push(`HTTP ${response.status()} ${response.url()}`);
+              });
+              page.on('requestfailed',request=>{
+                if(imageLike.test(request.url())) imageFailures.push(`REQUEST FAILED ${request.url()} ${request.failure()?.errorText||''}`);
+              });
 
-            const state=await page.evaluate(()=>{
-              const section=document.querySelector('#livingArchive');
-              const heading=section?.querySelector('h2');
-              const wall=section?.querySelector('.loop-wall');
-              const rows=[...section?.querySelectorAll('.loop-row')||[]];
-              const cards=[...section?.querySelectorAll('.loop-card')||[]];
-              const images=cards.map(card=>card.querySelector('img')).filter(Boolean);
-              const rect=el=>{
-                if(!el)return null;
-                const r=el.getBoundingClientRect();
-                return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:r.width,height:r.height};
-              };
-              return {
-                build:document.documentElement.dataset.movxBuild||'',
-                overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth,
-                headingText:(heading?.innerText||'').trim().replace(/\s+/g,' '),
-                heading:rect(heading),
-                wall:rect(wall),
-                rowCount:rows.length,
-                cardCount:cards.length,
-                visibleRows:rows.filter(row=>{
-                  const r=row.getBoundingClientRect();
-                  const cs=getComputedStyle(row);
-                  return r.bottom>0&&r.top<innerHeight&&parseFloat(cs.opacity||'1')>.15&&cs.visibility!=='hidden'&&cs.display!=='none';
-                }).length,
-                loadedImages:images.filter(img=>img.complete&&img.naturalWidth>0).length,
-                totalImages:images.length,
-                heroImage:rect(document.querySelector('#heroTop .social-cover-art__image')),
-                heroLeft:getComputedStyle(document.querySelector('#heroTop .social-cover-art__image')).left
-              };
-            });
+              await page.goto(`${base}?qa-living=${Date.now()}`,{waitUntil:'networkidle',timeout:45000});
+              await page.waitForSelector('#livingArchive',{state:'attached',timeout:15000});
+              await page.waitForSelector('#livingArchive .loop-card',{state:'attached',timeout:15000});
+              await page.evaluate(()=>{
+                const section=document.querySelector('#livingArchive');
+                const top=window.scrollY+section.getBoundingClientRect().top;
+                window.scrollTo(0,Math.max(0,top-68));
+              });
 
-            if(state.overflow>2) throw new Error(`${viewport.id}: horizontal overflow ${state.overflow}`);
-            if(!state.heading) throw new Error(`${viewport.id}: Living Archive heading missing`);
-            if(state.heading.left<-4||state.heading.right>viewport.width+4) throw new Error(`${viewport.id}: heading clipped ${JSON.stringify(state.heading)}`);
-            if(!state.headingText.includes('Explore o arquivo em movimento')) throw new Error(`${viewport.id}: interaction-neutral copy missing: ${state.headingText}`);
-            if(/cursor|hover/i.test(state.headingText)) throw new Error(`${viewport.id}: desktop-only interaction instruction returned: ${state.headingText}`);
-            if(!state.wall||state.wall.width<viewport.width*.75) throw new Error(`${viewport.id}: Living Archive wall collapsed ${JSON.stringify(state.wall)}`);
-            if(state.rowCount<2||state.cardCount<6) throw new Error(`${viewport.id}: Living Archive content incomplete rows=${state.rowCount} cards=${state.cardCount}`);
-            if(state.visibleRows<1) throw new Error(`${viewport.id}: no Living Archive row readable in viewport`);
-            if(state.loadedImages<Math.min(6,state.totalImages)) throw new Error(`${viewport.id}: Living Archive images not loaded ${state.loadedImages}/${state.totalImages}`);
-            if(errors.length) throw new Error(`${viewport.id}: page errors ${errors.join(' | ')}`);
+              /* The conveyor is built after page boot and mixes eager/lazy images. Wait for
+                 the first production sample to actually decode instead of sampling at a
+                 fixed delay that can race GitHub Pages/CDN on CI. */
+              await page.waitForFunction(()=>{
+                const images=[...document.querySelectorAll('#livingArchive .loop-card img')];
+                const target=Math.min(6,images.length);
+                return target>0&&images.filter(img=>img.complete&&img.naturalWidth>0).length>=target;
+              },null,{timeout:20000}).catch(()=>{});
 
-            await page.screenshot({path:`qa-living-archive/${viewport.id}.png`,fullPage:false});
-            report.pages.push({viewport,url:page.url(),state,errors});
-            await page.close();
+              const state=await page.evaluate(()=>{
+                const section=document.querySelector('#livingArchive');
+                const heading=section?.querySelector('h2');
+                const wall=section?.querySelector('.loop-wall');
+                const rows=[...section?.querySelectorAll('.loop-row')||[]];
+                const cards=[...section?.querySelectorAll('.loop-card')||[]];
+                const images=cards.map(card=>card.querySelector('img')).filter(Boolean);
+                const rect=el=>{
+                  if(!el)return null;
+                  const r=el.getBoundingClientRect();
+                  return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:r.width,height:r.height};
+                };
+                return {
+                  build:document.documentElement.dataset.movxBuild||'',
+                  overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth,
+                  headingText:(heading?.innerText||'').trim().replace(/\s+/g,' '),
+                  heading:rect(heading),
+                  wall:rect(wall),
+                  rowCount:rows.length,
+                  cardCount:cards.length,
+                  visibleRows:rows.filter(row=>{
+                    const r=row.getBoundingClientRect();
+                    const cs=getComputedStyle(row);
+                    return r.bottom>0&&r.top<innerHeight&&parseFloat(cs.opacity||'1')>.15&&cs.visibility!=='hidden'&&cs.display!=='none';
+                  }).length,
+                  loadedImages:images.filter(img=>img.complete&&img.naturalWidth>0).length,
+                  totalImages:images.length,
+                  sampleImages:images.slice(0,8).map(img=>({src:img.currentSrc||img.src,complete:img.complete,naturalWidth:img.naturalWidth})),
+                  heroImage:rect(document.querySelector('#heroTop .social-cover-art__image')),
+                  heroLeft:getComputedStyle(document.querySelector('#heroTop .social-cover-art__image')).left
+                };
+              });
+
+              await page.screenshot({path:`qa-living-archive/${viewport.id}.png`,fullPage:false});
+              report.pages.push({viewport,url:page.url(),state,errors,imageFailures});
+              await writeFile('qa-living-archive/report.json',JSON.stringify(report,null,2));
+
+              if(state.overflow>2) throw new Error(`${viewport.id}: horizontal overflow ${state.overflow}`);
+              if(!state.heading) throw new Error(`${viewport.id}: Living Archive heading missing`);
+              if(state.heading.left<-4||state.heading.right>viewport.width+4) throw new Error(`${viewport.id}: heading clipped ${JSON.stringify(state.heading)}`);
+              if(!state.headingText.includes('Explore o arquivo em movimento')) throw new Error(`${viewport.id}: interaction-neutral copy missing: ${state.headingText}`);
+              if(/cursor|hover/i.test(state.headingText)) throw new Error(`${viewport.id}: desktop-only interaction instruction returned: ${state.headingText}`);
+              if(!state.wall||state.wall.width<viewport.width*.75) throw new Error(`${viewport.id}: Living Archive wall collapsed ${JSON.stringify(state.wall)}`);
+              if(state.rowCount<2||state.cardCount<6) throw new Error(`${viewport.id}: Living Archive content incomplete rows=${state.rowCount} cards=${state.cardCount}`);
+              if(state.visibleRows<1) throw new Error(`${viewport.id}: no Living Archive row readable in viewport`);
+              if(imageFailures.length) throw new Error(`${viewport.id}: Living Archive image requests failed ${JSON.stringify(imageFailures.slice(0,6))}`);
+              if(state.loadedImages<Math.min(6,state.totalImages)) throw new Error(`${viewport.id}: Living Archive images not loaded ${state.loadedImages}/${state.totalImages}; sample=${JSON.stringify(state.sampleImages)}`);
+              if(errors.length) throw new Error(`${viewport.id}: page errors ${errors.join(' | ')}`);
+
+              await page.close();
+            }
+          }catch(error){
+            report.error=String(error);
+            await writeFile('qa-living-archive/report.json',JSON.stringify(report,null,2));
+            await browser.close();
+            throw error;
           }
 
           await writeFile('qa-living-archive/report.json',JSON.stringify(report,null,2));
@@ -108,8 +136,10 @@ jobs:
           NODE
 
       - name: Upload Living Archive QA
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: movx-living-archive-mobile-qa
           path: qa-living-archive
+          if-no-files-found: warn
           retention-days: 7

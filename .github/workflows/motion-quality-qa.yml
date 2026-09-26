@@ -99,13 +99,33 @@ jobs:
             if(settledMag<.35) throw new Error(`territory response too small: ${settledMag}`);
             if(settledMag+0.05<earlyMag) throw new Error(`territory response regressed during settle: early=${earlyMag} settled=${settledMag}`);
 
-            await page.mouse.move(2,2);
-            await page.waitForTimeout(520);
+            /* Trigger a real pointerleave. (2,2) is not guaranteed to be outside the
+               first card after scroll/layout changes, so select a viewport corner that
+               is provably outside the current card bounds.) */
+            const viewport=page.viewportSize();
+            const corners=[
+              {x:2,y:2},
+              {x:Math.max(2,viewport.width-2),y:2},
+              {x:2,y:Math.max(2,viewport.height-2)},
+              {x:Math.max(2,viewport.width-2),y:Math.max(2,viewport.height-2)}
+            ];
+            const outside=point=>point.x<box.x||point.x>box.x+box.width||point.y<box.y||point.y>box.y+box.height;
+            const leavePoint=corners.find(outside);
+            if(!leavePoint) throw new Error(`could not find pointerleave point outside territory card ${JSON.stringify(box)}`);
+            await page.mouse.move(leavePoint.x,leavePoint.y);
+            await page.waitForFunction(()=>{
+              const el=document.querySelector('#nicheGrid .niche-card__media');
+              if(!el)return false;
+              const cs=getComputedStyle(el);
+              const x=Number.parseFloat(cs.getPropertyValue('--v88-media-x'))||0;
+              const y=Number.parseFloat(cs.getPropertyValue('--v88-media-y'))||0;
+              return Math.hypot(x,y)<.24;
+            },null,{timeout:2500});
             const returned=await read();
             const returnMag=Math.hypot(parsePx(returned.x),parsePx(returned.y));
             if(returnMag>.24) throw new Error(`territory response did not ease home: ${returnMag}`);
 
-            report.desktop={marker,early,settled,returned,earlyMag,settledMag,returnMag,direction:await page.evaluate(()=>document.documentElement.dataset.movxScrollDirection||'')};
+            report.desktop={marker,early,settled,returned,earlyMag,settledMag,returnMag,leavePoint,direction:await page.evaluate(()=>document.documentElement.dataset.movxScrollDirection||'')};
             if(pageErrors.length) throw new Error(`desktop page errors: ${pageErrors.join(' | ')}`);
             await page.close();
 
