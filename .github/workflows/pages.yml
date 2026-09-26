@@ -89,6 +89,7 @@ jobs:
         with:
           name: movx-qa-contracts
           path: |
+            _site/qa-v350-*
             _site/qa-v349-*
             _site/qa-v322-*
             _site/qa-v321-*
