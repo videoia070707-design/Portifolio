@@ -45,24 +45,32 @@ const fs=require('node:fs');
     assert.equal(loader.status(),200,'local GLTFLoader module missing');
     await page.screenshot({path:'_site/qa-v322-glb-desktop.png',fullPage:false});
 
-    const dormant=await browser.newPage({viewport:{width:390,height:844},deviceScaleFactor:1});
-    const dormantErrors=[];dormant.on('pageerror',e=>dormantErrors.push(String(e)));
-    await dormant.goto('http://127.0.0.1:4173/',{waitUntil:'domcontentloaded',timeout:30000});
-    await dormant.waitForFunction(()=>document.documentElement.dataset.v322Glb==='ready',null,{timeout:10000});
-    const dormantState=await dormant.evaluate(()=>({
+    // Production now contains a v323 manifest. Validate that the runtime registers
+    // exactly those six approved models instead of the old pre-pack dormant state.
+    const manifestPage=await browser.newPage({viewport:{width:390,height:844},deviceScaleFactor:1});
+    const manifestErrors=[];manifestPage.on('pageerror',e=>manifestErrors.push(String(e)));
+    await manifestPage.goto('http://127.0.0.1:4173/',{waitUntil:'domcontentloaded',timeout:30000});
+    await manifestPage.waitForFunction(()=>document.documentElement.dataset.v322Glb==='ready',null,{timeout:10000});
+    const manifestState=await manifestPage.evaluate(()=>({
       requested:document.documentElement.dataset.v322Requested,
       renderers:document.querySelectorAll('.v322-model-renderer').length,
-      instances:Object.keys(window.MOVX3D?.runtime?.instances||{}),
+      instances:Object.keys(window.MOVX3D?.runtime?.instances||{}).sort(),
+      contextLimit:window.MOVX3D?.runtime?.contextLimit,
       overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth,
+      bootTvRegistered:!!window.MOVX3D?.runtime?.instances?.['boot-tv'],
+      manifest:window.MOVX3D_MODELS||{},
     }));
-    assert.equal(dormantState.requested,'0','runtime must stay dormant without model sources');
-    assert.equal(dormantState.renderers,0,'runtime created WebGL without a requested model');
-    assert.equal(dormantState.instances.length,0,'runtime registered unexpected models');
-    assert.ok(dormantState.overflow<=2,'dormant mobile overflow regression');
-    assert.equal(dormantErrors.length,0,'dormant page errors: '+dormantErrors.join(' | '));
-    await dormant.close();
+    const expected=['creative-machine','hero-movx-logo','play-camera','play-cube','spatial-studio','x-portal'];
+    assert.equal(manifestState.requested,'6','production manifest should register six Tripo models');
+    assert.deepEqual(manifestState.instances,expected,'unexpected production model registry');
+    assert.equal(Object.keys(manifestState.manifest).length,6,'production model manifest count mismatch');
+    assert.equal(manifestState.bootTvRegistered,false,'boot-tv should remain on DOM fallback until its GLB exists');
+    assert.ok(manifestState.renderers<=manifestState.contextLimit,'live WebGL renderers exceeded context limit');
+    assert.ok(manifestState.overflow<=2,'production mobile overflow regression');
+    assert.equal(manifestErrors.length,0,'production manifest page errors: '+manifestErrors.join(' | '));
+    await manifestPage.close();
 
-    console.log(JSON.stringify({qa:'v322-unified-glb-runtime',status:'PASS',loaded:state,dormant:dormantState}));
+    console.log(JSON.stringify({qa:'v322-unified-glb-runtime',status:'PASS',loaded:state,productionManifest:manifestState}));
   } finally {
     await browser.close();
     try{fs.unlinkSync(fixture)}catch{}
