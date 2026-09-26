@@ -44,3 +44,5 @@ jobs:
             echo 'Absolute /tmp artifact path found in workflow upload paths.' >&2
             exit 1
           fi
+
+# Static-only gate: no Chromium, WebGL or model loading here.
