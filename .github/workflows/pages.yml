@@ -31,20 +31,23 @@ jobs:
         run: npm run build
       - name: Enforce performance budgets
         run: python3 scripts/qa-performance.py
-      - name: Validate deploy-critical v138 molten 3D hero
+      - name: Validate production v321 storyboard and preserved v138 social hero
         run: |
           npx playwright install --with-deps chromium
           python3 -m http.server 4173 --directory _site >/tmp/movx-preview.log 2>&1 &
           SERVER_PID=$!
           trap 'kill $SERVER_PID 2>/dev/null || true' EXIT
+          node scripts/qa-v321-production.cjs
           node scripts/qa-v137-reference.cjs
           node scripts/qa-v136.cjs
-      - name: Save v138 validation evidence
+      - name: Save production validation evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: movx-v138-molten-3d-validation
-          path: _site/qa-v138-*
+          name: movx-production-validation
+          path: |
+            _site/qa-v321-*
+            _site/qa-v138-*
           if-no-files-found: warn
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
