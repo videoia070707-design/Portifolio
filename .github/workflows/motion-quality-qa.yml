@@ -89,7 +89,7 @@ jobs:
               y:getComputedStyle(el).getPropertyValue('--v88-media-y').trim()
             }));
 
-            // Use real pointer movement for the active response contract.
+            // First prove the real pointer path drives the continuous v98 response.
             await page.mouse.move(box.x+box.width*.95,box.y+box.height*.05);
             await page.waitForTimeout(38);
             const early=await read();
@@ -100,12 +100,17 @@ jobs:
             if(settledMag<.35) throw new Error(`territory response too small: ${settledMag}`);
             if(settledMag+0.05<earlyMag) throw new Error(`territory response regressed during settle: early=${earlyMag} settled=${settledMag}`);
 
-            // Pointer hit-testing around transformed editorial cards is flaky in headless
-            // Chromium. The production contract lives on the card listener itself:
-            // pointerleave must zero the targets and the frame owner must damp them home.
-            const leaveDispatched=await card.evaluate(el=>el.dispatchEvent(new PointerEvent('pointerleave',{
-              bubbles:false,cancelable:false,pointerType:'mouse',isPrimary:true
-            })));
+            // In headless Chromium, transformed cards can immediately receive a fresh
+            // synthetic hover move after pointerleave. Temporarily remove only hit-testing
+            // in the QA page so the production pointerleave listener + damping can be
+            // observed without a headless re-entry event overwriting targetX/targetY.
+            const leaveDispatched=await card.evaluate(el=>{
+              el.style.pointerEvents='none';
+              return el.dispatchEvent(new PointerEvent('pointerleave',{
+                bubbles:false,cancelable:false,pointerType:'mouse',isPrimary:true
+              }));
+            });
+            await page.mouse.move(1,1);
             await page.waitForFunction(()=>{
               const el=document.querySelector('#nicheGrid .niche-card__media');
               if(!el)return false;
@@ -116,6 +121,7 @@ jobs:
             },null,{timeout:2500});
             const returned=await read();
             const returnMag=Math.hypot(parsePx(returned.x),parsePx(returned.y));
+            await card.evaluate(el=>el.style.removeProperty('pointer-events'));
             if(returnMag>.24) throw new Error(`territory response did not ease home: ${returnMag}`);
 
             report.desktop={marker,early,settled,returned,earlyMag,settledMag,returnMag,leaveDispatched,direction:await page.evaluate(()=>document.documentElement.dataset.movxScrollDirection||'')};
