@@ -1,26 +1,53 @@
-/* MOVX v345 — Physical Logo focus / stage 1.
-   Only the hero MOVX GLB is touched here. Other 3D slots remain frozen. */
+/* MOVX v346 — Physical Logo visibility pass.
+   One-model focus: the real MOVX GLB must be visually unmistakable in Scene 02. */
 html.v345-logo-focus [data-model-slot="hero-movx-logo"]{isolation:isolate}
 
 @media(min-width:981px){
-  html.v345-logo-focus [data-model-slot="hero-movx-logo"]{min-height:min(76vh,840px)}
-  html.v345-logo-focus [data-model-slot="hero-movx-logo"].v322-runtime-active .v322-model-renderer{inset:-4% -5%}
+  html.v345-logo-focus [data-model-slot="hero-movx-logo"]{min-height:min(78vh,860px)}
+  html.v345-logo-focus [data-model-slot="hero-movx-logo"].v322-runtime-active .v322-model-renderer{inset:-10% -12%}
 }
 
-html.v345-logo-focus [data-model-slot="hero-movx-logo"] .v322-model-renderer canvas{
-  opacity:0;
-  transform:scale(.965) translateY(8px);
-  transform-origin:50% 52%;
-  transition:opacity .48s ease,transform .82s cubic-bezier(.22,.78,.2,1),filter .45s ease;
-  filter:drop-shadow(0 24px 30px rgba(24,20,17,.18));
+html.v345-logo-focus [data-model-slot="hero-movx-logo"].v322-runtime-active .v322-model-renderer{
+  z-index:20;
+  overflow:visible;
+  border-radius:32px;
+  background:
+    radial-gradient(circle at 64% 45%,rgba(255,90,24,.18),transparent 26%),
+    radial-gradient(circle at 46% 48%,rgba(32,28,25,.10),transparent 52%);
 }
-html.v345-logo-focus [data-model-slot="hero-movx-logo"][data-logo-focus-ready="true"] .v322-model-renderer canvas{
-  opacity:1;
-  transform:scale(1) translateY(0);
+
+/* The previous stage gated the canvas behind a custom reveal flag. For this
+   visibility pass the production-ready GLB itself is the reveal condition. */
+html.v345-logo-focus [data-model-slot="hero-movx-logo"][data-glb-state="ready"] .v322-model-renderer canvas{
+  opacity:1!important;
+  visibility:visible!important;
+  transform:scale(1.035) translateY(-2px);
+  transform-origin:50% 50%;
+  filter:drop-shadow(0 34px 34px rgba(24,20,17,.28)) drop-shadow(0 7px 10px rgba(255,90,24,.11));
+}
+
+html.v345-logo-focus [data-model-slot="hero-movx-logo"][data-glb-state="ready"] .v322-model-renderer:after{
+  content:"REAL 3D / MOVX PHYSICAL LOGO";
+  position:absolute;
+  right:clamp(12px,2vw,28px);
+  bottom:clamp(12px,2vw,24px);
+  z-index:30;
+  padding:7px 9px;
+  border:1px solid rgba(38,34,31,.18);
+  border-radius:999px;
+  background:rgba(238,233,224,.84);
+  backdrop-filter:blur(8px);
+  color:#514b45;
+  font:700 7px/1 "Courier New",monospace;
+  letter-spacing:.15em;
+  white-space:nowrap;
+  pointer-events:none;
 }
 
 @media(max-width:720px){
-  html.v345-logo-focus [data-model-slot="hero-movx-logo"].v322-runtime-active .v322-model-renderer{inset:0 -2%}
+  html.v345-logo-focus [data-model-slot="hero-movx-logo"].v322-runtime-active .v322-model-renderer{inset:0 -2%;background:radial-gradient(circle at 58% 48%,rgba(255,90,24,.12),transparent 34%)}
+  html.v345-logo-focus [data-model-slot="hero-movx-logo"][data-glb-state="ready"] .v322-model-renderer canvas{transform:none}
+  html.v345-logo-focus [data-model-slot="hero-movx-logo"] .v322-model-renderer:after{display:none}
 }
 @media(prefers-reduced-motion:reduce){
   html.v345-logo-focus [data-model-slot="hero-movx-logo"] .v322-model-renderer canvas{transition:none;transform:none}
