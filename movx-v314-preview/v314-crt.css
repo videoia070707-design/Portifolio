@@ -1,0 +1,27 @@
+/* MOVX v314 — CRT / TV Y2K production pass
+   Scope: Scene 01 only. Keeps the approved storyboard composition intact. */
+html.v314{--crt-progress:0;--crt-px:0;--crt-py:0}
+html.v314 .boot-scene .scene-inner{isolation:isolate}
+html.v314 .boot-stage{position:relative}
+html.v314 [data-model-slot="boot-tv"]{position:relative;transform-style:preserve-3d;will-change:transform,filter}
+html.v314 [data-model-slot="boot-tv"] .crt-screen{position:relative;overflow:hidden;isolation:isolate}
+html.v314 [data-model-slot="boot-tv"] .crt-screen:after{content:"";position:absolute;inset:0;z-index:8;pointer-events:none;background:radial-gradient(ellipse at 50% 45%,transparent 46%,rgba(3,5,5,.10) 73%,rgba(0,0,0,.26) 100%);mix-blend-mode:multiply}
+html.v314 .v314-screen-glass{position:absolute;inset:0;z-index:7;pointer-events:none;border-radius:inherit;background:linear-gradient(112deg,rgba(255,255,255,.15) 0 10%,transparent 26% 66%,rgba(255,255,255,.04) 76%,transparent 100%),repeating-linear-gradient(180deg,rgba(255,255,255,.025) 0 1px,rgba(0,0,0,.028) 1px 3px);opacity:.68;mix-blend-mode:screen}
+html.v314 .v314-screen-glass:after{content:"";position:absolute;left:-18%;top:0;width:24%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.18),transparent);transform:skewX(-12deg) translateX(calc(var(--crt-progress) * 430%));opacity:.34}
+html.v314 .v314-crt-details{position:absolute;inset:0;z-index:12;pointer-events:none;transform-style:preserve-3d}
+html.v314 .v314-vent{position:absolute;right:4.2%;top:18%;width:7.5%;height:30%;border-radius:5px;background:repeating-linear-gradient(180deg,rgba(28,26,23,.31) 0 2px,transparent 2px 7px);opacity:.54;filter:blur(.05px)}
+html.v314 .v314-vent.v2{top:auto;bottom:20%;height:16%;opacity:.38}
+html.v314 .v314-led{position:absolute;right:7.3%;bottom:9.4%;width:6px;height:6px;border-radius:50%;background:#ff5a18;box-shadow:0 0 0 2px rgba(43,37,31,.11),0 0 12px rgba(255,90,24,.30);opacity:.62;transition:opacity .35s ease,box-shadow .35s ease}
+html.v314 .v314-ports{position:absolute;left:7.2%;bottom:7%;display:flex;gap:5px;opacity:.42}
+html.v314 .v314-ports i{display:block;width:14px;height:5px;border-radius:2px;background:#625d56;box-shadow:inset 0 1px rgba(255,255,255,.28)}
+html.v314 .v314-device-mark{position:absolute;left:7.1%;top:7.4%;font:700 7px/1.35 "Courier New",monospace;letter-spacing:.12em;color:#676159;text-transform:uppercase;opacity:.72}
+html.v314 .v314-model-status{position:absolute;left:50%;bottom:-34px;transform:translateX(-50%);font:700 7px/1 "Courier New",monospace;letter-spacing:.14em;color:#736e66;white-space:nowrap;opacity:.72}
+html.v314 [data-model-slot="boot-tv"].has-model-request .v314-model-status{color:#ff5a18}
+html.v314 [data-model-slot="boot-tv"].is-crt-active .v314-led{opacity:1;box-shadow:0 0 0 2px rgba(43,37,31,.12),0 0 20px rgba(255,90,24,.58)}
+html.v314 [data-model-slot="boot-tv"].is-crt-active .crt-screen{filter:brightness(1.025) saturate(1.025)}
+html.v314 [data-model-slot="boot-tv"] .crt-ui{transform:translate3d(calc(var(--crt-px) * 1.4px),calc(var(--crt-py) * 1px),0);transition:filter .25s ease}
+html.v314 .boot-scene.is-active [data-model-slot="boot-tv"]{filter:drop-shadow(calc(var(--crt-px) * -2px) 34px 34px rgba(38,32,25,.18))}
+html.v314 .boot-scene.is-active .crt-wrap:before{content:"";position:absolute;left:12%;right:10%;bottom:7%;height:8%;background:radial-gradient(ellipse,rgba(31,27,23,.18),transparent 70%);filter:blur(16px);transform:translateX(calc(var(--crt-px) * 4px));pointer-events:none}
+html.v314 .boot-copy:after{content:"SCENE 01 / DEVICE BOOT";display:block;margin-top:24px;font:700 7px/1 "Courier New",monospace;letter-spacing:.18em;color:#827d75}
+@media (max-width:900px){html.v314 .v314-vent,html.v314 .v314-device-mark{display:none}html.v314 .v314-model-status{bottom:-24px}.v314-screen-glass{opacity:.46}}
+@media (prefers-reduced-motion:reduce){html.v314 .v314-screen-glass:after{display:none}html.v314 [data-model-slot="boot-tv"] .crt-ui{transform:none!important}}
