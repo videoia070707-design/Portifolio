@@ -52,9 +52,9 @@ html.v354-choreo .crt-wrap{
     translate3d(var(--v354-crt-x),var(--v354-crt-y),0)
     scale(var(--v354-crt-scale))
     rotateX(var(--v354-crt-rx))
-    rotateY(var(--v354-crt-ry)) !important;
+    rotateY(var(--v354-crt-ry));
   transform-origin:48% 58%;
-  filter:drop-shadow(0 30px 34px rgba(30,25,20,.18)) !important;
+  filter:drop-shadow(0 30px 34px rgba(30,25,20,.18));
   transition:filter .25s linear;
 }
 html.v354-choreo .boot-copy{
