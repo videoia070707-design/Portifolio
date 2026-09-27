@@ -125,7 +125,10 @@
       scene.classList.toggle('v353-active',visible&&p>.18&&p<.86);
     });
 
-    if(!reduced&&introDone&&crtWrap&&boot){
+    // v354 takes ownership of the Scene-01 wrapper after the intro. This keeps
+    // v353's first-load entrance intact while preventing two RAF loops from
+    // fighting over the same transform during scroll choreography.
+    if(!root.classList.contains('v354-choreo')&&!reduced&&introDone&&crtWrap&&boot){
       const p=sceneProgress(boot);
       const x=mx*7;
       const yy=my*4-(p-.34)*18;
