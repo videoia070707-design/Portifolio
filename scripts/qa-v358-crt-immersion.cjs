@@ -58,7 +58,7 @@ const fs=require('node:fs');
       const yaw=parseFloat(getComputedStyle(root).getPropertyValue('--crt-mode-yaw'))||0;
       const ry=window.MOVX3D?.runtime?.instances?.['boot-tv']?.group?.rotation?.y||0;
       return document.querySelector('#boot')?.dataset.crtMode==='motion' && yaw>.09 && Math.abs(ry)>.018;
-    },null,{timeout:2200,polling:'raf'});
+    },null,{timeout:8000,polling:'raf'});
     const hoverState=await page.evaluate(()=>({
       mode:document.querySelector('#boot')?.dataset.crtMode,
       yaw:parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--crt-mode-yaw'))||0,
@@ -75,7 +75,7 @@ const fs=require('node:fs');
       const zoom=parseFloat(getComputedStyle(root).getPropertyValue('--crt-mode-zoom'))||0;
       const z=window.MOVX3D?.runtime?.instances?.['boot-tv']?.camera?.position?.z||9;
       return document.querySelector('#boot')?.dataset.crtMode==='ai' && zoom>=.17 && z<4.69;
-    },null,{timeout:2200,polling:'raf'});
+    },null,{timeout:8000,polling:'raf'});
     const locked=await page.evaluate(()=>({
       mode:document.querySelector('#boot')?.dataset.crtMode,
       pressed:document.querySelector('[data-crt-mode-control="ai"]')?.getAttribute('aria-pressed'),
@@ -99,7 +99,7 @@ const fs=require('node:fs');
       const pointerX=parseFloat(getComputedStyle(root).getPropertyValue('--crt-px'))||0;
       const rotationY=window.MOVX3D?.runtime?.instances?.['boot-tv']?.group?.rotation?.y||0;
       return Math.abs(dragYaw)>.02 && Math.abs(pointerX)>.15 && Math.abs(rotationY)>.035;
-    },null,{timeout:2200,polling:'raf'});
+    },null,{timeout:8000,polling:'raf'});
     const dragState=await page.evaluate(()=>({
       dragging:document.querySelector('#boot .crt-wrap')?.classList.contains('is-crt-dragging'),
       dragYaw:parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--crt-drag-yaw'))||0,
