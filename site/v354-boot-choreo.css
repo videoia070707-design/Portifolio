@@ -14,6 +14,8 @@
   --v354-copy-blur:0px;
   --v354-cue-opacity:1;
   --v354-shade:0;
+  --v354-bg-x:22%;
+  --v354-tags-y:0px;
 }
 
 html.v354-choreo .boot-scene{
@@ -27,7 +29,7 @@ html.v354-choreo .boot-scene .scene-inner{
   min-height:calc(100svh - 74px);
   overflow:hidden;
   background:
-    radial-gradient(circle at calc(22% + (var(--v354-p) * 10%)) 54%,rgba(255,255,255,.48),transparent 34%),
+    radial-gradient(circle at var(--v354-bg-x) 54%,rgba(255,255,255,.48),transparent 34%),
     linear-gradient(135deg,#ece7dd,#d8d3c8);
 }
 html.v354-choreo .boot-scene .scene-inner:after{
@@ -65,8 +67,8 @@ html.v354-choreo .boot-copy .boot-title span{
   transform-origin:0 100%;
 }
 html.v354-choreo .boot-tags{
-  opacity:calc(.28 + (var(--v354-copy-opacity) * .72));
-  transform:translate3d(0,calc(var(--v354-copy-y) * .35),0);
+  opacity:var(--v354-copy-opacity);
+  transform:translate3d(0,var(--v354-tags-y),0);
 }
 html.v354-choreo .boot-scene .scene-bar{
   z-index:40;
