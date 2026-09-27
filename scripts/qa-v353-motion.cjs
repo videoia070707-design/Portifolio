@@ -21,6 +21,13 @@ const assert=require('node:assert/strict');
         const title=document.querySelector('.boot-title');
         const crt=document.querySelector('[data-model-slot="boot-tv"]');
         const wrap=document.querySelector('.crt-wrap');
+        const copy=document.querySelector('.boot-copy');
+        const titleMetrics=title?[...title.querySelectorAll('span')].map(span=>{
+          const range=document.createRange();range.selectNodeContents(span);
+          const r=range.getBoundingClientRect();
+          return {text:span.textContent.trim(),left:r.left,right:r.right,width:r.width,lines:range.getClientRects().length,whiteSpace:getComputedStyle(span).whiteSpace};
+        }):[];
+        const copyRect=copy?.getBoundingClientRect();
         return {
           motion:root.dataset.motion,
           ready:root.dataset.motionReady,
@@ -30,6 +37,9 @@ const assert=require('node:assert/strict');
           crtAsset:root.dataset.crtAsset,
           crtKind:crt?.dataset.modelKind,
           headline:title?[...title.querySelectorAll('span')].map(x=>x.textContent.trim()).join(' '):'',
+          titleMetrics,
+          copyRect:copyRect?{left:copyRect.left,right:copyRect.right,width:copyRect.width}:null,
+          viewportWidth:root.clientWidth,
           oldHeadline:document.body.textContent.includes('O SITE ACORDA COM VOCÊ'),
           tags:[...document.querySelectorAll('.boot-tags .tag')].map(x=>x.textContent.trim()),
           wrapTransform:getComputedStyle(wrap).transform,
@@ -46,6 +56,11 @@ const assert=require('node:assert/strict');
       assert.equal(state.headline,'IDEIAS NÃO FICAM PARADAS');
       assert.equal(state.oldHeadline,false);
       assert.deepEqual(state.tags,['DIREÇÃO','MOTION','AI','DIGITAL']);
+      assert.equal(state.titleMetrics.length,3,'boot headline lost its three-line editorial structure');
+      assert.ok(state.titleMetrics.every(x=>x.lines===1),`boot headline wrapped internally: ${JSON.stringify(state.titleMetrics)}`);
+      assert.ok(state.titleMetrics.every(x=>x.whiteSpace==='nowrap'),`boot headline nowrap contract missing: ${JSON.stringify(state.titleMetrics)}`);
+      assert.ok(state.titleMetrics.every(x=>x.left>=-1&&x.right<=state.viewportWidth-6),`boot headline clips the viewport: ${JSON.stringify(state.titleMetrics)}`);
+      assert.ok(state.copyRect&&state.copyRect.left>=-1&&state.copyRect.right<=state.viewportWidth+1,'boot copy column escaped viewport');
       assert.equal(state.renderers,1,'v353 must not activate later 3D models');
       assert.equal(state.errors.length,0,'runtime errors: '+JSON.stringify(state.errors));
       assert.ok(state.overflow<=2,'horizontal overflow regression');
@@ -82,7 +97,7 @@ const assert=require('node:assert/strict');
       await page.evaluate(()=>{document.documentElement.style.scrollBehavior='auto';scrollTo(0,0)});
       await page.waitForTimeout(200);
       await page.screenshot({path:`_site/qa-v353-motion-${cfg.name}.png`,fullPage:false});
-      console.log(JSON.stringify({qa:'v353-motion',viewport:cfg.name,status:'PASS',state}));
+      console.log(JSON.stringify({qa:'v357-scene01-copy-fit',viewport:cfg.name,status:'PASS',state}));
       await page.close();
     }
 
