@@ -26,7 +26,7 @@ const assert=require('node:assert/strict');
           layer:root.dataset.motionLayer,
           crtAsset:root.dataset.crtAsset,
           crtKind:crt?.dataset.modelKind,
-          headline:title?.textContent?.replace(/\s+/g,' ').trim(),
+          headline:title?[...title.querySelectorAll('span')].map(x=>x.textContent.trim()).join(' '):'',
           oldHeadline:document.body.textContent.includes('O SITE ACORDA COM VOCÊ'),
           tags:[...document.querySelectorAll('.boot-tags .tag')].map(x=>x.textContent.trim()),
           wrapTransform:getComputedStyle(wrap).transform,
