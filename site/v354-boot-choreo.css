@@ -1,0 +1,145 @@
+/* MOVX v354 — Scene 01 scroll choreography.
+   Scope is deliberately limited to the approved standalone CRT opening.
+   No later 3D slot is activated or visually promoted here. */
+:root{
+  --v354-ease:cubic-bezier(.16,.84,.2,1);
+  --v354-p:0;
+  --v354-crt-x:0px;
+  --v354-crt-y:0px;
+  --v354-crt-scale:1;
+  --v354-crt-rx:0deg;
+  --v354-crt-ry:0deg;
+  --v354-copy-y:0px;
+  --v354-copy-opacity:1;
+  --v354-copy-blur:0px;
+  --v354-cue-opacity:1;
+  --v354-shade:0;
+}
+
+html.v354-choreo .boot-scene{
+  min-height:165svh;
+  padding-bottom:0;
+}
+html.v354-choreo .boot-scene .scene-inner{
+  position:sticky;
+  top:66px;
+  height:calc(100svh - 74px);
+  min-height:calc(100svh - 74px);
+  overflow:hidden;
+  background:
+    radial-gradient(circle at calc(22% + (var(--v354-p) * 10%)) 54%,rgba(255,255,255,.48),transparent 34%),
+    linear-gradient(135deg,#ece7dd,#d8d3c8);
+}
+html.v354-choreo .boot-scene .scene-inner:after{
+  content:"";
+  position:absolute;
+  z-index:30;
+  inset:0;
+  pointer-events:none;
+  background:linear-gradient(180deg,rgba(7,8,7,0) 58%,rgba(7,8,7,.18) 100%);
+  opacity:var(--v354-shade);
+}
+html.v354-choreo .boot-stage{
+  height:calc(100svh - 120px);
+  min-height:0;
+  perspective:1400px;
+  transform-style:preserve-3d;
+}
+html.v354-choreo .crt-wrap{
+  transform:
+    translate3d(var(--v354-crt-x),var(--v354-crt-y),0)
+    scale(var(--v354-crt-scale))
+    rotateX(var(--v354-crt-rx))
+    rotateY(var(--v354-crt-ry)) !important;
+  transform-origin:48% 58%;
+  filter:drop-shadow(0 30px 34px rgba(30,25,20,.18)) !important;
+  transition:filter .25s linear;
+}
+html.v354-choreo .boot-copy{
+  transform:translate3d(0,var(--v354-copy-y),0) !important;
+  opacity:var(--v354-copy-opacity);
+  filter:blur(var(--v354-copy-blur));
+  transform-origin:0 50%;
+}
+html.v354-choreo .boot-copy .boot-title span{
+  transform-origin:0 100%;
+}
+html.v354-choreo .boot-tags{
+  opacity:calc(.28 + (var(--v354-copy-opacity) * .72));
+  transform:translate3d(0,calc(var(--v354-copy-y) * .35),0);
+}
+html.v354-choreo .boot-scene .scene-bar{
+  z-index:40;
+}
+html.v354-choreo .boot-scroll-cue-v354{
+  position:absolute;
+  z-index:12;
+  right:clamp(24px,3vw,50px);
+  bottom:clamp(22px,3vh,38px);
+  display:flex;
+  align-items:center;
+  gap:10px;
+  opacity:var(--v354-cue-opacity);
+  font:700 8px/1 "Courier New",monospace;
+  letter-spacing:.14em;
+  text-transform:uppercase;
+  color:#5d5851;
+  pointer-events:none;
+  will-change:opacity,transform;
+}
+html.v354-choreo .boot-scroll-cue-v354 i{
+  position:relative;
+  display:block;
+  width:52px;
+  height:1px;
+  overflow:hidden;
+  background:rgba(0,0,0,.22);
+}
+html.v354-choreo .boot-scroll-cue-v354 i:after{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:#ff5a18;
+  transform:translateX(-100%);
+  animation:v354CueSweep 1.65s var(--v354-ease) infinite;
+}
+@keyframes v354CueSweep{
+  0%{transform:translateX(-100%)}
+  56%,100%{transform:translateX(100%)}
+}
+html.v354-choreo .boot-scroll-cue-v354 b{font-weight:700;color:#151413}
+html.v354-choreo .boot-scene[data-v354-phase="exit"] .boot-title span:nth-child(1){transform:translateX(-8px)}
+html.v354-choreo .boot-scene[data-v354-phase="exit"] .boot-title span:nth-child(2){transform:translateX(8px)}
+html.v354-choreo .boot-scene[data-v354-phase="exit"] .boot-title span:nth-child(3){transform:translateX(-4px)}
+html.v354-choreo .boot-title span{transition:transform .34s var(--v354-ease)}
+
+/* The next scene remains a normal DOM/CSS fallback. This only makes the handoff
+   feel intentional once Scene 01 releases the sticky viewport. */
+html.v354-choreo #hero .scene-inner{
+  transform-origin:50% 0;
+}
+html.v354-choreo #hero[data-motion-visible="true"] .scene-inner{
+  animation:v354HeroSettle .9s var(--v354-ease) both;
+}
+@keyframes v354HeroSettle{
+  from{transform:translate3d(0,28px,0);clip-path:inset(4% 0 0 round 18px)}
+  to{transform:translate3d(0,0,0);clip-path:inset(0 0 0 round 18px)}
+}
+
+@media(max-width:900px){
+  html.v354-choreo .boot-scene{min-height:142svh}
+  html.v354-choreo .boot-scene .scene-inner{top:58px;height:calc(100svh - 66px);min-height:calc(100svh - 66px)}
+  html.v354-choreo .boot-stage{height:auto;min-height:calc(100svh - 112px)}
+  html.v354-choreo .boot-scroll-cue-v354{right:18px;bottom:16px;gap:7px}
+  html.v354-choreo .boot-scroll-cue-v354 i{width:34px}
+}
+
+@media(prefers-reduced-motion:reduce){
+  html.v354-choreo .boot-scene{min-height:100svh;padding-bottom:8px}
+  html.v354-choreo .boot-scene .scene-inner{position:relative;top:auto;height:auto;min-height:calc(100svh - 82px)}
+  html.v354-choreo .crt-wrap,
+  html.v354-choreo .boot-copy,
+  html.v354-choreo .boot-tags{transform:none!important;filter:none!important;opacity:1!important}
+  html.v354-choreo .boot-scroll-cue-v354{display:none}
+  html.v354-choreo #hero[data-motion-visible="true"] .scene-inner{animation:none!important}
+}
