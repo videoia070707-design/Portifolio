@@ -19,17 +19,29 @@ const fs=require('node:fs');
       const started=Date.now();
       await page.goto('http://127.0.0.1:4173/',{waitUntil:'domcontentloaded',timeout:30000});
       const boot=page.locator('[data-model-slot="boot-tv"]');
-      const initial=await boot.evaluate(el=>({
-        state:el.dataset.glbState||'',
-        fakeVisible:[...el.children].filter(x=>!x.classList.contains('v322-model-renderer')).some(x=>{
-          const s=getComputedStyle(x);return s.visibility!=='hidden'&&s.opacity!=='0'
-        })
-      }));
+      const initial=await boot.evaluate(el=>{
+        const legacy=[...el.querySelectorAll(':scope > .crt-screen,:scope > .power,:scope > .crt-sticker,:scope > .v314-crt-details,:scope > .v314-model-status')]
+          .map(x=>{const s=getComputedStyle(x);return {className:x.className,display:s.display,visibility:s.visibility,opacity:s.opacity}});
+        const shell=getComputedStyle(el);
+        return {
+          state:el.dataset.glbState||'',
+          fastload:document.documentElement.dataset.crtFastload||'',
+          legacy,
+          legacyVisible:legacy.some(x=>x.display!=='none'&&x.visibility!=='hidden'&&parseFloat(x.opacity||'1')>0),
+          shellBoxShadow:shell.boxShadow,
+          shellBorderRadius:shell.borderRadius,
+          shellTransform:shell.transform,
+        };
+      });
       // If the optimized/preloaded GLB is already ready by DOMContentLoaded,
-      // the loading-state assertion no longer applies. Otherwise the obsolete
-      // CSS/DOM television must be completely hidden until WebGL is ready.
+      // the loading-state assertion no longer applies. Otherwise both the
+      // legacy TV parts AND its old chassis styling must be absent.
       if(initial.state!=='ready'){
-        assert.equal(initial.fakeVisible,false,'legacy CSS/DOM TV is visible during GLB load');
+        assert.equal(initial.fastload,'v355-optimized-preload','fast-load marker missing during initial load');
+        assert.equal(initial.legacyVisible,false,'legacy CSS/DOM TV parts are visible during GLB load: '+JSON.stringify(initial.legacy));
+        assert.equal(initial.shellBoxShadow,'none','legacy CSS CRT chassis shadow is still visible during GLB load');
+        assert.equal(initial.shellBorderRadius,'0px','legacy CSS CRT rounded chassis is still visible during GLB load');
+        assert.equal(initial.shellTransform,'none','legacy CSS CRT perspective transform is still active during GLB load');
       }
       await page.waitForFunction(()=>document.querySelector('[data-model-slot="boot-tv"]')?.dataset.glbState==='ready',null,{timeout:cfg.limit});
       const readyMs=Date.now()-started;
