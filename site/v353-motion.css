@@ -1,4 +1,4 @@
-/* MOVX v353 — cinematic motion layer
+/* MOVX v353/v357 — cinematic motion layer
    Motion is editorial and spatial: strong entrances, restrained parallax,
    no decorative HUD/glass effects, and reduced-motion support. */
 :root{--movx-motion-orange:#ff5a18;--v353-ease:cubic-bezier(.16,.84,.2,1);--v353-soft:cubic-bezier(.22,.72,.2,1)}
@@ -7,10 +7,10 @@ html.v353-motion .global{will-change:transform,opacity}
 html.v353-motion .scene{--v353-y:0px;--v353-p:0;--v353-velocity:0;overflow:clip}
 html.v353-motion .scene-inner{isolation:isolate}
 html.v353-motion .scene-bar{will-change:transform,opacity}
-html.v353-motion .boot-copy{position:relative;z-index:3;will-change:transform}
+html.v353-motion .boot-copy{position:relative;z-index:3;min-width:0;width:100%;padding-right:clamp(6px,1.1vw,18px);will-change:transform}
 html.v353-motion .boot-copy .eyebrow{margin-bottom:18px}
-html.v353-motion .boot-title{margin:0 0 30px;font-size:clamp(52px,5.35vw,98px);line-height:.86;letter-spacing:-.075em;text-transform:uppercase}
-html.v353-motion .boot-title span{display:block;transform-origin:0 100%;will-change:transform,opacity,filter}
+html.v353-motion .boot-title{margin:0 0 30px;max-width:100%;font-size:clamp(48px,4.8vw,88px);line-height:.86;letter-spacing:-.065em;text-transform:uppercase}
+html.v353-motion .boot-title span{display:block;max-width:100%;white-space:nowrap;transform-origin:0 100%;will-change:transform,opacity,filter}
 html.v353-motion .boot-copy .copy{font-size:clamp(15px,1.04vw,18px);line-height:1.56;max-width:430px}
 html.v353-motion .boot-tags{gap:7px}
 html.v353-motion .tag{position:relative;overflow:hidden;transition:transform .35s var(--v353-ease),background-color .35s ease,color .35s ease,border-color .35s ease;will-change:transform}
@@ -45,10 +45,21 @@ html.v353-motion .people-visual img{transition:transform 1.2s var(--v353-ease),f
 html.v353-motion .people[data-motion-visible="true"] .people-visual img{transform:scale(1.025)}
 html.v353-motion .contact-window{will-change:transform}
 html.v353-motion .work-progress em{transition:width .28s linear}
+@media(min-width:901px){
+ html.v353-motion .boot-stage{grid-template-columns:minmax(0,1.14fr) minmax(360px,.86fr);gap:clamp(28px,3vw,54px)}
+}
+@media(max-width:1180px) and (min-width:901px){
+ html.v353-motion .boot-title{font-size:clamp(46px,4.55vw,72px);letter-spacing:-.058em}
+ html.v353-motion .boot-stage{grid-template-columns:minmax(0,1.08fr) minmax(340px,.92fr)}
+}
 @media(max-width:900px){
- html.v353-motion .boot-title{font-size:clamp(43px,12vw,70px);line-height:.88}
+ html.v353-motion .boot-copy{padding-right:0}
+ html.v353-motion .boot-title{font-size:clamp(43px,11.2vw,66px);line-height:.88;letter-spacing:-.06em}
  html.v353-motion .boot-copy .eyebrow{margin-bottom:13px}
  html.v353-motion .crt-wrap:after{left:18%;right:18%;bottom:0}
+}
+@media(max-width:420px){
+ html.v353-motion .boot-title{font-size:clamp(39px,10.8vw,48px);letter-spacing:-.052em}
 }
 @media(prefers-reduced-motion:reduce){
  html.v353-motion *,html.v353-motion *:before,html.v353-motion *:after{animation-duration:.001ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.001ms!important}
