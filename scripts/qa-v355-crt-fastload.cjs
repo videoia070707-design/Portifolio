@@ -26,6 +26,8 @@ const fs=require('node:fs');
         return {
           state:el.dataset.glbState||'',
           fastload:document.documentElement.dataset.crtFastload||'',
+          priority:document.documentElement.dataset.crtPriority||'',
+          moduleWarmup:[...document.querySelectorAll('link[rel="modulepreload"][data-v356-module]')].map(x=>({module:x.dataset.v356Module,href:x.getAttribute('href'),priority:x.getAttribute('fetchpriority')})),
           legacy,
           legacyVisible:legacy.some(x=>x.display!=='none'&&x.visibility!=='hidden'&&parseFloat(x.opacity||'1')>0),
           shellBoxShadow:shell.boxShadow,
@@ -33,6 +35,9 @@ const fs=require('node:fs');
           shellTransform:shell.transform,
         };
       });
+      assert.equal(initial.priority,'v356-module-warmup','v356 CRT priority marker missing');
+      assert.deepEqual(initial.moduleWarmup.map(x=>x.module).sort(),['gltfloader','three'],'Three.js/GLTFLoader module warmup links missing');
+      assert.ok(initial.moduleWarmup.every(x=>x.priority==='high'),'module warmup is not high priority');
       // If the optimized/preloaded GLB is already ready by DOMContentLoaded,
       // the loading-state assertion no longer applies. Otherwise both the
       // legacy TV parts AND its old chassis styling must be absent.
@@ -47,24 +52,28 @@ const fs=require('node:fs');
       const readyMs=Date.now()-started;
       const state=await page.evaluate(()=>({
         fastload:document.documentElement.dataset.crtFastload,
+        priority:document.documentElement.dataset.crtPriority,
         kind:document.querySelector('[data-model-slot="boot-tv"]')?.dataset.modelKind,
         renderers:document.querySelectorAll('.v322-model-renderer').length,
         preload:!!document.querySelector('link[rel="preload"][href="models/movx-crt-tv.glb"][as="fetch"]'),
+        moduleWarmup:[...document.querySelectorAll('link[rel="modulepreload"][data-v356-module]')].map(x=>x.dataset.v356Module).sort(),
         laterDeferred:(window.MOVX3D?.runtime?.deferredSlots||[]).includes('hero-movx-logo')&&(window.MOVX3D?.runtime?.deferredSlots||[]).includes('x-portal'),
         errors:window.MOVX3D?.runtime?.errors||[],
         overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth,
       }));
       assert.equal(state.fastload,'v355-optimized-preload');
+      assert.equal(state.priority,'v356-module-warmup');
       assert.equal(state.kind,'glb');
       assert.equal(state.renderers,1);
       assert.equal(state.preload,true,'CRT preload link missing');
+      assert.deepEqual(state.moduleWarmup,['gltfloader','three']);
       assert.equal(state.laterDeferred,true,'later 3D models escaped deferred gate');
       assert.equal(state.errors.length,0,'runtime errors: '+JSON.stringify(state.errors));
       assert.ok(state.overflow<=2,'horizontal overflow regression');
       assert.ok(readyMs<cfg.limit,`CRT ready time ${readyMs}ms exceeded ${cfg.limit}ms`);
       assert.equal(errors.length,0,'page errors: '+errors.join(' | '));
       await page.screenshot({path:`_site/qa-v355-fastload-${cfg.name}.png`,fullPage:false});
-      console.log(JSON.stringify({qa:'v355-crt-fastload',viewport:cfg.name,status:'PASS',readyMs,initial,glbBytes,state}));
+      console.log(JSON.stringify({qa:'v356-crt-first-frame',viewport:cfg.name,status:'PASS',readyMs,initial,glbBytes,state}));
       await page.close();
     }
   } finally {await browser.close()}
