@@ -7,6 +7,7 @@
   const inner=boot?.querySelector('.scene-inner');
   const wrap=boot?.querySelector('.crt-wrap');
   const copy=boot?.querySelector('.boot-copy');
+  const tags=boot?.querySelector('.boot-tags');
   if(!boot||!inner||!wrap||!copy)return;
 
   const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -40,7 +41,7 @@
   }
 
   let targetX=0,targetY=0,pointerX=0,pointerY=0;
-  let smoothP=0,lastP=-1;
+  let smoothP=0;
 
   addEventListener('pointermove',event=>{
     if(coarse)return;
@@ -89,18 +90,21 @@
     const tagsY=copyY*.32;
 
     boot.style.setProperty('--v354-p',smoothP.toFixed(4));
-    boot.style.setProperty('--v354-crt-x',`${x.toFixed(2)}px`);
-    boot.style.setProperty('--v354-crt-y',`${y.toFixed(2)}px`);
-    boot.style.setProperty('--v354-crt-scale',scale.toFixed(4));
-    boot.style.setProperty('--v354-crt-rx',`${rx.toFixed(3)}deg`);
-    boot.style.setProperty('--v354-crt-ry',`${ry.toFixed(3)}deg`);
-    boot.style.setProperty('--v354-copy-y',`${copyY.toFixed(2)}px`);
-    boot.style.setProperty('--v354-copy-opacity',copyOpacity.toFixed(4));
-    boot.style.setProperty('--v354-copy-blur',`${blur.toFixed(2)}px`);
-    boot.style.setProperty('--v354-cue-opacity',cueOpacity.toFixed(4));
     boot.style.setProperty('--v354-shade',shade.toFixed(4));
     boot.style.setProperty('--v354-bg-x',`${bgX.toFixed(2)}%`);
-    boot.style.setProperty('--v354-tags-y',`${tagsY.toFixed(2)}px`);
+
+    // Runtime-owned inline transforms make the choreography deterministic even
+    // when older style layers have stronger selector specificity. The v353
+    // first-load WAAPI animation still wins until it is cancelled at intro end.
+    wrap.style.transform=`translate3d(${x.toFixed(2)}px,${y.toFixed(2)}px,0) scale(${scale.toFixed(4)}) rotateX(${rx.toFixed(3)}deg) rotateY(${ry.toFixed(3)}deg)`;
+    copy.style.transform=`translate3d(0,${copyY.toFixed(2)}px,0)`;
+    copy.style.opacity=copyOpacity.toFixed(4);
+    copy.style.filter=`blur(${blur.toFixed(2)}px)`;
+    if(tags){
+      tags.style.transform=`translate3d(0,${tagsY.toFixed(2)}px,0)`;
+      tags.style.opacity=copyOpacity.toFixed(4);
+    }
+    cue.style.opacity=cueOpacity.toFixed(4);
 
     // Feed the existing Three.js runtime so the model itself participates in
     // the scroll, instead of only moving its DOM wrapper.
@@ -108,10 +112,7 @@
 
     const phase=phaseFor(smoothP);
     if(boot.dataset.v354Phase!==phase)boot.dataset.v354Phase=phase;
-    if(Math.abs(smoothP-lastP)>.004){
-      root.dataset.motionChoreoProgress=smoothP.toFixed(3);
-      lastP=smoothP;
-    }
+    root.dataset.motionChoreoProgress=smoothP.toFixed(3);
     requestAnimationFrame(render);
   }
 
