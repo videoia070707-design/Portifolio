@@ -127,33 +127,57 @@
       }
     };
 
-    wrap.addEventListener('pointermove',event=>{
+    const relativePoint=event=>{
       const r=wrap.getBoundingClientRect();
-      if(!r.width||!r.height)return;
-      setPointer(((event.clientX-r.left)/r.width-.5)*2,((event.clientY-r.top)/r.height-.5)*2);
-      if(!dragging||event.pointerId!==pointerId)return;
+      if(!r.width||!r.height)return null;
+      return {r,nx:((event.clientX-r.left)/r.width-.5)*2,ny:((event.clientY-r.top)/r.height-.5)*2};
+    };
+    const insideWrap=event=>{
+      const p=relativePoint(event);if(!p)return false;
+      return event.clientX>=p.r.left&&event.clientX<=p.r.right&&event.clientY>=p.r.top&&event.clientY<=p.r.bottom;
+    };
+    const updateDrag=event=>{
+      const p=relativePoint(event);if(!p)return;
+      setPointer(p.nx,p.ny);
       const dx=event.clientX-startX,dy=event.clientY-startY;
-      targetDragYaw=clamp(dx/r.width*rad(34),rad(-17),rad(17));
-      targetDragPitch=clamp(-dy/r.height*rad(22),rad(-10),rad(10));
+      targetDragYaw=clamp(dx/p.r.width*rad(34),rad(-17),rad(17));
+      targetDragPitch=clamp(-dy/p.r.height*rad(22),rad(-10),rad(10));
       const now=performance.now(),dt=Math.max(8,now-lastT);
       velX=(event.clientX-lastX)/dt;velY=(event.clientY-lastY)/dt;
       lastX=event.clientX;lastY=event.clientY;lastT=now;
+    };
+
+    wrap.addEventListener('pointermove',event=>{
+      if(dragging)return;
+      const p=relativePoint(event);if(!p)return;
+      setPointer(p.nx,p.ny);
     },{passive:true});
     wrap.addEventListener('pointerenter',()=>wrap.classList.add('is-crt-engaged'),{passive:true});
     wrap.addEventListener('pointerleave',()=>{if(!dragging)setPointer(0,0)},{passive:true});
-    wrap.addEventListener('pointerdown',event=>{
-      if(event.button!==0)return;
+
+    /* Scene-owned pointerdown is deliberate. The WebGL canvas is non-interactive
+       and older visual layers can change hit-testing; the boot scene therefore
+       accepts the pointer whenever its coordinates are physically inside the TV
+       wrap, while movement/up are tracked globally until release. */
+    boot.addEventListener('pointerdown',event=>{
+      if(event.button!==0||!insideWrap(event))return;
       engage();
       dragging=true;pointerId=event.pointerId;startX=lastX=event.clientX;startY=lastY=event.clientY;lastT=performance.now();
       velX=velY=0;wrap.classList.add('is-crt-dragging');
+      root.dataset.crtDragging='true';
       try{wrap.setPointerCapture(pointerId)}catch{}
       if(inertiaRaf)cancelAnimationFrame(inertiaRaf);
       inertiaRaf=requestAnimationFrame(settle);
     });
+    addEventListener('pointermove',event=>{
+      if(!dragging||event.pointerId!==pointerId)return;
+      updateDrag(event);
+    },{passive:true});
 
     const release=event=>{
       if(!dragging||event.pointerId!==pointerId)return;
       dragging=false;wrap.classList.remove('is-crt-dragging');
+      root.dataset.crtDragging='false';
       try{wrap.releasePointerCapture(pointerId)}catch{}
       /* Convert the final physical pointer velocity into a restrained release.
          It never spins indefinitely; the target decays back to the active mode. */
@@ -161,9 +185,12 @@
       targetDragPitch=clamp(targetDragPitch-velY*.035,rad(-10),rad(10));
       if(!inertiaRaf)inertiaRaf=requestAnimationFrame(settle);
     };
-    wrap.addEventListener('pointerup',release);
-    wrap.addEventListener('pointercancel',release);
+    addEventListener('pointerup',release,{passive:true});
+    addEventListener('pointercancel',release,{passive:true});
     wrap.addEventListener('lostpointercapture',event=>{if(dragging&&event.pointerId===pointerId)release(event)});
+    root.dataset.crtDragReady='true';
+  }else{
+    root.dataset.crtDragReady='false';
   }
 
   const stateObserver=new MutationObserver(()=>{
@@ -180,7 +207,7 @@
   if(slot.dataset.glbState==='ready')boot.classList.add('crt-is-real');
 
   document.addEventListener('visibilitychange',()=>{
-    if(document.hidden){setPointer(0,0);dragging=false;wrap.classList.remove('is-crt-dragging')}
+    if(document.hidden){setPointer(0,0);dragging=false;root.dataset.crtDragging='false';wrap.classList.remove('is-crt-dragging')}
   });
   addEventListener('pagehide',()=>{stateObserver.disconnect();if(inertiaRaf)cancelAnimationFrame(inertiaRaf)},{once:true});
 
