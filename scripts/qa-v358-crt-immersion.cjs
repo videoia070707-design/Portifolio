@@ -145,7 +145,7 @@ const fs=require('node:fs');
     await page.screenshot({path:'_site/qa-v358-crt-immersion-desktop.png',fullPage:false});
     await page.close();
 
-    const mobile=await browser.newPage({viewport:{width:390,height:844},deviceScaleFactor:1});
+    const mobile=await browser.newPage({viewport:{width:390,height:844},deviceScaleFactor:1,hasTouch:true,isMobile:true});
     const mobileErrors=[];mobile.on('pageerror',e=>mobileErrors.push(String(e)));
     await mobile.goto('http://127.0.0.1:4173/',{waitUntil:'domcontentloaded',timeout:30000});
     await mobile.waitForFunction(()=>document.documentElement.dataset.crtInteractionReady==='true',null,{timeout:7000});
@@ -159,6 +159,7 @@ const fs=require('node:fs');
     const mobileState=await mobile.evaluate(()=>({
       mode:document.querySelector('#boot')?.dataset.crtMode,
       pressed:document.querySelector('[data-crt-mode-control="digital"]')?.getAttribute('aria-pressed'),
+      coarse:matchMedia('(pointer:coarse)').matches,
       hintDisplay:getComputedStyle(document.querySelector('.crt-interaction-hint')).display,
       renderers:document.querySelectorAll('.v322-model-renderer').length,
       activeSlots:window.MOVX3D?.runtime?.activeSlots||[],
@@ -166,6 +167,7 @@ const fs=require('node:fs');
     }));
     assert.equal(mobileState.mode,'digital');
     assert.equal(mobileState.pressed,'true');
+    assert.equal(mobileState.coarse,true,'mobile QA did not exercise the coarse-pointer runtime path');
     assert.equal(mobileState.hintDisplay,'none','desktop drag hint must stay out of mobile UI');
     assert.equal(mobileState.renderers,1);
     assert.deepEqual(mobileState.activeSlots,['boot-tv']);
