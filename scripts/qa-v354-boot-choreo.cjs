@@ -49,11 +49,12 @@ const assert=require('node:assert/strict');
       assert.ok(before.overflow<=2,'horizontal overflow before scroll');
 
       await page.evaluate(()=>{
+        document.documentElement.style.scrollBehavior='auto';
         const boot=document.querySelector('#boot');
         const travel=Math.max(1,boot.offsetHeight-innerHeight);
-        scrollTo({top:boot.offsetTop+travel*.66,behavior:'instant'});
+        window.scrollTo(0,boot.offsetTop+travel*.72);
       });
-      await page.waitForFunction(()=>parseFloat(document.documentElement.dataset.motionChoreoProgress||'0')>.54,null,{timeout:5000});
+      await page.waitForFunction(()=>parseFloat(document.documentElement.dataset.motionChoreoProgress||'0')>.58,null,{timeout:8000});
       await page.waitForTimeout(350);
 
       const mid=await page.evaluate(()=>{
@@ -74,11 +75,11 @@ const assert=require('node:assert/strict');
           overflow:root.scrollWidth-root.clientWidth,
         };
       });
-      assert.ok(mid.progress>.54,'scroll choreography progress did not advance');
+      assert.ok(mid.progress>.58,'scroll choreography progress did not advance');
       assert.notEqual(mid.wrapTransform,before.wrapTransform,'CRT wrapper did not change during choreography');
-      assert.ok(mid.copyOpacity<.86,'boot copy did not phase out');
-      assert.ok(mid.cueOpacity<.25,'scroll cue did not clear after engagement');
-      assert.ok(mid.crtProgress>.5,'scroll progress was not handed to 3D runtime');
+      assert.ok(mid.copyOpacity<.82,'boot copy did not phase out');
+      assert.ok(mid.cueOpacity<.2,'scroll cue did not clear after engagement');
+      assert.ok(mid.crtProgress>.55,'scroll progress was not handed to 3D runtime');
       assert.equal(mid.rendererCount,1,'later 3D renderer activated during boot choreography');
       assert.equal(mid.heroState,'deferred');
       assert.ok(mid.overflow<=2,'horizontal overflow after choreography');
