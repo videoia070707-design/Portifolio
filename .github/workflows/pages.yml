@@ -72,7 +72,7 @@ jobs:
           path: _site
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
-      - name: Validate storyboard, CRT gate, copy and motion
+      - name: Validate storyboard, CRT gate, copy, motion and fast-load
         shell: bash
         run: |
           set -euo pipefail
@@ -85,6 +85,7 @@ jobs:
           node scripts/qa-v321-production.cjs
           node scripts/qa-v353-motion.cjs
           node scripts/qa-v354-boot-choreo.cjs
+          node scripts/qa-v355-crt-fastload.cjs
           node scripts/qa-identify-models.cjs
       - name: Save contract evidence
         if: always()
@@ -92,6 +93,7 @@ jobs:
         with:
           name: movx-qa-contracts
           path: |
+            _site/qa-v355-*
             _site/qa-v354-*
             _site/qa-v353-*
             _site/qa-v351-*
