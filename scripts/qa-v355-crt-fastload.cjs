@@ -19,8 +19,18 @@ const fs=require('node:fs');
       const started=Date.now();
       await page.goto('http://127.0.0.1:4173/',{waitUntil:'domcontentloaded',timeout:30000});
       const boot=page.locator('[data-model-slot="boot-tv"]');
-      const initial=await boot.evaluate(el=>({state:el.dataset.glbState||'',fakeVisible:[...el.children].filter(x=>!x.classList.contains('v322-model-renderer')).some(x=>{const s=getComputedStyle(x);return s.visibility!=='hidden'&&s.opacity!=='0'})}));
-      assert.equal(initial.fakeVisible,false,'legacy CSS/DOM TV is visible during GLB load');
+      const initial=await boot.evaluate(el=>({
+        state:el.dataset.glbState||'',
+        fakeVisible:[...el.children].filter(x=>!x.classList.contains('v322-model-renderer')).some(x=>{
+          const s=getComputedStyle(x);return s.visibility!=='hidden'&&s.opacity!=='0'
+        })
+      }));
+      // If the optimized/preloaded GLB is already ready by DOMContentLoaded,
+      // the loading-state assertion no longer applies. Otherwise the obsolete
+      // CSS/DOM television must be completely hidden until WebGL is ready.
+      if(initial.state!=='ready'){
+        assert.equal(initial.fakeVisible,false,'legacy CSS/DOM TV is visible during GLB load');
+      }
       await page.waitForFunction(()=>document.querySelector('[data-model-slot="boot-tv"]')?.dataset.glbState==='ready',null,{timeout:cfg.limit});
       const readyMs=Date.now()-started;
       const state=await page.evaluate(()=>({
@@ -42,7 +52,7 @@ const fs=require('node:fs');
       assert.ok(readyMs<cfg.limit,`CRT ready time ${readyMs}ms exceeded ${cfg.limit}ms`);
       assert.equal(errors.length,0,'page errors: '+errors.join(' | '));
       await page.screenshot({path:`_site/qa-v355-fastload-${cfg.name}.png`,fullPage:false});
-      console.log(JSON.stringify({qa:'v355-crt-fastload',viewport:cfg.name,status:'PASS',readyMs,glbBytes,state}));
+      console.log(JSON.stringify({qa:'v355-crt-fastload',viewport:cfg.name,status:'PASS',readyMs,initial,glbBytes,state}));
       await page.close();
     }
   } finally {await browser.close()}
