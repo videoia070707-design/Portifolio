@@ -123,9 +123,9 @@ new_load=r'''async function load(instance){
     }
 
     const stats=statsFor(model);
-    // `version` remains the canonical asset contract for the older v351/v352 QA;
-    // v358 is exposed separately as the interaction/runtime revision.
-    const realStats={...stats,...fit,sourceMeshes:rawStats.meshes,sourceTriangles:rawStats.triangles,animations:gltf.animations?.length||0,kind:'glb',version:instance.name==='boot-tv'?'v352-standalone-crt':'fixture',immersionVersion:'v358-crt-spatial',fit:'full-product',streamingProxy:false};
+    // Preserve the v352 standalone-asset metadata contract while adding v358
+    // interaction metadata. No legacy prop-pack mesh extraction may reappear.
+    const realStats={...stats,...fit,sourceMeshes:rawStats.meshes,sourceTriangles:rawStats.triangles,animations:gltf.animations?.length||0,kind:'glb',version:instance.name==='boot-tv'?'v352-standalone-crt':'fixture',immersionVersion:'v358-crt-spatial',fit:'full-product',crtParts:[],removedParts:0,streamingProxy:false};
 
     if(instance.previewProcedural&&instance.group){
       const oldModel=instance.model;
