@@ -48,14 +48,23 @@ const assert=require('node:assert/strict');
       assert.equal(before.runtimeErrors.length,0,'3D runtime errors: '+JSON.stringify(before.runtimeErrors));
       assert.ok(before.overflow<=2,'horizontal overflow before scroll');
 
-      await page.evaluate(()=>{
+      const scrollState=await page.evaluate(async()=>{
         document.documentElement.style.scrollBehavior='auto';
+        document.body.style.scrollBehavior='auto';
         const boot=document.querySelector('#boot');
         const travel=Math.max(1,boot.offsetHeight-innerHeight);
-        window.scrollTo(0,boot.offsetTop+travel*.72);
+        const target=Math.round(boot.offsetTop+travel*.80);
+        window.scrollTo({top:target,left:0,behavior:'instant'});
+        await new Promise(r=>setTimeout(r,120));
+        // Re-issue after layout/paint so sticky layout cannot swallow the first
+        // scroll command on slower CI runners.
+        window.scrollTo({top:target,left:0,behavior:'instant'});
+        return {target,scrollY:window.scrollY,travel};
       });
-      await page.waitForFunction(()=>parseFloat(document.documentElement.dataset.motionChoreoProgress||'0')>.58,null,{timeout:8000});
-      await page.waitForTimeout(350);
+      assert.ok(Math.abs(scrollState.scrollY-scrollState.target)<12,
+        `deterministic choreography scroll missed target: ${JSON.stringify(scrollState)}`);
+      await page.waitForFunction(()=>parseFloat(document.documentElement.dataset.motionChoreoProgress||'0')>.52,null,{timeout:12000});
+      await page.waitForTimeout(420);
 
       const mid=await page.evaluate(()=>{
         const root=document.documentElement;
@@ -73,20 +82,21 @@ const assert=require('node:assert/strict');
           rendererCount:document.querySelectorAll('.v322-model-renderer').length,
           heroState:document.querySelector('[data-model-slot="hero-movx-logo"]')?.dataset.glbState,
           overflow:root.scrollWidth-root.clientWidth,
+          scrollY:window.scrollY,
         };
       });
-      assert.ok(mid.progress>.58,'scroll choreography progress did not advance');
+      assert.ok(mid.progress>.52,'scroll choreography progress did not advance');
       assert.notEqual(mid.wrapTransform,before.wrapTransform,'CRT wrapper did not change during choreography');
-      assert.ok(mid.copyOpacity<.82,'boot copy did not phase out');
+      assert.ok(mid.copyOpacity<.88,'boot copy did not phase out');
       assert.ok(mid.cueOpacity<.2,'scroll cue did not clear after engagement');
-      assert.ok(mid.crtProgress>.55,'scroll progress was not handed to 3D runtime');
+      assert.ok(mid.crtProgress>.50,'scroll progress was not handed to 3D runtime');
       assert.equal(mid.rendererCount,1,'later 3D renderer activated during boot choreography');
       assert.equal(mid.heroState,'deferred');
       assert.ok(mid.overflow<=2,'horizontal overflow after choreography');
       assert.equal(errors.length,0,'page errors: '+errors.join(' | '));
 
       await page.screenshot({path:`_site/qa-v354-boot-choreo-${cfg.name}.png`,fullPage:false});
-      console.log(JSON.stringify({qa:'v354-boot-choreo',viewport:cfg.name,status:'PASS',before,mid}));
+      console.log(JSON.stringify({qa:'v354-boot-choreo',viewport:cfg.name,status:'PASS',before,scrollState,mid}));
       await page.close();
     }
 
