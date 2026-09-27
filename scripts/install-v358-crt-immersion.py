@@ -91,7 +91,7 @@ new_load=r'''async function load(instance){
       }
     }
 
-    const early=instance.name==='boot-tv'?window.__MOVX_CRT_BUFFER__:null;
+    const early=instance.name==='boot-tv'&&instance.url.includes(CRT_SOURCE_BASENAME)?window.__MOVX_CRT_BUFFER__:null;
     let gltf=null;
     if(early){
       root.dataset.crtDecode='waiting-buffer';
@@ -123,7 +123,9 @@ new_load=r'''async function load(instance){
     }
 
     const stats=statsFor(model);
-    const realStats={...stats,...fit,sourceMeshes:rawStats.meshes,sourceTriangles:rawStats.triangles,animations:gltf.animations?.length||0,kind:'glb',version:instance.name==='boot-tv'?'v358-standalone-crt':'fixture',fit:'full-product',streamingProxy:false};
+    // `version` remains the canonical asset contract for the older v351/v352 QA;
+    // v358 is exposed separately as the interaction/runtime revision.
+    const realStats={...stats,...fit,sourceMeshes:rawStats.meshes,sourceTriangles:rawStats.triangles,animations:gltf.animations?.length||0,kind:'glb',version:instance.name==='boot-tv'?'v352-standalone-crt':'fixture',immersionVersion:'v358-crt-spatial',fit:'full-product',streamingProxy:false};
 
     if(instance.previewProcedural&&instance.group){
       const oldModel=instance.model;
@@ -231,8 +233,9 @@ runtime_path.write_text(runtime)
 
 # This fetch is intentionally executable, not only <link rel=preload>. It gives
 # GLTFLoader an already-resolved ArrayBuffer and guarantees that network starts
-# while the browser is still parsing the head.
-early_fetch='''<script data-v358-crt-stream="v358-crt-spatial-input">(()=>{if(window.__MOVX_CRT_BUFFER__)return;const u=new URL("models/"+"movx-crt-tv.glb",document.baseURI);window.__MOVX_CRT_FETCH_STARTED__=performance.now();window.__MOVX_CRT_BUFFER__=fetch(u,{cache:"force-cache",credentials:"same-origin",priority:"high"}).then(r=>{if(!r.ok)throw new Error("CRT HTTP "+r.status);return r.arrayBuffer()}).catch(e=>{console.warn("[MOVX v358] early CRT fetch fallback",e);return null})})();</script>'''
+# while the browser is still parsing the head. Query-model QA/debug overrides
+# deliberately skip it so their custom asset remains authoritative.
+early_fetch='''<script data-v358-crt-stream="v358-crt-spatial-input">(()=>{if(new URLSearchParams(location.search).has("crtModel")||window.__MOVX_CRT_BUFFER__)return;const u=new URL("models/"+"movx-crt-tv.glb",document.baseURI);window.__MOVX_CRT_FETCH_STARTED__=performance.now();window.__MOVX_CRT_BUFFER__=fetch(u,{cache:"force-cache",credentials:"same-origin",priority:"high"}).then(r=>{if(!r.ok)throw new Error("CRT HTTP "+r.status);return r.arrayBuffer()}).catch(e=>{console.warn("[MOVX v358] early CRT fetch fallback",e);return null})})();</script>'''
 css_link=f'<link rel="stylesheet" href="{css_name}?v={release}" data-v358-crt-style="{release}">'
 js_tag=f'<script src="{js_name}?v={release}" data-v358-crt-input="{release}"></script>'
 
