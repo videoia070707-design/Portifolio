@@ -1,0 +1,156 @@
+/* MOVX v358 — Scene 01 spatial interaction layer.
+   Scope is intentionally narrow: the approved CRT remains the only production
+   3D asset. This layer makes its depth/input legible without adding HUD clutter. */
+
+html[data-crt-immersion="v358-spatial-input"] #boot{
+  --v358-hot-x:50%;
+  --v358-hot-y:44%;
+  --v358-energy:.18;
+}
+
+html[data-crt-immersion="v358-spatial-input"] #boot .crt-wrap{
+  position:relative;
+  isolation:isolate;
+  cursor:grab;
+  touch-action:pan-y;
+  transform-style:preserve-3d;
+}
+html[data-crt-immersion="v358-spatial-input"] #boot .crt-wrap.is-crt-dragging{cursor:grabbing}
+
+/* A restrained reactive pool of light makes rotation read as volume. It lives
+   behind the TV, so it never becomes a decorative overlay on the actual model. */
+html[data-crt-immersion="v358-spatial-input"] #boot .crt-wrap::before{
+  content:"";
+  position:absolute;
+  z-index:-1;
+  inset:7% 4% 4%;
+  pointer-events:none;
+  background:
+    radial-gradient(circle at var(--v358-hot-x) var(--v358-hot-y),rgba(255,90,24,calc(.10 + var(--v358-energy)*.10)),transparent 34%),
+    radial-gradient(ellipse at 50% 74%,rgba(14,13,12,.18),transparent 58%);
+  filter:blur(18px);
+  opacity:.82;
+  transform:translateZ(-28px) scale(1.04);
+  transition:opacity .45s ease,filter .45s ease;
+}
+
+html[data-crt-immersion="v358-spatial-input"] #boot .v322-model-renderer,
+html[data-crt-immersion="v358-spatial-input"] #boot .v322-model-renderer canvas{
+  width:100%;
+  height:100%;
+}
+html[data-crt-immersion="v358-spatial-input"] #boot .v322-model-renderer{
+  transform-style:preserve-3d;
+  filter:drop-shadow(0 24px 28px rgba(36,27,20,.14));
+  transition:filter .45s ease,opacity .28s ease;
+}
+html[data-crt-immersion="v358-spatial-input"] #boot .crt-wrap.is-crt-engaged .v322-model-renderer{
+  filter:drop-shadow(0 31px 34px rgba(36,27,20,.20));
+}
+
+/* v355 hides the old DOM television until the GLB is ready. v358 introduces a
+   lightweight procedural proxy of the SAME CRT while the real bytes decode.
+   Make that proxy visible immediately without reviving the obsolete CSS TV. */
+html[data-crt-immersion="v358-spatial-input"] [data-model-slot="boot-tv"][data-glb-state="preview-ready"]{
+  background:transparent!important;
+  border:0!important;
+  border-radius:0!important;
+  box-shadow:none!important;
+  filter:none!important;
+  transform:none!important;
+}
+html[data-crt-immersion="v358-spatial-input"] [data-model-slot="boot-tv"][data-glb-state="preview-ready"]::before,
+html[data-crt-immersion="v358-spatial-input"] [data-model-slot="boot-tv"][data-glb-state="preview-ready"]::after{
+  content:none!important;
+  display:none!important;
+}
+html[data-crt-immersion="v358-spatial-input"] [data-model-slot="boot-tv"][data-glb-state="preview-ready"] > .v322-model-renderer{
+  opacity:1!important;
+  visibility:visible!important;
+}
+
+/* The four words are now input, not decoration. Keep the editorial label shape
+   and use a single baseline/contrast change instead of card-like hover effects. */
+html[data-crt-immersion="v358-spatial-input"] #boot .boot-tags .tag[role="button"]{
+  cursor:pointer;
+  user-select:none;
+  outline:none;
+  transform:translateZ(0);
+  transition:transform .32s cubic-bezier(.16,.84,.2,1),color .28s ease,border-color .28s ease,background-color .28s ease;
+}
+html[data-crt-immersion="v358-spatial-input"] #boot .boot-tags .tag[role="button"]::after{
+  content:"";
+  position:absolute;
+  left:9px;
+  right:9px;
+  bottom:5px;
+  height:1px;
+  background:#ff5a18;
+  transform:scaleX(0);
+  transform-origin:right;
+  transition:transform .34s cubic-bezier(.16,.84,.2,1);
+}
+html[data-crt-immersion="v358-spatial-input"] #boot .boot-tags .tag[role="button"]:hover,
+html[data-crt-immersion="v358-spatial-input"] #boot .boot-tags .tag[role="button"]:focus-visible{
+  background:transparent;
+  color:inherit;
+  border-color:currentColor;
+  transform:translateY(-2px);
+}
+html[data-crt-immersion="v358-spatial-input"] #boot .boot-tags .tag[role="button"]:hover::after,
+html[data-crt-immersion="v358-spatial-input"] #boot .boot-tags .tag[role="button"]:focus-visible::after,
+html[data-crt-immersion="v358-spatial-input"] #boot .boot-tags .tag.is-crt-mode::after{
+  transform:scaleX(1);
+  transform-origin:left;
+}
+html[data-crt-immersion="v358-spatial-input"] #boot .boot-tags .tag.is-crt-mode{
+  background:#11100f;
+  border-color:#11100f;
+  color:#f6f0e9;
+  transform:translateY(-2px);
+}
+
+/* Tiny one-line affordance only while a precise pointer exists. This is an
+   instruction, not ambient microcopy; it disappears as soon as the user acts. */
+html[data-crt-immersion="v358-spatial-input"] #boot .crt-interaction-hint{
+  position:absolute;
+  z-index:26;
+  left:50%;
+  bottom:clamp(8px,2.2vw,28px);
+  transform:translateX(-50%);
+  margin:0;
+  color:rgba(22,20,18,.58);
+  font:700 9px/1 "Courier New",monospace;
+  letter-spacing:.14em;
+  white-space:nowrap;
+  pointer-events:none;
+  transition:opacity .35s ease,transform .35s ease;
+}
+html[data-crt-immersion="v358-spatial-input"] #boot .crt-wrap.is-crt-engaged .crt-interaction-hint,
+html[data-crt-immersion="v358-spatial-input"] #boot[data-crt-mode]:not([data-crt-mode="neutral"]) .crt-interaction-hint{
+  opacity:0;
+  transform:translate(-50%,5px);
+}
+
+/* Arrival of the real asset is acknowledged with one physical-looking pulse,
+   not a loading flash or a second object. */
+html[data-crt-immersion="v358-spatial-input"] #boot.crt-is-real .crt-wrap::before{
+  animation:v358RealArrival .72s cubic-bezier(.16,.84,.2,1) 1;
+}
+@keyframes v358RealArrival{
+  0%{opacity:.50;filter:blur(24px)}
+  48%{opacity:1;filter:blur(13px)}
+  100%{opacity:.82;filter:blur(18px)}
+}
+
+@media(max-width:900px){
+  html[data-crt-immersion="v358-spatial-input"] #boot .crt-wrap{cursor:auto}
+  html[data-crt-immersion="v358-spatial-input"] #boot .crt-interaction-hint{display:none}
+  html[data-crt-immersion="v358-spatial-input"] #boot .crt-wrap::before{inset:10% 7% 6%;filter:blur(14px)}
+}
+
+@media(prefers-reduced-motion:reduce){
+  html[data-crt-immersion="v358-spatial-input"] #boot .crt-wrap::before,
+  html[data-crt-immersion="v358-spatial-input"] #boot.crt-is-real .crt-wrap::before{animation:none!important;transition:none!important}
+  html[data-crt-immersion="v358-spatial-input"] #boot .boot-tags .tag[role="button"]{transition:none!important}
+}
