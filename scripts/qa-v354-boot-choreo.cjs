@@ -56,15 +56,28 @@ const assert=require('node:assert/strict');
         const target=Math.round(boot.offsetTop+travel*.80);
         window.scrollTo({top:target,left:0,behavior:'instant'});
         await new Promise(r=>setTimeout(r,120));
-        // Re-issue after layout/paint so sticky layout cannot swallow the first
-        // scroll command on slower CI runners.
         window.scrollTo({top:target,left:0,behavior:'instant'});
         return {target,scrollY:window.scrollY,travel};
       });
       assert.ok(Math.abs(scrollState.scrollY-scrollState.target)<12,
         `deterministic choreography scroll missed target: ${JSON.stringify(scrollState)}`);
-      await page.waitForFunction(()=>parseFloat(document.documentElement.dataset.motionChoreoProgress||'0')>.52,null,{timeout:12000});
-      await page.waitForTimeout(420);
+
+      // v354 intentionally smooths progress over RAFs. Wait for the visible
+      // choreography state itself instead of sampling immediately after the
+      // numeric progress threshold; this removes CI timing races without
+      // weakening the visual contract.
+      await page.waitForFunction(()=>{
+        const root=document.documentElement;
+        const boot=document.querySelector('#boot');
+        const copy=boot?.querySelector('.boot-copy');
+        const cue=boot?.querySelector('.boot-scroll-cue-v354');
+        if(!boot||!copy||!cue)return false;
+        const progress=parseFloat(root.dataset.motionChoreoProgress||'0');
+        const copyOpacity=parseFloat(getComputedStyle(copy).opacity);
+        const cueOpacity=parseFloat(getComputedStyle(cue).opacity);
+        return progress>.52 && copyOpacity<.88 && cueOpacity<.2;
+      },null,{timeout:12000});
+      await page.waitForTimeout(120);
 
       const mid=await page.evaluate(()=>{
         const root=document.documentElement;
