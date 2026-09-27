@@ -7,7 +7,7 @@ Goals:
 - never expose the obsolete CSS/DOM television while the real model loads.
 """
 from pathlib import Path
-import json, shutil, subprocess
+import json, re, shutil, subprocess
 
 root=Path(__file__).resolve().parents[1]
 out=root/'_site'
@@ -39,9 +39,9 @@ if tmp_webp.exists(): tmp_webp.unlink()
 
 css=css_src.read_text()
 style=f'<style data-v355-crt-fastload="{release}">\n{css}\n</style>'
-# Inserted as the first executable node in <head>. The URL is split only so the
-# legacy static manifest regex does not mistake this preload for a second model
-# manifest entry; the browser still resolves exactly models/movx-crt-tv.glb.
+# Inserted at the first executable position in <head>. The URL is split only so
+# the legacy static manifest regex does not mistake this preload for another
+# model manifest entry; the browser still resolves models/movx-crt-tv.glb.
 preload=(
     '<script data-v355-crt-preload="v355-optimized-preload">'
     '(()=>{const l=document.createElement("link");l.rel="preload";l.as="fetch";'
@@ -55,12 +55,25 @@ for name in ('index.html','latest.html'):
     text=path.read_text()
     if 'data-v354-boot-choreo="v354-boot-scroll"' not in text:
         raise SystemExit(f'MOVX v355 requires v354 in {name}')
+
+    # Inject the root marker against both <html> and <html ...>. Doing this
+    # before head/body insertion guarantees the fast-load state is present on
+    # the parser-created root element, before any runtime modules can execute.
+    if 'data-crt-fastload=' not in text:
+        text,count=re.subn(
+            r'<html(?=[\s>])',
+            f'<html data-crt-fastload="{release}"',
+            text,
+            count=1,
+            flags=re.IGNORECASE,
+        )
+        if count!=1:
+            raise SystemExit(f'MOVX v355 could not inject root fast-load marker into {name}')
+
     if 'data-v355-crt-preload=' not in text:
         text=text.replace('<head>', '<head>\n'+preload,1)
     if 'data-v355-crt-fastload=' not in text:
         text=text.replace('</head>',style+'\n</head>',1)
-    if 'data-crt-fastload=' not in text:
-        text=text.replace('<html ',f'<html data-crt-fastload="{release}" ',1)
     path.write_text(text)
     installed.append(name)
 
@@ -68,8 +81,16 @@ for name in installed:
     text=(out/name).read_text()
     if 'data-v355-crt-preload="v355-optimized-preload"' not in text:
         raise SystemExit(f'MOVX v355 preload missing from {name}')
-    if 'data-crt-fastload="v355-optimized-preload"' not in text:
-        raise SystemExit(f'MOVX v355 fast-load marker missing from {name}')
+    if text.count('data-crt-fastload="v355-optimized-preload"')!=1:
+        raise SystemExit(f'MOVX v355 root fast-load marker invalid in {name}')
+    if '<style data-v355-crt-fastload="v355-optimized-preload">' not in text:
+        raise SystemExit(f'MOVX v355 critical fast-load CSS missing from {name}')
+    # Static ordering contract: root marker and preload must be available before
+    # the boot runtime. This catches regressions before browser QA/deploy.
+    if text.find('data-crt-fastload="v355-optimized-preload"') > text.find('<head>'):
+        raise SystemExit(f'MOVX v355 root marker was injected too late in {name}')
+    if text.find('data-v355-crt-preload="v355-optimized-preload"') > text.find('</head>'):
+        raise SystemExit(f'MOVX v355 preload was injected outside head in {name}')
 
 published=sorted(p.name for p in (out/'models').glob('*.glb'))
 if published!=['movx-crt-tv.glb']:
@@ -84,6 +105,7 @@ print(json.dumps({
     'texture_codec':'webp quality 80',
     'geometry':'quantized, not simplified',
     'preload':'head/high priority',
+    'root_marker':'parser-time/static',
     'fallback':'old DOM/CSS television hidden during real GLB load',
     'published_glbs':published,
 },ensure_ascii=False))
