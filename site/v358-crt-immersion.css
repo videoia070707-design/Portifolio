@@ -11,11 +11,10 @@ html[data-crt-immersion="v358-spatial-input"] #boot{
 html[data-crt-immersion="v358-spatial-input"] #boot .crt-wrap{
   position:relative;
   isolation:isolate;
-  cursor:grab;
+  cursor:default;
   touch-action:pan-y;
   transform-style:preserve-3d;
 }
-html[data-crt-immersion="v358-spatial-input"] #boot .crt-wrap.is-crt-dragging{cursor:grabbing}
 
 /* A restrained reactive pool of light makes rotation read as volume. It lives
    behind the TV, so it never becomes a decorative overlay on the actual model. */
