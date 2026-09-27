@@ -1,13 +1,14 @@
 /* MOVX v355 — fast-load surface for Scene 01.
-   Never show the old CSS/DOM television while the real CRT GLB is loading. */
-html[data-crt-fastload="v355-optimized-preload"] [data-model-slot="boot-tv"]{
+   This stylesheet is injected only by the v355 production build, so the
+   loading shield must not depend on a JS/runtime marker to become active. */
+[data-model-slot="boot-tv"]{
   position:relative;
 }
 
 /* The legacy fallback used the slot itself as the TV chassis (.crt):
    gradients, rounded shell, heavy inset shadows and a perspective rotation.
-   Reset that entire physical shell while the real model is not ready. */
-html[data-crt-fastload="v355-optimized-preload"] [data-model-slot="boot-tv"]:not([data-glb-state="ready"]){
+   Reset that physical shell until the real GLB renderer is ready. */
+[data-model-slot="boot-tv"]:not([data-glb-state="ready"]){
   background:radial-gradient(circle at 48% 44%,rgba(255,255,255,.42),rgba(255,255,255,.10) 38%,transparent 68%)!important;
   border:0!important;
   border-radius:0!important;
@@ -18,11 +19,11 @@ html[data-crt-fastload="v355-optimized-preload"] [data-model-slot="boot-tv"]:not
 
 /* Hide every visual part that built the old DOM/CSS television, including
    the v314 details/status injected after DOMContentLoaded. */
-html[data-crt-fastload="v355-optimized-preload"] [data-model-slot="boot-tv"]:not([data-glb-state="ready"]) > .crt-screen,
-html[data-crt-fastload="v355-optimized-preload"] [data-model-slot="boot-tv"]:not([data-glb-state="ready"]) > .power,
-html[data-crt-fastload="v355-optimized-preload"] [data-model-slot="boot-tv"]:not([data-glb-state="ready"]) > .crt-sticker,
-html[data-crt-fastload="v355-optimized-preload"] [data-model-slot="boot-tv"]:not([data-glb-state="ready"]) > .v314-crt-details,
-html[data-crt-fastload="v355-optimized-preload"] [data-model-slot="boot-tv"]:not([data-glb-state="ready"]) > .v314-model-status{
+[data-model-slot="boot-tv"]:not([data-glb-state="ready"]) > .crt-screen,
+[data-model-slot="boot-tv"]:not([data-glb-state="ready"]) > .power,
+[data-model-slot="boot-tv"]:not([data-glb-state="ready"]) > .crt-sticker,
+[data-model-slot="boot-tv"]:not([data-glb-state="ready"]) > .v314-crt-details,
+[data-model-slot="boot-tv"]:not([data-glb-state="ready"]) > .v314-model-status{
   display:none!important;
   opacity:0!important;
   visibility:hidden!important;
@@ -30,12 +31,12 @@ html[data-crt-fastload="v355-optimized-preload"] [data-model-slot="boot-tv"]:not
 
 /* Defensive rule for any older direct-child fallback fragment that may still
    be injected by a previous production layer. The WebGL renderer is excluded. */
-html[data-crt-fastload="v355-optimized-preload"] [data-model-slot="boot-tv"]:not([data-glb-state="ready"]) > :not(.v322-model-renderer){
+[data-model-slot="boot-tv"]:not([data-glb-state="ready"]) > :not(.v322-model-renderer){
   opacity:0!important;
   visibility:hidden!important;
 }
 
-html[data-crt-fastload="v355-optimized-preload"] [data-model-slot="boot-tv"]:not([data-glb-state="ready"])::before{
+[data-model-slot="boot-tv"]:not([data-glb-state="ready"])::before{
   content:"MOVX 3D / CRT 01";
   position:absolute;
   z-index:24;
@@ -48,7 +49,7 @@ html[data-crt-fastload="v355-optimized-preload"] [data-model-slot="boot-tv"]:not
   white-space:nowrap;
   opacity:.72;
 }
-html[data-crt-fastload="v355-optimized-preload"] [data-model-slot="boot-tv"]:not([data-glb-state="ready"])::after{
+[data-model-slot="boot-tv"]:not([data-glb-state="ready"])::after{
   content:"";
   position:absolute;
   z-index:24;
@@ -66,8 +67,8 @@ html[data-crt-fastload="v355-optimized-preload"] [data-model-slot="boot-tv"]:not
   opacity:1;
   animation:v355CrtLoad 1.05s cubic-bezier(.16,.84,.2,1) infinite;
 }
-html[data-crt-fastload="v355-optimized-preload"] [data-model-slot="boot-tv"][data-glb-state="ready"]::before,
-html[data-crt-fastload="v355-optimized-preload"] [data-model-slot="boot-tv"][data-glb-state="ready"]::after{
+[data-model-slot="boot-tv"][data-glb-state="ready"]::before,
+[data-model-slot="boot-tv"][data-glb-state="ready"]::after{
   content:none;
 }
 @keyframes v355CrtLoad{
@@ -76,5 +77,5 @@ html[data-crt-fastload="v355-optimized-preload"] [data-model-slot="boot-tv"][dat
   100%{transform:translateX(-50%) scaleX(1);opacity:0}
 }
 @media(prefers-reduced-motion:reduce){
-  html[data-crt-fastload="v355-optimized-preload"] [data-model-slot="boot-tv"]:not([data-glb-state="ready"])::after{animation:none;transform:translateX(-50%) scaleX(.72)}
+  [data-model-slot="boot-tv"]:not([data-glb-state="ready"])::after{animation:none;transform:translateX(-50%) scaleX(.72)}
 }
