@@ -26,6 +26,7 @@ const fs=require('node:fs');
       return {
         immersion:root.dataset.crtImmersion,
         interactionReady:root.dataset.crtInteractionReady,
+        pointerReady:root.dataset.crtPointerReady,
         assetState:root.dataset.crtAssetState||'',
         glbState:slot?.dataset.glbState||'',
         modelKind:slot?.dataset.modelKind||'',
@@ -41,6 +42,7 @@ const fs=require('node:fs');
     });
     assert.equal(initial.immersion,'v358-spatial-input');
     assert.equal(initial.interactionReady,'true');
+    assert.equal(initial.pointerReady,'true','desktop cursor interaction owner missing');
     assert.equal(initial.rendererCount,1,'streaming preview must reuse the single Scene-01 renderer');
     assert.deepEqual(initial.activeSlots,['boot-tv']);
     assert.ok(initial.deferred.includes('hero-movx-logo')&&initial.deferred.includes('x-portal'),'later models escaped the deferred gate');
@@ -81,6 +83,7 @@ const fs=require('node:fs');
       pressed:document.querySelector('[data-crt-mode-control="ai"]')?.getAttribute('aria-pressed'),
       zoom:parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--crt-mode-zoom'))||0,
       cameraZ:window.MOVX3D?.runtime?.instances?.['boot-tv']?.camera?.position?.z||0,
+      rotationY:window.MOVX3D?.runtime?.instances?.['boot-tv']?.group?.rotation?.y||0,
     }));
     assert.equal(locked.mode,'ai');
     assert.equal(locked.pressed,'true');
@@ -90,27 +93,23 @@ const fs=require('node:fs');
     const wrap=page.locator('#boot .crt-wrap');
     const box=await wrap.boundingBox();
     assert.ok(box&&box.width>100&&box.height>100,'CRT interaction surface has invalid bounds');
-    await page.mouse.move(box.x+box.width*.50,box.y+box.height*.50);
-    await page.mouse.down();
     await page.mouse.move(box.x+box.width*.72,box.y+box.height*.40,{steps:8});
-    await page.waitForFunction(()=>{
+    await page.waitForFunction((baseline)=>{
       const root=document.documentElement;
-      const dragYaw=parseFloat(getComputedStyle(root).getPropertyValue('--crt-drag-yaw'))||0;
       const pointerX=parseFloat(getComputedStyle(root).getPropertyValue('--crt-px'))||0;
       const rotationY=window.MOVX3D?.runtime?.instances?.['boot-tv']?.group?.rotation?.y||0;
-      return Math.abs(dragYaw)>.02 && Math.abs(pointerX)>.15 && Math.abs(rotationY)>.035;
-    },null,{timeout:8000,polling:'raf'});
-    const dragState=await page.evaluate(()=>({
-      dragging:document.querySelector('#boot .crt-wrap')?.classList.contains('is-crt-dragging'),
-      dragYaw:parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--crt-drag-yaw'))||0,
+      return Math.abs(pointerX)>.15 && Math.abs(rotationY-baseline)>.012;
+    },locked.rotationY,{timeout:8000,polling:'raf'});
+    const pointerState=await page.evaluate((baseline)=>({
+      pointerReady:document.documentElement.dataset.crtPointerReady,
       pointerX:parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--crt-px'))||0,
+      pointerY:parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--crt-py'))||0,
       rotationY:window.MOVX3D?.runtime?.instances?.['boot-tv']?.group?.rotation?.y||0,
-    }));
-    assert.equal(dragState.dragging,true);
-    assert.ok(Math.abs(dragState.dragYaw)>.02,'live drag yaw did not reach the 3D runtime');
-    assert.ok(Math.abs(dragState.pointerX)>.15,'pointer parallax signal did not reach the runtime');
-    assert.ok(Math.abs(dragState.rotationY)>.035,'model rotation stayed effectively flat while dragging');
-    await page.mouse.up();
+      deltaY:(window.MOVX3D?.runtime?.instances?.['boot-tv']?.group?.rotation?.y||0)-baseline,
+    }),locked.rotationY);
+    assert.equal(pointerState.pointerReady,'true');
+    assert.ok(Math.abs(pointerState.pointerX)>.15,'cursor parallax signal did not reach the runtime');
+    assert.ok(Math.abs(pointerState.deltaY)>.012,'real Three.js model did not react to cursor parallax');
 
     await page.waitForFunction(()=>document.querySelector('[data-model-slot="boot-tv"]')?.dataset.glbState==='ready',null,{timeout:12000});
     await page.waitForTimeout(260);
@@ -160,6 +159,7 @@ const fs=require('node:fs');
       mode:document.querySelector('#boot')?.dataset.crtMode,
       pressed:document.querySelector('[data-crt-mode-control="digital"]')?.getAttribute('aria-pressed'),
       coarse:matchMedia('(pointer:coarse)').matches,
+      pointerReady:document.documentElement.dataset.crtPointerReady,
       hintDisplay:getComputedStyle(document.querySelector('.crt-interaction-hint')).display,
       renderers:document.querySelectorAll('.v322-model-renderer').length,
       activeSlots:window.MOVX3D?.runtime?.activeSlots||[],
@@ -168,7 +168,8 @@ const fs=require('node:fs');
     assert.equal(mobileState.mode,'digital');
     assert.equal(mobileState.pressed,'true');
     assert.equal(mobileState.coarse,true,'mobile QA did not exercise the coarse-pointer runtime path');
-    assert.equal(mobileState.hintDisplay,'none','desktop drag hint must stay out of mobile UI');
+    assert.equal(mobileState.pointerReady,'false','coarse devices must not run cursor parallax');
+    assert.equal(mobileState.hintDisplay,'none','desktop cursor hint must stay out of mobile UI');
     assert.equal(mobileState.renderers,1);
     assert.deepEqual(mobileState.activeSlots,['boot-tv']);
     assert.ok(mobileState.overflow<=2,'mobile overflow regression');
@@ -176,7 +177,7 @@ const fs=require('node:fs');
     await mobile.screenshot({path:'_site/qa-v358-crt-immersion-mobile.png',fullPage:false});
     await mobile.close();
 
-    console.log(JSON.stringify({qa:'v358-crt-immersion',status:'PASS',first3dMs,initial,hoverState,locked,dragState,finalState,mobileState}));
+    console.log(JSON.stringify({qa:'v358-crt-immersion',status:'PASS',first3dMs,initial,hoverState,locked,pointerState,finalState,mobileState}));
   } finally {
     await browser.close();
   }
