@@ -1,0 +1,56 @@
+/* MOVX v353 — cinematic motion layer
+   Motion is editorial and spatial: strong entrances, restrained parallax,
+   no decorative HUD/glass effects, and reduced-motion support. */
+:root{--movx-motion-orange:#ff5a18;--v353-ease:cubic-bezier(.16,.84,.2,1);--v353-soft:cubic-bezier(.22,.72,.2,1)}
+html.v353-motion{scroll-behavior:smooth}
+html.v353-motion .global{will-change:transform,opacity}
+html.v353-motion .scene{--v353-y:0px;--v353-p:0;--v353-velocity:0;overflow:clip}
+html.v353-motion .scene-inner{isolation:isolate}
+html.v353-motion .scene-bar{will-change:transform,opacity}
+html.v353-motion .boot-copy{position:relative;z-index:3;will-change:transform}
+html.v353-motion .boot-copy .eyebrow{margin-bottom:18px}
+html.v353-motion .boot-title{margin:0 0 30px;font-size:clamp(52px,5.35vw,98px);line-height:.86;letter-spacing:-.075em;text-transform:uppercase}
+html.v353-motion .boot-title span{display:block;transform-origin:0 100%;will-change:transform,opacity,filter}
+html.v353-motion .boot-copy .copy{font-size:clamp(15px,1.04vw,18px);line-height:1.56;max-width:430px}
+html.v353-motion .boot-tags{gap:7px}
+html.v353-motion .tag{position:relative;overflow:hidden;transition:transform .35s var(--v353-ease),background-color .35s ease,color .35s ease,border-color .35s ease;will-change:transform}
+html.v353-motion .tag:hover{transform:translateY(-3px);background:var(--movx-motion-orange);border-color:var(--movx-motion-orange);color:#fff}
+html.v353-motion .crt-wrap{will-change:transform,opacity,filter;transform-origin:48% 58%}
+html.v353-motion .crt-wrap:after{content:"";position:absolute;z-index:20;pointer-events:none;left:12%;right:12%;bottom:2.5%;height:2px;background:linear-gradient(90deg,transparent,var(--movx-motion-orange),transparent);transform:scaleX(.12);transform-origin:50% 50%;opacity:0;transition:transform 1.1s var(--v353-ease),opacity .55s ease}
+html.v353-motion[data-motion-intro="ready"] .crt-wrap:after{transform:scaleX(1);opacity:.52}
+html.v353-motion .btn{overflow:hidden;transition:transform .35s var(--v353-ease),background-color .35s ease,border-color .35s ease,color .35s ease}
+html.v353-motion .btn span{display:inline-block;transition:transform .35s var(--v353-ease)}
+html.v353-motion .btn:hover span{transform:translateX(5px)}
+html.v353-motion .nav a{position:relative;transition:color .3s ease,opacity .3s ease}
+html.v353-motion .nav a:after{content:"";position:absolute;left:0;right:0;bottom:-7px;height:1px;background:var(--movx-motion-orange);transform:scaleX(0);transform-origin:right;transition:transform .4s var(--v353-ease)}
+html.v353-motion .nav a:hover:after{transform:scaleX(1);transform-origin:left}
+html.v353-motion .scene[data-motion-visible="true"] .scene-inner{box-shadow:inset 0 0 0 1px rgba(255,90,24,.025)}
+html.v353-motion .scene[data-motion-visible="true"] .scene-bar:after{content:"";position:absolute;left:18px;bottom:-1px;width:clamp(38px,8vw,120px);height:1px;background:var(--movx-motion-orange);transform-origin:left;animation:v353BarIn .8s var(--v353-ease) both}
+html.v353-motion .scene-bar{position:relative}
+@keyframes v353BarIn{from{transform:scaleX(0);opacity:0}to{transform:scaleX(1);opacity:.9}}
+html.v353-motion .scroll-cue{animation:v353Cue 1.7s var(--v353-soft) infinite alternate}
+@keyframes v353Cue{from{transform:translateY(0);opacity:.55}to{transform:translateY(7px);opacity:1}}
+html.v353-motion .progress-rail i{transition:transform .45s var(--v353-ease),opacity .45s ease,background-color .45s ease}
+html.v353-motion .progress-rail i.on{transform:scale(1.45);background:var(--movx-motion-orange)}
+html.v353-motion .hero-copy,
+html.v353-motion .machine-copy,
+html.v353-motion .play-copy,
+html.v353-motion .studio-copy,
+html.v353-motion .people-copy,
+html.v353-motion .contact-copy,
+html.v353-motion .work-overlay{will-change:transform}
+html.v353-motion .console-unit{transition:transform .55s var(--v353-ease),box-shadow .55s ease,filter .55s ease}
+html.v353-motion .console-unit.active{filter:saturate(1.08)}
+html.v353-motion .people-visual img{transition:transform 1.2s var(--v353-ease),filter 1s ease;will-change:transform}
+html.v353-motion .people[data-motion-visible="true"] .people-visual img{transform:scale(1.025)}
+html.v353-motion .contact-window{will-change:transform}
+html.v353-motion .work-progress em{transition:width .28s linear}
+@media(max-width:900px){
+ html.v353-motion .boot-title{font-size:clamp(43px,12vw,70px);line-height:.88}
+ html.v353-motion .boot-copy .eyebrow{margin-bottom:13px}
+ html.v353-motion .crt-wrap:after{left:18%;right:18%;bottom:0}
+}
+@media(prefers-reduced-motion:reduce){
+ html.v353-motion *,html.v353-motion *:before,html.v353-motion *:after{animation-duration:.001ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.001ms!important}
+ html.v353-motion .crt-wrap,html.v353-motion .boot-copy,html.v353-motion .scene-bar,html.v353-motion [data-reveal]{transform:none!important;filter:none!important;opacity:1!important}
+}
