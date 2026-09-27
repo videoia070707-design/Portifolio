@@ -54,13 +54,17 @@ const assert=require('node:assert/strict');
         await page.waitForTimeout(500);
         const after=await page.$eval('.crt-wrap',el=>getComputedStyle(el).transform);
         assert.notEqual(after,before,'CRT wrapper did not respond to pointer/scroll motion');
-        await page.evaluate(()=>document.querySelector('#hero')?.scrollIntoView({block:'center'}));
-        await page.waitForTimeout(700);
+        await page.evaluate(()=>{
+          document.documentElement.style.scrollBehavior='auto';
+          const hero=document.querySelector('#hero');
+          if(hero)window.scrollTo(0,hero.offsetTop+Math.max(0,(hero.offsetHeight-innerHeight)/2));
+        });
+        await page.waitForFunction(()=>document.querySelector('#hero')?.dataset.motionVisible==='true',null,{timeout:5000});
         const heroVisible=await page.$eval('#hero',el=>el.dataset.motionVisible);
         assert.equal(heroVisible,'true','next scene did not receive motion reveal state');
       }
       assert.equal(pageErrors.length,0,'page errors: '+pageErrors.join(' | '));
-      await page.evaluate(()=>scrollTo(0,0));
+      await page.evaluate(()=>{document.documentElement.style.scrollBehavior='auto';scrollTo(0,0)});
       await page.waitForTimeout(200);
       await page.screenshot({path:`_site/qa-v353-motion-${cfg.name}.png`,fullPage:false});
       console.log(JSON.stringify({qa:'v353-motion',viewport:cfg.name,status:'PASS',state}));
