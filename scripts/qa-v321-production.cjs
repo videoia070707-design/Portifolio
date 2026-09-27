@@ -45,11 +45,16 @@ const {writeFile}=require('node:fs/promises');
     await page.screenshot({path:'_site/qa-v321-home-desktop.png',fullPage:false});
     report.desktop={...desktop,loadedCards,pageErrors:errors};
 
+    // v358 makes Scene 01 continuously interactive. Release its desktop WebGL
+    // context before opening the mobile pass so SwiftShader/CI does not starve
+    // the second page and create a false storyboard initialization timeout.
+    await page.close();
+
     const mobile=await browser.newPage({viewport:{width:390,height:844},deviceScaleFactor:1,reducedMotion:'no-preference'});
     const mobileErrors=[]; mobile.on('pageerror',e=>mobileErrors.push(String(e)));
     await mobile.goto('http://127.0.0.1:4173/',{waitUntil:'domcontentloaded',timeout:30000});
     await mobile.waitForFunction(()=>document.documentElement.dataset.movxProduction==='v321-production-storyboard',null,{timeout:10000});
-    await mobile.waitForFunction(()=>window.MOVX3D?.slots?.['closing-window'],null,{timeout:10000});
+    await mobile.waitForFunction(()=>window.MOVX3D?.slots?.['closing-window'],null,{timeout:15000});
     const mobileState=await mobile.evaluate(()=>({
       overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth,
       sceneCount:document.querySelectorAll('main>.scene').length,
