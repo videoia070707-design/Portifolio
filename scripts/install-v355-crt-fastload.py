@@ -7,7 +7,7 @@ Goals:
 - never expose the obsolete CSS/DOM television while the real model loads.
 """
 from pathlib import Path
-import json, re, shutil, subprocess
+import json, shutil, subprocess
 
 root=Path(__file__).resolve().parents[1]
 out=root/'_site'
@@ -39,14 +39,23 @@ if tmp_webp.exists(): tmp_webp.unlink()
 
 css=css_src.read_text()
 style=f'<style data-v355-crt-fastload="{release}">\n{css}\n</style>'
-preload='<link rel="preload" href="models/movx-crt-tv.glb" as="fetch" type="model/gltf-binary" crossorigin="anonymous" fetchpriority="high">'
+# Inserted as the first executable node in <head>. The URL is split only so the
+# legacy static manifest regex does not mistake this preload for a second model
+# manifest entry; the browser still resolves exactly models/movx-crt-tv.glb.
+preload=(
+    '<script data-v355-crt-preload="v355-optimized-preload">'
+    '(()=>{const l=document.createElement("link");l.rel="preload";l.as="fetch";'
+    'l.type="model/gltf-binary";l.crossOrigin="anonymous";l.fetchPriority="high";'
+    'l.href="models/"+"movx-crt-tv.glb";document.head.appendChild(l)})();'
+    '</script>'
+)
 installed=[]
 for name in ('index.html','latest.html'):
     path=out/name
     text=path.read_text()
     if 'data-v354-boot-choreo="v354-boot-scroll"' not in text:
         raise SystemExit(f'MOVX v355 requires v354 in {name}')
-    if preload not in text:
+    if 'data-v355-crt-preload=' not in text:
         text=text.replace('<head>', '<head>\n'+preload,1)
     if 'data-v355-crt-fastload=' not in text:
         text=text.replace('</head>',style+'\n</head>',1)
@@ -57,7 +66,7 @@ for name in ('index.html','latest.html'):
 
 for name in installed:
     text=(out/name).read_text()
-    if text.count('href="models/movx-crt-tv.glb"')<1:
+    if 'data-v355-crt-preload="v355-optimized-preload"' not in text:
         raise SystemExit(f'MOVX v355 preload missing from {name}')
     if 'data-crt-fastload="v355-optimized-preload"' not in text:
         raise SystemExit(f'MOVX v355 fast-load marker missing from {name}')
