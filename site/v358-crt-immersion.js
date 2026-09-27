@@ -112,6 +112,21 @@
   });
 
   if(!coarse&&!reduced){
+    const settle=()=>{
+      dragYaw+=(targetDragYaw-dragYaw)*.19;
+      dragPitch+=(targetDragPitch-dragPitch)*.19;
+      root.style.setProperty('--crt-drag-yaw',dragYaw.toFixed(5));
+      root.style.setProperty('--crt-drag-pitch',dragPitch.toFixed(5));
+      if(!dragging){targetDragYaw*=.915;targetDragPitch*=.915}
+      if(dragging||Math.abs(dragYaw)>.001||Math.abs(dragPitch)>.001||Math.abs(targetDragYaw)>.001||Math.abs(targetDragPitch)>.001){
+        inertiaRaf=requestAnimationFrame(settle);
+      }else{
+        dragYaw=dragPitch=targetDragYaw=targetDragPitch=0;
+        root.style.setProperty('--crt-drag-yaw','0');root.style.setProperty('--crt-drag-pitch','0');
+        inertiaRaf=0;
+      }
+    };
+
     wrap.addEventListener('pointermove',event=>{
       const r=wrap.getBoundingClientRect();
       if(!r.width||!r.height)return;
@@ -132,23 +147,9 @@
       dragging=true;pointerId=event.pointerId;startX=lastX=event.clientX;startY=lastY=event.clientY;lastT=performance.now();
       velX=velY=0;wrap.classList.add('is-crt-dragging');
       try{wrap.setPointerCapture(pointerId)}catch{}
-      if(inertiaRaf){cancelAnimationFrame(inertiaRaf);inertiaRaf=0}
+      if(inertiaRaf)cancelAnimationFrame(inertiaRaf);
+      inertiaRaf=requestAnimationFrame(settle);
     });
-
-    const settle=()=>{
-      dragYaw+=(targetDragYaw-dragYaw)*.19;
-      dragPitch+=(targetDragPitch-dragPitch)*.19;
-      root.style.setProperty('--crt-drag-yaw',dragYaw.toFixed(5));
-      root.style.setProperty('--crt-drag-pitch',dragPitch.toFixed(5));
-      if(!dragging){targetDragYaw*=.915;targetDragPitch*=.915}
-      if(dragging||Math.abs(dragYaw)>.001||Math.abs(dragPitch)>.001||Math.abs(targetDragYaw)>.001||Math.abs(targetDragPitch)>.001){
-        inertiaRaf=requestAnimationFrame(settle);
-      }else{
-        dragYaw=dragPitch=targetDragYaw=targetDragPitch=0;
-        root.style.setProperty('--crt-drag-yaw','0');root.style.setProperty('--crt-drag-pitch','0');
-        inertiaRaf=0;
-      }
-    };
 
     const release=event=>{
       if(!dragging||event.pointerId!==pointerId)return;
