@@ -153,3 +153,31 @@ html[data-crt-immersion="v358-spatial-input"] #boot.crt-is-real .crt-wrap::befor
   html[data-crt-immersion="v358-spatial-input"] #boot.crt-is-real .crt-wrap::before{animation:none!important;transition:none!important}
   html[data-crt-immersion="v358-spatial-input"] #boot .boot-tags .tag[role="button"]{transition:none!important}
 }
+
+/* v359: native controls, meaningful channel content and a readable mobile flow. */
+html[data-crt-immersion] #boot .boot-tags button.tag{position:relative;min-height:44px;padding:12px;font:700 10px/1.2 "Courier New",monospace;text-align:left;letter-spacing:.08em}
+html[data-crt-immersion] #boot .boot-tags button:focus-visible{outline:3px solid #b9400c;outline-offset:3px}
+#boot .crt-channel-panel{min-height:86px;max-width:420px;margin-top:14px}
+#boot .crt-channel-panel p{font:400 13px/1.5 Arial,sans-serif;color:#57514a;margin:0 0 8px;max-width:40ch}
+#boot .crt-channel-panel a{font:700 11px/1.5 Arial,sans-serif;color:#272019;text-underline-offset:4px}
+#boot .crt-channel-panel a:focus-visible{outline:3px solid #b9400c;outline-offset:3px}
+#boot [data-model-slot]>.crt-loading-poster{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;pointer-events:none;opacity:1!important;visibility:visible!important}
+#boot [data-model-slot][data-glb-state="ready"]>.crt-loading-poster,
+#boot [data-model-slot][data-glb-state="preview-ready"]>.crt-loading-poster{display:none}
+#boot [data-model-slot="boot-tv"]:not([data-glb-state="ready"])::before{top:auto;bottom:-10px}
+#boot [data-model-slot="boot-tv"]:not([data-glb-state="ready"])::after{top:auto;bottom:-18px}
+#boot [data-glb-state="error"]::before{content:"Prévia da TV · 3D indisponível"}
+#boot [data-glb-state="error"]::after{display:none}
+@media(max-width:900px){
+ html.v354-choreo #boot{min-height:0;padding-bottom:8px}
+ html.v354-choreo #boot .scene-inner{position:relative;top:auto;height:auto;min-height:0}
+ html.v354-choreo #boot .boot-stage{height:auto;min-height:0;grid-template-columns:minmax(0,1fr);gap:26px;padding:18px 18px 28px}
+ html.v354-choreo #boot .crt-wrap{min-height:0;height:clamp(270px,40svh,365px);transform:none!important;filter:none}
+ html.v354-choreo #boot [data-model-slot="boot-tv"]{width:100%!important;height:100%!important;max-height:none;aspect-ratio:auto}
+ html.v354-choreo #boot .boot-copy{padding:0;opacity:1!important;filter:none!important;transform:none!important}
+ html.v354-choreo #boot .boot-tags{opacity:1!important;transform:none!important}
+ html.v354-choreo #boot .boot-scroll-cue-v354{display:none}
+ #boot .crt-channel-panel{min-height:78px}
+}
+
+html[data-crt-immersion] #boot .boot-tags button[aria-pressed="true"]{background:#211e1a!important;color:#fff8ed!important;border-color:#211e1a!important}

@@ -5,7 +5,7 @@ root=Path(__file__).resolve().parents[1]
 out=root/'_site'
 release='v115-5-adaptive-surface-owner'
 if out.exists():shutil.rmtree(out)
-shutil.copytree(root/'site',out,ignore=shutil.ignore_patterns('assets','vendor'))
+shutil.copytree(root/'site',out,ignore=shutil.ignore_patterns('assets','vendor','models'))
 
 # V108 owns camera/rendering and publishes the end-fade signal, but it must not
 # also write the canvas opacity directly. Strip that historical writer from the

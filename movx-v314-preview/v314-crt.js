@@ -52,9 +52,11 @@
     const progress=clamp((innerHeight-r.top)/(innerHeight+r.height));
     px+=(targetX-px)*.08;
     py+=(targetY-py)*.08;
-    document.documentElement.style.setProperty('--crt-px',px.toFixed(3));
-    document.documentElement.style.setProperty('--crt-py',py.toFixed(3));
-    if(Math.abs(progress-lastProgress)>.001){
+    if(!document.documentElement.dataset.crtInteractionReady){
+      document.documentElement.style.setProperty('--crt-px',px.toFixed(3));
+      document.documentElement.style.setProperty('--crt-py',py.toFixed(3));
+    }
+    if(!document.documentElement.classList.contains('v354-choreo')&&Math.abs(progress-lastProgress)>.001){
       document.documentElement.style.setProperty('--crt-progress',progress.toFixed(4));
       lastProgress=progress;
     }

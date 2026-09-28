@@ -4,7 +4,7 @@ This pass keeps the hard one-model production gate. It does four things only:
 1) starts a guaranteed high-priority CRT fetch during <head> parsing;
 2) shows procedural geometry of the same CRT while the optimized GLB decodes;
 3) swaps to the approved standalone GLB in the existing WebGL context;
-4) adds pointer/drag + DIREÇÃO/MOTION/AI/DIGITAL spatial states.
+4) adds cursor depth + DIREÇÃO/MOTION/AI/DIGITAL spatial states and links.
 
 No later storyboard model is activated or published.
 """
@@ -13,7 +13,7 @@ import json, re, shutil
 
 root=Path(__file__).resolve().parents[1]
 out=root/'_site'
-release='v358-crt-spatial-input'
+release='v359-crt-refined'
 css_name='v358-crt-immersion.css'
 js_name='v358-crt-immersion.js'
 runtime_path=out/'v322-glb-runtime.mjs'
@@ -198,17 +198,19 @@ frame_new='''    const modeYaw=parseFloat(styles.getPropertyValue('--crt-mode-ya
     }
     if(!reduced){
       const motion=instance.motionState||(instance.motionState={rx:0,ry:0,rz:0,z:0,cameraZ:instance.camera.position.z});
-      const targetY=px*.115 + (progress-.42)*.065 + modeYaw + dragYaw;
+      const targetY=-.18 + px*.18 + progress*.25 + modeYaw*2.3 + dragYaw;
       const targetX=-py*.070 + modePitch + dragPitch;
       const targetZ=modeRoll + (active?Math.sin(t*.00135)*.0045:0);
       const targetDepth=(active?.025:0) + modeEnergy*.035;
-      motion.ry+=(targetY-motion.ry)*.085;
-      motion.rx+=(targetX-motion.rx)*.085;
-      motion.rz+=(targetZ-motion.rz)*.072;
-      motion.z+=(targetDepth-motion.z)*.075;
+      const dt=instance.lastMotionTime?Math.min((t-instance.lastMotionTime)/1000,.1):1/60;instance.lastMotionTime=t;
+      const follow=1-Math.exp(-dt*6);
+      motion.ry+=(targetY-motion.ry)*follow;
+      motion.rx+=(targetX-motion.rx)*follow;
+      motion.rz+=(targetZ-motion.rz)*follow;
+      motion.z+=(targetDepth-motion.z)*follow;
       const baseCamera=instance.name==='boot-tv'?4.72:3.45;
       const targetCamera=baseCamera-modeZoom-(active?.035:0);
-      motion.cameraZ+=(targetCamera-motion.cameraZ)*.075;
+      motion.cameraZ+=(targetCamera-motion.cameraZ)*follow;
       instance.group.rotation.set(motion.rx,motion.ry,motion.rz);
       instance.group.position.x=px*.025;
       instance.group.position.y=-.015-py*.010;
@@ -258,6 +260,11 @@ for name in ('index.html','latest.html'):
         text=text.replace('</head>',css_link+'\n</head>',1)
     if 'data-v358-crt-input=' not in text:
         text=text.replace('</body>',js_tag+'\n</body>',1)
+    text=text.replace('v322-glb-runtime.mjs?v=v350-real-crt','v322-glb-runtime.mjs?v=v359-crt-refined')
+    text=text.replace('v354-boot-choreo.js?v=v354-boot-scroll','v354-boot-choreo.js?v=v359-crt-refined')
+    text=text.replace('v314-crt.js?v=v321-production-storyboard','v314-crt.js?v=v359-crt-refined')
+    text=text.replace('</head>','<link rel="preload" as="image" href="media/crt-v358-poster.webp" fetchpriority="high">\n</head>',1)
+    text=re.sub(r'(<div[^>]*data-model-slot="boot-tv"[^>]*>)',r'\1<img class="crt-loading-poster" src="media/crt-v358-poster.webp" alt="TV MOVX" fetchpriority="high" width="900" height="800">',text,count=1)
     path.write_text(text)
     installed.append(name)
 
@@ -278,7 +285,7 @@ print(json.dumps({
     'production_glbs':published,
     'active_model':'boot-tv only',
     'load_path':'head fetch -> procedural same-CRT proxy -> parse optimized GLB -> same-canvas swap',
-    'interaction':['pointer parallax','drag with restrained inertia','scroll depth','DIREÇÃO/MOTION/AI/DIGITAL spatial modes'],
+    'interaction':['pointer parallax','scroll depth','DIREÇÃO/MOTION/AI/DIGITAL spatial modes'],
     'renderer':'single WebGL context; adaptive DPR',
     'later_3d_models':'still deferred'
 },ensure_ascii=False))

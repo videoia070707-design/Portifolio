@@ -28,8 +28,12 @@ tmp_quant=model.with_name('movx-crt-tv.v355-quant.glb')
 for tmp in (tmp_webp,tmp_quant):
     if tmp.exists(): tmp.unlink()
 
-cli=['npx','-y','@gltf-transform/cli@4.5.0']
-subprocess.run(cli+['webp',str(model),str(tmp_webp),'--quality','80'],check=True)
+cli=[str(root/'node_modules'/'.bin'/'gltf-transform')]
+# v358: cap GPU upload/decode cost; keep all geometry and original source.
+resized=model.with_name('movx-crt-tv.resized.glb')
+subprocess.run(cli+['resize',str(model),str(resized),'--width','2048','--height','2048'],check=True)
+subprocess.run(cli+['webp',str(resized),str(tmp_webp),'--quality','80'],check=True)
+resized.unlink()
 subprocess.run(cli+['quantize',str(tmp_webp),str(tmp_quant)],check=True)
 if not tmp_quant.exists() or tmp_quant.stat().st_size<=0:
     raise SystemExit('MOVX v355 optimizer did not produce a GLB')

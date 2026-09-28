@@ -137,9 +137,12 @@ function createStage(instance){
   const fill=new THREE.DirectionalLight(0xff8a45,isCRT?.72:1.35);fill.position.set(-3,.8,2.2);scene.add(fill);
   const rim=new THREE.DirectionalLight(0xc9d9ff,isCRT?.48:.25);rim.position.set(-1.5,2,-4);scene.add(rim);
   if(isCRT){
-    const shadowMat=new THREE.ShadowMaterial({color:0x1c1712,transparent:true,opacity:.13});
-    const floor=new THREE.Mesh(new THREE.PlaneGeometry(4.8,3.4),shadowMat);
-    floor.rotation.x=-Math.PI/2;floor.position.set(0,-1.0,0);floor.receiveShadow=true;scene.add(floor);
+    // Soft contact shadow: no real-time shadow pass or rectangular floor edge.
+    const shadowCanvas=document.createElement('canvas');shadowCanvas.width=128;shadowCanvas.height=128;
+    const ctx=shadowCanvas.getContext('2d');const gradient=ctx.createRadialGradient(64,64,5,64,64,64);
+    gradient.addColorStop(0,'rgba(30,23,17,.38)');gradient.addColorStop(.45,'rgba(30,23,17,.18)');gradient.addColorStop(1,'rgba(30,23,17,0)');ctx.fillStyle=gradient;ctx.fillRect(0,0,128,128);
+    const floor=new THREE.Mesh(new THREE.PlaneGeometry(3.1,2.2),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(shadowCanvas),transparent:true,depthWrite:false}));
+    floor.rotation.x=-Math.PI/2;floor.position.set(0,-1.0,0);scene.add(floor);
   }
   return {scene,group,camera};
 }
@@ -171,7 +174,7 @@ function mount(instance){
   renderer.setClearColor(0x000000,0);
   renderer.setPixelRatio(Math.min(devicePixelRatio||1,coarse?1.05:1.5));
   renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=instance.procedural?1.05:1.08;
-  renderer.shadowMap.enabled=!coarse;
+  renderer.shadowMap.enabled=false;
   if(renderer.shadowMap.enabled)renderer.shadowMap.type=THREE.PCFSoftShadowMap;
   if('outputColorSpace'in renderer&&THREE.SRGBColorSpace)renderer.outputColorSpace=THREE.SRGBColorSpace;
   instance.renderer=renderer;instance.host=host;instance.canvas=canvas;
@@ -315,10 +318,11 @@ function frame(t){
 }
 raf=requestAnimationFrame(frame);
 
-addEventListener('pagehide',()=>{
+addEventListener('pagehide',event=>{
+  if(event.persisted)return;
   cancelAnimationFrame(raf);observer.disconnect();resizeObserver.disconnect();
   for(const instance of Object.values(runtime.instances)){
     removeRenderer(instance,{restore:false});
     if(instance.proceduralDispose)instance.proceduralDispose();else disposeObject(instance.model);
   }
-},{once:true});
+});

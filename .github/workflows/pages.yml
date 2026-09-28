@@ -87,13 +87,14 @@ jobs:
           node scripts/qa-v354-boot-choreo.cjs
           node scripts/qa-v355-crt-fastload.cjs
           node scripts/qa-v358-crt-immersion.cjs
-          node scripts/qa-identify-models.cjs
+          node scripts/qa-v359-channel-flow.cjs
       - name: Save contract evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: movx-qa-contracts
           path: |
+            _site/qa-v359-*
             _site/qa-v358-*
             _site/qa-v355-*
             _site/qa-v354-*

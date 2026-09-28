@@ -40,6 +40,14 @@ const assert=require('node:assert/strict');
       });
       assert.equal(before.choreography,'v354-boot-scroll');
       assert.equal(before.reduced,'false');
+      if(cfg.name==='mobile'){
+        assert.equal(before.sticky,'relative','mobile must keep channels in natural flow');
+        await page.locator('[data-crt-mode-control="digital"]').click();
+        const mobileFlow=await page.evaluate(()=>{const scene=document.querySelector('#boot .scene-inner').getBoundingClientRect();const panel=document.querySelector('#crt-channel-panel').getBoundingClientRect();return {opacity:getComputedStyle(document.querySelector('.boot-copy')).opacity,panelInside:panel.bottom<=scene.bottom,overflow:document.documentElement.scrollWidth-innerWidth,mode:document.querySelector('#boot').dataset.crtMode}});
+        assert.equal(mobileFlow.opacity,'1');assert.equal(mobileFlow.panelInside,true);assert.ok(mobileFlow.overflow<=2);assert.equal(mobileFlow.mode,'digital');assert.equal(before.rendererCount,1);assert.ok(before.laterStates.every(x=>x==='deferred'));assert.equal(errors.length,0);
+        console.log(JSON.stringify({qa:'v359-mobile-natural-flow',status:'PASS',mobileFlow}));
+        await page.close();continue;
+      }
       assert.ok(before.bootHeight>=before.vh*cfg.minHeightRatio,`boot choreography too short: ${before.bootHeight}/${before.vh}`);
       assert.equal(before.sticky,'sticky');
       assert.equal(before.cue,true);

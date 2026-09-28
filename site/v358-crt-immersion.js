@@ -7,7 +7,9 @@
   const boot=document.querySelector('#boot');
   const wrap=boot?.querySelector('.crt-wrap');
   const slot=boot?.querySelector('[data-model-slot="boot-tv"]');
-  const tags=[...(boot?.querySelectorAll('.boot-tags .tag')||[])];
+  const tags=[...(boot?.querySelectorAll('.boot-tags .tag')||[])].map(old=>{
+    const button=document.createElement('button');button.type='button';button.className=old.className;button.textContent=old.textContent;old.replaceWith(button);return button;
+  });
   if(!boot||!wrap||!slot||tags.length<4)return;
 
   const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -21,6 +23,16 @@
     {id:'ai',label:'AI',yaw:rad(-3.2),pitch:rad(2.15),roll:rad(-.7),zoom:.18,energy:1},
     {id:'digital',label:'DIGITAL',yaw:rad(6.1),pitch:rad(.7),roll:rad(-1.05),zoom:.11,energy:.56},
   ];
+  const content={
+    direction:['Identidade, composição e direção de arte para marcas com presença','social-media.html','Explorar direção de arte ↗'],
+    motion:['Ritmo e movimento para transformar uma ideia em uma experiência','video-editor.html','Explorar motion ↗'],
+    ai:['Inteligência artificial a serviço da imaginação e da direção criativa','ai-creator.html','Explorar AI ↗'],
+    digital:['Interfaces e sites que conectam identidade, interação e experiência','ui-ux.html','Explorar digital ↗']
+  };
+  const panel=document.createElement('div');panel.className='crt-channel-panel';panel.id='crt-channel-panel';
+  const description=document.createElement('p');description.setAttribute('aria-live','polite');description.setAttribute('aria-atomic','true');
+  const explore=document.createElement('a');explore.hidden=true;panel.append(description,explore);tags[0].parentElement.after(panel);
+  tags[0].parentElement.setAttribute('role','group');tags[0].parentElement.setAttribute('aria-label','Canais do estúdio');
   const byLabel=new Map(MODES.map(x=>[x.label,x]));
 
   root.dataset.crtImmersion='v358-spatial-input';
@@ -63,6 +75,9 @@
     root.style.setProperty('--crt-mode-energy',String(value.energy??.18));
     boot.style.setProperty('--v358-energy',String(value.energy??.18));
     boot.dataset.crtMode=value.id;
+    const info=content[value.id];
+    description.textContent=info?info[0]:'Escolha um canal para explorar o estúdio';
+    explore.hidden=!info;if(info){explore.href=info[1];explore.textContent=info[2];}
     tags.forEach(tag=>{
       const own=byLabel.get(tag.textContent.trim().toUpperCase());
       const selected=!!locked&&own?.id===locked.id;
@@ -82,6 +97,7 @@
     const mode=byLabel.get(tag.textContent.trim().toUpperCase())||MODES[index];
     if(!mode)return;
     tag.setAttribute('role','button');
+    tag.setAttribute('aria-controls','crt-channel-panel');
     tag.setAttribute('tabindex','0');
     tag.setAttribute('aria-label',`${mode.label}: alterar resposta espacial da TV`);
     tag.setAttribute('aria-pressed','false');
@@ -89,7 +105,7 @@
 
     const preview=()=>{engage();applyMode(mode,{transient:true})};
     const restore=()=>applyMode(locked);
-    tag.addEventListener('pointerenter',preview,{passive:true});
+    tag.addEventListener('pointerenter',event=>{if(event.pointerType!=='touch')preview()},{passive:true});
     tag.addEventListener('pointerleave',restore,{passive:true});
     tag.addEventListener('focus',preview);
     tag.addEventListener('blur',restore);
@@ -145,7 +161,7 @@
   if(slot.dataset.glbState==='ready')boot.classList.add('crt-is-real');
 
   document.addEventListener('visibilitychange',()=>{if(document.hidden)setPointer(0,0)});
-  addEventListener('pagehide',()=>stateObserver.disconnect(),{once:true});
+  addEventListener('pagehide',event=>{if(!event.persisted)stateObserver.disconnect()});
 
   applyMode(null);
   root.dataset.crtInteractionReady='true';

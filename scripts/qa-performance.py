@@ -58,7 +58,7 @@ else:
     if 'data-storyboard="v320"' not in home_text:errors.append('index.html missing v320 storyboard marker')
     if 'data-glb-runtime="v322-unified-glb-runtime"' not in home_text:errors.append('index.html missing v322 GLB runtime marker')
     if 'data-crt-runtime="v350-real-glb"' not in home_text:errors.append('index.html missing v350 real CRT marker')
-    if 'v322-glb-runtime.mjs?v=v350-real-crt' not in home_text:errors.append('index.html missing v350 CRT runtime cache key')
+    if 'v322-glb-runtime.mjs?v=v359-crt-refined' not in home_text:errors.append('index.html missing v359 CRT runtime cache key')
     if 'v322-glb-runtime.css?v=v350-real-crt' not in home_text:errors.append('index.html missing v350 CRT surface cache key')
     if 'data-model-pack="v323-tripo-model-pack"' not in home_text:errors.append('index.html missing v323 model-pack marker')
     if 'data-model-scope="v350-crt-only"' not in home_text:errors.append('index.html missing v350 CRT-only production scope marker')

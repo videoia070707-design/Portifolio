@@ -63,11 +63,15 @@
     return 'handoff';
   }
 
-  function render(){
+  let lastFrame=0;
+  function render(time){
+    const dt=lastFrame?Math.min((time-lastFrame)/1000,.1):1/60;lastFrame=time;
+    const follow=1-Math.exp(-dt*10);
+    const pointerFollow=1-Math.exp(-dt*5);
     const raw=progress();
-    smoothP=lerp(smoothP,raw,.16);
-    pointerX=lerp(pointerX,targetX,.075);
-    pointerY=lerp(pointerY,targetY,.075);
+    smoothP=lerp(smoothP,raw,follow);
+    pointerX=lerp(pointerX,targetX,pointerFollow);
+    pointerY=lerp(pointerY,targetY,pointerFollow);
 
     const engage=smooth(.08,.58,smoothP);
     const exit=smooth(.46,.82,smoothP);
@@ -79,8 +83,8 @@
     const x=(pointerX*9*pointerWeight + engage*desktopShift)*mobileFactor;
     const y=pointerY*4*pointerWeight - engage*17 - handoff*22;
     const scale=1 + engage*.064 + handoff*.046;
-    const rx=(-pointerY*1.45*pointerWeight + engage*.42);
-    const ry=(pointerX*2.65*pointerWeight + engage*2.2);
+    const rx=0;
+    const ry=0;
     const copyY=-exit*(innerWidth<=900?42:72);
     const copyOpacity=clamp(1-exit*.96,.04,1);
     const blur=exit*4.2;
@@ -109,6 +113,7 @@
     // Feed the existing Three.js runtime so the model itself participates in
     // the scroll, instead of only moving its DOM wrapper.
     root.style.setProperty('--crt-progress',smoothP.toFixed(4));
+    if(window.MOVXCRT)window.MOVXCRT.progress=smoothP;
 
     const phase=phaseFor(smoothP);
     if(boot.dataset.v354Phase!==phase)boot.dataset.v354Phase=phase;
