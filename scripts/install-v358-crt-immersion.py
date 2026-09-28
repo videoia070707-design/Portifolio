@@ -13,7 +13,7 @@ import json, re, shutil
 
 root=Path(__file__).resolve().parents[1]
 out=root/'_site'
-release='v359-crt-refined'
+release='v360-crt-responsive'
 css_name='v358-crt-immersion.css'
 js_name='v358-crt-immersion.js'
 runtime_path=out/'v322-glb-runtime.mjs'
@@ -196,14 +196,14 @@ frame_new='''    const modeYaw=parseFloat(styles.getPropertyValue('--crt-mode-ya
     if(instance.procedural||instance.previewProcedural){
       instance.proceduralUpdate?.({time:t,progress,active,pointerX:px,pointerY:py});
     }
-    if(!reduced){
+    {
       const motion=instance.motionState||(instance.motionState={rx:0,ry:0,rz:0,z:0,cameraZ:instance.camera.position.z});
-      const targetY=-.18 + px*.18 + progress*.25 + modeYaw*2.3 + dragYaw;
-      const targetX=-py*.070 + modePitch + dragPitch;
-      const targetZ=modeRoll + (active?Math.sin(t*.00135)*.0045:0);
+      const targetY=-.28 + (reduced?0:px*.48 + progress*.25) + modeYaw*4.2 + dragYaw;
+      const targetX=(reduced?0:-py*.16) + modePitch*3 + dragPitch;
+      const targetZ=modeRoll*2 + (!reduced&&active?Math.sin(t*.00135)*.0045:0);
       const targetDepth=(active?.025:0) + modeEnergy*.035;
       const dt=instance.lastMotionTime?Math.min((t-instance.lastMotionTime)/1000,.1):1/60;instance.lastMotionTime=t;
-      const follow=1-Math.exp(-dt*6);
+      const follow=reduced?1:1-Math.exp(-dt*8);
       motion.ry+=(targetY-motion.ry)*follow;
       motion.rx+=(targetX-motion.rx)*follow;
       motion.rz+=(targetZ-motion.rz)*follow;
@@ -260,9 +260,9 @@ for name in ('index.html','latest.html'):
         text=text.replace('</head>',css_link+'\n</head>',1)
     if 'data-v358-crt-input=' not in text:
         text=text.replace('</body>',js_tag+'\n</body>',1)
-    text=text.replace('v322-glb-runtime.mjs?v=v350-real-crt','v322-glb-runtime.mjs?v=v359-crt-refined')
-    text=text.replace('v354-boot-choreo.js?v=v354-boot-scroll','v354-boot-choreo.js?v=v359-crt-refined')
-    text=text.replace('v314-crt.js?v=v321-production-storyboard','v314-crt.js?v=v359-crt-refined')
+    text=text.replace('v322-glb-runtime.mjs?v=v350-real-crt','v322-glb-runtime.mjs?v=v360-crt-responsive')
+    text=text.replace('v354-boot-choreo.js?v=v354-boot-scroll','v354-boot-choreo.js?v=v360-crt-responsive')
+    text=text.replace('v314-crt.js?v=v321-production-storyboard','v314-crt.js?v=v360-crt-responsive')
     text=text.replace('</head>','<link rel="preload" as="image" href="media/crt-v358-poster.webp" fetchpriority="high">\n</head>',1)
     text=re.sub(r'(<div[^>]*data-model-slot="boot-tv"[^>]*>)',r'\1<img class="crt-loading-poster" src="media/crt-v358-poster.webp" alt="TV MOVX" fetchpriority="high" width="900" height="800">',text,count=1)
     path.write_text(text)

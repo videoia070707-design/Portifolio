@@ -105,13 +105,13 @@
 
     const preview=()=>{engage();applyMode(mode,{transient:true})};
     const restore=()=>applyMode(locked);
-    tag.addEventListener('pointerenter',event=>{if(event.pointerType!=='touch')preview()},{passive:true});
+    tag.addEventListener('pointerenter',event=>{if(event.pointerType!=='touch'&&!reduced)preview()},{passive:true});
     tag.addEventListener('pointerleave',restore,{passive:true});
-    tag.addEventListener('focus',preview);
+    tag.addEventListener('focus',()=>{if(!reduced)preview()});
     tag.addEventListener('blur',restore);
     tag.addEventListener('click',()=>{
       engage();
-      locked=locked?.id===mode.id?null:mode;
+      locked=mode;
       applyMode(locked);
     });
     tag.addEventListener('keydown',event=>{
@@ -124,9 +124,9 @@
     });
   });
 
-  if(!coarse&&!reduced){
+  if(!reduced){
     const relativePoint=event=>{
-      const r=wrap.getBoundingClientRect();
+      const r=boot.querySelector('.scene-inner').getBoundingClientRect();
       if(!r.width||!r.height)return null;
       const inside=event.clientX>=r.left&&event.clientX<=r.right&&event.clientY>=r.top&&event.clientY<=r.bottom;
       return {inside,nx:((event.clientX-r.left)/r.width-.5)*2,ny:((event.clientY-r.top)/r.height-.5)*2};
@@ -137,12 +137,14 @@
        sit above/below the CRT. As long as the cursor is physically over the TV
        rectangle, the real Three.js object receives the same normalized input. */
     boot.addEventListener('pointermove',event=>{
+      if(event.pointerType==='touch')return;
+      root.dataset.crtPointerReady='true';
       const p=relativePoint(event);if(!p)return;
       if(p.inside){engage();setPointer(p.nx,p.ny)}
       else setPointer(0,0);
     },{passive:true});
     boot.addEventListener('pointerleave',()=>setPointer(0,0),{passive:true});
-    root.dataset.crtPointerReady='true';
+    root.dataset.crtPointerReady=String(!coarse);
   }else{
     root.dataset.crtPointerReady='false';
   }
