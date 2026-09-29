@@ -1,0 +1,195 @@
+/* MOVX v367 — Scene 01 as one authored spatial shot.
+   No HUD, no extra model, no decorative 3D layer. Depth comes from coordinated
+   camera/light/type/environment response around the approved CRT. */
+html[data-crt-director-layer="v367-scene01-director"] #boot{
+  --v367-p:0;
+  --v367-px:0;
+  --v367-py:0;
+  --v367-presence:0;
+  --v367-engage:0;
+  --v367-exit:0;
+  --v367-handoff:0;
+  --v367-energy:.26;
+  --v367-warm:.36;
+  --v367-velocity:0;
+  --v367-light-x:31%;
+  --v367-light-y:47%;
+}
+
+html[data-crt-director-layer] #boot .scene-inner{
+  isolation:isolate;
+  perspective:1400px;
+  background:
+    radial-gradient(circle at var(--v367-light-x) var(--v367-light-y),rgba(255,255,255,calc(.70 + var(--v367-presence)*.18)),transparent 25%),
+    radial-gradient(circle at calc(var(--v367-light-x) + 4%) calc(var(--v367-light-y) + 5%),rgba(255,90,24,calc(.025 + var(--v367-warm)*.075 + var(--v367-presence)*.028)),transparent 33%),
+    linear-gradient(128deg,#f2eee7 0%,#e8e3d9 48%,#d9d4cb 100%)!important;
+  transition:background-color .45s ease;
+}
+html[data-crt-director-layer] #boot .scene-inner::before{
+  content:"";
+  position:absolute;
+  z-index:0;
+  inset:0;
+  pointer-events:none;
+  background:
+    radial-gradient(ellipse at calc(27% + var(--v367-px)*2.5%) calc(78% + var(--v367-py)*1.5%),rgba(26,20,16,calc(.055 + var(--v367-presence)*.04)),transparent 38%),
+    linear-gradient(112deg,transparent 23%,rgba(255,255,255,calc(.05 + var(--v367-energy)*.06)) 49%,transparent 72%);
+  opacity:calc(.70 + var(--v367-engage)*.22 - var(--v367-handoff)*.18);
+  transform:translate3d(calc(var(--v367-px)*-5px),calc(var(--v367-py)*-3px),0) scale(1.015);
+  transform-origin:center;
+  will-change:transform,opacity;
+}
+html[data-crt-director-layer] #boot .scene-inner::after{
+  content:"";
+  position:absolute;
+  z-index:8;
+  inset:0;
+  pointer-events:none;
+  box-shadow:inset 0 0 clamp(42px,6vw,96px) rgba(28,22,18,calc(.015 + var(--v367-handoff)*.07));
+  opacity:calc(.46 + var(--v367-presence)*.18);
+}
+html[data-crt-director-layer] #boot .scene-bar,
+html[data-crt-director-layer] #boot .boot-stage,
+html[data-crt-director-layer] #boot .boot-scroll-cue-v354{position:relative;z-index:2}
+html[data-crt-director-layer] #boot .boot-stage{transform-style:preserve-3d}
+html[data-crt-director-layer] #boot .crt-wrap,
+html[data-crt-director-layer] #boot .boot-copy{transform-style:preserve-3d}
+
+/* A stronger optical anchor makes the GLB read like an object in the same room,
+   not a transparent canvas pasted beside typography. */
+html[data-crt-director-layer] #boot .crt-wrap::before{
+  background:
+    radial-gradient(circle at calc(50% + var(--v367-px)*11%) calc(43% + var(--v367-py)*8%),rgba(255,90,24,calc(.045 + var(--v367-energy)*.055 + var(--v367-presence)*.07)),transparent 30%),
+    radial-gradient(ellipse at 50% 78%,rgba(24,18,14,calc(.105 + var(--v367-presence)*.07)),transparent 55%)!important;
+  filter:blur(calc(20px - var(--v367-presence)*4px))!important;
+  opacity:calc(.64 + var(--v367-presence)*.28)!important;
+}
+html[data-crt-director-layer] #boot .v322-model-renderer{
+  filter:drop-shadow(calc(var(--v367-px)*-8px) calc(25px + var(--v367-py)*4px) calc(27px + var(--v367-presence)*8px) rgba(34,26,20,calc(.15 + var(--v367-presence)*.08)))!important;
+  transition:opacity .28s ease;
+}
+html[data-crt-director-layer] #boot [data-model-slot="boot-tv"]>.crt-loading-poster{
+  filter:drop-shadow(0 25px 27px rgba(31,24,19,.14)) saturate(.98)!important;
+}
+
+/* Editorial hierarchy: more air, but the three lines remain one bold object. */
+@media(min-width:901px){
+  html[data-crt-director-layer].v353-motion #boot .boot-title{
+    line-height:.965;
+    margin-bottom:clamp(32px,3.0vw,46px);
+    letter-spacing:-.057em;
+  }
+  html[data-crt-director-layer].v353-motion #boot .boot-title span+span{margin-top:.065em}
+  html[data-crt-director-layer].v353-motion #boot .boot-copy .eyebrow{margin-bottom:clamp(22px,2.2vw,36px)}
+  html[data-crt-director-layer].v353-motion #boot .boot-copy .copy{line-height:1.66;max-width:480px}
+  html[data-crt-director-layer] #boot .boot-tags{margin-top:clamp(30px,2.7vw,42px)}
+}
+
+/* The four channels stop looking like four generic cards. They become a single
+   editorial tuning strip. Native buttons and keyboard semantics remain intact. */
+html[data-crt-director-layer] #boot .boot-tags{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:0!important;
+  width:min(100%,540px);
+  border-top:1px solid rgba(24,20,17,.26);
+  border-bottom:1px solid rgba(24,20,17,.18);
+}
+html[data-crt-director-layer] #boot .boot-tags button.tag{
+  min-height:48px;
+  padding:13px 12px 12px!important;
+  border:0!important;
+  border-right:1px solid rgba(24,20,17,.16)!important;
+  border-radius:0!important;
+  background:transparent!important;
+  color:#24201c!important;
+  text-align:left;
+  letter-spacing:.075em;
+  transition:color .24s ease,opacity .24s ease!important;
+}
+html[data-crt-director-layer] #boot .boot-tags button.tag:last-child{border-right:0!important}
+html[data-crt-director-layer] #boot .boot-tags button.tag::after{
+  left:11px!important;
+  right:auto!important;
+  bottom:8px!important;
+  width:calc(100% - 22px);
+  height:2px!important;
+  background:#ff5a18!important;
+}
+html[data-crt-director-layer] #boot .boot-tags button.tag:hover,
+html[data-crt-director-layer] #boot .boot-tags button.tag:focus-visible,
+html[data-crt-director-layer] #boot .boot-tags button[aria-pressed="true"]{
+  background:transparent!important;
+  color:#090807!important;
+  border-color:rgba(24,20,17,.16)!important;
+}
+html[data-crt-director-layer] #boot .boot-tags button:not([aria-pressed="true"]){opacity:.63}
+html[data-crt-director-layer] #boot .boot-tags button:hover{opacity:1}
+
+/* The channel detail becomes a compact scene caption/control deck instead of a
+   tall product-demo panel. This creates the breathing room the Hero was missing. */
+@media(min-width:901px){
+  html[data-crt-director-layer] #boot .crt-channel-panel{
+    display:grid;
+    grid-template-columns:minmax(0,1.15fr) minmax(160px,.85fr);
+    grid-template-areas:
+      "description controls"
+      "explore controls"
+      "help help";
+    column-gap:clamp(24px,2.5vw,38px);
+    row-gap:4px;
+    min-height:0!important;
+    max-width:540px!important;
+    margin-top:clamp(17px,1.5vw,22px)!important;
+    padding-top:1px;
+    transform-origin:left top;
+  }
+  html[data-crt-director-layer] #boot .crt-channel-panel>p[aria-live]{grid-area:description;margin:0 0 4px;max-width:39ch}
+  html[data-crt-director-layer] #boot .crt-channel-panel>a{grid-area:explore;align-self:start}
+  html[data-crt-director-layer] #boot .crt-program-controls{
+    grid-area:controls;
+    margin:0!important;
+    align-self:start;
+    gap:5px 14px!important;
+  }
+  html[data-crt-director-layer] #boot .crt-program-help{grid-area:help;margin:7px 0 0!important;max-width:52ch!important;opacity:.70}
+  html[data-crt-director-layer] #boot .crt-program-controls button{min-height:34px!important;padding:4px 0!important}
+  html[data-crt-director-layer] #boot .crt-program-range{gap:7px!important}
+  html[data-crt-director-layer] #boot .crt-program-range input{width:88px!important;min-height:28px!important}
+}
+
+/* Short laptops keep the new whitespace by making the control deck efficient,
+   not by collapsing the headline back into the old cramped composition. */
+@media(min-width:901px) and (max-height:820px){
+  html[data-crt-director-layer].v353-motion #boot .boot-title{
+    font-size:clamp(42px,4vw,58px)!important;
+    line-height:.96;
+    margin-bottom:clamp(23px,3vh,28px)!important;
+  }
+  html[data-crt-director-layer].v353-motion #boot .boot-title span+span{margin-top:.045em}
+  html[data-crt-director-layer].v353-motion #boot .boot-copy .eyebrow{margin-bottom:15px!important}
+  html[data-crt-director-layer] #boot .boot-tags{margin-top:20px!important}
+  html[data-crt-director-layer] #boot .crt-channel-panel{margin-top:10px!important;row-gap:2px}
+  html[data-crt-director-layer] #boot .crt-program-help{margin-top:3px!important}
+}
+
+@media(max-width:900px){
+  html[data-crt-director-layer] #boot .scene-inner{
+    perspective:none;
+    background:linear-gradient(145deg,#f1ede6 0%,#ded9cf 100%)!important;
+  }
+  html[data-crt-director-layer].v353-motion #boot .boot-title{line-height:.98;margin-bottom:26px}
+  html[data-crt-director-layer].v353-motion #boot .boot-title span+span{margin-top:.055em}
+  html[data-crt-director-layer] #boot .boot-tags{margin-top:26px;grid-template-columns:repeat(2,minmax(0,1fr))}
+  html[data-crt-director-layer] #boot .boot-tags button.tag:nth-child(2){border-right:0!important}
+  html[data-crt-director-layer] #boot .boot-tags button.tag:nth-child(-n+2){border-bottom:1px solid rgba(24,20,17,.14)!important}
+  html[data-crt-director-layer] #boot .crt-channel-panel{min-height:0!important;margin-top:16px!important}
+  html[data-crt-director-layer] #boot .scene-inner::before{opacity:.52;transform:none}
+  html[data-crt-director-layer] #boot .scene-inner::after{display:none}
+}
+
+@media(prefers-reduced-motion:reduce){
+  html[data-crt-director-layer] #boot .scene-inner::before,
+  html[data-crt-director-layer] #boot .v322-model-renderer,
+  html[data-crt-director-layer] #boot .boot-tags button.tag{transition:none!important;transform:none!important}
+}
