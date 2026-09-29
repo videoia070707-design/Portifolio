@@ -44,7 +44,8 @@ if frame_new not in runtime:
         raise SystemExit('MOVX v362 could not install tactile update in the shared frame')
     runtime=runtime.replace(frame_old,frame_new,1)
 
-runtime=runtime.replace("version:'v358-crt-spatial-runtime'","version:'v362-crt-tactility-runtime'",1)
+# Keep the v358 renderer identity stable: v362 is a capability layered on top
+# of that approved core, exposed separately through the tactility markers.
 runtime_path.write_text(runtime)
 
 css_link=f'<link rel="stylesheet" href="{css_name}?v={release}" data-v362-crt-style="{release}">'
@@ -69,5 +70,6 @@ print(json.dumps({
     'installed':installed,
     'single_model_gate':True,
     'runtime':runtime_path.name,
+    'renderer_identity':'v358-crt-spatial-runtime',
     'assets':[css_name,js_name]
 },ensure_ascii=False))
