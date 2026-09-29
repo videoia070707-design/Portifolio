@@ -1,9 +1,9 @@
 """Static performance budgets for the deployed MOVX artifact.
 
-v358 keeps the one-model-at-a-time rollout. Scene 01 / BOOT (`boot-tv`) is
+v362 keeps the one-model-at-a-time rollout. Scene 01 / BOOT (`boot-tv`) is
 the only 3D slot eligible for production and must publish exactly one canonical
-GLB: `models/movx-crt-tv.glb`. The additional v358 CSS/JS layer is interaction
-logic for that same CRT, not another production 3D asset.
+GLB: `models/movx-crt-tv.glb`. The v362 tactile layer augments the existing
+v361 live CRT screen/selector using the same WebGL context and the same GLB.
 """
 from pathlib import Path
 import json
@@ -58,11 +58,12 @@ else:
     if 'data-storyboard="v320"' not in home_text:errors.append('index.html missing v320 storyboard marker')
     if 'data-glb-runtime="v322-unified-glb-runtime"' not in home_text:errors.append('index.html missing v322 GLB runtime marker')
     if 'data-crt-runtime="v350-real-glb"' not in home_text:errors.append('index.html missing v350 real CRT marker')
-    if 'v322-glb-runtime.mjs?v=v361-live-channels' not in home_text:errors.append('index.html missing v359 CRT runtime cache key')
+    if 'v322-glb-runtime.mjs?v=v362-crt-tactility' not in home_text:errors.append('index.html missing v362 CRT runtime cache key')
     if 'v322-glb-runtime.css?v=v350-real-crt' not in home_text:errors.append('index.html missing v350 CRT surface cache key')
     if 'data-model-pack="v323-tripo-model-pack"' not in home_text:errors.append('index.html missing v323 model-pack marker')
     if 'data-model-scope="v350-crt-only"' not in home_text:errors.append('index.html missing v350 CRT-only production scope marker')
     if 'data-model-framing="v324-model-framing"' not in home_text:errors.append('index.html missing v324 framing marker')
+    if 'data-crt-tactility="v362-crt-tactility"' not in home_text:errors.append('index.html missing v362 tactile CRT marker')
     if 'data-logo-focus=' in home_text:errors.append('second-model Physical Logo focus is still active')
     if '../assets/' in home_text:errors.append('index.html contains parent-relative asset paths')
     for href in stylesheet_re.findall(home_text):
@@ -77,14 +78,15 @@ else:
         home_scripts.append(ref);path=out/ref
         if not path.exists():errors.append(f'index.html references missing JS {ref}')
         else:home_js_bytes+=path.stat().st_size
-    if len(home_styles)!=15:errors.append(f'index.html loads {len(home_styles)} production CSS layers; expected 15 in v358 CRT-first stage')
-    if len(home_scripts)!=13:errors.append(f'index.html loads {len(home_scripts)} production JS layers; expected 13 in v358 CRT-first stage')
+    if len(home_styles)!=16:errors.append(f'index.html loads {len(home_styles)} production CSS layers; expected 16 in v362 CRT tactile stage')
+    if len(home_scripts)!=13:errors.append(f'index.html loads {len(home_scripts)} production JS layers; expected 13 in v362 CRT tactile stage')
     if 'v345-logo-focus.css' in home_styles:errors.append('Physical Logo focus CSS must be inactive during CRT stage')
     if 'v345-logo-focus.mjs' in home_scripts:errors.append('Physical Logo focus runtime must be inactive during CRT stage')
     if 'v324-model-framing.css' not in home_styles:errors.append('index.html missing v324-model-framing.css')
     if 'v324-model-framing.mjs' not in home_scripts:errors.append('index.html missing v324-model-framing.mjs')
     if 'v358-crt-immersion.css' not in home_styles:errors.append('index.html missing v358 CRT immersion CSS')
     if 'v358-crt-immersion.js' not in home_scripts:errors.append('index.html missing v358 CRT interaction runtime')
+    if 'v362-crt-tactility.css' not in home_styles:errors.append('index.html missing v362 CRT tactile CSS')
     if home_css_bytes>625_000:errors.append(f'CRT-first production CSS is {home_css_bytes} bytes; budget is 625000')
     if home_js_bytes>515_000:errors.append(f'CRT-first production JS is {home_js_bytes} bytes; budget is 515000')
     for slot in ('boot-tv','hero-movx-logo','x-portal','creative-machine','play-cassette','play-camera','play-cube','play-cd','play-window','spatial-studio','closing-window'):
@@ -114,7 +116,7 @@ if not loader.exists():errors.append('local GLTFLoader.js is missing')
 addon_bytes=sum(p.stat().st_size for p in addon_root.rglob('*.js')) if addon_root.exists() else 0
 if addon_bytes>350_000:errors.append(f'v322 Three addon modules are {addon_bytes} bytes; budget is 350000')
 if loader.exists() and re.search(r"from\s+['\"]three['\"]",loader.read_text()):errors.append('GLTFLoader still has a bare three import')
-for required in ('v322-glb-runtime.mjs','v322-glb-runtime.css','v348-crt-procedural.mjs','v324-model-framing.mjs','v324-model-framing.css','v358-crt-immersion.css','v358-crt-immersion.js'):
+for required in ('v322-glb-runtime.mjs','v322-glb-runtime.css','v348-crt-procedural.mjs','v324-model-framing.mjs','v324-model-framing.css','v358-crt-immersion.css','v358-crt-immersion.js','v361-crt-channels.mjs','v362-crt-tactility.css','v362-crt-tactility.mjs'):
     if not (out/required).exists():errors.append(f'{required} is missing')
 procedural_path=out/'v348-crt-procedural.mjs'
 procedural_bytes=procedural_path.stat().st_size if procedural_path.exists() else 0
@@ -128,8 +130,10 @@ if '[data-model-slot="boot-tv"].v322-runtime-active{transform:none!important' no
 if '[data-model-slot="boot-tv"].v322-runtime-active .v322-model-renderer{transform:none!important}' not in crt_surface:
     errors.append('CRT renderer host still allows compounded CSS perspective')
 crt_runtime=(out/'v322-glb-runtime.mjs').read_text() if (out/'v322-glb-runtime.mjs').exists() else ''
-for contract in ("camera.position.set(.02,.03,4.72)","const CRT_PARTS=new Set(['tripo_part_7','tripo_part_13','tripo_part_18'])","version:'v358-crt-spatial-runtime'","fit:'full-product'","immersionVersion:'v358-crt-spatial'"):
-    if contract not in crt_runtime:errors.append(f'v358 real CRT runtime contract missing: {contract}')
+for contract in ("camera.position.set(.02,.03,4.72)","const CRT_PARTS=new Set(['tripo_part_7','tripo_part_13','tripo_part_18'])","version:'v362-crt-tactility-runtime'","fit:'full-product'","immersionVersion:'v358-crt-spatial'"):
+    if contract not in crt_runtime:errors.append(f'v362 real CRT runtime contract missing: {contract}')
+if "attachCRTChannels(instance);" not in crt_runtime:errors.append('v361 live channel runtime is missing from the unified CRT frame')
+if "attachCRTTactility(instance);" not in crt_runtime:errors.append('v362 tactile CRT runtime is missing from the unified CRT frame')
 if "const dprCap=coarse?1:(memory<=4?1.18:1.36)" not in crt_runtime:errors.append('v358 adaptive CRT DPR cap is missing')
 if "instance.lights.key.intensity=4.05+modeEnergy*.78" not in crt_runtime:errors.append('v358 interactive CRT lighting contract is missing')
 
@@ -159,4 +163,4 @@ if legacy_text:
     if 'ROLE PARA ATRAVESSAR' not in legacy_text:errors.append('social-media Scroll World interaction cue is missing')
 
 if errors:raise SystemExit('MOVX performance QA failed: '+json.dumps(errors,ensure_ascii=False))
-print(json.dumps({'status':'passed','sizes':sizes,'storyboard':{'css_layers':len(home_styles),'css_bytes':home_css_bytes,'js_layers':len(home_scripts),'js_bytes':home_js_bytes},'crt3d':{'revision':'v358-crt-spatial','active_slot':'boot-tv','published_asset':'models/movx-crt-tv.glb','streaming_proxy':'same CRT procedural geometry','production_glbs':len(published_glbs),'published_glbs':published_glbs,'model_bytes':model_sizes,'model_total_bytes':model_total,'later_models':'forbidden until CRT approval'},'legacy_editorial':'social-media.html','deferred_video_gate':True,'desktop_delivery':'full-video h264-first blob scrub','mobile_delivery':'full-video h264-first blob scrub','source_trim_seconds':0.00,'stage_background':'#000','warm_margin':'120%','scroll_chapters':4},ensure_ascii=False))
+print(json.dumps({'status':'passed','sizes':sizes,'storyboard':{'css_layers':len(home_styles),'css_bytes':home_css_bytes,'js_layers':len(home_scripts),'js_bytes':home_js_bytes},'crt3d':{'revision':'v362-crt-tactility','active_slot':'boot-tv','published_asset':'models/movx-crt-tv.glb','streaming_proxy':'same CRT procedural geometry','production_glbs':len(published_glbs),'published_glbs':published_glbs,'model_bytes':model_sizes,'model_total_bytes':model_total,'later_models':'forbidden until CRT approval'},'legacy_editorial':'social-media.html','deferred_video_gate':True,'desktop_delivery':'full-video h264-first blob scrub','mobile_delivery':'full-video h264-first blob scrub','source_trim_seconds':0.00,'stage_background':'#000','warm_margin':'120%','scroll_chapters':4},ensure_ascii=False))
