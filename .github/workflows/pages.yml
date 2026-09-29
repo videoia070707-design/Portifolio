@@ -54,7 +54,7 @@ jobs:
     name: QA CRT-first runtime contracts
     needs: build
     runs-on: ubuntu-latest
-    timeout-minutes: 12
+    timeout-minutes: 14
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -72,7 +72,7 @@ jobs:
           path: _site
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
-      - name: Validate storyboard, CRT gate, loading, motion, channels, manipulation, physics, presence and Scene 01 director
+      - name: Validate storyboard, CRT gate, loading, motion, channels, manipulation, physics, object presence, director and scene presence
         shell: bash
         run: |
           set -euo pipefail
@@ -95,12 +95,14 @@ jobs:
           node scripts/qa-v365-crt-channel-physics.cjs
           node scripts/qa-v366-clean-boot-presence.cjs
           node scripts/qa-v367-crt-scene-director.cjs
+          node scripts/qa-v368-scene-presence.cjs
       - name: Save contract evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: movx-qa-contracts
           path: |
+            _site/qa-v368-*
             _site/qa-v367-*
             _site/qa-v366-*
             _site/qa-v365-*
