@@ -20,7 +20,7 @@ const {chromium}=require('playwright');const assert=require('node:assert/strict'
    await p.mouse.click(dial.x,dial.y);await p.waitForFunction(()=>window.MOVX3D.runtime.instances['boot-tv'].channels.state.channel==='motion',null,{timeout:4000});
   }
   await choose('motion');if(!(await snapshot()).state.paused)await action.click();await p.waitForTimeout(550);const frozen=await snapshot();await p.waitForTimeout(350);assert.equal((await snapshot()).pixels,frozen.pixels,'pause must freeze screen output');
-  const slider=p.locator('.crt-program-range input');await slider.fill('90');await slider.dispatchEvent('input');await p.waitForTimeout(150);assert.notEqual((await snapshot()).pixels,frozen.pixels,'paused timeline must remain scrubbable');
+  const slider=p.locator('.crt-program-range input');await slider.fill('90');await slider.dispatchEvent('input');await p.waitForFunction(previous=>window.MOVX3D.runtime.instances['boot-tv'].channels.canvas.toDataURL()!==previous,frozen.pixels,{timeout:5000,polling:'raf'});assert.ok((await snapshot()).pixels!==frozen.pixels,'paused timeline must remain scrubbable');
   await action.click();const phase=(await snapshot()).state.phase;await p.waitForTimeout(350);assert.ok((await snapshot()).state.phase>phase,'play must resume motion');
   await choose('ai');const ai=await snapshot();await action.click();await p.waitForTimeout(550);assert.equal((await snapshot()).state.variation,ai.state.variation+1);assert.notEqual((await snapshot()).pixels,ai.pixels);
   await choose('digital');const desktop=await snapshot();await action.click();await p.waitForTimeout(550);const mobile=await snapshot();assert.notEqual(mobile.state.mobile,desktop.state.mobile);assert.notEqual(mobile.pixels,desktop.pixels);
