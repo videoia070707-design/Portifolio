@@ -1,0 +1,32 @@
+/* MOVX v363 — direct manipulation affordance for the existing physical CRT. */
+html[data-crt-direct="v363-ready"] #boot[data-crt-hit="screen"] .crt-wrap{
+  cursor:grab!important;
+}
+html[data-crt-direct="v363-ready"] #boot[data-crt-hit="knob"] .crt-wrap{
+  cursor:grab!important;
+}
+html[data-crt-direct="v363-ready"] #boot[data-crt-gesture="screen"] .crt-wrap,
+html[data-crt-direct="v363-ready"] #boot[data-crt-gesture="knob"] .crt-wrap{
+  cursor:grabbing!important;
+}
+html[data-crt-direct="v363-ready"] #boot[data-crt-gesture="screen"] .v322-model-renderer{
+  filter:drop-shadow(0 33px 36px rgba(36,27,20,.22));
+}
+html[data-crt-direct="v363-ready"] #boot[data-crt-gesture="knob"] .crt-wrap::before{
+  opacity:.39;
+  filter:blur(15px);
+}
+html[data-crt-direct="v363-ready"] #boot .crt-program-help{
+  max-width:46ch;
+  transition:opacity .18s ease;
+}
+html[data-crt-direct="v363-ready"] #boot[data-crt-gesture="screen"] .crt-program-help,
+html[data-crt-direct="v363-ready"] #boot[data-crt-gesture="knob"] .crt-program-help{
+  opacity:.72;
+}
+@media(max-width:900px){
+  html[data-crt-direct="v363-ready"] #boot .crt-wrap{cursor:auto!important}
+}
+@media(prefers-reduced-motion:reduce){
+  html[data-crt-direct="v363-ready"] #boot .crt-program-help{transition:none!important}
+}
