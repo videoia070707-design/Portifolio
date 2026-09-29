@@ -1,0 +1,170 @@
+/* MOVX v369 — Scene 01 full-bleed spatial framing.
+   Reference gap addressed: the approved CRT should feel like the anchor of a
+   place, not a 3D product sitting inside a rounded webpage card. This layer is
+   intentionally CSS-only and scoped to #boot. No later scene/model is touched. */
+
+html[data-crt-scene-frame-layer="v369-full-bleed"] #boot.boot-scene{
+  padding:58px 0 0;
+  background:#e7e2d9;
+}
+
+/* The 8px gutter + 18px rounded rectangle was visually announcing “component”.
+   Scene 01 now begins exactly below the fixed 58px global header and owns the
+   remaining viewport. Other sections preserve their existing framed language. */
+html[data-crt-scene-frame-layer="v369-full-bleed"] #boot.boot-scene .scene-inner{
+  border:0!important;
+  border-radius:0!important;
+  width:100%;
+  max-width:none;
+}
+html[data-crt-scene-frame-layer="v369-full-bleed"].v354-choreo #boot.boot-scene .scene-inner{
+  top:58px;
+  height:calc(100svh - 58px);
+  min-height:calc(100svh - 58px);
+}
+
+/* Scene metadata becomes quiet environmental labeling rather than a 46px app
+   toolbar that splits the world into “header + content”. */
+@media(min-width:901px){
+  html[data-crt-scene-frame-layer="v369-full-bleed"] #boot .scene-bar{
+    position:absolute;
+    z-index:42;
+    top:0;
+    left:0;
+    right:0;
+    height:46px;
+    padding:0 clamp(30px,4.2vw,72px);
+    border:0!important;
+    background:linear-gradient(180deg,rgba(239,235,227,.82) 0%,rgba(239,235,227,.42) 58%,rgba(239,235,227,0) 100%);
+    color:#171513;
+    pointer-events:none;
+  }
+  html[data-crt-scene-frame-layer="v369-full-bleed"] #boot .scene-bar .scene-no{
+    font-size:13px;
+    opacity:.72;
+  }
+  html[data-crt-scene-frame-layer="v369-full-bleed"] #boot .scene-bar .scene-name{
+    font-size:9px;
+    letter-spacing:.14em;
+    opacity:.72;
+  }
+  html[data-crt-scene-frame-layer="v369-full-bleed"] #boot .scene-bar .scene-note{
+    max-width:38ch;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+    opacity:.34;
+  }
+
+  /* With the metadata overlaid, the physical scene gets the full vertical field.
+     The grid stays editorial and safe rather than making the CRT artificially huge. */
+  html[data-crt-scene-frame-layer="v369-full-bleed"].v354-choreo #boot .boot-stage{
+    width:100%;
+    height:100%;
+    min-height:0;
+    grid-template-columns:minmax(0,1.08fr) minmax(360px,.92fr);
+    gap:clamp(34px,5vw,84px);
+    padding:
+      clamp(68px,7.2vh,104px)
+      clamp(36px,5.2vw,90px)
+      clamp(30px,4.5vh,66px);
+    align-items:center;
+  }
+  html[data-crt-scene-frame-layer="v369-full-bleed"] #boot .crt-wrap{
+    min-width:0;
+    min-height:0;
+    height:100%;
+    max-height:calc(100svh - 116px);
+    align-self:center;
+  }
+  html[data-crt-scene-frame-layer="v369-full-bleed"] #boot .boot-copy{
+    width:100%;
+    max-width:590px;
+    min-width:0;
+    justify-self:start;
+    align-self:center;
+    position:relative;
+    z-index:3;
+  }
+
+  /* A subtle lower-edge density keeps the TV grounded after the card border is
+     removed. It is environmental light/shadow, not another decorative object. */
+  html[data-crt-scene-frame-layer="v369-full-bleed"] #boot .boot-stage::after{
+    content:"";
+    position:absolute;
+    z-index:0;
+    left:0;
+    right:0;
+    bottom:0;
+    height:20%;
+    pointer-events:none;
+    background:linear-gradient(180deg,rgba(25,21,18,0),rgba(25,21,18,.035));
+    opacity:calc(.48 + var(--v367-presence,0)*.22 + var(--v367-handoff,0)*.18);
+  }
+  html[data-crt-scene-frame-layer="v369-full-bleed"] #boot .crt-wrap,
+  html[data-crt-scene-frame-layer="v369-full-bleed"] #boot .boot-copy{
+    position:relative;
+    z-index:2;
+  }
+}
+
+/* Short laptops receive the full-bleed treatment without sacrificing the v367
+   compact channel deck or pushing controls below the sticky viewport. */
+@media(min-width:901px) and (max-height:820px){
+  html[data-crt-scene-frame-layer="v369-full-bleed"].v354-choreo #boot .boot-stage{
+    padding-top:58px;
+    padding-bottom:24px;
+    gap:clamp(26px,4vw,58px);
+  }
+  html[data-crt-scene-frame-layer="v369-full-bleed"] #boot .crt-wrap{
+    max-height:calc(100svh - 92px);
+  }
+}
+
+/* Mobile keeps the already validated natural document flow. Only the old card
+   boundary disappears; no desktop sticky/parallax behavior is forced onto touch. */
+@media(max-width:900px){
+  html[data-crt-scene-frame-layer="v369-full-bleed"] #boot.boot-scene{
+    padding:58px 0 0;
+    background:#e8e3da;
+  }
+  html[data-crt-scene-frame-layer="v369-full-bleed"].v354-choreo #boot.boot-scene .scene-inner{
+    position:relative;
+    top:auto;
+    width:100%;
+    height:auto;
+    min-height:0;
+  }
+  html[data-crt-scene-frame-layer="v369-full-bleed"] #boot .scene-bar{
+    position:relative;
+    height:42px;
+    padding:0 18px;
+    border-top:0!important;
+    border-left:0!important;
+    border-right:0!important;
+  }
+  html[data-crt-scene-frame-layer="v369-full-bleed"] #boot .scene-bar .scene-note{
+    display:none;
+  }
+  html[data-crt-scene-frame-layer="v369-full-bleed"].v354-choreo #boot .boot-stage{
+    padding:16px 18px 30px;
+  }
+}
+
+@media(prefers-reduced-motion:reduce){
+  html[data-crt-scene-frame-layer="v369-full-bleed"].v354-choreo #boot.boot-scene{
+    min-height:100svh;
+    padding-bottom:0;
+  }
+  html[data-crt-scene-frame-layer="v369-full-bleed"].v354-choreo #boot.boot-scene .scene-inner{
+    position:relative;
+    top:auto;
+    height:auto;
+    min-height:calc(100svh - 58px);
+  }
+  @media(min-width:901px){
+    html[data-crt-scene-frame-layer="v369-full-bleed"].v354-choreo #boot .boot-stage{
+      min-height:calc(100svh - 58px);
+    }
+  }
+}
