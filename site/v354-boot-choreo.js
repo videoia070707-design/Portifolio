@@ -80,8 +80,8 @@
     const desktopShift=clamp(innerWidth*.026,12,40);
     const mobileFactor=innerWidth<=900?.58:1;
 
-    const x=(pointerX*9*pointerWeight + engage*desktopShift)*mobileFactor;
-    const y=pointerY*4*pointerWeight - engage*17 - handoff*22;
+    const x=engage*desktopShift*mobileFactor;
+    const y=-engage*17 - handoff*22;
     const scale=1 + engage*.064 + handoff*.046;
     const rx=0;
     const ry=0;

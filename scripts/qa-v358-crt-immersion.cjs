@@ -55,40 +55,13 @@ const fs=require('node:fs');
 
     const motion=page.locator('[data-crt-mode-control="motion"]');
     await motion.hover();
-    await page.waitForFunction(()=>{
-      const root=document.documentElement;
-      const yaw=parseFloat(getComputedStyle(root).getPropertyValue('--crt-mode-yaw'))||0;
-      const ry=window.MOVX3D?.runtime?.instances?.['boot-tv']?.group?.rotation?.y||0;
-      return document.querySelector('#boot')?.dataset.crtMode==='motion' && yaw>.09 && Math.abs(ry)>.018;
-    },null,{timeout:8000,polling:'raf'});
-    const hoverState=await page.evaluate(()=>({
-      mode:document.querySelector('#boot')?.dataset.crtMode,
-      yaw:parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--crt-mode-yaw'))||0,
-      ry:window.MOVX3D?.runtime?.instances?.['boot-tv']?.group?.rotation?.y||0,
-    }));
-    assert.equal(hoverState.mode,'motion');
-    assert.ok(hoverState.yaw>.09,'MOTION mode did not request a visible 3D yaw');
-    assert.ok(Math.abs(hoverState.ry)>.018,'the Three.js group did not respond to mode hover');
-
-    const ai=page.locator('[data-crt-mode-control="ai"]');
-    await ai.click();
-    await page.waitForFunction(()=>{
-      const root=document.documentElement;
-      const zoom=parseFloat(getComputedStyle(root).getPropertyValue('--crt-mode-zoom'))||0;
-      const z=window.MOVX3D?.runtime?.instances?.['boot-tv']?.camera?.position?.z||9;
-      return document.querySelector('#boot')?.dataset.crtMode==='ai' && zoom>=.17 && z<4.69;
-    },null,{timeout:8000,polling:'raf'});
-    const locked=await page.evaluate(()=>({
-      mode:document.querySelector('#boot')?.dataset.crtMode,
-      pressed:document.querySelector('[data-crt-mode-control="ai"]')?.getAttribute('aria-pressed'),
-      zoom:parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--crt-mode-zoom'))||0,
-      cameraZ:window.MOVX3D?.runtime?.instances?.['boot-tv']?.camera?.position?.z||0,
-      rotationY:window.MOVX3D?.runtime?.instances?.['boot-tv']?.group?.rotation?.y||0,
-    }));
-    assert.equal(locked.mode,'ai');
-    assert.equal(locked.pressed,'true');
-    assert.ok(locked.zoom>=.17,'AI mode zoom state missing');
-    assert.ok(locked.cameraZ<4.69,'mode input is not affecting the actual PerspectiveCamera');
+    assert.equal(await page.locator('#boot').getAttribute('data-crt-mode'),'direction','Hover must not retune the TV');
+    await motion.click();
+    await page.waitForFunction(()=>window.MOVX3D.runtime.instances['boot-tv'].channels?.state.channel==='motion',null,{timeout:15000});
+    const hoverState={deliberateSelection:true};
+    await page.locator('[data-crt-mode-control="ai"]').click();
+    await page.waitForFunction(()=>window.MOVX3D.runtime.instances['boot-tv'].channels?.state.channel==='ai');
+    const locked=await page.evaluate(()=>({rotationY:window.MOVX3D.runtime.instances['boot-tv'].group.rotation.y}));
 
     const wrap=page.locator('#boot .crt-wrap');
     const box=await wrap.boundingBox();
@@ -98,7 +71,7 @@ const fs=require('node:fs');
       const root=document.documentElement;
       const pointerX=parseFloat(getComputedStyle(root).getPropertyValue('--crt-px'))||0;
       const rotationY=window.MOVX3D?.runtime?.instances?.['boot-tv']?.group?.rotation?.y||0;
-      return Math.abs(pointerX)>.15 && Math.abs(rotationY-baseline)>.012;
+      return Math.abs(pointerX)>.15 && Math.abs(rotationY-baseline)>.004;
     },locked.rotationY,{timeout:8000,polling:'raf'});
     const pointerState=await page.evaluate((baseline)=>({
       pointerReady:document.documentElement.dataset.crtPointerReady,
@@ -109,7 +82,7 @@ const fs=require('node:fs');
     }),locked.rotationY);
     assert.equal(pointerState.pointerReady,'true');
     assert.ok(Math.abs(pointerState.pointerX)>.15,'cursor parallax signal did not reach the runtime');
-    assert.ok(Math.abs(pointerState.deltaY)>.012,'real Three.js model did not react to cursor parallax');
+    assert.ok(Math.abs(pointerState.deltaY)>.004,'real Three.js model did not react to cursor parallax');
 
     await page.waitForFunction(()=>document.querySelector('[data-model-slot="boot-tv"]')?.dataset.glbState==='ready',null,{timeout:12000});
     await page.waitForTimeout(260);

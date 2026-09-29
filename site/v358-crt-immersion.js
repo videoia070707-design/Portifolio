@@ -24,10 +24,10 @@
     {id:'digital',label:'DIGITAL',yaw:rad(6.1),pitch:rad(.7),roll:rad(-1.05),zoom:.11,energy:.56},
   ];
   const content={
-    direction:['Identidade, composição e direção de arte para marcas com presença','social-media.html','Explorar direção de arte ↗'],
-    motion:['Ritmo e movimento para transformar uma ideia em uma experiência','video-editor.html','Explorar motion ↗'],
-    ai:['Inteligência artificial a serviço da imaginação e da direção criativa','ai-creator.html','Explorar AI ↗'],
-    digital:['Interfaces e sites que conectam identidade, interação e experiência','ui-ux.html','Explorar digital ↗']
+    direction:['Direção de arte em projetos reais. Troque a arte na própria TV.','social-media.html','Explorar direção de arte ↗'],
+    motion:['Experimente o ritmo: controle a animação e encontre o seu tempo.','video-editor.html','Explorar motion ↗'],
+    ai:['Um estudo generativo ao vivo. Mude a variação e descubra outra composição.','ai-creator.html','Explorar AI ↗'],
+    digital:['A mesma interface, dois formatos. Explore como o layout se adapta.','ui-ux.html','Explorar digital ↗']
   };
   const panel=document.createElement('div');panel.className='crt-channel-panel';panel.id='crt-channel-panel';
   const description=document.createElement('p');description.setAttribute('aria-live','polite');description.setAttribute('aria-atomic','true');
@@ -47,13 +47,13 @@
   root.style.setProperty('--crt-drag-pitch','0');
   boot.dataset.crtMode='neutral';
 
-  let locked=null;
+  let locked=MODES[0];
   let pointerX=0,pointerY=0;
   let hasEngaged=false;
 
   const hint=document.createElement('span');
   hint.className='crt-interaction-hint';
-  hint.textContent='MOVA O CURSOR / ESCOLHA UM MODO';
+  hint.textContent='ESCOLHA UM CANAL · EXPLORE NA TELA';
   hint.setAttribute('aria-hidden','true');
   wrap.appendChild(hint);
 
@@ -99,15 +99,15 @@
     tag.setAttribute('role','button');
     tag.setAttribute('aria-controls','crt-channel-panel');
     tag.setAttribute('tabindex','0');
-    tag.setAttribute('aria-label',`${mode.label}: alterar resposta espacial da TV`);
+    tag.setAttribute('aria-label',`${mode.label}: sintonizar canal na TV`);
     tag.setAttribute('aria-pressed','false');
     tag.dataset.crtModeControl=mode.id;
 
     const preview=()=>{engage();applyMode(mode,{transient:true})};
     const restore=()=>applyMode(locked);
-    tag.addEventListener('pointerenter',event=>{if(event.pointerType!=='touch'&&!reduced)preview()},{passive:true});
+    // Channels tune on deliberate click/tap, never incidental hover.
     tag.addEventListener('pointerleave',restore,{passive:true});
-    tag.addEventListener('focus',()=>{if(!reduced)preview()});
+
     tag.addEventListener('blur',restore);
     tag.addEventListener('click',()=>{
       engage();
@@ -165,6 +165,6 @@
   document.addEventListener('visibilitychange',()=>{if(document.hidden)setPointer(0,0)});
   addEventListener('pagehide',event=>{if(!event.persisted)stateObserver.disconnect()});
 
-  applyMode(null);
+  applyMode(locked);
   root.dataset.crtInteractionReady='true';
 })();

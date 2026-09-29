@@ -13,12 +13,12 @@ import json, re, shutil
 
 root=Path(__file__).resolve().parents[1]
 out=root/'_site'
-release='v360-crt-responsive'
+release='v361-live-channels'
 css_name='v358-crt-immersion.css'
 js_name='v358-crt-immersion.js'
 runtime_path=out/'v322-glb-runtime.mjs'
 
-for name in (css_name,js_name):
+for name in (css_name,js_name,'v361-crt-channels.mjs'):
     src=root/'site'/name
     if not src.exists():
         raise SystemExit(f'MOVX v358 source missing: {src}')
@@ -27,7 +27,7 @@ for name in (css_name,js_name):
 if not runtime_path.exists():
     raise SystemExit('MOVX v358 requires the built v322/v352 CRT runtime')
 
-runtime=runtime_path.read_text()
+runtime="import {attachCRTChannels} from './v361-crt-channels.mjs?v=v361-live-channels';\n"+runtime_path.read_text()
 
 # Expose the four existing stage lights to the interaction loop. We keep the
 # renderer and scene count unchanged: one canvas, one scene, one production GLB.
@@ -198,9 +198,9 @@ frame_new='''    const modeYaw=parseFloat(styles.getPropertyValue('--crt-mode-ya
     }
     {
       const motion=instance.motionState||(instance.motionState={rx:0,ry:0,rz:0,z:0,cameraZ:instance.camera.position.z});
-      const targetY=-.28 + (reduced?0:px*.48 + progress*.25) + modeYaw*4.2 + dragYaw;
-      const targetX=(reduced?0:-py*.16) + modePitch*3 + dragPitch;
-      const targetZ=modeRoll*2 + (!reduced&&active?Math.sin(t*.00135)*.0045:0);
+      const targetY=-.12 + (reduced?0:px*.055 + progress*.10);
+      const targetX=reduced?0:-py*.025;
+      const targetZ=0;
       const targetDepth=(active?.025:0) + modeEnergy*.035;
       const dt=instance.lastMotionTime?Math.min((t-instance.lastMotionTime)/1000,.1):1/60;instance.lastMotionTime=t;
       const follow=reduced?1:1-Math.exp(-dt*8);
@@ -209,7 +209,7 @@ frame_new='''    const modeYaw=parseFloat(styles.getPropertyValue('--crt-mode-ya
       motion.rz+=(targetZ-motion.rz)*follow;
       motion.z+=(targetDepth-motion.z)*follow;
       const baseCamera=instance.name==='boot-tv'?4.72:3.45;
-      const targetCamera=baseCamera-modeZoom-(active?.035:0);
+      const targetCamera=baseCamera;
       motion.cameraZ+=(targetCamera-motion.cameraZ)*follow;
       instance.group.rotation.set(motion.rx,motion.ry,motion.rz);
       instance.group.position.x=px*.025;
@@ -225,6 +225,8 @@ frame_new='''    const modeYaw=parseFloat(styles.getPropertyValue('--crt-mode-ya
         instance.lights.fill.position.x=-3+px*.62;
       }
     }
+    attachCRTChannels(instance);
+    instance.channels?.update(t);
     instance.renderer.render(instance.scene,instance.camera);'''
 if runtime.count(frame_old)!=1:
     raise SystemExit('MOVX v358 could not install model-owned spatial motion')
@@ -260,9 +262,9 @@ for name in ('index.html','latest.html'):
         text=text.replace('</head>',css_link+'\n</head>',1)
     if 'data-v358-crt-input=' not in text:
         text=text.replace('</body>',js_tag+'\n</body>',1)
-    text=text.replace('v322-glb-runtime.mjs?v=v350-real-crt','v322-glb-runtime.mjs?v=v360-crt-responsive')
-    text=text.replace('v354-boot-choreo.js?v=v354-boot-scroll','v354-boot-choreo.js?v=v360-crt-responsive')
-    text=text.replace('v314-crt.js?v=v321-production-storyboard','v314-crt.js?v=v360-crt-responsive')
+    text=text.replace('v322-glb-runtime.mjs?v=v350-real-crt','v322-glb-runtime.mjs?v=v361-live-channels')
+    text=text.replace('v354-boot-choreo.js?v=v354-boot-scroll','v354-boot-choreo.js?v=v361-live-channels')
+    text=text.replace('v314-crt.js?v=v321-production-storyboard','v314-crt.js?v=v361-live-channels')
     text=text.replace('</head>','<link rel="preload" as="image" href="media/crt-v358-poster.webp" fetchpriority="high">\n</head>',1)
     text=re.sub(r'(<div[^>]*data-model-slot="boot-tv"[^>]*>)',r'\1<img class="crt-loading-poster" src="media/crt-v358-poster.webp" alt="TV MOVX" fetchpriority="high" width="900" height="800">',text,count=1)
     path.write_text(text)

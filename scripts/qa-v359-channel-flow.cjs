@@ -11,7 +11,7 @@ const {chromium}=require('playwright');const assert=require('node:assert/strict'
  const ids=['direction','motion','ai','digital'];const hrefs=['social-media.html','video-editor.html','ai-creator.html','ui-ux.html'];
  for(let i=0;i<4;i++){
  await buttons.nth(i).click();assert.equal(await buttons.nth(i).getAttribute('aria-pressed'),'true');assert.equal(await p.locator('#crt-channel-panel a').getAttribute('href'),hrefs[i]);
- const text=await p.locator('#crt-channel-panel p').textContent();assert.ok(text.length>25);
+ const text=await p.locator('#crt-channel-panel p[aria-live]').textContent();assert.ok(text.length>25);
  assert.ok(await buttons.nth(i).evaluate(el=>{const r=el.getBoundingClientRect();const hit=document.elementFromPoint(r.x+r.width/2,r.y+r.height/2);return hit===el||el.contains(hit)}),'button clipped or obscured');
  }
  await buttons.nth(0).focus();await p.keyboard.press('Enter');assert.equal(await buttons.nth(0).getAttribute('aria-pressed'),'true');await p.keyboard.press('ArrowRight');assert.ok(await buttons.nth(1).evaluate(el=>el===document.activeElement));await p.keyboard.press('Space');assert.equal(await buttons.nth(1).getAttribute('aria-pressed'),'true');
