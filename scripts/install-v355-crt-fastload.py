@@ -2,7 +2,7 @@
 
 Goals:
 - keep the approved standalone vintage TV as the only production GLB;
-- reduce transfer/parse cost without simplifying geometry;
+- reduce transfer/parse/GPU texture decode cost without simplifying geometry;
 - start the GLB request from <head> before the runtime modules execute;
 - warm the Three.js + GLTFLoader module graph before the runtime reaches Scene 01;
 - never expose the obsolete CSS/DOM television while the real model loads.
@@ -29,9 +29,13 @@ for tmp in (tmp_webp,tmp_quant):
     if tmp.exists(): tmp.unlink()
 
 cli=[str(root/'node_modules'/'.bin'/'gltf-transform')]
-# v358: cap GPU upload/decode cost; keep all geometry and original source.
+# v366 hotfix: the CRT renders at roughly 350-700 CSS pixels in Scene 01. The
+# source's three 2048px maps on the main cabinet were adding expensive WebP
+# decode/GPU upload latency for detail that cannot be resolved at that size.
+# Cap textures at 1024 while preserving every mesh/triangle and material slot.
+texture_max=1024
 resized=model.with_name('movx-crt-tv.resized.glb')
-subprocess.run(cli+['resize',str(model),str(resized),'--width','2048','--height','2048'],check=True)
+subprocess.run(cli+['resize',str(model),str(resized),'--width',str(texture_max),'--height',str(texture_max)],check=True)
 subprocess.run(cli+['webp',str(resized),str(tmp_webp),'--quality','80'],check=True)
 resized.unlink()
 subprocess.run(cli+['quantize',str(tmp_webp),str(tmp_quant)],check=True)
@@ -72,8 +76,6 @@ for name in ('index.html','latest.html'):
     if 'data-v354-boot-choreo="v354-boot-scroll"' not in text:
         raise SystemExit(f'MOVX v355 requires v354 in {name}')
 
-    # Inject root markers against both <html> and <html ...>. Doing this before
-    # head/body insertion guarantees the loading shield exists before runtime.
     if 'data-crt-fastload=' not in text:
         text,count=re.subn(
             r'<html(?=[\s>])',
@@ -108,8 +110,6 @@ for name in installed:
         raise SystemExit(f'MOVX v355 critical fast-load CSS missing from {name}')
     if text.count('data-v356-module="three"')!=1 or text.count('data-v356-module="gltfloader"')!=1:
         raise SystemExit(f'MOVX v356 module warmup links invalid in {name}')
-    # Static ordering contracts: markers, model preload and module warmup all
-    # need to exist before the boot runtime is discovered at the end of body.
     if text.find('data-crt-fastload="v355-optimized-preload"') > text.find('<head>'):
         raise SystemExit(f'MOVX v355 root marker was injected too late in {name}')
     if text.find('data-v355-crt-preload="v355-optimized-preload"') > text.find('</head>'):
@@ -129,10 +129,11 @@ print(json.dumps({
     'saved_bytes':raw_bytes-optimized_bytes,
     'ratio':round(optimized_bytes/raw_bytes,4),
     'texture_codec':'webp quality 80',
+    'texture_max_dimension':texture_max,
     'geometry':'quantized, not simplified',
     'preload':'head/high priority',
     'module_warmup':['three.module.js','GLTFLoader.js'],
     'root_marker':'parser-time/static',
-    'fallback':'old DOM/CSS television hidden during real GLB load',
+    'fallback':'real-TV poster until GLB ready; legacy CSS/procedural preview hidden',
     'published_glbs':published,
 },ensure_ascii=False))
