@@ -1,9 +1,9 @@
-/* MOVX v367 — Scene 01 director.
+/* MOVX v367/v368 — Scene 01 director.
    The approved CRT remains the only production 3D asset. This module does not add
-   another renderer, scene, RAF, model or input listener. Instead it consumes the
-   states already produced by scroll choreography, CRT presence, channel physics
-   and direct manipulation, then composes camera + object + light + DOM into one
-   authored shot inside the existing v322 render frame. */
+   another renderer, scene, RAF, model or input listener. It consumes the states
+   already produced by scroll choreography, CRT physics/manipulation and, when
+   available, v368 scene-wide presence, then composes camera + object + light +
+   DOM into one authored shot inside the existing v322 render frame. */
 import * as THREE from './vendor/three.module.js';
 
 const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -42,7 +42,7 @@ export function attachCRTSceneDirector(instance){
     pointerX:0,pointerY:0,presence:0,channel:'direction',channelMix:1,
     camX:0,camY:.03,camZ:base.cameraZ,fov:base.fov,
     energy:CHANNELS.direction.energy,warm:CHANNELS.direction.warm,
-    domOwned:false,frames:0,beat:'boot',manual:false
+    domOwned:false,frames:0,beat:'boot',manual:false,presenceSource:'crt'
   };
 
   const ownDom=()=>{
@@ -68,8 +68,8 @@ export function attachCRTSceneDirector(instance){
     boot.style.setProperty('--v367-energy',state.energy.toFixed(4));
     boot.style.setProperty('--v367-warm',state.warm.toFixed(4));
     boot.style.setProperty('--v367-velocity',clamp(state.velocity*5,-1,1).toFixed(4));
-    boot.style.setProperty('--v367-light-x',`${(31+px*8*presence+profile.camX*52+engage*3).toFixed(2)}%`);
-    boot.style.setProperty('--v367-light-y',`${(47+py*6*presence-profile.camY*60-exit*3).toFixed(2)}%`);
+    boot.style.setProperty('--v367-light-x',`${(31+px*8.8*presence+profile.camX*52+engage*3).toFixed(2)}%`);
+    boot.style.setProperty('--v367-light-y',`${(47+py*6.8*presence-profile.camY*60-exit*3).toFixed(2)}%`);
   }
 
   function updateDom(profile,px,py,presence,engage,exit,handoff){
@@ -78,15 +78,15 @@ export function attachCRTSceneDirector(instance){
     const depth=[.42,.72,1];
     const channelOffsets=[profile.typeA,profile.typeB,profile.typeC];
     titleLines.forEach((line,i)=>{
-      const x=channelOffsets[i]*state.channelMix-px*(3.2+depth[i]*3.6)*pointerGain+handoff*(i-1)*4;
-      const y=-py*(1.2+depth[i]*2.4)*pointerGain-exit*(i*1.6);
-      const rotate=(i===1?-px*.16:px*.10)*pointerGain + (i===2?profile.roll*14:0);
+      const x=channelOffsets[i]*state.channelMix-px*(3.8+depth[i]*4.1)*pointerGain+handoff*(i-1)*4;
+      const y=-py*(1.5+depth[i]*2.7)*pointerGain-exit*(i*1.6);
+      const rotate=(i===1?-px*.18:px*.115)*pointerGain + (i===2?profile.roll*14:0);
       line.style.transform=`translate3d(${x.toFixed(2)}px,${y.toFixed(2)}px,0) rotate(${rotate.toFixed(3)}deg)`;
     });
-    if(eyebrow)eyebrow.style.transform=`translate3d(${(-px*2.1*pointerGain).toFixed(2)}px,${(-py*.8*pointerGain).toFixed(2)}px,0)`;
-    if(paragraph)paragraph.style.transform=`translate3d(${(-px*3.4*pointerGain-profile.typeB*.16).toFixed(2)}px,${(-py*1.7*pointerGain).toFixed(2)}px,0)`;
-    if(panel)panel.style.transform=`translate3d(${(-px*2.2*pointerGain).toFixed(2)}px,${(-py*.8*pointerGain).toFixed(2)}px,0)`;
-    if(sceneBar)sceneBar.style.transform=`translate3d(${(px*1.8*pointerGain).toFixed(2)}px,0,0)`;
+    if(eyebrow)eyebrow.style.transform=`translate3d(${(-px*2.5*pointerGain).toFixed(2)}px,${(-py*.95*pointerGain).toFixed(2)}px,0)`;
+    if(paragraph)paragraph.style.transform=`translate3d(${(-px*3.9*pointerGain-profile.typeB*.16).toFixed(2)}px,${(-py*1.9*pointerGain).toFixed(2)}px,0)`;
+    if(panel)panel.style.transform=`translate3d(${(-px*2.5*pointerGain).toFixed(2)}px,${(-py*.95*pointerGain).toFixed(2)}px,0)`;
+    if(sceneBar)sceneBar.style.transform=`translate3d(${(px*2.1*pointerGain).toFixed(2)}px,0,0)`;
   }
 
   function update(time){
@@ -109,14 +109,23 @@ export function attachCRTSceneDirector(instance){
     state.channelMix+=(1-state.channelMix)*(reduced?1:follow(dt,9.5));
     const profile=CHANNELS[channel];
 
-    const presenceState=instance.presence.state;
+    /* v368 upgrades presence from an object-hover signal to a scene signal. The
+       physical CRT still keeps its own v366 raycast response; only the cinematic
+       camera/light/type layer follows the visitor across the entire first scene. */
+    const scenePresenceState=instance.scenePresence?.state||null;
+    const presenceState=scenePresenceState||instance.presence.state;
+    state.presenceSource=scenePresenceState?'scene':'crt';
+    boot.dataset.v367PresenceSource=state.presenceSource;
     const manual=!!instance.objectInteraction?.state?.active||!!instance.directManipulation?.state?.active;
     state.manual=manual;
-    const targetPresence=reduced||coarse||manual?0:Number(presenceState.hoverMix||0);
-    state.presence+=(targetPresence-state.presence)*(reduced?1:follow(dt,9));
-    state.pointerX+=(Number(presenceState.x||0)-state.pointerX)*(reduced?1:follow(dt,10));
-    state.pointerY+=(Number(presenceState.y||0)-state.pointerY)*(reduced?1:follow(dt,10));
+    const rawPresence=scenePresenceState?Number(scenePresenceState.mix||0):Number(presenceState.hoverMix||0);
+    const targetPresence=reduced||coarse||manual?0:rawPresence;
+    state.presence+=(targetPresence-state.presence)*(reduced?1:follow(dt,9.6));
+    state.pointerX+=(Number(presenceState.x||0)-state.pointerX)*(reduced?1:follow(dt,scenePresenceState?12.5:10));
+    state.pointerY+=(Number(presenceState.y||0)-state.pointerY)*(reduced?1:follow(dt,scenePresenceState?12.5:10));
     const px=state.pointerX,py=state.pointerY,presence=state.presence;
+    const pvx=scenePresenceState?Number(scenePresenceState.vx||0):0;
+    const pvy=scenePresenceState?Number(scenePresenceState.vy||0):0;
 
     state.energy+=(profile.energy-state.energy)*(reduced?1:follow(dt,7.5));
     state.warm+=(profile.warm-state.warm)*(reduced?1:follow(dt,6.5));
@@ -124,15 +133,17 @@ export function attachCRTSceneDirector(instance){
     /* CAMERA PATH — pointer no longer merely tilts the product: it shifts the
        viewer's position while scroll establishes approach -> hold -> handoff. */
     const pointerCam=manual?0:presence*(1-exit*.68);
-    const desiredX=profile.camX*state.channelMix + px*.145*pointerCam + engage*.026 - handoff*.075;
-    const desiredY=.03 + profile.camY*state.channelMix - py*.080*pointerCam - engage*.018 + handoff*.026;
+    const inertiaX=clamp(pvx*.006,-.018,.018)*pointerCam;
+    const inertiaY=clamp(pvy*.004,-.012,.012)*pointerCam;
+    const desiredX=profile.camX*state.channelMix + px*.180*pointerCam + inertiaX + engage*.026 - handoff*.075;
+    const desiredY=.03 + profile.camY*state.channelMix - py*.095*pointerCam - inertiaY - engage*.018 + handoff*.026;
     const desiredZ=base.cameraZ + profile.camZ*state.channelMix - engage*.135 + exit*.060 + handoff*.235;
     const desiredFov=base.fov + profile.fov*state.channelMix + handoff*1.05;
-    const ck=reduced?1:follow(dt,8.5);
+    const ck=reduced?1:follow(dt,8.8);
     state.camX=lerp(state.camX,desiredX,ck);state.camY=lerp(state.camY,desiredY,ck);state.camZ=lerp(state.camZ,desiredZ,ck);state.fov=lerp(state.fov,desiredFov,ck);
     instance.camera.position.set(state.camX,state.camY,state.camZ);
     if(Math.abs(instance.camera.fov-state.fov)>.001){instance.camera.fov=state.fov;instance.camera.updateProjectionMatrix();}
-    look.set(profile.lookX*state.channelMix+px*.020*pointerCam-handoff*.022,profile.lookY*state.channelMix-py*.012*pointerCam-exit*.010,0);
+    look.set(profile.lookX*state.channelMix+px*.026*pointerCam+inertiaX*.12-handoff*.022,profile.lookY*state.channelMix-py*.015*pointerCam-inertiaY*.10-exit*.010,0);
     instance.camera.lookAt(look);
 
     /* OBJECT STAGING — additive and bounded. v364 still owns direct cabinet
@@ -150,18 +161,18 @@ export function attachCRTSceneDirector(instance){
     /* One environmental lighting grammar: a filmed warm key / cool rim balance.
        Channel choice changes emphasis, not the entire visual language. */
     if(instance.lights?.key){
-      instance.lights.key.position.x=3.15-px*.95*pointerCam-profile.camX*3.6;
-      instance.lights.key.position.y=4.0-py*.52*pointerCam+engage*.20;
+      instance.lights.key.position.x=3.15-px*1.02*pointerCam-profile.camX*3.6;
+      instance.lights.key.position.y=4.0-py*.58*pointerCam+engage*.20;
       instance.lights.key.intensity+=state.energy*.08+engage*.035;
     }
     if(instance.lights?.fill){
-      instance.lights.fill.position.x=-3.05+px*.78*pointerCam+profile.camX*2.1;
+      instance.lights.fill.position.x=-3.05+px*.86*pointerCam+profile.camX*2.1;
       instance.lights.fill.position.y=1.9+profile.camY*2.8;
       instance.lights.fill.intensity+=state.energy*.045;
     }
     if(instance.lights?.rim){
-      instance.lights.rim.position.x=px*.68*pointerCam-profile.camX*2.2;
-      instance.lights.rim.position.y=3.0-py*.28*pointerCam;
+      instance.lights.rim.position.x=px*.76*pointerCam-profile.camX*2.2;
+      instance.lights.rim.position.y=3.0-py*.31*pointerCam;
       instance.lights.rim.intensity+=state.energy*.055+handoff*.025;
     }
 
