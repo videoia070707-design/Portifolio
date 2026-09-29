@@ -40,109 +40,77 @@ jobs:
 
           const wireErrors=(page,bucket)=>{
             page.on('pageerror',error=>bucket.push(`PAGEERROR ${String(error)}`));
-            page.on('response',response=>{
-              if(response.status()>=400&&critical.test(response.url()))bucket.push(`HTTP ${response.status()} ${response.url()}`);
-            });
-            page.on('requestfailed',request=>{
-              if(critical.test(request.url()))bucket.push(`REQUEST FAILED ${request.url()} ${request.failure()?.errorText||''}`);
-            });
+            page.on('response',response=>{if(response.status()>=400&&critical.test(response.url()))bucket.push(`HTTP ${response.status()} ${response.url()}`);});
+            page.on('requestfailed',request=>{if(critical.test(request.url()))bucket.push(`REQUEST FAILED ${request.url()} ${request.failure()?.errorText||''}`);});
           };
-          const snap=async(page,path)=>{
-            try{await page.screenshot({path,fullPage:false,animations:'disabled',timeout:10000});}
-            catch(error){report.captureWarnings.push({path,error:String(error)});}
-          };
+          const snap=async(page,path)=>{try{await page.screenshot({path,fullPage:false,animations:'disabled',timeout:10000});}catch(error){report.captureWarnings.push({path,error:String(error)});}};
           const focus=async(page,selector)=>{
-            const found=await page.evaluate(sel=>{
-              const el=document.querySelector(sel);if(!el)return false;
-              const r=el.getBoundingClientRect();
-              const top=Math.max(0,window.scrollY+r.top-(window.innerHeight-r.height)/2);
-              window.scrollTo({top,behavior:'instant'});return true;
-            },selector);
-            if(!found)throw new Error(`Published CRT slot missing during focus: ${selector}`);
-            await page.waitForTimeout(450);
+            const found=await page.evaluate(sel=>{const el=document.querySelector(sel);if(!el)return false;const r=el.getBoundingClientRect();const top=Math.max(0,window.scrollY+r.top-(window.innerHeight-r.height)/2);window.scrollTo({top,behavior:'instant'});return true;},selector);
+            if(!found)throw new Error(`Published CRT slot missing during focus: ${selector}`);await page.waitForTimeout(450);
           };
           const save=()=>writeFile('qa-published-home/report.json',JSON.stringify(report,null,2));
           const readCRT=page=>page.evaluate(()=>{
             const i=window.MOVX3D?.runtime?.instances?.['boot-tv'];
             return {
-              title:document.title,
-              scope:document.documentElement.dataset.modelScope||null,
+              title:document.title,scope:document.documentElement.dataset.modelScope||null,
               overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth,
               domSlots:document.querySelectorAll('[data-model-slot]').length,
               visibleCanvases:document.querySelectorAll('.v322-model-renderer canvas').length,
-              loaded:!!i?.loaded,error:i?.error||null,
-              glbState:i?.element?.dataset?.glbState||null,
-              triangles:i?.stats?.triangles||0,
-              screen:i?.channels?.screen?.name||null,
-              channel:i?.channels?.state?.channel||null,
-              channels:!!i?.channels,
-              tactility:!!i?.tactility,
+              loaded:!!i?.loaded,error:i?.error||null,glbState:i?.element?.dataset?.glbState||null,
+              triangles:i?.stats?.triangles||0,screen:i?.channels?.screen?.name||null,channel:i?.channels?.state?.channel||null,
+              channels:!!i?.channels,tactility:!!i?.tactility,direct:!!i?.directManipulation,
               tactilityMarker:document.documentElement.dataset.crtTactility||null,
+              directMarker:document.documentElement.dataset.crtDirect||null,
               legacyRendered:['hero-movx-logo','x-portal','creative-machine','play-camera','play-cube','spatial-studio'].filter(name=>!!window.MOVX3D?.runtime?.instances?.[name]?.renderer)
             };
           });
 
           try{
             const desktopErrors=[];
-            const page=await browser.newPage({viewport:{width:1440,height:1000},deviceScaleFactor:1});
-            wireErrors(page,desktopErrors);
+            const page=await browser.newPage({viewport:{width:1440,height:1000},deviceScaleFactor:1});wireErrors(page,desktopErrors);
             const response=await page.goto(`${base}?qa-published=${Date.now()}`,{waitUntil:'domcontentloaded',timeout:60000});
             if(!response||response.status()>=400)throw new Error(`Published homepage HTTP failure: ${response?.status()??'no response'}`);
             await page.waitForFunction(()=>!!window.MOVX3D?.runtime,null,{timeout:30000});
-            const crt='[data-model-slot="boot-tv"]';
-            if(await page.locator(crt).count()!==1)throw new Error('Published boot-tv slot missing');
-            await focus(page,crt);
-            await page.waitForFunction(()=>{
-              const i=window.MOVX3D?.runtime?.instances?.['boot-tv'];return !!(i?.loaded||i?.error);
-            },null,{timeout:90000});
-            await page.waitForFunction(()=>{
-              const i=window.MOVX3D?.runtime?.instances?.['boot-tv'];return !!(i?.channels&&i?.tactility);
-            },null,{timeout:20000});
-            const desktop=await readCRT(page);
-            Object.assign(report.desktop,desktop,{resourceErrors:desktopErrors});await save();
+            const crt='[data-model-slot="boot-tv"]';if(await page.locator(crt).count()!==1)throw new Error('Published boot-tv slot missing');await focus(page,crt);
+            await page.waitForFunction(()=>{const i=window.MOVX3D?.runtime?.instances?.['boot-tv'];return !!(i?.loaded||i?.error);},null,{timeout:90000});
+            await page.waitForFunction(()=>{const i=window.MOVX3D?.runtime?.instances?.['boot-tv'];return !!(i?.channels&&i?.tactility&&i?.directManipulation);},null,{timeout:20000});
+            const desktop=await readCRT(page);Object.assign(report.desktop,desktop,{resourceErrors:desktopErrors});await save();
             if(desktop.scope!=='v350-crt-only')throw new Error(`Published model scope drifted: ${desktop.scope}`);
             if(desktop.overflow>2)throw new Error(`Published desktop horizontal overflow: ${desktop.overflow}`);
             if(desktop.error)throw new Error(`Published CRT GLB failed: ${desktop.error}`);
             if(!desktop.loaded||desktop.glbState!=='ready')throw new Error(`Published CRT not ready: ${JSON.stringify(desktop)}`);
             if(desktop.triangles!==44831)throw new Error(`Published CRT geometry changed: ${desktop.triangles}`);
-            if(desktop.screen!=='tripo_part_1'||!desktop.channels||!desktop.tactility)throw new Error(`Published CRT experience incomplete: ${JSON.stringify(desktop)}`);
+            if(desktop.screen!=='tripo_part_1'||!desktop.channels||!desktop.tactility||!desktop.direct)throw new Error(`Published CRT experience incomplete: ${JSON.stringify(desktop)}`);
+            if(desktop.directMarker!=='v363-ready')throw new Error(`Published v363 direct marker missing: ${desktop.directMarker}`);
             if(desktop.visibleCanvases!==1)throw new Error(`Expected one production WebGL canvas, got ${desktop.visibleCanvases}`);
             if(desktop.legacyRendered.length)throw new Error(`Legacy 3D slots rendered unexpectedly: ${desktop.legacyRendered.join(', ')}`);
             if(desktopErrors.length)throw new Error(`Published desktop critical resource errors: ${JSON.stringify(desktopErrors)}`);
             await page.locator('[data-crt-mode-control="motion"]').click();
             await page.waitForFunction(()=>window.MOVX3D.runtime.instances['boot-tv'].channels.state.channel==='motion',null,{timeout:8000});
-            report.desktop.motionChannel=true;await save();
-            await snap(page,'qa-published-home/desktop.png');await page.close();
+            report.desktop.motionChannel=true;await save();await snap(page,'qa-published-home/desktop.png');await page.close();
 
             const mobileErrors=[];
-            const mobilePage=await browser.newPage({viewport:{width:390,height:844},deviceScaleFactor:1,hasTouch:true,isMobile:true});
-            wireErrors(mobilePage,mobileErrors);
+            const mobilePage=await browser.newPage({viewport:{width:390,height:844},deviceScaleFactor:1,hasTouch:true,isMobile:true});wireErrors(mobilePage,mobileErrors);
             const mobileResponse=await mobilePage.goto(`${base}?qa-published-mobile=${Date.now()}`,{waitUntil:'domcontentloaded',timeout:60000});
             if(!mobileResponse||mobileResponse.status()>=400)throw new Error(`Published mobile homepage HTTP failure: ${mobileResponse?.status()??'no response'}`);
             await mobilePage.waitForFunction(()=>!!window.MOVX3D?.runtime,null,{timeout:30000});
-            if(await mobilePage.locator(crt).count()!==1)throw new Error('Published mobile boot-tv slot missing');
-            await focus(mobilePage,crt);
-            await mobilePage.waitForFunction(()=>{
-              const i=window.MOVX3D?.runtime?.instances?.['boot-tv'];return !!(i?.loaded||i?.error);
-            },null,{timeout:90000});
-            await mobilePage.waitForFunction(()=>{
-              const i=window.MOVX3D?.runtime?.instances?.['boot-tv'];return !!(i?.channels&&i?.tactility);
-            },null,{timeout:20000});
+            if(await mobilePage.locator(crt).count()!==1)throw new Error('Published mobile boot-tv slot missing');await focus(mobilePage,crt);
+            await mobilePage.waitForFunction(()=>{const i=window.MOVX3D?.runtime?.instances?.['boot-tv'];return !!(i?.loaded||i?.error);},null,{timeout:90000});
+            await mobilePage.waitForFunction(()=>{const i=window.MOVX3D?.runtime?.instances?.['boot-tv'];return !!(i?.channels&&i?.tactility&&i?.directManipulation);},null,{timeout:20000});
             const mobile=await readCRT(mobilePage);Object.assign(report.mobile,mobile,{resourceErrors:mobileErrors});await save();
             if(mobile.scope!=='v350-crt-only')throw new Error(`Published mobile model scope drifted: ${mobile.scope}`);
             if(mobile.overflow>2)throw new Error(`Published mobile horizontal overflow: ${mobile.overflow}`);
             if(mobile.error)throw new Error(`Published mobile CRT GLB failed: ${mobile.error}`);
             if(!mobile.loaded||mobile.glbState!=='ready'||mobile.triangles!==44831)throw new Error(`Published mobile CRT invalid: ${JSON.stringify(mobile)}`);
-            if(!mobile.channels||!mobile.tactility||mobile.visibleCanvases!==1)throw new Error(`Published mobile CRT interaction incomplete: ${JSON.stringify(mobile)}`);
+            if(!mobile.channels||!mobile.tactility||!mobile.direct||mobile.visibleCanvases!==1)throw new Error(`Published mobile CRT interaction incomplete: ${JSON.stringify(mobile)}`);
+            if(mobile.directMarker!=='v363-ready')throw new Error(`Published mobile v363 marker missing: ${mobile.directMarker}`);
             if(mobile.legacyRendered.length)throw new Error(`Legacy mobile 3D slots rendered unexpectedly: ${mobile.legacyRendered.join(', ')}`);
             if(mobileErrors.length)throw new Error(`Published mobile critical resource errors: ${JSON.stringify(mobileErrors)}`);
             await snap(mobilePage,'qa-published-home/mobile.png');await mobilePage.close();
 
             report.status='passed';await save();await browser.close();
-            console.log(JSON.stringify({status:'passed',url:base,scope:report.desktop.scope,triangles:report.desktop.triangles,channels:report.desktop.channels,tactility:report.desktop.tactility,motionChannel:report.desktop.motionChannel}));
-          }catch(error){
-            report.status='failed';report.errors.push(String(error));await save();await browser.close();throw error;
-          }
+            console.log(JSON.stringify({status:'passed',url:base,scope:report.desktop.scope,triangles:report.desktop.triangles,channels:report.desktop.channels,tactility:report.desktop.tactility,direct:report.desktop.direct,motionChannel:report.desktop.motionChannel}));
+          }catch(error){report.status='failed';report.errors.push(String(error));await save();await browser.close();throw error;}
           NODE
 
       - name: Upload published homepage smoke evidence
