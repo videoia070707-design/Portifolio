@@ -162,9 +162,9 @@ html[data-crt-scene-frame-layer="v369-full-bleed"].v354-choreo #boot.boot-scene 
     height:auto;
     min-height:calc(100svh - 58px);
   }
-  @media(min-width:901px){
-    html[data-crt-scene-frame-layer="v369-full-bleed"].v354-choreo #boot .boot-stage{
-      min-height:calc(100svh - 58px);
-    }
+}
+@media(min-width:901px) and (prefers-reduced-motion:reduce){
+  html[data-crt-scene-frame-layer="v369-full-bleed"].v354-choreo #boot .boot-stage{
+    min-height:calc(100svh - 58px);
   }
 }
