@@ -58,12 +58,15 @@ jobs:
               visibleCanvases:document.querySelectorAll('.v322-model-renderer canvas').length,
               loaded:!!i?.loaded,error:i?.error||null,glbState:i?.element?.dataset?.glbState||null,
               triangles:i?.stats?.triangles||0,screen:i?.channels?.screen?.name||null,channel:i?.channels?.state?.channel||null,
-              channels:!!i?.channels,tactility:!!i?.tactility,direct:!!i?.directManipulation,object:!!i?.objectInteraction,physics:!!i?.channelPhysics,
+              channels:!!i?.channels,tactility:!!i?.tactility,direct:!!i?.directManipulation,object:!!i?.objectInteraction,physics:!!i?.channelPhysics,presence:!!i?.presence,
               physicsChannel:i?.channelPhysics?.state?.channel||null,physicsEnergy:i?.channelPhysics?.state?.autonomousEnergy??null,
+              presenceHover:i?.presence?.state?.hoverMix??null,previewProcedural:!!i?.previewProcedural,
+              loadingMode:document.documentElement.dataset.crtLoading||null,
               tactilityMarker:document.documentElement.dataset.crtTactility||null,
               directMarker:document.documentElement.dataset.crtDirect||null,
               objectMarker:document.documentElement.dataset.crtObject||null,
               physicsMarker:document.documentElement.dataset.crtChannelPhysics||null,
+              presenceMarker:document.documentElement.dataset.crtPresence||null,
               legacyRendered:['hero-movx-logo','x-portal','creative-machine','play-camera','play-cube','spatial-studio'].filter(name=>!!window.MOVX3D?.runtime?.instances?.[name]?.renderer)
             };
           });
@@ -76,20 +79,29 @@ jobs:
             await page.waitForFunction(()=>!!window.MOVX3D?.runtime,null,{timeout:30000});
             const crt='[data-model-slot="boot-tv"]';if(await page.locator(crt).count()!==1)throw new Error('Published boot-tv slot missing');await focus(page,crt);
             await page.waitForFunction(()=>{const i=window.MOVX3D?.runtime?.instances?.['boot-tv'];return !!(i?.loaded||i?.error);},null,{timeout:90000});
-            await page.waitForFunction(()=>{const i=window.MOVX3D?.runtime?.instances?.['boot-tv'];return !!(i?.channels&&i?.tactility&&i?.directManipulation&&i?.objectInteraction&&i?.channelPhysics);},null,{timeout:20000});
+            await page.waitForFunction(()=>{const i=window.MOVX3D?.runtime?.instances?.['boot-tv'];return !!(i?.channels&&i?.tactility&&i?.directManipulation&&i?.objectInteraction&&i?.channelPhysics&&i?.presence);},null,{timeout:20000});
             const desktop=await readCRT(page);Object.assign(report.desktop,desktop,{resourceErrors:desktopErrors});await save();
             if(desktop.scope!=='v350-crt-only')throw new Error(`Published model scope drifted: ${desktop.scope}`);
             if(desktop.overflow>2)throw new Error(`Published desktop horizontal overflow: ${desktop.overflow}`);
             if(desktop.error)throw new Error(`Published CRT GLB failed: ${desktop.error}`);
             if(!desktop.loaded||desktop.glbState!=='ready')throw new Error(`Published CRT not ready: ${JSON.stringify(desktop)}`);
             if(desktop.triangles!==44831)throw new Error(`Published CRT geometry changed: ${desktop.triangles}`);
-            if(desktop.screen!=='tripo_part_1'||!desktop.channels||!desktop.tactility||!desktop.direct||!desktop.object||!desktop.physics)throw new Error(`Published CRT experience incomplete: ${JSON.stringify(desktop)}`);
+            if(desktop.screen!=='tripo_part_1'||!desktop.channels||!desktop.tactility||!desktop.direct||!desktop.object||!desktop.physics||!desktop.presence)throw new Error(`Published CRT experience incomplete: ${JSON.stringify(desktop)}`);
+            if(desktop.loadingMode!=='poster-only')throw new Error(`Published loading mode regressed: ${desktop.loadingMode}`);
+            if(desktop.previewProcedural)throw new Error('Published healthy boot mounted the procedural preview');
             if(desktop.directMarker!=='v363-ready')throw new Error(`Published v363 direct marker missing: ${desktop.directMarker}`);
             if(desktop.objectMarker!=='v364-ready')throw new Error(`Published v364 object marker missing: ${desktop.objectMarker}`);
             if(desktop.physicsMarker!=='v365-ready')throw new Error(`Published v365 physics marker missing: ${desktop.physicsMarker}`);
+            if(desktop.presenceMarker!=='v366-ready')throw new Error(`Published v366 presence marker missing: ${desktop.presenceMarker}`);
             if(desktop.visibleCanvases!==1)throw new Error(`Expected one production WebGL canvas, got ${desktop.visibleCanvases}`);
             if(desktop.legacyRendered.length)throw new Error(`Legacy 3D slots rendered unexpectedly: ${desktop.legacyRendered.join(', ')}`);
             if(desktopErrors.length)throw new Error(`Published desktop critical resource errors: ${JSON.stringify(desktopErrors)}`);
+
+            const canvas=await page.locator('#boot .v322-model-renderer canvas').boundingBox();
+            if(canvas){await page.mouse.move(canvas.x+canvas.width*.4,canvas.y+canvas.height*.46,{steps:7});await page.waitForTimeout(380)}
+            const present=await readCRT(page);if(!(present.presenceHover>0))throw new Error(`Published CRT pointer presence did not engage: ${JSON.stringify(present)}`);
+            report.desktop.pointerPresence=true;
+
             await page.locator('[data-crt-mode-control="motion"]').click();
             await page.waitForFunction(()=>{const i=window.MOVX3D.runtime.instances['boot-tv'];return i.channels.state.channel==='motion'&&i.channelPhysics.state.channel==='motion';},null,{timeout:8000});
             await page.waitForTimeout(500);
@@ -103,22 +115,24 @@ jobs:
             await mobilePage.waitForFunction(()=>!!window.MOVX3D?.runtime,null,{timeout:30000});
             if(await mobilePage.locator(crt).count()!==1)throw new Error('Published mobile boot-tv slot missing');await focus(mobilePage,crt);
             await mobilePage.waitForFunction(()=>{const i=window.MOVX3D?.runtime?.instances?.['boot-tv'];return !!(i?.loaded||i?.error);},null,{timeout:90000});
-            await mobilePage.waitForFunction(()=>{const i=window.MOVX3D?.runtime?.instances?.['boot-tv'];return !!(i?.channels&&i?.tactility&&i?.directManipulation&&i?.objectInteraction&&i?.channelPhysics);},null,{timeout:20000});
+            await mobilePage.waitForFunction(()=>{const i=window.MOVX3D?.runtime?.instances?.['boot-tv'];return !!(i?.channels&&i?.tactility&&i?.directManipulation&&i?.objectInteraction&&i?.channelPhysics&&i?.presence);},null,{timeout:20000});
             const mobile=await readCRT(mobilePage);Object.assign(report.mobile,mobile,{resourceErrors:mobileErrors});await save();
             if(mobile.scope!=='v350-crt-only')throw new Error(`Published mobile model scope drifted: ${mobile.scope}`);
             if(mobile.overflow>2)throw new Error(`Published mobile horizontal overflow: ${mobile.overflow}`);
             if(mobile.error)throw new Error(`Published mobile CRT GLB failed: ${mobile.error}`);
             if(!mobile.loaded||mobile.glbState!=='ready'||mobile.triangles!==44831)throw new Error(`Published mobile CRT invalid: ${JSON.stringify(mobile)}`);
-            if(!mobile.channels||!mobile.tactility||!mobile.direct||!mobile.object||!mobile.physics||mobile.visibleCanvases!==1)throw new Error(`Published mobile CRT interaction incomplete: ${JSON.stringify(mobile)}`);
+            if(!mobile.channels||!mobile.tactility||!mobile.direct||!mobile.object||!mobile.physics||!mobile.presence||mobile.visibleCanvases!==1)throw new Error(`Published mobile CRT interaction incomplete: ${JSON.stringify(mobile)}`);
+            if(mobile.loadingMode!=='poster-only'||mobile.previewProcedural)throw new Error(`Published mobile loading mode regressed: ${JSON.stringify(mobile)}`);
             if(mobile.directMarker!=='v363-ready')throw new Error(`Published mobile v363 marker missing: ${mobile.directMarker}`);
             if(mobile.objectMarker!=='v364-ready')throw new Error(`Published mobile v364 marker missing: ${mobile.objectMarker}`);
             if(mobile.physicsMarker!=='v365-ready')throw new Error(`Published mobile v365 marker missing: ${mobile.physicsMarker}`);
+            if(mobile.presenceMarker!=='v366-ready')throw new Error(`Published mobile v366 marker missing: ${mobile.presenceMarker}`);
             if(mobile.legacyRendered.length)throw new Error(`Legacy mobile 3D slots rendered unexpectedly: ${mobile.legacyRendered.join(', ')}`);
             if(mobileErrors.length)throw new Error(`Published mobile critical resource errors: ${JSON.stringify(mobileErrors)}`);
             await snap(mobilePage,'qa-published-home/mobile.png');await mobilePage.close();
 
             report.status='passed';await save();await browser.close();
-            console.log(JSON.stringify({status:'passed',url:base,scope:report.desktop.scope,triangles:report.desktop.triangles,channels:report.desktop.channels,tactility:report.desktop.tactility,direct:report.desktop.direct,object:report.desktop.object,physics:report.desktop.physics,motionChannel:report.desktop.motionChannel,motionPhysics:report.desktop.motionPhysics}));
+            console.log(JSON.stringify({status:'passed',url:base,scope:report.desktop.scope,triangles:report.desktop.triangles,channels:report.desktop.channels,tactility:report.desktop.tactility,direct:report.desktop.direct,object:report.desktop.object,physics:report.desktop.physics,presence:report.desktop.presence,pointerPresence:report.desktop.pointerPresence,motionChannel:report.desktop.motionChannel,motionPhysics:report.desktop.motionPhysics}));
           }catch(error){report.status='failed';report.errors.push(String(error));await save();await browser.close();throw error;}
           NODE
 
