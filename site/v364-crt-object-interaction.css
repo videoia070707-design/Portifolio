@@ -1,0 +1,78 @@
+/* MOVX v364 — the CRT cabinet itself is now a manipulable spatial object. */
+html[data-crt-object="v364-ready"] #boot[data-crt-object-hit="body"] .crt-wrap{
+  cursor:grab!important;
+}
+html[data-crt-object="v364-ready"] #boot[data-crt-object-gesture="orbit"] .crt-wrap{
+  cursor:grabbing!important;
+}
+html[data-crt-object="v364-ready"] #boot .crt-object-hint{
+  position:absolute;
+  z-index:27;
+  left:clamp(18px,7%,62px);
+  bottom:clamp(14px,4.5%,42px);
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:8px 11px;
+  border:1px solid rgba(31,27,23,.20);
+  border-radius:999px;
+  background:rgba(239,234,225,.72);
+  color:rgba(24,21,18,.68);
+  box-shadow:0 8px 24px rgba(31,25,20,.06);
+  backdrop-filter:blur(9px);
+  font:700 8px/1 "Courier New",monospace;
+  letter-spacing:.11em;
+  pointer-events:none;
+  transition:opacity .32s ease,transform .42s cubic-bezier(.16,.84,.2,1);
+}
+html[data-crt-object="v364-ready"] #boot .crt-object-hint i{
+  position:relative;
+  width:26px;
+  height:10px;
+  border-top:1px solid currentColor;
+  border-radius:50%;
+  transform:skewX(-18deg);
+}
+html[data-crt-object="v364-ready"] #boot .crt-object-hint i::before,
+html[data-crt-object="v364-ready"] #boot .crt-object-hint i::after{
+  content:"";
+  position:absolute;
+  top:-3px;
+  width:4px;
+  height:4px;
+  border-radius:50%;
+  background:#ff5a18;
+}
+html[data-crt-object="v364-ready"] #boot .crt-object-hint i::before{left:0}
+html[data-crt-object="v364-ready"] #boot .crt-object-hint i::after{right:0}
+html[data-crt-object="v364-ready"] #boot .crt-wrap.is-crt-object-engaged .crt-object-hint,
+html[data-crt-object="v364-ready"] #boot[data-crt-object-gesture="orbit"] .crt-object-hint{
+  opacity:0;
+  transform:translateY(6px);
+}
+html[data-crt-object="v364-ready"] #boot[data-crt-object-gesture="orbit"] .v322-model-renderer{
+  filter:drop-shadow(0 38px 42px rgba(36,27,20,.23));
+}
+html[data-crt-object="v364-ready"] #boot[data-crt-object-gesture="orbit"] .crt-wrap::before{
+  opacity:.48;
+  filter:blur(14px);
+}
+
+/* v364 moves immersion into the object instead of magnifying the outer stage.
+   Keep a little breathing room around the complete television at desktop sizes. */
+@media(min-width:901px){
+  html[data-crt-object] #boot .boot-stage{
+    padding-top:clamp(20px,2.6vw,42px);
+    padding-bottom:clamp(22px,2.8vw,46px);
+  }
+  html[data-crt-object] #boot .crt-wrap{
+    min-height:min(64vh,620px);
+  }
+}
+@media(max-width:900px){
+  html[data-crt-object] #boot .crt-object-hint{display:none}
+  html[data-crt-object] #boot .crt-wrap{cursor:auto!important}
+}
+@media(prefers-reduced-motion:reduce){
+  html[data-crt-object] #boot .crt-object-hint{transition:none!important}
+}
