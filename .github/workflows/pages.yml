@@ -155,8 +155,8 @@ jobs:
           python3 -m http.server 4174 --directory _site >_site/qa-logs/scene-frame.log 2>&1 &
           SERVER_PID=$!
           trap 'kill $SERVER_PID 2>/dev/null || true' EXIT
-          sed 's/127\.0\.0\.1:4173/127.0.0.1:4174/g' scripts/qa-v369-scene01-full-bleed.cjs > /tmp/qa-v369-scene-frame.cjs
-          NODE_PATH="$PWD/node_modules" node /tmp/qa-v369-scene-frame.cjs
+          sed 's/127\.0\.0\.1:4173/127.0.0.1:4174/g' scripts/qa-v369-scene01-full-bleed.cjs > _site/qa-logs/qa-v369-scene-frame.cjs
+          node _site/qa-logs/qa-v369-scene-frame.cjs
       - name: Save Scene 01 visual evidence
         if: always()
         uses: actions/upload-artifact@v4
