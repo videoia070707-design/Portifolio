@@ -24,7 +24,7 @@ jobs:
           npm install --silent --no-progress --no-audit --no-fund --no-save playwright@1.55.0
           npx playwright install --with-deps chromium >/tmp/playwright-published-home.log 2>&1
 
-      - name: Smoke test published homepage
+      - name: Smoke test published CRT-only homepage
         shell: bash
         run: |
           set -euo pipefail
@@ -34,152 +34,114 @@ jobs:
           import { writeFile } from 'node:fs/promises';
 
           const base='https://videoia070707-design.github.io/Portifolio/';
-          const productionSlots=[
-            'hero-movx-logo',
-            'x-portal',
-            'creative-machine',
-            'play-camera',
-            'play-cube',
-            'spatial-studio'
-          ];
           const critical=/\.(?:glb|gltf|mjs|js|css)(?:\?|$)/i;
           const browser=await chromium.launch({headless:true,args:['--use-angle=swiftshader','--enable-webgl','--ignore-gpu-blocklist']});
-          const report={url:base,desktop:{slots:{}},mobile:{},captureWarnings:[],errors:[]};
+          const report={url:base,desktop:{},mobile:{},captureWarnings:[],errors:[]};
 
           const wireErrors=(page,bucket)=>{
             page.on('pageerror',error=>bucket.push(`PAGEERROR ${String(error)}`));
             page.on('response',response=>{
-              if(response.status()>=400&&critical.test(response.url())) bucket.push(`HTTP ${response.status()} ${response.url()}`);
+              if(response.status()>=400&&critical.test(response.url()))bucket.push(`HTTP ${response.status()} ${response.url()}`);
             });
             page.on('requestfailed',request=>{
-              if(critical.test(request.url())) bucket.push(`REQUEST FAILED ${request.url()} ${request.failure()?.errorText||''}`);
+              if(critical.test(request.url()))bucket.push(`REQUEST FAILED ${request.url()} ${request.failure()?.errorText||''}`);
             });
           };
           const snap=async(page,path)=>{
-            try{
-              await page.screenshot({path,fullPage:false,animations:'disabled',timeout:10000});
-            }catch(error){
-              report.captureWarnings.push({path,error:String(error)});
-            }
+            try{await page.screenshot({path,fullPage:false,animations:'disabled',timeout:10000});}
+            catch(error){report.captureWarnings.push({path,error:String(error)});}
           };
-          const focusSlot=async(page,selector)=>{
+          const focus=async(page,selector)=>{
             const found=await page.evaluate(sel=>{
-              const el=document.querySelector(sel);
-              if(!el)return false;
+              const el=document.querySelector(sel);if(!el)return false;
               const r=el.getBoundingClientRect();
               const top=Math.max(0,window.scrollY+r.top-(window.innerHeight-r.height)/2);
-              window.scrollTo({top,behavior:'instant'});
-              return true;
+              window.scrollTo({top,behavior:'instant'});return true;
             },selector);
-            if(!found)throw new Error(`Published slot missing during focus: ${selector}`);
-            await page.waitForTimeout(400);
+            if(!found)throw new Error(`Published CRT slot missing during focus: ${selector}`);
+            await page.waitForTimeout(450);
           };
           const save=()=>writeFile('qa-published-home/report.json',JSON.stringify(report,null,2));
+          const readCRT=page=>page.evaluate(()=>{
+            const i=window.MOVX3D?.runtime?.instances?.['boot-tv'];
+            return {
+              title:document.title,
+              scope:document.documentElement.dataset.modelScope||null,
+              overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth,
+              domSlots:document.querySelectorAll('[data-model-slot]').length,
+              visibleCanvases:document.querySelectorAll('.v322-model-renderer canvas').length,
+              loaded:!!i?.loaded,error:i?.error||null,
+              glbState:i?.element?.dataset?.glbState||null,
+              triangles:i?.stats?.triangles||0,
+              screen:i?.channels?.screen?.name||null,
+              channel:i?.channels?.state?.channel||null,
+              channels:!!i?.channels,
+              tactility:!!i?.tactility,
+              tactilityMarker:document.documentElement.dataset.crtTactility||null,
+              legacyRendered:['hero-movx-logo','x-portal','creative-machine','play-camera','play-cube','spatial-studio'].filter(name=>!!window.MOVX3D?.runtime?.instances?.[name]?.renderer)
+            };
+          });
 
           try{
             const desktopErrors=[];
             const page=await browser.newPage({viewport:{width:1440,height:1000},deviceScaleFactor:1});
             wireErrors(page,desktopErrors);
             const response=await page.goto(`${base}?qa-published=${Date.now()}`,{waitUntil:'domcontentloaded',timeout:60000});
-            if(!response||response.status()>=400) throw new Error(`Published homepage HTTP failure: ${response?.status()??'no response'}`);
-            await page.waitForFunction(()=>document.documentElement.dataset.modelFramingRevision==='v3361-mobile-logo-safe-fit',null,{timeout:30000});
-            await page.waitForFunction(()=>document.documentElement.dataset.modelChoreography==='v331-smooth-handoffs',null,{timeout:30000});
-
-            const desktopBase=await page.evaluate(()=>({
-              title:document.title,
-              slotCount:document.querySelectorAll('[data-model-slot]').length,
-              overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth,
-              framingRevision:document.documentElement.dataset.modelFramingRevision||null,
-              choreography:document.documentElement.dataset.modelChoreography||null,
-              runtime:!!window.MOVX3D?.runtime
-            }));
-            Object.assign(report.desktop,desktopBase);
-            if(desktopBase.slotCount<11) throw new Error(`Published homepage slot contract incomplete: ${desktopBase.slotCount}/11`);
-            if(desktopBase.overflow>2) throw new Error(`Published desktop horizontal overflow: ${desktopBase.overflow}`);
-            if(!desktopBase.runtime) throw new Error('MOVX3D runtime missing on published homepage');
-
-            for(const slot of productionSlots){
-              const selector=`[data-model-slot="${slot}"]`;
-              if(await page.locator(selector).count()!==1) throw new Error(`Published slot missing: ${slot}`);
-              await focusSlot(page,selector);
-              await page.waitForFunction(name=>{
-                const i=window.MOVX3D?.runtime?.instances?.[name];
-                return !!(i?.loaded||i?.error);
-              },slot,{timeout:90000});
-              const state=await page.evaluate(name=>{
-                const i=window.MOVX3D?.runtime?.instances?.[name];
-                return {
-                  loaded:!!i?.loaded,
-                  error:i?.error||null,
-                  glbState:i?.element?.dataset?.glbState||null,
-                  framing:i?.element?.dataset?.modelFraming||null,
-                  framingRevision:i?.element?.dataset?.modelFramingRevision||null,
-                  choreography:i?.element?.dataset?.modelChoreography||null,
-                  triangles:i?.stats?.triangles||0,
-                  sourceSize:i?.stats?.sourceSize||null
-                };
-              },slot);
-              report.desktop.slots[slot]=state;
-              await save();
-              if(state.error) throw new Error(`${slot} published GLB failed: ${state.error}`);
-              if(!state.loaded||state.glbState!=='ready') throw new Error(`${slot} not ready on published homepage: ${JSON.stringify(state)}`);
-              if(state.framing!=='v324'||state.framingRevision!=='v3361-mobile-logo-safe-fit') throw new Error(`${slot} framing contract missing: ${JSON.stringify(state)}`);
-              if(state.choreography!=='v331') throw new Error(`${slot} choreography contract missing: ${JSON.stringify(state)}`);
-              if(state.triangles<1000) throw new Error(`${slot} published geometry missing: ${state.triangles} triangles`);
-            }
-            report.desktop.resourceErrors=desktopErrors;
-            if(desktopErrors.length) throw new Error(`Published desktop critical resource errors: ${JSON.stringify(desktopErrors)}`);
-            await snap(page,'qa-published-home/desktop.png');
-            await page.close();
+            if(!response||response.status()>=400)throw new Error(`Published homepage HTTP failure: ${response?.status()??'no response'}`);
+            await page.waitForFunction(()=>!!window.MOVX3D?.runtime,null,{timeout:30000});
+            const crt='[data-model-slot="boot-tv"]';
+            if(await page.locator(crt).count()!==1)throw new Error('Published boot-tv slot missing');
+            await focus(page,crt);
+            await page.waitForFunction(()=>{
+              const i=window.MOVX3D?.runtime?.instances?.['boot-tv'];return !!(i?.loaded||i?.error);
+            },null,{timeout:90000});
+            await page.waitForFunction(()=>{
+              const i=window.MOVX3D?.runtime?.instances?.['boot-tv'];return !!(i?.channels&&i?.tactility);
+            },null,{timeout:20000});
+            const desktop=await readCRT(page);
+            Object.assign(report.desktop,desktop,{resourceErrors:desktopErrors});await save();
+            if(desktop.scope!=='v350-crt-only')throw new Error(`Published model scope drifted: ${desktop.scope}`);
+            if(desktop.overflow>2)throw new Error(`Published desktop horizontal overflow: ${desktop.overflow}`);
+            if(desktop.error)throw new Error(`Published CRT GLB failed: ${desktop.error}`);
+            if(!desktop.loaded||desktop.glbState!=='ready')throw new Error(`Published CRT not ready: ${JSON.stringify(desktop)}`);
+            if(desktop.triangles!==44831)throw new Error(`Published CRT geometry changed: ${desktop.triangles}`);
+            if(desktop.screen!=='tripo_part_1'||!desktop.channels||!desktop.tactility)throw new Error(`Published CRT experience incomplete: ${JSON.stringify(desktop)}`);
+            if(desktop.visibleCanvases!==1)throw new Error(`Expected one production WebGL canvas, got ${desktop.visibleCanvases}`);
+            if(desktop.legacyRendered.length)throw new Error(`Legacy 3D slots rendered unexpectedly: ${desktop.legacyRendered.join(', ')}`);
+            if(desktopErrors.length)throw new Error(`Published desktop critical resource errors: ${JSON.stringify(desktopErrors)}`);
+            await page.locator('[data-crt-mode-control="motion"]').click();
+            await page.waitForFunction(()=>window.MOVX3D.runtime.instances['boot-tv'].channels.state.channel==='motion',null,{timeout:8000});
+            report.desktop.motionChannel=true;await save();
+            await snap(page,'qa-published-home/desktop.png');await page.close();
 
             const mobileErrors=[];
-            const mobile=await browser.newPage({viewport:{width:390,height:844},deviceScaleFactor:1,hasTouch:true,isMobile:true});
-            wireErrors(mobile,mobileErrors);
-            const mobileResponse=await mobile.goto(`${base}?qa-published-mobile=${Date.now()}`,{waitUntil:'domcontentloaded',timeout:60000});
-            if(!mobileResponse||mobileResponse.status()>=400) throw new Error(`Published mobile homepage HTTP failure: ${mobileResponse?.status()??'no response'}`);
-            await mobile.waitForFunction(()=>document.documentElement.dataset.modelFramingRevision==='v3361-mobile-logo-safe-fit',null,{timeout:30000});
-            const heroSelector='[data-model-slot="hero-movx-logo"]';
-            if(await mobile.locator(heroSelector).count()!==1) throw new Error('Published mobile hero logo slot missing');
-            await focusSlot(mobile,heroSelector);
-            await mobile.waitForFunction(()=>{
-              const i=window.MOVX3D?.runtime?.instances?.['hero-movx-logo'];
-              return !!(i?.loaded||i?.error);
+            const mobilePage=await browser.newPage({viewport:{width:390,height:844},deviceScaleFactor:1,hasTouch:true,isMobile:true});
+            wireErrors(mobilePage,mobileErrors);
+            const mobileResponse=await mobilePage.goto(`${base}?qa-published-mobile=${Date.now()}`,{waitUntil:'domcontentloaded',timeout:60000});
+            if(!mobileResponse||mobileResponse.status()>=400)throw new Error(`Published mobile homepage HTTP failure: ${mobileResponse?.status()??'no response'}`);
+            await mobilePage.waitForFunction(()=>!!window.MOVX3D?.runtime,null,{timeout:30000});
+            if(await mobilePage.locator(crt).count()!==1)throw new Error('Published mobile boot-tv slot missing');
+            await focus(mobilePage,crt);
+            await mobilePage.waitForFunction(()=>{
+              const i=window.MOVX3D?.runtime?.instances?.['boot-tv'];return !!(i?.loaded||i?.error);
             },null,{timeout:90000});
-            const mobileState=await mobile.evaluate(()=>{
-              const i=window.MOVX3D?.runtime?.instances?.['hero-movx-logo'];
-              return {
-                width:innerWidth,
-                overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth,
-                slotCount:document.querySelectorAll('[data-model-slot]').length,
-                loaded:!!i?.loaded,
-                error:i?.error||null,
-                glbState:i?.element?.dataset?.glbState||null,
-                mobileLogoFit:i?.element?.dataset?.mobileLogoFit||null,
-                framingRevision:document.documentElement.dataset.modelFramingRevision||null,
-                triangles:i?.stats?.triangles||0
-              };
-            });
-            report.mobile={...mobileState,resourceErrors:mobileErrors};
-            if(mobileState.overflow>2) throw new Error(`Published mobile horizontal overflow: ${mobileState.overflow}`);
-            if(mobileState.slotCount<11) throw new Error(`Published mobile slot contract incomplete: ${mobileState.slotCount}/11`);
-            if(mobileState.error) throw new Error(`Published mobile hero GLB failed: ${mobileState.error}`);
-            if(!mobileState.loaded||mobileState.glbState!=='ready') throw new Error(`Published mobile hero not ready: ${JSON.stringify(mobileState)}`);
-            if(mobileState.mobileLogoFit!=='v3361') throw new Error(`Published mobile logo safe-fit missing: ${JSON.stringify(mobileState)}`);
-            if(mobileState.triangles<1000) throw new Error(`Published mobile hero geometry missing: ${mobileState.triangles}`);
-            if(mobileErrors.length) throw new Error(`Published mobile critical resource errors: ${JSON.stringify(mobileErrors)}`);
-            await snap(mobile,'qa-published-home/mobile.png');
-            await mobile.close();
+            await mobilePage.waitForFunction(()=>{
+              const i=window.MOVX3D?.runtime?.instances?.['boot-tv'];return !!(i?.channels&&i?.tactility);
+            },null,{timeout:20000});
+            const mobile=await readCRT(mobilePage);Object.assign(report.mobile,mobile,{resourceErrors:mobileErrors});await save();
+            if(mobile.scope!=='v350-crt-only')throw new Error(`Published mobile model scope drifted: ${mobile.scope}`);
+            if(mobile.overflow>2)throw new Error(`Published mobile horizontal overflow: ${mobile.overflow}`);
+            if(mobile.error)throw new Error(`Published mobile CRT GLB failed: ${mobile.error}`);
+            if(!mobile.loaded||mobile.glbState!=='ready'||mobile.triangles!==44831)throw new Error(`Published mobile CRT invalid: ${JSON.stringify(mobile)}`);
+            if(!mobile.channels||!mobile.tactility||mobile.visibleCanvases!==1)throw new Error(`Published mobile CRT interaction incomplete: ${JSON.stringify(mobile)}`);
+            if(mobile.legacyRendered.length)throw new Error(`Legacy mobile 3D slots rendered unexpectedly: ${mobile.legacyRendered.join(', ')}`);
+            if(mobileErrors.length)throw new Error(`Published mobile critical resource errors: ${JSON.stringify(mobileErrors)}`);
+            await snap(mobilePage,'qa-published-home/mobile.png');await mobilePage.close();
 
-            report.status='passed';
-            await save();
-            await browser.close();
-            console.log(JSON.stringify({status:'passed',url:base,desktopSlots:Object.keys(report.desktop.slots),mobileLogoFit:report.mobile.mobileLogoFit,captureWarnings:report.captureWarnings.length}));
+            report.status='passed';await save();await browser.close();
+            console.log(JSON.stringify({status:'passed',url:base,scope:report.desktop.scope,triangles:report.desktop.triangles,channels:report.desktop.channels,tactility:report.desktop.tactility,motionChannel:report.desktop.motionChannel}));
           }catch(error){
-            report.status='failed';
-            report.errors.push(String(error));
-            await save();
-            await browser.close();
-            throw error;
+            report.status='failed';report.errors.push(String(error));await save();await browser.close();throw error;
           }
           NODE
 
