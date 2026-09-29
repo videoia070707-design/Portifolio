@@ -72,7 +72,7 @@ jobs:
           path: _site
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
-      - name: Validate storyboard, CRT gate, copy, motion, fast-load, channels, tactility and direct manipulation
+      - name: Validate storyboard, CRT gate, copy, motion, fast-load, channels, tactility and physical manipulation
         shell: bash
         run: |
           set -euo pipefail
@@ -91,12 +91,14 @@ jobs:
           node scripts/qa-v361-channel-experience.cjs
           node scripts/qa-v362-crt-tactility.cjs
           node scripts/qa-v363-crt-direct-manipulation.cjs
+          node scripts/qa-v364-crt-object-interaction.cjs
       - name: Save contract evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: movx-qa-contracts
           path: |
+            _site/qa-v364-*
             _site/qa-v363-*
             _site/qa-v362-*
             _site/qa-v361-*
