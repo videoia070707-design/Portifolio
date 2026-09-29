@@ -1,6 +1,7 @@
-/* MOVX v354 — scroll choreography for Scene 01 only.
-   The standalone CRT remains the sole active GLB. This runtime owns the outer
-   Scene-01 choreography and feeds scroll progress to the existing 3D runtime. */
+/* MOVX v354/v364 — scroll choreography for Scene 01 only.
+   The standalone CRT remains the sole active GLB. v364 deliberately keeps the
+   outer wrapper restrained: immersion now comes from manipulating the actual
+   Three.js object instead of enlarging it until the cabinet is clipped. */
 (()=>{
   const root=document.documentElement;
   const boot=document.querySelector('#boot');
@@ -76,13 +77,15 @@
     const engage=smooth(.08,.58,smoothP);
     const exit=smooth(.46,.82,smoothP);
     const handoff=smooth(.78,1,smoothP);
-    const pointerWeight=1-exit*.58;
-    const desktopShift=clamp(innerWidth*.026,12,40);
+    const desktopShift=clamp(innerWidth*.018,8,28);
     const mobileFactor=innerWidth<=900?.58:1;
 
+    /* v364 framing: the old pass grew the wrapper by ~11%, which made the full
+       cabinet read like a cropped image at common laptop heights. Keep the
+       cinematic drift, but cap scale growth below 4%; object orbit supplies depth. */
     const x=engage*desktopShift*mobileFactor;
-    const y=-engage*17 - handoff*22;
-    const scale=1 + engage*.064 + handoff*.046;
+    const y=-engage*9-handoff*12;
+    const scale=1+engage*.024+handoff*.012;
     const rx=0;
     const ry=0;
     const copyY=-exit*(innerWidth<=900?42:72);
@@ -97,9 +100,6 @@
     boot.style.setProperty('--v354-shade',shade.toFixed(4));
     boot.style.setProperty('--v354-bg-x',`${bgX.toFixed(2)}%`);
 
-    // Runtime-owned inline transforms make the choreography deterministic even
-    // when older style layers have stronger selector specificity. The v353
-    // first-load WAAPI animation still wins until it is cancelled at intro end.
     wrap.style.transform=`translate3d(${x.toFixed(2)}px,${y.toFixed(2)}px,0) scale(${scale.toFixed(4)}) rotateX(${rx.toFixed(3)}deg) rotateY(${ry.toFixed(3)}deg)`;
     copy.style.transform=`translate3d(0,${copyY.toFixed(2)}px,0)`;
     copy.style.opacity=copyOpacity.toFixed(4);
@@ -110,8 +110,6 @@
     }
     cue.style.opacity=cueOpacity.toFixed(4);
 
-    // Feed the existing Three.js runtime so the model itself participates in
-    // the scroll, instead of only moving its DOM wrapper.
     root.style.setProperty('--crt-progress',smoothP.toFixed(4));
     if(window.MOVXCRT)window.MOVXCRT.progress=smoothP;
 

@@ -75,14 +75,63 @@ export function attachCRTChannels(instance){
    const x=66+Math.sin(phase*1.8-i*.7)*(i===1?105:36);ctx.save();ctx.translate(x,190+i*122);ctx.scale(1+Math.sin(phase-i*.5)*.06,1);text(word,0,0,112,i===1?'#f6eddb':'#191511',900);ctx.restore();
   });
  }
+
+ /* v364 temporary authored-looking placeholder. The user will replace this
+    generative study with project video/media later; until then the CRT gets a
+    deterministic kinetic ribbon instead of the previous random blob language. */
  function generative(){
-  ctx.fillStyle='#121015';ctx.fillRect(0,0,768,544);
-  const phase=state.phase*.35,seed=state.variation*.83;ctx.save();ctx.translate(384,282);
-  for(let k=0;k<=2;k++){const scale=1-k*.22;ctx.beginPath();for(let i=0;i<=180;i++){
-   const a=i/180*Math.PI*2,r=(144+Math.sin(a*(3+state.variation%4)+phase+seed)*(20+state.amount*48)+Math.cos(a*2-phase)*22)*scale;
-   const x=Math.cos(a)*r*1.22,y=Math.sin(a)*r; i?ctx.lineTo(x,y):ctx.moveTo(x,y);
-  }ctx.closePath();ctx.fillStyle=['#f25424','#ecad85','#f4e3cd'][k];ctx.fill();}ctx.restore();
-  text(`VARIAÇÃO ${String(state.variation+1).padStart(2,'0')}`,38,510,18,'#ddd0c8');
+  ctx.fillStyle='#090807';ctx.fillRect(0,0,768,544);
+  const seed=state.variation*.71;
+  const phase=state.phase*.48;
+  const amount=.35+state.amount*.65;
+  const palettes=[
+   ['#ff5a18','#f5e7d2','#7d2d15'],
+   ['#f6efe3','#ff6a28','#2b211c'],
+   ['#ff4e16','#dca77b','#f3eee4'],
+   ['#f3e3cc','#b83d17','#ff6b31']
+  ];
+  const palette=palettes[state.variation%palettes.length];
+  const centerY=[210,282,352];
+  const amps=[76,58,42];
+  const thickness=[84,68,48];
+
+  const yAt=(x,lane,offset=0)=>{
+    const f1=.0084+lane*.0012+(state.variation%3)*.00045;
+    const f2=.017-lane*.0014;
+    return centerY[lane]
+      +Math.sin(x*f1+seed+phase+lane*.82)*amps[lane]*amount
+      +Math.sin(x*f2-seed*.6-phase*.72+lane)*amps[lane]*.22
+      +offset;
+  };
+
+  for(let lane=2;lane>=0;lane--){
+    const thick=thickness[lane]*(.72+state.amount*.42);
+    const gradient=ctx.createLinearGradient(54,0,714,0);
+    gradient.addColorStop(0,palette[(lane+2)%3]);
+    gradient.addColorStop(.48,palette[lane%3]);
+    gradient.addColorStop(1,palette[(lane+1)%3]);
+
+    ctx.beginPath();
+    for(let x=34;x<=734;x+=7){const y=yAt(x,lane,-thick/2);x===34?ctx.moveTo(x,y):ctx.lineTo(x,y)}
+    for(let x=734;x>=34;x-=7)ctx.lineTo(x,yAt(x,lane,thick/2));
+    ctx.closePath();ctx.fillStyle=gradient;ctx.globalAlpha=lane===0?.98:.82;ctx.fill();ctx.globalAlpha=1;
+
+    /* Fine contour ribs give the feed dimensionality without relying on a blob,
+       HUD ornament, randomness or an extra WebGL scene. */
+    const ribs=lane===0?15:11;
+    for(let r=0;r<ribs;r++){
+      const offset=-thick*.40+(r/(ribs-1))*thick*.80;
+      ctx.beginPath();
+      for(let x=42;x<=726;x+=8){const y=yAt(x,lane,offset);x===42?ctx.moveTo(x,y):ctx.lineTo(x,y)}
+      ctx.strokeStyle=lane===0?'rgba(9,8,7,.38)':'rgba(247,239,226,.22)';
+      ctx.lineWidth=lane===0?1.25:1;ctx.stroke();
+    }
+  }
+
+  const glow=ctx.createRadialGradient(520,220,18,520,220,250);
+  glow.addColorStop(0,'rgba(255,90,24,.20)');glow.addColorStop(1,'rgba(255,90,24,0)');
+  ctx.fillStyle=glow;ctx.fillRect(0,0,768,544);
+  text(`VARIAÇÃO ${String(state.variation+1).padStart(2,'0')}`,38,510,18,'#d8cdc0');
  }
  function digital(){
   ctx.fillStyle='#e8e1d5';ctx.fillRect(0,0,768,544);
