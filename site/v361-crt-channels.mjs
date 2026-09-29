@@ -24,7 +24,7 @@ export function attachCRTChannels(instance){
   shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>','#include <emissivemap_fragment>\ntotalEmissiveRadiance+=feedColor*feedMask*.88;');
  };
  material.customProgramCacheKey=()=> 'movx-live-screen-v361';material.needsUpdate=true;
- const state={channel:'',art:0,variation:0,mobile:false,paused:reduced,phase:0,amount:.5,frames:0,changes:0,last:0,transition:0,screenHover:false};
+ const state={channel:'',art:0,variation:0,mobile:false,paused:reduced,phase:0,amount:.5,frames:0,changes:0,last:0,transition:0,screenHover:false,settled:false};
  const controls=document.createElement('div');controls.className='crt-program-controls';
  const action=document.createElement('button');action.type='button';
  const rangeLabel=document.createElement('label');rangeLabel.className='crt-program-range';
@@ -33,7 +33,7 @@ export function attachCRTChannels(instance){
  const help=document.createElement('p');help.className='crt-program-help';
  controls.append(action,rangeLabel,pause);panel.append(controls,help);
  const works=[['assets/projects/voltara-03.webp','VOLTARA'],['assets/projects/hardwork-modo/hardwork-modo-01.webp','HARDWORK'],['assets/projects/belive-01.webp','BELIVE']];
- const images=works.map(([src])=>{const img=new Image();img.src=src;img.onload=()=>{state.last=0};return img});
+ const images=works.map(([src])=>{const img=new Image();img.src=src;img.onload=()=>{state.last=0;state.settled=false};return img});
  const descriptions={direction:'Direção de arte em projetos reais. Troque a arte na própria TV.',motion:'Experimente o ritmo: controle a animação e encontre o seu tempo.',ai:'Um estudo generativo ao vivo. Mude a semente e descubra outra composição.',digital:'A mesma interface, dois formatos. Explore como o layout se adapta.'};
  const title={direction:'DIREÇÃO',motion:'MOTION',ai:'GENERATIVO',digital:'DIGITAL'};
  const hint={direction:'Toque na tela da TV para trocar a arte',motion:'Ajuste o ritmo ou pause para observar cada quadro',ai:'Mude a variação e ajuste a forma — um estudo, não um case',digital:'Alterne entre desktop e mobile na tela da TV'};
@@ -43,16 +43,16 @@ export function attachCRTChannels(instance){
   pause.hidden=state.channel!=='ai';pause.textContent=state.paused?'Ativar movimento':'Pausar movimento';pause.setAttribute('aria-pressed',String(state.paused));
   help.textContent=hint[state.channel];panel.querySelector('p').textContent=descriptions[state.channel];
  }
- function change(channel,time){const knob=instance.model.getObjectByName('tripo_part_8');if(knob)knob.rotation.z=['direction','motion','ai','digital'].indexOf(channel)*.45;state.channel=channel;state.transition=time;state.changes++;state.last=0;boot.dataset.crtProgram=channel;sync();}
+ function change(channel,time){const knob=instance.model.getObjectByName('tripo_part_8');if(knob)knob.rotation.z=['direction','motion','ai','digital'].indexOf(channel)*.45;state.channel=channel;state.transition=time;state.changes++;state.last=0;state.settled=false;boot.dataset.crtProgram=channel;sync();}
  function interact(){
   if(state.channel==='direction')state.art=(state.art+1)%works.length;
   if(state.channel==='motion')state.paused=!state.paused;
   if(state.channel==='ai')state.variation++;
   if(state.channel==='digital')state.mobile=!state.mobile;
-  state.transition=performance.now();state.last=0;state.changes++;sync();
+  state.transition=performance.now();state.last=0;state.settled=false;state.changes++;sync();
  }
- action.addEventListener('click',interact);pause.addEventListener('click',()=>{state.paused=!state.paused;state.last=0;sync()});
- range.addEventListener('input',()=>{state.amount=Number(range.value)/100;if(state.channel==='motion'&&state.paused)state.phase=state.amount*Math.PI*2;state.last=0;state.changes++});
+ action.addEventListener('click',interact);pause.addEventListener('click',()=>{state.paused=!state.paused;state.last=0;state.settled=false;sync()});
+ range.addEventListener('input',()=>{state.amount=Number(range.value)/100;if(state.channel==='motion'&&state.paused)state.phase=state.amount*Math.PI*2;state.last=0;state.settled=false;state.changes++});
  const ray=new THREE.Raycaster(),pointer=new THREE.Vector2();
  function hit(event){
   const r=instance.canvas.getBoundingClientRect();pointer.set((event.clientX-r.left)/r.width*2-1,-(event.clientY-r.top)/r.height*2+1);ray.setFromCamera(pointer,instance.camera);
@@ -148,7 +148,10 @@ export function attachCRTChannels(instance){
   const dt=state.last?Math.min((time-state.last)/1000,.1):0;
   const animating=!state.paused&&['motion','ai'].includes(channel);
   if(state.last&&time-state.last<1000/24)return;
-  if(state.last&&!animating&&(reduced||time-state.transition>500))return;
+  /* Non-animating channels cannot stop on a transition-covered frame. Keep
+     drawing until one frame at/after the 420ms tuning wipe has been committed,
+     regardless of how sparse RAF becomes on low-power/SwiftShader devices. */
+  if(state.last&&!animating&&state.settled)return;
   if(animating)state.phase+=dt;state.last=time;
   if(channel==='direction')direction();else if(channel==='motion')motion(time);else if(channel==='ai')generative();else digital();
   // A single low-luminance tuning wipe; no random flicker or strobe.
@@ -157,6 +160,7 @@ export function attachCRTChannels(instance){
   text(title[channel],38,49,22,channel==='digital'||channel==='motion'?'#191511':'#eee5d7');
   const vignette=ctx.createRadialGradient(384,272,120,384,272,460);vignette.addColorStop(0,'transparent');vignette.addColorStop(1,'rgba(0,0,0,.34)');ctx.fillStyle=vignette;ctx.fillRect(0,0,768,544);
   texture.needsUpdate=true;state.frames++;boot.dataset.crtScreenFrame=String(state.frames);
+  state.settled=!animating&&(reduced||elapsed>=420);
  }
  instance.channels={state,update,canvas,screen,texture};boot.dataset.crtScreen='live';
  return instance.channels;
