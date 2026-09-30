@@ -1,0 +1,145 @@
+/* MOVX v370 — CRT-driven environmental light spill.
+   Scene 01 already has camera, object physics and full-bleed framing. This layer
+   closes the remaining perceptual gap: the television now visibly illuminates
+   the space it occupies. It reacts to the selected channel using the v365
+   physical-channel state, but adds no model, canvas, renderer, listener or RAF. */
+
+html[data-crt-light-spill-layer="v370-screen-to-room"] #boot{
+  --v370-rgb:255,126,67;
+  --v370-level:.115;
+  --v370-floor:.075;
+  --v370-edge:.045;
+  --v370-shift-x:0px;
+  --v370-shift-y:0px;
+}
+html[data-crt-light-spill-layer="v370-screen-to-room"] #boot[data-crt-physical-channel="direction"]{
+  --v370-rgb:255,136,78;
+  --v370-level:.095;
+  --v370-floor:.060;
+  --v370-edge:.034;
+}
+html[data-crt-light-spill-layer="v370-screen-to-room"] #boot[data-crt-physical-channel="motion"]{
+  --v370-rgb:255,86,28;
+  --v370-level:.175;
+  --v370-floor:.112;
+  --v370-edge:.060;
+}
+html[data-crt-light-spill-layer="v370-screen-to-room"] #boot[data-crt-physical-channel="ai"]{
+  --v370-rgb:255,116,64;
+  --v370-level:.145;
+  --v370-floor:.092;
+  --v370-edge:.052;
+}
+html[data-crt-light-spill-layer="v370-screen-to-room"] #boot[data-crt-physical-channel="digital"]{
+  --v370-rgb:199,216,255;
+  --v370-level:.112;
+  --v370-floor:.068;
+  --v370-edge:.044;
+}
+
+@media(min-width:901px){
+  /* The whole stage receives a broad, low-frequency bounce originating from the
+     CRT side. It deliberately avoids a visible 'glow circle': the falloff is
+     large and asymmetrical so it reads as screen light on a wall. */
+  html[data-crt-light-spill-layer="v370-screen-to-room"] #boot .boot-stage::before{
+    content:"";
+    position:absolute;
+    z-index:1;
+    inset:0;
+    pointer-events:none;
+    background:
+      radial-gradient(ellipse 46% 64% at calc(29% + var(--v367-px,0)*3%) calc(48% + var(--v367-py,0)*2.5%),
+        rgba(var(--v370-rgb),calc(var(--v370-level) + var(--v367-presence,0)*.035)),
+        rgba(var(--v370-rgb),calc(var(--v370-level)*.28)) 42%,
+        rgba(var(--v370-rgb),0) 76%),
+      linear-gradient(92deg,
+        rgba(var(--v370-rgb),calc(var(--v370-edge)*.62)) 0%,
+        rgba(var(--v370-rgb),calc(var(--v370-edge)*.18)) 36%,
+        rgba(var(--v370-rgb),0) 68%);
+    opacity:calc(.72 + var(--v367-presence,0)*.20 + var(--v367-engage,0)*.08 - var(--v367-handoff,0)*.14);
+    transform:translate3d(calc(var(--v367-px,0)*-4px),calc(var(--v367-py,0)*-2px),0) scale(1.018);
+    transform-origin:31% 50%;
+    transition:background .42s ease,opacity .30s ease;
+    will-change:transform,opacity;
+  }
+
+  /* Local spill under/behind the actual CRT. This is kept soft enough to preserve
+     the authored model silhouette while making the screen feel emissive rather
+     than a texture pasted onto a mesh. */
+  html[data-crt-light-spill-layer="v370-screen-to-room"] #boot .crt-wrap::after{
+    content:"";
+    position:absolute;
+    z-index:-1;
+    left:8%;
+    right:6%;
+    top:18%;
+    bottom:8%;
+    pointer-events:none;
+    background:
+      radial-gradient(ellipse 60% 44% at calc(52% + var(--v367-px,0)*4%) calc(46% + var(--v367-py,0)*3%),
+        rgba(var(--v370-rgb),calc(var(--v370-level)*.90 + var(--v367-presence,0)*.026)),
+        rgba(var(--v370-rgb),calc(var(--v370-level)*.18)) 48%,
+        transparent 77%),
+      radial-gradient(ellipse 54% 18% at 50% 89%,
+        rgba(var(--v370-rgb),calc(var(--v370-floor) + var(--v367-presence,0)*.018)),
+        transparent 72%);
+    filter:blur(22px);
+    opacity:calc(.72 + var(--v367-energy,0)*.15 + var(--v367-presence,0)*.12);
+    transform:translate3d(calc(var(--v367-px,0)*-5px),calc(var(--v367-py,0)*-2px),0) scale(1.02);
+    transition:background .42s ease,opacity .30s ease;
+    will-change:transform,opacity;
+  }
+
+  /* Channel controls should feel causally connected to the TV. Selection remains
+     editorial and restrained; the active segment receives only a faint reflected
+     tint and a denser underline rather than turning into a generic UI card. */
+  html[data-crt-light-spill-layer="v370-screen-to-room"] #boot .boot-tags button.tag{
+    position:relative;
+    isolation:isolate;
+    overflow:hidden;
+  }
+  html[data-crt-light-spill-layer="v370-screen-to-room"] #boot .boot-tags button.tag::before{
+    content:"";
+    position:absolute;
+    z-index:-1;
+    inset:0;
+    background:linear-gradient(180deg,rgba(var(--v370-rgb),0),rgba(var(--v370-rgb),.075));
+    opacity:0;
+    transform:translateY(16%);
+    transition:opacity .26s ease,transform .32s cubic-bezier(.2,.72,.2,1);
+  }
+  html[data-crt-light-spill-layer="v370-screen-to-room"] #boot .boot-tags button.tag[aria-pressed="true"]::before,
+  html[data-crt-light-spill-layer="v370-screen-to-room"] #boot .boot-tags button.tag:focus-visible::before{
+    opacity:1;
+    transform:translateY(0);
+  }
+  html[data-crt-light-spill-layer="v370-screen-to-room"] #boot .boot-tags button.tag[aria-pressed="true"]::after{
+    height:3px!important;
+    box-shadow:0 0 14px rgba(var(--v370-rgb),.16);
+  }
+}
+
+/* Mobile keeps directness over spectacle. A small local bounce is enough to
+   communicate emission without adding continuous pointer-driven movement. */
+@media(max-width:900px){
+  html[data-crt-light-spill-layer="v370-screen-to-room"] #boot .crt-wrap::after{
+    content:"";
+    position:absolute;
+    z-index:-1;
+    inset:16% 7% 8%;
+    pointer-events:none;
+    background:radial-gradient(ellipse at 50% 62%,rgba(var(--v370-rgb),calc(var(--v370-level)*.72)),transparent 68%);
+    filter:blur(18px);
+    opacity:.72;
+    transition:background .36s ease;
+  }
+}
+
+@media(prefers-reduced-motion:reduce){
+  html[data-crt-light-spill-layer="v370-screen-to-room"] #boot .boot-stage::before,
+  html[data-crt-light-spill-layer="v370-screen-to-room"] #boot .crt-wrap::after,
+  html[data-crt-light-spill-layer="v370-screen-to-room"] #boot .boot-tags button.tag::before{
+    transition:none!important;
+    transform:none!important;
+  }
+}
