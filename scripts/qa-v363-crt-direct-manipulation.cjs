@@ -31,18 +31,47 @@ const fs=require('node:fs');
     });
     const choose=async channel=>{
       await page.locator(`[data-crt-mode-control="${channel}"]`).click();
-      await page.waitForFunction(ch=>window.MOVX3D.runtime.instances['boot-tv'].channels.state.channel===ch,channel,{timeout:5000});
+      await page.waitForFunction(ch=>window.MOVX3D.runtime.instances['boot-tv'].channels.state.channel===ch,channel,{timeout:7000,polling:'raf'});
       await page.waitForTimeout(120);
     };
     const points=()=>page.evaluate(async()=>{
       const THREE=await import('./vendor/three.module.js');
       const i=window.MOVX3D.runtime.instances['boot-tv'];
-      const project=obj=>{obj.geometry.computeBoundingBox();const c=obj.geometry.boundingBox.getCenter(new THREE.Vector3());obj.localToWorld(c);c.project(i.camera);const r=i.canvas.getBoundingClientRect();return{x:r.x+(c.x+1)*r.width/2,y:r.y+(1-c.y)*r.height/2}};
-      return {screen:project(i.channels.screen),knob:project(i.model.getObjectByName('tripo_part_8'))};
+      const canvasRect=i.canvas.getBoundingClientRect();
+      const project=obj=>{obj.geometry.computeBoundingBox();const c=obj.geometry.boundingBox.getCenter(new THREE.Vector3());obj.localToWorld(c);c.project(i.camera);return{x:canvasRect.x+(c.x+1)*canvasRect.width/2,y:canvasRect.y+(1-c.y)*canvasRect.height/2}};
+      const visiblePoint=(obj,center)=>{
+        const ray=new THREE.Raycaster(),ndc=new THREE.Vector2();
+        const offsets=[0,-5,5,-10,10,-15,15,-20,20,-26,26];
+        for(const dy of offsets){for(const dx of offsets){
+          const x=center.x+dx,y=center.y+dy;
+          ndc.set((x-canvasRect.x)/canvasRect.width*2-1,-(y-canvasRect.y)/canvasRect.height*2+1);
+          ray.setFromCamera(ndc,i.camera);
+          const hit=ray.intersectObject(i.model,true)[0]?.object||null;
+          if(hit===obj)return{x,y,visible:true,hit:hit.name};
+        }}
+        return{x:center.x,y:center.y,visible:false,hit:null};
+      };
+      const screen=project(i.channels.screen),knobObj=i.model.getObjectByName('tripo_part_8'),knobCenter=project(knobObj);
+      return {screen,knob:visiblePoint(knobObj,knobCenter),knobCenter};
     });
     const drag=async(from,to)=>{
       await page.mouse.move(from.x,from.y);await page.mouse.down();
       await page.mouse.move(to.x,to.y,{steps:6});await page.mouse.up();await page.waitForTimeout(160);
+    };
+    const settleKnobPoint=async()=>{
+      let p=null;
+      /* The cabinet itself reacts to pointer position. Approach the tiny selector,
+         then re-project it after that response so the test clicks the surface a
+         real visitor can actually see, rather than a stale bounding-box center. */
+      for(let attempt=0;attempt<3;attempt++){
+        p=await points();
+        if(!p.knob.visible)break;
+        await page.mouse.move(p.knob.x,p.knob.y,{steps:4});
+        await page.waitForTimeout(180);
+      }
+      p=await points();
+      assert.equal(p.knob.visible,true,`selector has no visible ray-hit near projected center ${JSON.stringify(p.knobCenter)}`);
+      return p.knob;
     };
 
     const initial=await snapshot();
@@ -66,9 +95,9 @@ const fs=require('node:fs');
       await drag(p.screen,{x:p.screen.x+92,y:p.screen.y});
       const dig1=await snapshot();assert.notEqual(dig1.mobile,dig0.mobile,'screen drag must switch digital format');assert.equal(dig1.lastAction,'digital-format');
 
-      p=await points();const dial0=await snapshot();
-      await drag(p.knob,{x:p.knob.x,y:p.knob.y+55});
-      await page.waitForFunction(()=>window.MOVX3D.runtime.instances['boot-tv'].directManipulation.state.dialDrags>0,null,{timeout:5000});
+      const knobPoint=await settleKnobPoint();const dial0=await snapshot();
+      await drag(knobPoint,{x:knobPoint.x,y:knobPoint.y+55});
+      await page.waitForFunction(previous=>window.MOVX3D.runtime.instances['boot-tv'].directManipulation.state.dialDrags>previous,dial0.dialDrags,{timeout:7000,polling:'raf'});
       const dial1=await snapshot();assert.ok(dial1.dialDrags>dial0.dialDrags,'dragging selector must tune a channel');assert.equal(dial1.lastAction,'dial-tune');
       assert.ok(/Arraste/.test(dial1.help),'direct manipulation help must explain the physical gesture');
     }
@@ -77,7 +106,7 @@ const fs=require('node:fs');
       await choose('direction');
       const before=await snapshot();
       await page.locator('.crt-program-controls button').first().click();
-      await page.waitForFunction(a=>window.MOVX3D.runtime.instances['boot-tv'].channels.state.art!==a,before.art,{timeout:5000});
+      await page.waitForFunction(a=>window.MOVX3D.runtime.instances['boot-tv'].channels.state.art!==a,before.art,{timeout:7000,polling:'raf'});
       const after=await snapshot();assert.notEqual(after.art,before.art,'touch controls must remain functional without gesture capture');assert.ok(after.help.length>20);
     }
 
