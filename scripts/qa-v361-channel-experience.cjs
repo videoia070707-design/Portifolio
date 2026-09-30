@@ -20,10 +20,9 @@ const {chromium}=require('playwright');const assert=require('node:assert/strict'
    },{previous,test},{timeout:7000,polling:'raf'});
    return Date.now()-started;
   };
-  /* The cabinet reacts to pointer presence. Locate a point whose first ray hit is
-     the real selector, approach it, wait for the shared Scene-01 frame to consume
-     that pointer, and re-project. This keeps the physical gesture attached to what
-     a visitor can actually see instead of a stale bounding-box center. */
+  /* Find the tiny selector on the cabinet as it actually exists after pointer
+     parallax has been consumed. The final point is not accepted until that exact
+     current pointer coordinate still ray-hits tripo_part_8 on a later shared frame. */
   const selectorPoint=async()=>{
    const find=()=>p.evaluate(async()=>{
     const THREE=await import('./vendor/three.module.js');const i=window.MOVX3D.runtime.instances['boot-tv'],knob=i.model.getObjectByName('tripo_part_8');
@@ -33,14 +32,19 @@ const {chromium}=require('playwright');const assert=require('node:assert/strict'
     for(const dy of offsets)for(const dx of offsets){const x=base.x+dx,y=base.y+dy;ndc.set((x-r.x)/r.width*2-1,-(y-r.y)/r.height*2+1);ray.setFromCamera(ndc,i.camera);const hit=ray.intersectObject(i.model,true)[0]?.object;if(hit===knob)return{x,y,visible:true,centerX:base.x,centerY:base.y};}
     return{x:base.x,y:base.y,visible:false,centerX:base.x,centerY:base.y};
    });
-   let point=await find();
-   for(let n=0;n<3&&point.visible;n++){
+   const stillHits=point=>p.evaluate(async point=>{
+    const THREE=await import('./vendor/three.module.js');const i=window.MOVX3D.runtime.instances['boot-tv'],knob=i.model.getObjectByName('tripo_part_8'),r=i.canvas.getBoundingClientRect();
+    const ndc=new THREE.Vector2((point.x-r.x)/r.width*2-1,-(point.y-r.y)/r.height*2+1),ray=new THREE.Raycaster();ray.setFromCamera(ndc,i.camera);return ray.intersectObject(i.model,true)[0]?.object===knob;
+   },point);
+   let point=null;
+   for(let n=0;n<7;n++){
+    point=await find();assert.equal(point.visible,true,`selector is not visibly ray-hittable at ${JSON.stringify(point)}`);
     const frame=await p.evaluate(()=>Number(document.querySelector('#boot')?.dataset.v371Frame||0));
-    await p.mouse.move(point.x,point.y,{steps:4});
+    await p.mouse.move(point.x,point.y,{steps:n?2:4});
     await p.waitForFunction(previous=>Number(document.querySelector('#boot')?.dataset.v371Frame||0)>previous,frame,{timeout:4000,polling:'raf'});
-    point=await find();
+    if(await stillHits(point))return point;
    }
-   assert.equal(point.visible,true,`selector is not visibly ray-hittable at ${JSON.stringify(point)}`);return point;
+   assert.fail(`selector never converged under live pointer parallax: ${JSON.stringify(point)}`);
   };
   const action=p.locator('.crt-program-controls button').first();
   await choose('direction');const before=await snapshot();await action.click();const artworkMs=await waitScreenChange(before,'art');const after=await snapshot();assert.notEqual(after.state.art,before.state.art);assert.notEqual(after.pixels,before.pixels,'art must change inside the screen texture');
@@ -51,16 +55,19 @@ const {chromium}=require('playwright');const assert=require('node:assert/strict'
   }
   let physicalDial=null;
   if(cfg.name==='desktop'){
-   /* The production selector is intentionally a dial: a click gives tactile kick,
-      while a drag tunes channels. Validate that real gesture here rather than
-      incorrectly expecting a click to tune. */
+   /* Begin only after the exact current coordinate is proven to hit the selector.
+      Once pointer capture says the real knob owns the gesture, rotate around the
+      center recorded by v363 itself. +0.82 rad is one intentional channel detent. */
    const dial=await selectorPoint(),dial0=await snapshot();
-   await p.mouse.move(dial.x,dial.y);await p.mouse.down();await p.mouse.move(dial.x,dial.y+55,{steps:7});await p.mouse.up();
+   await p.mouse.down();
+   await p.waitForFunction(()=>{const d=window.MOVX3D.runtime.instances['boot-tv'].directManipulation.state;return d.active===true&&d.kind==='knob'},null,{timeout:3000,polling:'raf'});
+   const target=await p.evaluate(()=>{const d=window.MOVX3D.runtime.instances['boot-tv'].directManipulation.state,r=Math.max(34,Math.hypot(d.startX-d.knobCenterX,d.startY-d.knobCenterY)),a=d.startAngle+.82;return{x:d.knobCenterX+Math.cos(a)*r,y:d.knobCenterY+Math.sin(a)*r,startAngle:d.startAngle,radius:r}});
+   await p.mouse.move(target.x,target.y,{steps:8});await p.mouse.up();
    await p.waitForFunction(previous=>window.MOVX3D.runtime.instances['boot-tv'].directManipulation.state.dialDrags>previous,dial0.dialDrags,{timeout:7000,polling:'raf'});
    physicalDial=await snapshot();
    assert.ok(physicalDial.dialDrags>dial0.dialDrags,'dragging the real CRT selector must tune a channel');
    assert.equal(physicalDial.directAction,'dial-tune','selector drag did not register as a physical dial tune');
-   assert.notEqual(physicalDial.state.channel,dial0.state.channel,'physical selector drag did not change channel');
+   assert.equal(physicalDial.state.channel,'motion','one physical selector detent from DIREÇÃO must tune MOTION');
   }
   await choose('motion');if(!(await snapshot()).state.paused)await action.click();await p.waitForFunction(()=>window.MOVX3D.runtime.instances['boot-tv'].channels.state.paused===true,null,{timeout:7000,polling:'raf'});const frozen=await snapshot();await p.waitForTimeout(350);const still=await snapshot();assert.equal(still.state.paused,true,'pause state must remain active');assert.equal(still.state.phase,frozen.state.phase,'pause must freeze the Motion programme phase even while tactile overlays remain live');
   const slider=p.locator('.crt-program-range input');await slider.fill('90');await slider.dispatchEvent('input');await p.waitForFunction(previous=>Math.abs(window.MOVX3D.runtime.instances['boot-tv'].channels.state.phase-previous)>.001,frozen.state.phase,{timeout:7000,polling:'raf'});const scrubbed=await snapshot();assert.notEqual(scrubbed.state.phase,frozen.state.phase,'paused timeline must remain scrubbable');
@@ -73,7 +80,7 @@ const {chromium}=require('playwright');const assert=require('node:assert/strict'
   const layout=await p.evaluate(()=>{const panel=document.querySelector('#crt-channel-panel').getBoundingClientRect(),scene=document.querySelector('#boot .scene-inner').getBoundingClientRect();return{overflow:document.documentElement.scrollWidth-innerWidth,panelInside:panel.bottom<=scene.bottom+2,canvases:document.querySelectorAll('.v322-model-renderer canvas').length}});
   assert.ok(layout.overflow<=2);assert.ok(layout.panelInside,'program controls must not be clipped');assert.equal(layout.canvases,1);assert.deepEqual(errors,[]);
   await p.locator('#boot').screenshot({path:`_site/qa-v361-${cfg.name}-experience.png`});
-  results.push({name:cfg.name,status:'PASS',actions:['artwork','screen click','physical selector drag','pause','scrub','play','variation','responsive interface'],timing:{artworkMs,resumeMs,variationMs,responsiveMs},physicalDial:physicalDial?{channel:physicalDial.state.channel,dialDrags:physicalDial.dialDrags,lastAction:physicalDial.directAction}:null,layout});await p.close();
+  results.push({name:cfg.name,status:'PASS',actions:['artwork','screen click','physical selector detent','pause','scrub','play','variation','responsive interface'],timing:{artworkMs,resumeMs,variationMs,responsiveMs},physicalDial:physicalDial?{channel:physicalDial.state.channel,dialDrags:physicalDial.dialDrags,lastAction:physicalDial.directAction}:null,layout});await p.close();
  }
  await browser.close();fs.writeFileSync('_site/qa-v361-results.json',JSON.stringify(results,null,2));console.log(JSON.stringify(results));
 })().catch(e=>{console.error(e);process.exit(1)});
