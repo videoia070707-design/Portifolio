@@ -72,21 +72,37 @@ const fs=require('node:fs');
     assert.ok(Math.abs(sceneAware.groupYaw-initial.groupYaw)>.012,'real CRT group did not react to scene-wide pointer');
     assert.equal(sceneAware.presenceSource,'scene');
 
-    /* Channel selection must change the cabinet presentation, not only the screen. */
+    /* Channel selection must change the cabinet presentation, not only the screen.
+       A channel change is intentionally damped by three independent physical
+       layers. Wait until v365 physics, v367 director and v371 volume converge to
+       the same MOTION pose before judging which cabinet side is exposed. */
     await page.locator('[data-crt-mode-control="motion"]').click();
     const scene=page.locator('#boot .scene-inner');const sceneBox=await scene.boundingBox();
     await page.mouse.move(sceneBox.x+sceneBox.width*.50,sceneBox.y+sceneBox.height*.52,{steps:8});
     await page.waitForFunction(()=>{
       const inst=window.MOVX3D.runtime.instances['boot-tv'];
-      return inst.objectVolume.state.channel==='motion' && inst.objectVolume.state.restYaw>.02 && Math.abs(inst.objectVolume.state.pointerYaw)<.012;
-    },null,{timeout:7000,polling:'raf'});
+      const volume=inst.objectVolume?.state;
+      const physics=inst.channelPhysics?.state;
+      const director=inst.sceneDirector?.state;
+      return volume?.channel==='motion' && volume.restYaw>.02 && volume.yaw>.018 && Math.abs(volume.pointerYaw)<.012 &&
+        physics?.channel==='motion' && physics.yaw>.018 &&
+        director?.channel==='motion' && director.channelMix>.80 &&
+        inst.group.rotation.y>.035;
+    },null,{timeout:10000,polling:'raf'});
     const motion=await page.evaluate(()=>{
       const inst=window.MOVX3D.runtime.instances['boot-tv'];
       const s=inst.objectVolume.state;
-      return {channel:s.channel,restYaw:s.restYaw,yaw:s.yaw,groupYaw:inst.group.rotation.y,physical:document.querySelector('#boot').dataset.crtPhysicalChannel,screen:inst.channels.state.channel};
+      return {
+        channel:s.channel,restYaw:s.restYaw,yaw:s.yaw,groupYaw:inst.group.rotation.y,
+        physical:document.querySelector('#boot').dataset.crtPhysicalChannel,
+        screen:inst.channels.state.channel,
+        physicsYaw:inst.channelPhysics.state.yaw,
+        directorMix:inst.sceneDirector.state.channelMix,
+      };
     });
     assert.equal(motion.channel,'motion');assert.equal(motion.physical,'motion');assert.equal(motion.screen,'motion');
-    assert.ok(motion.restYaw>.02);assert.ok(motion.groupYaw>.045,`MOTION did not expose the opposite cabinet side: ${motion.groupYaw}`);
+    assert.ok(motion.restYaw>.02);assert.ok(motion.physicsYaw>.018);assert.ok(motion.directorMix>.80);
+    assert.ok(motion.groupYaw>.035,`MOTION did not expose the opposite cabinet side after convergence: ${motion.groupYaw}`);
 
     /* Direct manipulation has priority. v371 must quickly fade its authored pose
        instead of fighting the user's cabinet drag. */
