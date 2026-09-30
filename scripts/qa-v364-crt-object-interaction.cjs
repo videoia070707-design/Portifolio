@@ -67,14 +67,15 @@ const fs=require('node:fs');
 
     if(cfg.name==='desktop'){
       const p=await bodyPoint();assert.ok(p,'QA could not find a visible CRT cabinet surface');
-      /* Current affordance contract: the actual cabinet must advertise orbit on a
-         ray-hittable body surface, then enter the real grab/orbit state. The old
-         literal copy check used the pre-v375 wording and was no longer meaningful. */
+      /* v378 upgrades the idle orbit affordance into a pickup affordance while a
+         real body ray-hit is active. Both phrases describe the same v364 physical
+         cabinet capability; which one is visible depends on pickup hover settling. */
+      const physicalHint=/SEGURE.*ARRASTE.*TV|ARRASTE.*ORBITAR.*TV/i;
       await page.mouse.move(p.x,p.y,{steps:4});
       await page.waitForFunction(()=>document.querySelector('#boot')?.dataset.crtObjectHit==='body',null,{timeout:2500,polling:'raf'});
       const hoverState=await snapshot();
       assert.equal(hoverState.bodyHit,'body','physical object hover affordance is missing');
-      assert.ok(/ARRASTE.*ORBITAR.*TV/i.test(hoverState.hint),`current physical object hint is missing: ${hoverState.hint}`);
+      assert.ok(physicalHint.test(hoverState.hint),`current physical object hint is missing: ${hoverState.hint}`);
 
       const before=await snapshot();
       await page.mouse.down();await page.mouse.move(p.x+112,p.y-34,{steps:8});
@@ -84,7 +85,7 @@ const fs=require('node:fs');
       assert.ok(after.bodyDrags>before.bodyDrags,'dragging the cabinet must manipulate the actual 3D object');
       assert.equal(after.lastAction,'object-orbit');assert.notEqual(after.yaw,before.yaw);assert.notEqual(after.pitch,before.pitch);
       assert.equal(after.channel,before.channel,'cabinet orbit must not change channel');assert.equal(after.art,before.art,'cabinet orbit must not trigger screen artwork');
-      assert.ok(/ARRASTE.*ORBITAR.*TV/i.test(after.hint),'physical object affordance disappeared after manipulation');
+      assert.ok(physicalHint.test(after.hint),`physical object affordance disappeared after manipulation: ${after.hint}`);
       assert.ok(['inertia','idle'].includes(after.grab),'cabinet did not leave direct drag through the physical grab state');
 
       await page.evaluate(()=>scrollTo(0,Math.max(1,(document.querySelector('#boot').offsetHeight-innerHeight)*.48)));
