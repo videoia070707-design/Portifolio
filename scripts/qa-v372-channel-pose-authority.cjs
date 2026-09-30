@@ -17,22 +17,19 @@ const fs=require('node:fs');
 
     const settle=async(channel)=>{
       const started=Date.now();
-      await page.locator(`[data-crt-mode-control="${channel}"]`).click();
 
-      /* Pose authority should be measured without visitor parallax helping the
-         final yaw. Neutralize the existing scene pointer at the real scene center
-         instead of relying on a hard-coded viewport coordinate. */
-      const sceneBox=await page.locator('#boot .scene-inner').boundingBox();
-      assert.ok(sceneBox&&sceneBox.width>0&&sceneBox.height>0,'Scene 01 has no measurable interaction area');
-      await page.mouse.move(sceneBox.x+sceneBox.width/2,sceneBox.y+sceneBox.height/2,{steps:8});
+      /* This gate measures authored CHANNEL pose, not visitor parallax. Playwright's
+         locator.click() physically moves its synthetic pointer onto the channel
+         button, which feeds v358/v368 before the click and can bias the cabinet for
+         several low-FPS SwiftShader frames. Dispatch the same native click from the
+         DOM instead, then explicitly reset v368. Production behavior is unchanged;
+         only the test input source is isolated to the semantic control contract. */
+      await page.evaluate(ch=>document.querySelector(`[data-crt-mode-control="${ch}"]`)?.click(),channel);
+      await page.evaluate(()=>window.MOVX3D?.runtime?.instances?.['boot-tv']?.scenePresence?.reset?.());
 
-      /* First wait only for the semantic/physics buses to agree and pointer yaw to
-         settle. Do not mix a single instantaneous cabinet angle into readiness:
-         v371 intentionally adds bounded idle motion, so pose quality is measured
-         across real RAF frames below. */
       await page.waitForFunction(channel=>{
         const inst=window.MOVX3D?.runtime?.instances?.['boot-tv'];
-        if(!inst?.objectVolume||!inst?.channelPhysics||!inst?.sceneDirector||!inst?.channels)return false;
+        if(!inst?.objectVolume||!inst?.channelPhysics||!inst?.sceneDirector||!inst?.scenePresence||!inst?.channels)return false;
         const boot=document.querySelector('#boot');
         return boot?.dataset.crtPhysicalChannel===channel &&
           inst.channels.state.channel===channel &&
@@ -40,15 +37,19 @@ const fs=require('node:fs');
           inst.channelPhysics.state.channel===channel &&
           inst.sceneDirector.state.channel===channel &&
           inst.sceneDirector.state.channelMix>.86 &&
-          Math.abs(inst.objectVolume.state.pointerYaw)<.014;
+          inst.scenePresence.state.inside===false &&
+          inst.scenePresence.state.mix<.035 &&
+          Math.abs(inst.objectVolume.state.pointerYaw)<.008;
       },channel,{timeout:20000,polling:'raf'});
 
+      /* The cabinet has intentionally bounded idle movement. Judge the visible pose
+         across several real shared-RAF frames rather than one lucky instant. */
       const yawSamples=await page.evaluate(()=>new Promise(resolve=>{
         const values=[];
         const sample=()=>{
           const i=window.MOVX3D.runtime.instances['boot-tv'];
           values.push(i.group.rotation.y);
-          if(values.length>=6)resolve(values);else requestAnimationFrame(sample);
+          if(values.length>=8)resolve(values);else requestAnimationFrame(sample);
         };
         requestAnimationFrame(sample);
       }));
@@ -70,6 +71,8 @@ const fs=require('node:fs');
           volumeYaw:inst.objectVolume.state.yaw,
           pointerYaw:inst.objectVolume.state.pointerYaw,
           idleYaw:inst.objectVolume.state.idleYaw,
+          sceneMix:inst.scenePresence.state.mix,
+          sceneInside:inst.scenePresence.state.inside,
           directorMix:inst.sceneDirector.state.channelMix,
           renderers:document.querySelectorAll('.v322-model-renderer').length,
           activeSlots:window.MOVX3D.runtime.activeSlots,
@@ -99,7 +102,9 @@ const fs=require('node:fs');
     assert.ok(motion.poseYaw-direction.poseYaw>.20,'channel pose separation is too small to read as physical retuning');
     assert.ok(digital.poseYaw-ai.poseYaw>.11,'AI/DIGITAL physical pose separation is too small');
     for(const s of [direction,motion,ai,digital]){
-      assert.ok(Math.abs(s.pointerYaw)<.014,'semantic pose was measured with pointer yaw still active');
+      assert.equal(s.sceneInside,false,'semantic pose was measured while scene pointer was inside');
+      assert.ok(s.sceneMix<.035,'semantic pose was measured while scene-presence mix was active');
+      assert.ok(Math.abs(s.pointerYaw)<.008,'semantic pose was measured with pointer yaw still active');
       assert.equal(s.renderers,1);assert.deepEqual(s.activeSlots,['boot-tv']);assert.ok(s.overflow<=2);
     }
     assert.equal(errors.length,0,'desktop page errors: '+errors.join(' | '));
@@ -112,7 +117,8 @@ const fs=require('node:fs');
     await reduced.goto('http://127.0.0.1:4173/',{waitUntil:'domcontentloaded',timeout:30000});
     await reduced.waitForFunction(()=>document.querySelector('[data-model-slot="boot-tv"]')?.dataset.glbState==='ready',null,{timeout:25000});
     await reduced.waitForFunction(()=>document.documentElement.dataset.crtObjectVolume==='v371-ready',null,{timeout:12000});
-    await reduced.locator('[data-crt-mode-control="motion"]').click();
+    await reduced.evaluate(()=>document.querySelector('[data-crt-mode-control="motion"]')?.click());
+    await reduced.evaluate(()=>window.MOVX3D?.runtime?.instances?.['boot-tv']?.scenePresence?.reset?.());
     await reduced.waitForFunction(()=>{
       const i=window.MOVX3D.runtime.instances['boot-tv'];
       return i.channels.state.channel==='motion'&&i.sceneDirector.state.channel==='motion'&&i.sceneDirector.state.channelMix>.85&&i.group.rotation.y>.10;
