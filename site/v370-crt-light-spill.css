@@ -103,15 +103,20 @@ html[data-crt-light-spill-layer="v370-screen-to-room"] #boot[data-crt-physical-c
     position:absolute;
     z-index:-1;
     inset:0;
+    pointer-events:none;
     background:linear-gradient(180deg,rgba(var(--v370-rgb),0),rgba(var(--v370-rgb),.075));
-    opacity:0;
+    opacity:0!important;
     transform:translateY(16%);
     transition:opacity .26s ease,transform .32s cubic-bezier(.2,.72,.2,1);
   }
+  html[data-crt-light-spill-layer="v370-screen-to-room"] #boot .boot-tags button.tag[aria-pressed="true"],
+  html[data-crt-light-spill-layer="v370-screen-to-room"] #boot .boot-tags button.tag:focus-visible{
+    background:linear-gradient(180deg,rgba(var(--v370-rgb),0),rgba(var(--v370-rgb),.065))!important;
+  }
   html[data-crt-light-spill-layer="v370-screen-to-room"] #boot .boot-tags button.tag[aria-pressed="true"]::before,
   html[data-crt-light-spill-layer="v370-screen-to-room"] #boot .boot-tags button.tag:focus-visible::before{
-    opacity:1;
-    transform:translateY(0);
+    opacity:1!important;
+    transform:translateY(0)!important;
   }
   html[data-crt-light-spill-layer="v370-screen-to-room"] #boot .boot-tags button.tag[aria-pressed="true"]::after{
     height:3px!important;
