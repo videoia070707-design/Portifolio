@@ -29,14 +29,15 @@ const fs=require('node:fs');
     const snap=()=>page.evaluate(()=>{
       const root=document.documentElement,boot=document.querySelector('#boot'),i=window.MOVX3D.runtime.instances['boot-tv'];
       const g=i.spatialGrab.state,o=i.objectInteraction.state,copy=boot.querySelector('.boot-copy');
-      const cs=getComputedStyle(copy);
+      const cs=getComputedStyle(copy),rect=copy.getBoundingClientRect();
       return {
         layer:root.dataset.crtFocusPullLayer,ready:root.dataset.crtFocusPull,
         focusState:boot.dataset.v377Focus,grab:boot.dataset.v375Grab,
         focus:g.focus,pressure:g.pressure,mix:g.mix,active:o.active,
         groupZ:i.group.position.z,groupY:i.group.position.y,cameraZ:i.camera.position.z,
         keyIntensity:i.lights?.key?.intensity||0,
-        copyTransform:cs.transform,copyOpacity:Number(cs.opacity),copyFilter:cs.filter,
+        copyX:rect.x,copyY:rect.y,copyWidth:rect.width,
+        copyTransform:cs.transform,copyTranslate:cs.translate,copyScale:cs.scale,copyOpacity:Number(cs.opacity),copyFilter:cs.filter,
         renderers:document.querySelectorAll('.v322-model-renderer').length,
         activeSlots:window.MOVX3D.runtime.activeSlots,triangles:i.stats.triangles,
         overflow:root.scrollWidth-innerWidth,errors:window.MOVX3D.runtime.errors,
@@ -57,8 +58,10 @@ const fs=require('node:fs');
     },null,{timeout:5000,polling:'raf'});
     const held=await snap();
     assert.equal(held.active,true);assert.equal(held.focusState,'held');assert.ok(held.focus>.72);assert.ok(held.pressure>.45);
-    assert.ok(held.copyOpacity<.93,`editorial copy did not recede during physical grab: ${held.copyOpacity}`);
-    assert.notEqual(held.copyTransform,'none','editorial copy did not join the held-object focus pull');
+    assert.ok(held.copyX>initial.copyX+6,`editorial copy did not physically recede to the right: ${initial.copyX} -> ${held.copyX}`);
+    assert.notEqual(held.copyTranslate,'none','independent translate focus-pull did not resolve');
+    assert.notEqual(held.copyScale,'none','independent scale focus-pull did not resolve');
+    assert.ok(/opacity\(/.test(held.copyFilter),`editorial focus filter missing: ${held.copyFilter}`);
     assert.ok(held.groupZ>initial.groupZ+.012,`real CRT received no held-state depth lift: ${initial.groupZ} -> ${held.groupZ}`);
     assert.ok(held.keyIntensity>initial.keyIntensity+.06,'existing room key light did not gain held-state pressure');
     await page.locator('#boot').screenshot({path:'_site/qa-v377-focus-pull-held.png'});
@@ -70,7 +73,7 @@ const fs=require('node:fs');
     },null,{timeout:3500,polling:'raf'});
     const releasing=await snap();
     assert.equal(releasing.active,false);assert.equal(releasing.focusState,'releasing');
-    assert.ok(releasing.copyOpacity>held.copyOpacity,'editorial copy did not return with physical release');
+    assert.ok(releasing.copyX<held.copyX,'editorial copy did not return with physical release');
     assert.ok(releasing.focus<held.focus,'focus pull did not decay after release');
     assert.equal(errors.length,0,'desktop page errors: '+errors.join(' | '));
     fs.writeFileSync('_site/qa-v377-focus-pull.json',JSON.stringify({initial,held,releasing},null,2));
@@ -81,8 +84,8 @@ const fs=require('node:fs');
     await mobile.goto('http://127.0.0.1:4173/',{waitUntil:'domcontentloaded',timeout:30000});
     await mobile.waitForFunction(()=>document.querySelector('[data-model-slot="boot-tv"]')?.dataset.glbState==='ready',null,{timeout:25000});
     await mobile.waitForFunction(()=>document.documentElement.dataset.crtFocusPull==='v377-ready',null,{timeout:10000});
-    const mobileState=await mobile.evaluate(()=>{const i=window.MOVX3D.runtime.instances['boot-tv'],cs=getComputedStyle(document.querySelector('#boot .boot-copy'));return {coarse:i.spatialGrab.state.coarse,focus:i.spatialGrab.state.focus,transform:cs.transform,opacity:Number(cs.opacity),renderers:document.querySelectorAll('.v322-model-renderer').length,activeSlots:window.MOVX3D.runtime.activeSlots,overflow:document.documentElement.scrollWidth-innerWidth}});
-    assert.equal(mobileState.coarse,true);assert.ok(mobileState.focus<.01);assert.equal(mobileState.transform,'none');assert.equal(mobileState.opacity,1);assert.equal(mobileState.renderers,1);assert.deepEqual(mobileState.activeSlots,['boot-tv']);assert.ok(mobileState.overflow<=2);
+    const mobileState=await mobile.evaluate(()=>{const i=window.MOVX3D.runtime.instances['boot-tv'],cs=getComputedStyle(document.querySelector('#boot .boot-copy'));return {coarse:i.spatialGrab.state.coarse,focus:i.spatialGrab.state.focus,translate:cs.translate,scale:cs.scale,filter:cs.filter,opacity:Number(cs.opacity),renderers:document.querySelectorAll('.v322-model-renderer').length,activeSlots:window.MOVX3D.runtime.activeSlots,overflow:document.documentElement.scrollWidth-innerWidth}});
+    assert.equal(mobileState.coarse,true);assert.ok(mobileState.focus<.01);assert.ok(mobileState.translate==='none'||mobileState.translate==='0px');assert.ok(mobileState.scale==='none'||mobileState.scale==='1');assert.equal(mobileState.filter,'none');assert.equal(mobileState.opacity,1);assert.equal(mobileState.renderers,1);assert.deepEqual(mobileState.activeSlots,['boot-tv']);assert.ok(mobileState.overflow<=2);
     console.log(JSON.stringify({qa:'v377-physical-focus-pull',viewport:'mobile',status:'PASS',mobileState}));
     await mobile.close();
 
@@ -90,8 +93,8 @@ const fs=require('node:fs');
     await reduced.goto('http://127.0.0.1:4173/',{waitUntil:'domcontentloaded',timeout:30000});
     await reduced.waitForFunction(()=>document.querySelector('[data-model-slot="boot-tv"]')?.dataset.glbState==='ready',null,{timeout:25000});
     await reduced.waitForFunction(()=>document.documentElement.dataset.crtFocusPull==='v377-ready',null,{timeout:10000});
-    const reducedState=await reduced.evaluate(()=>{const i=window.MOVX3D.runtime.instances['boot-tv'],cs=getComputedStyle(document.querySelector('#boot .boot-copy'));return {reduced:i.spatialGrab.state.reduced,focus:i.spatialGrab.state.focus,transform:cs.transform,opacity:Number(cs.opacity),renderers:document.querySelectorAll('.v322-model-renderer').length,activeSlots:window.MOVX3D.runtime.activeSlots}});
-    assert.equal(reducedState.reduced,true);assert.equal(reducedState.transform,'none');assert.equal(reducedState.opacity,1);assert.equal(reducedState.renderers,1);assert.deepEqual(reducedState.activeSlots,['boot-tv']);
+    const reducedState=await reduced.evaluate(()=>{const i=window.MOVX3D.runtime.instances['boot-tv'],cs=getComputedStyle(document.querySelector('#boot .boot-copy'));return {reduced:i.spatialGrab.state.reduced,focus:i.spatialGrab.state.focus,translate:cs.translate,scale:cs.scale,filter:cs.filter,opacity:Number(cs.opacity),renderers:document.querySelectorAll('.v322-model-renderer').length,activeSlots:window.MOVX3D.runtime.activeSlots}});
+    assert.equal(reducedState.reduced,true);assert.ok(reducedState.translate==='none'||reducedState.translate==='0px');assert.ok(reducedState.scale==='none'||reducedState.scale==='1');assert.equal(reducedState.filter,'none');assert.equal(reducedState.opacity,1);assert.equal(reducedState.renderers,1);assert.deepEqual(reducedState.activeSlots,['boot-tv']);
     console.log(JSON.stringify({qa:'v377-physical-focus-pull',viewport:'reduced',status:'PASS',reducedState}));
     await reduced.close();
   } finally {await browser.close()}
