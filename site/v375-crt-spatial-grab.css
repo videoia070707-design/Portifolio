@@ -1,0 +1,54 @@
+/* MOVX v375 — visible feedback for the existing CRT grab interaction.
+   Keep the UI editorial and quiet: no HUD, no extra cards, no decorative 3D. */
+html[data-crt-spatial-grab-layer="v375-spatial-grab"] #boot{
+  --v375-grab-mix:0;
+  --v375-grab-cam-x:0px;
+  --v375-grab-cam-y:0px;
+  --crt-grab-shadow-x:0px;
+}
+
+html[data-crt-spatial-grab-layer] #boot[data-crt-object-hit="body"] .crt-object-hint{
+  opacity:1!important;
+  color:rgba(16,14,12,.92)!important;
+  border-color:rgba(255,90,24,.46)!important;
+  background:rgba(245,240,232,.88)!important;
+  box-shadow:0 12px 32px rgba(31,25,20,.10)!important;
+  transform:translate3d(var(--v375-grab-cam-x),-2px,0) scale(1.015)!important;
+}
+html[data-crt-spatial-grab-layer] #boot[data-v375-grab="dragging"] .crt-object-hint{
+  opacity:.92!important;
+  transform:translate3d(var(--v375-grab-cam-x),var(--v375-grab-cam-y),0) scale(.97)!important;
+}
+html[data-crt-spatial-grab-layer] #boot[data-v375-grab="dragging"] .crt-object-hint span{
+  font-size:0;
+}
+html[data-crt-spatial-grab-layer] #boot[data-v375-grab="dragging"] .crt-object-hint span::after{
+  content:"SOLTE PARA DAR INÉRCIA";
+  font-size:8px;
+}
+
+/* During a real grab the existing renderer receives a directional contact shadow.
+   The x offset is already resolved to px by the JS layer to avoid fragile CSS
+   arithmetic on custom properties. */
+html[data-crt-spatial-grab-layer] #boot[data-v375-grab="dragging"] .v322-model-renderer,
+html[data-crt-spatial-grab-layer] #boot[data-v375-grab="inertia"] .v322-model-renderer{
+  filter:drop-shadow(var(--crt-grab-shadow-x) 38px 44px rgba(36,27,20,.24))!important;
+}
+html[data-crt-spatial-grab-layer] #boot[data-v375-grab="dragging"] .crt-wrap::before{
+  opacity:.54!important;
+  filter:blur(13px)!important;
+}
+
+/* The whole scene acknowledges the grab without moving the DOM layout. */
+html[data-crt-spatial-grab-layer] #boot[data-v375-grab="dragging"] .boot-title,
+html[data-crt-spatial-grab-layer] #boot[data-v375-grab="inertia"] .boot-title{
+  text-shadow:var(--v375-grab-cam-x) var(--v375-grab-cam-y) 26px rgba(0,0,0,.035);
+}
+
+@media(max-width:900px){
+  html[data-crt-spatial-grab-layer] #boot .crt-object-hint{display:none!important}
+}
+@media(prefers-reduced-motion:reduce){
+  html[data-crt-spatial-grab-layer] #boot .crt-object-hint,
+  html[data-crt-spatial-grab-layer] #boot .v322-model-renderer{transition:none!important}
+}
