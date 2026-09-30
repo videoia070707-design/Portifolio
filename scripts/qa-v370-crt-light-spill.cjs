@@ -70,6 +70,7 @@ const fs=require('node:fs');
     const reduced=await browser.newPage({viewport:{width:1280,height:800},reducedMotion:'reduce'});
     await reduced.goto('http://127.0.0.1:4173/',{waitUntil:'domcontentloaded',timeout:30000});
     await reduced.waitForFunction(()=>document.documentElement.dataset.crtLightSpillLayer==='v370-screen-to-room');
+    await reduced.waitForFunction(()=>document.querySelector('[data-model-slot="boot-tv"]')?.dataset.glbState==='ready',null,{timeout:25000});
     const reducedState=await reduced.evaluate(()=>{const stage=document.querySelector('#boot .boot-stage'),wrap=document.querySelector('#boot .crt-wrap');return {stageTransition:getComputedStyle(stage,'::before').transitionDuration,stageTransform:getComputedStyle(stage,'::before').transform,wrapTransition:getComputedStyle(wrap,'::after').transitionDuration,renderers:document.querySelectorAll('.v322-model-renderer').length}});
     assert.equal(reducedState.stageTransition,'0s');assert.equal(reducedState.wrapTransition,'0s');assert.equal(reducedState.stageTransform,'none');assert.equal(reducedState.renderers,1);
     console.log(JSON.stringify({qa:'v370-crt-light-spill',viewport:'reduced',status:'PASS',reducedState}));
