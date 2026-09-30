@@ -1,9 +1,10 @@
-/* MOVX v364/v375/v376 — physical manipulation for the existing production CRT.
+/* MOVX v364/v375/v376.1 — physical manipulation for the existing production CRT.
    Dragging the cabinet rotates the actual Three.js object with visible but bounded
    inertia. v375 deepens the orbit range and couples it to camera/light; v376 turns
-   the hard safety stop into an elastic physical boundary so momentum survives a
-   release at maximum orbit. The live screen/selector remain owned by v363. No
-   extra model, renderer, WebGL context or requestAnimationFrame is created here. */
+   the hard safety stop into an elastic physical boundary; v376.1 gives release at
+   that boundary an immediate inward positional recoil before inertia continues.
+   The live screen/selector remain owned by v363. No extra model, renderer, WebGL
+   context or requestAnimationFrame is created here. */
 import * as THREE from './vendor/three.module.js';
 
 const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -28,7 +29,7 @@ export function attachCRTObjectInteraction(instance){
     startYaw:0,startPitch:0,yaw:0,pitch:0,velocityYaw:0,velocityPitch:0,
     pointerVelocityYaw:0,pointerVelocityPitch:0,
     edgeCompressionYaw:0,edgeCompressionPitch:0,boundaryBounce:0,boundaryHits:0,
-    atYawBoundary:false,atPitchBoundary:false,
+    atYawBoundary:false,atPitchBoundary:false,lastBoundarySnapYaw:0,lastBoundarySnapPitch:0,
     bodyDrags:0,lastAction:'none',lastRelease:0,engaged:false,grabEnergy:0
   };
 
@@ -82,6 +83,7 @@ export function attachCRTObjectInteraction(instance){
     state.pointerVelocityYaw=state.pointerVelocityPitch=0;
     state.edgeCompressionYaw=state.edgeCompressionPitch=0;
     state.atYawBoundary=state.atPitchBoundary=false;
+    state.lastBoundarySnapYaw=state.lastBoundarySnapPitch=0;
     state.lastMoveTime=performance.now();
     state.grabEnergy=Math.max(state.grabEnergy,.25);
     boot.dataset.crtObjectGesture='orbit';boot.dataset.crtGrab='armed';setBodyHit(true);updateBoundaryMarker();
@@ -99,9 +101,8 @@ export function attachCRTObjectInteraction(instance){
     const rawYaw=state.startYaw+dx*.00435,rawPitch=state.startPitch+dy*.0030;
     const stepX=event.clientX-state.lastX,stepY=event.clientY-state.lastY;
 
-    /* v376 measures the user's hand velocity from pointer travel rather than from
-       the already-clamped angle. At the old hard stop, continued pointer motion
-       made (clampedYaw-prevYaw) equal zero and silently killed release inertia. */
+    /* Pointer travel, rather than the already-clamped angle, owns hand velocity.
+       Continued motion against the authored stop therefore still carries energy. */
     const handYaw=clamp((stepX*.00435)/dt,-2.2,2.2);
     const handPitch=clamp((stepY*.0030)/dt,-1.1,1.1);
     state.pointerVelocityYaw+=(handYaw-state.pointerVelocityYaw)*.58;
@@ -131,20 +132,32 @@ export function attachCRTObjectInteraction(instance){
 
   const end=event=>{
     if(!state.active||event.pointerId!==state.pointerId)return;
+    state.lastBoundarySnapYaw=state.lastBoundarySnapPitch=0;
     if(reduced){
       state.velocityYaw=state.velocityPitch=0;
     }else{
-      /* If the hand releases while still pushing into a safety stop, convert a
-         portion of that outward momentum into a short inward recoil. The cabinet
-         remains strictly bounded but feels like it has mass instead of hitting a
-         mathematical clamp and dying. */
+      /* v376.1: a compressed safety stop releases like a damped physical bumper.
+         We move the cabinet a small, bounded distance inward immediately, then let
+         the inverted hand velocity continue the recoil. This avoids a frame where
+         velocity says "returning" while the visible object still sits at exactly
+         the mathematical clamp. */
       if(state.edgeCompressionYaw>.015&&Math.sign(state.velocityYaw)===Math.sign(state.yaw)){
-        state.velocityYaw=-state.velocityYaw*(.24+state.edgeCompressionYaw*.12);
-        state.boundaryBounce=Math.max(state.boundaryBounce,Math.min(1,Math.abs(state.velocityYaw)*.55));
+        const compression=state.edgeCompressionYaw;
+        const side=Math.sign(state.yaw)||1;
+        const snap=.010+compression*.010;
+        state.yaw=clamp(state.yaw-side*snap,-YAW_LIMIT,YAW_LIMIT);
+        state.lastBoundarySnapYaw=snap;
+        state.velocityYaw=-Math.max(Math.abs(state.velocityYaw)*(.27+compression*.13),.075);
+        state.boundaryBounce=Math.max(state.boundaryBounce,Math.min(1,.32+compression*.38));
       }
       if(state.edgeCompressionPitch>.015&&Math.sign(state.velocityPitch)===Math.sign(state.pitch)){
-        state.velocityPitch=-state.velocityPitch*(.22+state.edgeCompressionPitch*.10);
-        state.boundaryBounce=Math.max(state.boundaryBounce,Math.min(1,Math.abs(state.velocityPitch)*.65));
+        const compression=state.edgeCompressionPitch;
+        const side=Math.sign(state.pitch)||1;
+        const snap=.006+compression*.006;
+        state.pitch=clamp(state.pitch-side*snap,-PITCH_LIMIT,PITCH_LIMIT);
+        state.lastBoundarySnapPitch=snap;
+        state.velocityPitch=-Math.sign(side)*Math.max(Math.abs(state.velocityPitch)*(.24+compression*.11),.045);
+        state.boundaryBounce=Math.max(state.boundaryBounce,Math.min(1,.28+compression*.32));
       }
     }
     state.active=false;state.pointerId=null;state.lastRelease=performance.now();
@@ -162,8 +175,8 @@ export function attachCRTObjectInteraction(instance){
   wrap.addEventListener('pointerup',end,{passive:true});
   wrap.addEventListener('pointercancel',end,{passive:true});
 
-  function integrateElastic(value,velocity,limit,restitution){
-    let next=value+velocity*state._frameDt;
+  function integrateElastic(value,velocity,limit,restitution,dt){
+    let next=value+velocity*dt;
     let nextVelocity=velocity;
     if(Math.abs(next)>limit){
       const side=Math.sign(next)||1;
@@ -176,11 +189,11 @@ export function attachCRTObjectInteraction(instance){
   }
 
   function update(time){
-    const dt=Math.min(Math.max((time-state.lastTime)/1000,0),.08);state.lastTime=time;state._frameDt=dt;
+    const dt=Math.min(Math.max((time-state.lastTime)/1000,0),.08);state.lastTime=time;
     if(!state.active){
       if(!reduced){
-        [state.yaw,state.velocityYaw]=integrateElastic(state.yaw,state.velocityYaw,YAW_LIMIT,.34);
-        [state.pitch,state.velocityPitch]=integrateElastic(state.pitch,state.velocityPitch,PITCH_LIMIT,.30);
+        [state.yaw,state.velocityYaw]=integrateElastic(state.yaw,state.velocityYaw,YAW_LIMIT,.34,dt);
+        [state.pitch,state.velocityPitch]=integrateElastic(state.pitch,state.velocityPitch,PITCH_LIMIT,.30,dt);
         const decay=Math.exp(-dt*6.2);state.velocityYaw*=decay;state.velocityPitch*=decay;
         state.boundaryBounce*=Math.exp(-dt*8.6);
         if(time-state.lastRelease>1050&&Math.abs(state.velocityYaw)<.040&&Math.abs(state.velocityPitch)<.028){
@@ -224,6 +237,7 @@ export function attachCRTObjectInteraction(instance){
   instance.objectInteraction={state,update};
   document.documentElement.dataset.crtObject='v364-ready';
   document.documentElement.dataset.crtOrbitPhysics='v376-elastic-boundary';
+  document.documentElement.dataset.crtOrbitRecoil='v376.1-visible-snap';
   boot.dataset.crtObject='ready';boot.dataset.crtGrab='idle';
   return instance.objectInteraction;
 }
