@@ -14,6 +14,7 @@ const fs=require('node:fs');
     await page.waitForFunction(()=>document.documentElement.dataset.crtScenePresence==='v368-ready',null,{timeout:20000});
     await page.waitForFunction(()=>document.querySelector('[data-model-slot="boot-tv"]')?.dataset.glbState==='ready',null,{timeout:20000});
     await page.waitForFunction(()=>document.documentElement.dataset.motionIntro==='ready',null,{timeout:12000});
+    await page.waitForFunction(()=>{const i=document.querySelector('#boot .scene-inner')?.getBoundingClientRect(),b=document.querySelector('#boot .scene-bar')?.getBoundingClientRect();return !!i&&!!b&&Math.abs(b.top-i.top)<=2},null,{timeout:5000,polling:'raf'});
 
     const desktop=await page.evaluate(()=>{
       const root=document.documentElement;
