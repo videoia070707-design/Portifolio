@@ -19,6 +19,7 @@ for name in (js_name,css_name):
     if not src.exists():
         raise SystemExit(f'MOVX v375 source missing: {src}')
     shutil.copy2(src,out/name)
+css=(root/'site'/css_name).read_text()
 
 if not runtime_path.exists():
     raise SystemExit('MOVX v375 requires the built v374 Scene-01 runtime')
@@ -49,7 +50,9 @@ if frame_new not in runtime:
 
 runtime_path.write_text(runtime)
 
-css_link=f'<link rel="stylesheet" href="{css_name}?v={release}" data-v375-spatial-grab="{release}">'
+# Keep v375 CSS critical/inline so Scene 01 gains no extra stylesheet request and
+# the existing production CSS-layer budget remains unchanged.
+style_tag=f'<style data-v375-spatial-grab="{release}">\n{css}\n</style>'
 installed=[]
 for name in ('index.html','latest.html'):
     path=out/name
@@ -63,9 +66,15 @@ for name in ('index.html','latest.html'):
     else:
         text=re.sub(r'data-crt-spatial-grab-layer="[^"]+"',f'data-crt-spatial-grab-layer="{release}"',text,count=1)
     if 'data-v375-spatial-grab=' not in text:
-        text=text.replace('</head>',css_link+'\n</head>',1)
-    text=text.replace('v322-glb-runtime.mjs?v=v372-channel-pose-authority',f'v322-glb-runtime.mjs?v={release}')
-    if f'v322-glb-runtime.mjs?v={release}' not in text:
+        text=text.replace('</head>',style_tag+'\n</head>',1)
+
+    # Preserve the validated v372 key as the first query parameter so historical
+    # static contracts remain meaningful, while the added layer parameter changes
+    # the complete URL and forces browsers to fetch the v375 runtime bytes.
+    old_key='v322-glb-runtime.mjs?v=v372-channel-pose-authority'
+    new_key='v322-glb-runtime.mjs?v=v372-channel-pose-authority&layer=v375-spatial-grab'
+    text=text.replace(old_key,new_key)
+    if new_key not in text:
         raise SystemExit(f'MOVX v375 runtime cache key missing in {name}')
     path.write_text(text)
     installed.append(name)
@@ -84,6 +93,7 @@ print(json.dumps({
     'lighting':'existing key/fill/rim react to grab state',
     'render_loop':'shared v322 frame; zero extra RAFs',
     'input':'reuses v364 pointer listeners; zero new input listeners',
+    'css_delivery':'critical inline; zero extra stylesheet requests',
     'new_webgl_resources':0,
     'other_models':'deferred and unpublished',
     'assets':[js_name,css_name],
