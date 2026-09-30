@@ -1,0 +1,72 @@
+/* MOVX v377 — physical focus pull.
+   The user is holding the real CRT, so the editorial room yields to it. This is
+   intentionally not a HUD/game effect: copy recedes, object contact shadow tightens
+   and the existing hint becomes a tactile instruction. No layout reflow. */
+html[data-crt-focus-pull-layer="v377-physical-focus-pull"] #boot{
+  --v377-focus:0;
+  --v377-pressure:0;
+  --v377-copy-shift:0px;
+  --v377-copy-scale:1;
+  --v377-copy-opacity:1;
+  --v377-shadow-y:30px;
+}
+
+/* DOM and WebGL now acknowledge the same grab. Children keep the fine-grained
+   v367 parallax while their parent performs the larger cinematic focus pull. */
+html[data-crt-focus-pull-layer] #boot .boot-copy{
+  transform-origin:42% 46%;
+  transition:opacity .16s ease,filter .18s ease,transform .18s cubic-bezier(.2,.72,.18,1);
+  will-change:transform,opacity,filter;
+}
+html[data-crt-focus-pull-layer] #boot[data-v377-focus="held"] .boot-copy,
+html[data-crt-focus-pull-layer] #boot[data-v377-focus="releasing"] .boot-copy{
+  transform:translate3d(var(--v377-copy-shift),0,0) scale(var(--v377-copy-scale));
+  opacity:var(--v377-copy-opacity);
+}
+html[data-crt-focus-pull-layer] #boot[data-v377-focus="held"] .boot-copy{
+  filter:saturate(.92) contrast(.985);
+}
+html[data-crt-focus-pull-layer] #boot[data-v377-focus="releasing"] .boot-copy{
+  filter:saturate(.965);
+}
+
+/* Contact shadow moves upward/tightens as the cabinet is lifted toward the viewer.
+   Keep the existing v375 directional x component so orbit remains physically legible. */
+html[data-crt-focus-pull-layer] #boot[data-v377-focus="held"] .v322-model-renderer{
+  filter:drop-shadow(var(--crt-grab-shadow-x) var(--v377-shadow-y) 34px rgba(32,24,18,.30)) brightness(1.012)!important;
+}
+html[data-crt-focus-pull-layer] #boot[data-v377-focus="releasing"] .v322-model-renderer{
+  filter:drop-shadow(var(--crt-grab-shadow-x) 34px 40px rgba(34,26,20,.255))!important;
+}
+
+/* The prompt becomes about physical possession, not generic orbit mechanics. */
+html[data-crt-focus-pull-layer] #boot[data-v377-focus="held"] .crt-object-hint{
+  border-color:rgba(255,90,24,.62)!important;
+  background:rgba(247,242,234,.93)!important;
+  box-shadow:0 10px 24px rgba(26,20,16,.13)!important;
+}
+html[data-crt-focus-pull-layer] #boot[data-v377-focus="held"] .crt-object-hint i{
+  transform:scaleX(1.14);
+}
+
+/* Channel strip stays readable/clickable but visibly belongs to a room whose focus
+   has shifted to the held object. We never disable pointer events or semantics. */
+html[data-crt-focus-pull-layer] #boot[data-v377-focus="held"] .boot-tags,
+html[data-crt-focus-pull-layer] #boot[data-v377-focus="held"] .crt-channel-panel{
+  opacity:.82;
+}
+html[data-crt-focus-pull-layer] #boot .boot-tags,
+html[data-crt-focus-pull-layer] #boot .crt-channel-panel{
+  transition:opacity .16s ease;
+}
+
+@media(max-width:900px){
+  html[data-crt-focus-pull-layer] #boot .boot-copy{transform:none!important;opacity:1!important;filter:none!important}
+}
+@media(prefers-reduced-motion:reduce){
+  html[data-crt-focus-pull-layer] #boot .boot-copy,
+  html[data-crt-focus-pull-layer] #boot .boot-tags,
+  html[data-crt-focus-pull-layer] #boot .crt-channel-panel,
+  html[data-crt-focus-pull-layer] #boot .v322-model-renderer{transition:none!important}
+  html[data-crt-focus-pull-layer] #boot .boot-copy{transform:none!important;opacity:1!important;filter:none!important}
+}
