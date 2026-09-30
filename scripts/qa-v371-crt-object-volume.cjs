@@ -13,7 +13,13 @@ const fs=require('node:fs');
     await page.goto('http://127.0.0.1:4173/',{waitUntil:'domcontentloaded',timeout:30000});
     await page.waitForFunction(()=>document.querySelector('[data-model-slot="boot-tv"]')?.dataset.glbState==='ready',null,{timeout:25000});
     await page.waitForFunction(()=>document.documentElement.dataset.crtObjectVolume==='v371-ready',null,{timeout:12000});
-    await page.waitForFunction(()=>Number(document.querySelector('#boot')?.dataset.v371Frame||0)>12,null,{timeout:6000,polling:'raf'});
+    /* Do not gate this physical behavior on a fixed number of rAF ticks. Software
+       WebGL runners can throttle frame delivery even when the runtime is healthy.
+       Wait for the actual authored three-quarter pose to converge instead. */
+    await page.waitForFunction(()=>{
+      const s=window.MOVX3D?.runtime?.instances?.['boot-tv']?.objectVolume?.state;
+      return !!s && s.channel==='direction' && s.restYaw<-.025 && s.yaw<-.018;
+    },null,{timeout:12000,polling:'raf'});
 
     const initial=await page.evaluate(()=>{
       const root=document.documentElement,boot=document.querySelector('#boot');
@@ -26,6 +32,7 @@ const fs=require('node:fs');
         channel:s.channel,
         yaw:s.yaw,restYaw:s.restYaw,pitch:s.pitch,depth:s.depth,idleYaw:s.idleYaw,
         groupYaw:inst.group.rotation.y,groupPitch:inst.group.rotation.x,
+        frames:s.frames,
         renderers:document.querySelectorAll('.v322-model-renderer').length,
         activeSlots:window.MOVX3D.runtime.activeSlots,
         deferred:window.MOVX3D.runtime.deferredSlots,
@@ -38,6 +45,7 @@ const fs=require('node:fs');
     assert.equal(initial.ready,'v371-ready');
     assert.equal(initial.loop,'shared-v322-frame');
     assert.equal(initial.channel,'direction');
+    assert.ok(initial.frames>0,'v371 object-volume runtime never entered the shared frame');
     assert.ok(initial.restYaw<-.025,`direction rest pose is too flat: ${initial.restYaw}`);
     assert.ok(initial.yaw<-.018,`real CRT did not settle into a visible three-quarter pose: ${initial.yaw}`);
     assert.ok(Math.abs(initial.groupYaw)>.045,`final real CRT group still reads front-flat: ${initial.groupYaw}`);
@@ -55,7 +63,7 @@ const fs=require('node:fs');
     await page.waitForFunction(()=>{
       const inst=window.MOVX3D.runtime.instances['boot-tv'];
       return inst.scenePresence.state.mix>.55 && inst.objectVolume.state.pointerYaw>.012;
-    },null,{timeout:6000,polling:'raf'});
+    },null,{timeout:8000,polling:'raf'});
     const sceneAware=await page.evaluate(()=>{
       const inst=window.MOVX3D.runtime.instances['boot-tv'];
       return {
@@ -88,7 +96,7 @@ const fs=require('node:fs');
         physics?.channel==='motion' && physics.yaw>.018 &&
         director?.channel==='motion' && director.channelMix>.80 &&
         inst.group.rotation.y>.035;
-    },null,{timeout:10000,polling:'raf'});
+    },null,{timeout:12000,polling:'raf'});
     const motion=await page.evaluate(()=>{
       const inst=window.MOVX3D.runtime.instances['boot-tv'];
       const s=inst.objectVolume.state;
@@ -111,7 +119,7 @@ const fs=require('node:fs');
     await page.waitForFunction(()=>{
       const s=window.MOVX3D.runtime.instances['boot-tv'].objectVolume.state;
       return s.manualPriority===1 && Math.abs(s.yaw)<.012;
-    },null,{timeout:4000,polling:'raf'});
+    },null,{timeout:5000,polling:'raf'});
     const manual=await page.evaluate(()=>{const s=window.MOVX3D.runtime.instances['boot-tv'].objectVolume.state;return {manualPriority:s.manualPriority,yaw:s.yaw,marker:document.querySelector('#boot').dataset.v371Manual}});
     assert.equal(manual.manualPriority,1);assert.equal(manual.marker,'true');assert.ok(Math.abs(manual.yaw)<authoredMagnitude*.55);
     await page.evaluate(()=>{window.MOVX3D.runtime.instances['boot-tv'].objectInteraction.state.active=false});
@@ -124,9 +132,12 @@ const fs=require('node:fs');
     await mobile.goto('http://127.0.0.1:4173/',{waitUntil:'domcontentloaded',timeout:30000});
     await mobile.waitForFunction(()=>document.querySelector('[data-model-slot="boot-tv"]')?.dataset.glbState==='ready',null,{timeout:25000});
     await mobile.waitForFunction(()=>document.documentElement.dataset.crtObjectVolume==='v371-ready',null,{timeout:12000});
-    await mobile.waitForFunction(()=>Number(document.querySelector('#boot')?.dataset.v371Frame||0)>8,null,{timeout:5000,polling:'raf'});
-    const mobileState=await mobile.evaluate(()=>{const root=document.documentElement,inst=window.MOVX3D.runtime.instances['boot-tv'],s=inst.objectVolume.state;return {coarse:s.coarse,reduced:s.reduced,restYaw:s.restYaw,pointerYaw:s.pointerYaw,idleYaw:s.idleYaw,groupYaw:inst.group.rotation.y,renderers:document.querySelectorAll('.v322-model-renderer').length,activeSlots:window.MOVX3D.runtime.activeSlots,overflow:root.scrollWidth-innerWidth}});
-    assert.equal(mobileState.coarse,true);assert.equal(mobileState.reduced,false);assert.equal(mobileState.pointerYaw,0);assert.equal(mobileState.idleYaw,0);
+    await mobile.waitForFunction(()=>{
+      const s=window.MOVX3D?.runtime?.instances?.['boot-tv']?.objectVolume?.state;
+      return !!s && s.coarse===true && Math.abs(s.restYaw)>.015;
+    },null,{timeout:10000,polling:'raf'});
+    const mobileState=await mobile.evaluate(()=>{const root=document.documentElement,inst=window.MOVX3D.runtime.instances['boot-tv'],s=inst.objectVolume.state;return {coarse:s.coarse,reduced:s.reduced,restYaw:s.restYaw,pointerYaw:s.pointerYaw,idleYaw:s.idleYaw,frames:s.frames,groupYaw:inst.group.rotation.y,renderers:document.querySelectorAll('.v322-model-renderer').length,activeSlots:window.MOVX3D.runtime.activeSlots,overflow:root.scrollWidth-innerWidth}});
+    assert.equal(mobileState.coarse,true);assert.equal(mobileState.reduced,false);assert.equal(mobileState.pointerYaw,0);assert.equal(mobileState.idleYaw,0);assert.ok(mobileState.frames>0);
     assert.ok(Math.abs(mobileState.restYaw)>.015,'mobile static CRT pose is still flat');assert.equal(mobileState.renderers,1);assert.deepEqual(mobileState.activeSlots,['boot-tv']);assert.ok(mobileState.overflow<=2);
     console.log(JSON.stringify({qa:'v371-crt-object-volume',viewport:'mobile',status:'PASS',mobileState}));
     await mobile.close();
@@ -135,9 +146,12 @@ const fs=require('node:fs');
     await reducedPage.goto('http://127.0.0.1:4173/',{waitUntil:'domcontentloaded',timeout:30000});
     await reducedPage.waitForFunction(()=>document.querySelector('[data-model-slot="boot-tv"]')?.dataset.glbState==='ready',null,{timeout:25000});
     await reducedPage.waitForFunction(()=>document.documentElement.dataset.crtObjectVolume==='v371-ready',null,{timeout:12000});
-    await reducedPage.waitForFunction(()=>Number(document.querySelector('#boot')?.dataset.v371Frame||0)>4,null,{timeout:5000,polling:'raf'});
-    const reducedState=await reducedPage.evaluate(()=>{const root=document.documentElement,inst=window.MOVX3D.runtime.instances['boot-tv'],s=inst.objectVolume.state;return {reduced:s.reduced,restYaw:s.restYaw,pointerYaw:s.pointerYaw,idleYaw:s.idleYaw,renderers:document.querySelectorAll('.v322-model-renderer').length,activeSlots:window.MOVX3D.runtime.activeSlots,overflow:root.scrollWidth-innerWidth}});
-    assert.equal(reducedState.reduced,true);assert.equal(reducedState.pointerYaw,0);assert.equal(reducedState.idleYaw,0);assert.ok(Math.abs(reducedState.restYaw)>.025);assert.equal(reducedState.renderers,1);assert.deepEqual(reducedState.activeSlots,['boot-tv']);assert.ok(reducedState.overflow<=2);
+    await reducedPage.waitForFunction(()=>{
+      const s=window.MOVX3D?.runtime?.instances?.['boot-tv']?.objectVolume?.state;
+      return !!s && s.reduced===true && Math.abs(s.restYaw)>.025;
+    },null,{timeout:10000,polling:'raf'});
+    const reducedState=await reducedPage.evaluate(()=>{const root=document.documentElement,inst=window.MOVX3D.runtime.instances['boot-tv'],s=inst.objectVolume.state;return {reduced:s.reduced,restYaw:s.restYaw,pointerYaw:s.pointerYaw,idleYaw:s.idleYaw,frames:s.frames,renderers:document.querySelectorAll('.v322-model-renderer').length,activeSlots:window.MOVX3D.runtime.activeSlots,overflow:root.scrollWidth-innerWidth}});
+    assert.equal(reducedState.reduced,true);assert.equal(reducedState.pointerYaw,0);assert.equal(reducedState.idleYaw,0);assert.ok(reducedState.frames>0);assert.ok(Math.abs(reducedState.restYaw)>.025);assert.equal(reducedState.renderers,1);assert.deepEqual(reducedState.activeSlots,['boot-tv']);assert.ok(reducedState.overflow<=2);
     console.log(JSON.stringify({qa:'v371-crt-object-volume',viewport:'reduced',status:'PASS',reducedState}));
     await reducedPage.close();
   } finally {await browser.close()}
