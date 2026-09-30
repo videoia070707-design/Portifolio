@@ -26,6 +26,9 @@ const fs=require('node:fs');
         triangles:i.stats.triangles,canvases:document.querySelectorAll('.v322-model-renderer canvas').length,
         overflow:document.documentElement.scrollWidth-innerWidth,
         marker:document.documentElement.dataset.crtObject||null,
+        orbitPhysics:document.documentElement.dataset.crtOrbitPhysics||null,
+        bodyHit:document.querySelector('#boot')?.dataset.crtObjectHit||'',
+        grab:document.querySelector('#boot')?.dataset.crtGrab||'',
         hint:document.querySelector('.crt-object-hint')?.textContent||''
       };
     });
@@ -64,13 +67,25 @@ const fs=require('node:fs');
 
     if(cfg.name==='desktop'){
       const p=await bodyPoint();assert.ok(p,'QA could not find a visible CRT cabinet surface');
+      /* Current affordance contract: the actual cabinet must advertise orbit on a
+         ray-hittable body surface, then enter the real grab/orbit state. The old
+         literal copy check used the pre-v375 wording and was no longer meaningful. */
+      await page.mouse.move(p.x,p.y,{steps:4});
+      await page.waitForFunction(()=>document.querySelector('#boot')?.dataset.crtObjectHit==='body',null,{timeout:2500,polling:'raf'});
+      const hoverState=await snapshot();
+      assert.equal(hoverState.bodyHit,'body','physical object hover affordance is missing');
+      assert.ok(/ARRASTE.*ORBITAR.*TV/i.test(hoverState.hint),`current physical object hint is missing: ${hoverState.hint}`);
+
       const before=await snapshot();
-      await page.mouse.move(p.x,p.y);await page.mouse.down();await page.mouse.move(p.x+112,p.y-34,{steps:8});await page.mouse.up();await page.waitForTimeout(180);
+      await page.mouse.down();await page.mouse.move(p.x+112,p.y-34,{steps:8});
+      await page.waitForFunction(()=>document.querySelector('#boot')?.dataset.crtGrab==='dragging',null,{timeout:2500,polling:'raf'});
+      await page.mouse.up();await page.waitForTimeout(180);
       const after=await snapshot();
       assert.ok(after.bodyDrags>before.bodyDrags,'dragging the cabinet must manipulate the actual 3D object');
       assert.equal(after.lastAction,'object-orbit');assert.notEqual(after.yaw,before.yaw);assert.notEqual(after.pitch,before.pitch);
       assert.equal(after.channel,before.channel,'cabinet orbit must not change channel');assert.equal(after.art,before.art,'cabinet orbit must not trigger screen artwork');
-      assert.ok(after.hint.includes('ARRASTE A TV'),'physical object affordance is missing');
+      assert.ok(/ARRASTE.*ORBITAR.*TV/i.test(after.hint),'physical object affordance disappeared after manipulation');
+      assert.ok(['inertia','idle'].includes(after.grab),'cabinet did not leave direct drag through the physical grab state');
 
       await page.evaluate(()=>scrollTo(0,Math.max(1,(document.querySelector('#boot').offsetHeight-innerHeight)*.48)));
       await page.waitForTimeout(850);
