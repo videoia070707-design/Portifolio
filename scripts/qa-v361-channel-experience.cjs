@@ -46,6 +46,25 @@ const {chromium}=require('playwright');const assert=require('node:assert/strict'
    }
    assert.fail(`selector never converged under live pointer parallax: ${JSON.stringify(point)}`);
   };
+  /* A visible ray-hit is necessary but the cabinet can still move a few pixels
+     between that verification and pointerdown. Retry the REAL pointer capture,
+     re-projecting each time. We never mutate channel state or call the knob logic
+     directly: success means v363 itself accepted tripo_part_8 as the gesture. */
+  const beginSelectorGesture=async()=>{
+   let lastPoint=null;
+   for(let attempt=1;attempt<=6;attempt++){
+    lastPoint=await selectorPoint();
+    await p.mouse.down();
+    try{
+     await p.waitForFunction(()=>{const d=window.MOVX3D?.runtime?.instances?.['boot-tv']?.directManipulation?.state;return d?.active===true&&d?.kind==='knob'},null,{timeout:1100,polling:'raf'});
+     return {point:lastPoint,attempts:attempt};
+    }catch{
+     await p.mouse.up();
+     await p.waitForFunction(()=>!window.MOVX3D?.runtime?.instances?.['boot-tv']?.directManipulation?.state?.active,null,{timeout:1200,polling:'raf'}).catch(()=>{});
+    }
+   }
+   assert.fail(`real CRT selector never captured pointerdown after reprojection: ${JSON.stringify(lastPoint)}`);
+  };
   const action=p.locator('.crt-program-controls button').first();
   await choose('direction');const before=await snapshot();await action.click();const artworkMs=await waitScreenChange(before,'art');const after=await snapshot();assert.notEqual(after.state.art,before.state.art);assert.notEqual(after.pixels,before.pixels,'art must change inside the screen texture');
   if(cfg.name==='desktop'){
@@ -55,12 +74,10 @@ const {chromium}=require('playwright');const assert=require('node:assert/strict'
   }
   let physicalDial=null;
   if(cfg.name==='desktop'){
-   /* Begin only after the exact current coordinate is proven to hit the selector.
-      Once pointer capture says the real knob owns the gesture, rotate around the
-      center recorded by v363 itself. +0.82 rad is one intentional channel detent. */
-   const dial=await selectorPoint(),dial0=await snapshot();
-   await p.mouse.down();
-   await p.waitForFunction(()=>{const d=window.MOVX3D.runtime.instances['boot-tv'].directManipulation.state;return d.active===true&&d.kind==='knob'},null,{timeout:3000,polling:'raf'});
+   /* Require the real knob to capture pointerdown. Once captured, rotate around the
+      center v363 recorded for that exact frame. +0.82 rad is one authored detent. */
+   await choose('direction');
+   const dial0=await snapshot(),capture=await beginSelectorGesture();
    const target=await p.evaluate(()=>{const d=window.MOVX3D.runtime.instances['boot-tv'].directManipulation.state,r=Math.max(34,Math.hypot(d.startX-d.knobCenterX,d.startY-d.knobCenterY)),a=d.startAngle+.82;return{x:d.knobCenterX+Math.cos(a)*r,y:d.knobCenterY+Math.sin(a)*r,startAngle:d.startAngle,radius:r}});
    await p.mouse.move(target.x,target.y,{steps:8});await p.mouse.up();
    await p.waitForFunction(previous=>window.MOVX3D.runtime.instances['boot-tv'].directManipulation.state.dialDrags>previous,dial0.dialDrags,{timeout:7000,polling:'raf'});
@@ -68,6 +85,7 @@ const {chromium}=require('playwright');const assert=require('node:assert/strict'
    assert.ok(physicalDial.dialDrags>dial0.dialDrags,'dragging the real CRT selector must tune a channel');
    assert.equal(physicalDial.directAction,'dial-tune','selector drag did not register as a physical dial tune');
    assert.equal(physicalDial.state.channel,'motion','one physical selector detent from DIREÇÃO must tune MOTION');
+   physicalDial.captureAttempts=capture.attempts;
   }
   await choose('motion');if(!(await snapshot()).state.paused)await action.click();await p.waitForFunction(()=>window.MOVX3D.runtime.instances['boot-tv'].channels.state.paused===true,null,{timeout:7000,polling:'raf'});const frozen=await snapshot();await p.waitForTimeout(350);const still=await snapshot();assert.equal(still.state.paused,true,'pause state must remain active');assert.equal(still.state.phase,frozen.state.phase,'pause must freeze the Motion programme phase even while tactile overlays remain live');
   const slider=p.locator('.crt-program-range input');await slider.fill('90');await slider.dispatchEvent('input');await p.waitForFunction(previous=>Math.abs(window.MOVX3D.runtime.instances['boot-tv'].channels.state.phase-previous)>.001,frozen.state.phase,{timeout:7000,polling:'raf'});const scrubbed=await snapshot();assert.notEqual(scrubbed.state.phase,frozen.state.phase,'paused timeline must remain scrubbable');
@@ -80,7 +98,7 @@ const {chromium}=require('playwright');const assert=require('node:assert/strict'
   const layout=await p.evaluate(()=>{const panel=document.querySelector('#crt-channel-panel').getBoundingClientRect(),scene=document.querySelector('#boot .scene-inner').getBoundingClientRect();return{overflow:document.documentElement.scrollWidth-innerWidth,panelInside:panel.bottom<=scene.bottom+2,canvases:document.querySelectorAll('.v322-model-renderer canvas').length}});
   assert.ok(layout.overflow<=2);assert.ok(layout.panelInside,'program controls must not be clipped');assert.equal(layout.canvases,1);assert.deepEqual(errors,[]);
   await p.locator('#boot').screenshot({path:`_site/qa-v361-${cfg.name}-experience.png`});
-  results.push({name:cfg.name,status:'PASS',actions:['artwork','screen click','physical selector detent','pause','scrub','play','variation','responsive interface'],timing:{artworkMs,resumeMs,variationMs,responsiveMs},physicalDial:physicalDial?{channel:physicalDial.state.channel,dialDrags:physicalDial.dialDrags,lastAction:physicalDial.directAction}:null,layout});await p.close();
+  results.push({name:cfg.name,status:'PASS',actions:['artwork','screen click','physical selector detent','pause','scrub','play','variation','responsive interface'],timing:{artworkMs,resumeMs,variationMs,responsiveMs},physicalDial:physicalDial?{channel:physicalDial.state.channel,dialDrags:physicalDial.dialDrags,lastAction:physicalDial.directAction,captureAttempts:physicalDial.captureAttempts}:null,layout});await p.close();
  }
  await browser.close();fs.writeFileSync('_site/qa-v361-results.json',JSON.stringify(results,null,2));console.log(JSON.stringify(results));
 })().catch(e=>{console.error(e);process.exit(1)});
