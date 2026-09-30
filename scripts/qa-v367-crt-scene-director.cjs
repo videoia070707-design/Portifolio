@@ -90,13 +90,40 @@ const fs=require('node:fs');
     assert.ok(motion.energy>.55,'motion channel did not propagate into scene energy');
     assert.ok(Math.abs(motion.fov-initial.base.fov)>.18,'motion channel did not affect the camera signature');
 
-    const scrollState=await page.evaluate(async()=>{
-      document.documentElement.style.scrollBehavior='auto';document.body.style.scrollBehavior='auto';
-      const boot=document.querySelector('#boot');const travel=Math.max(1,boot.offsetHeight-innerHeight);
-      const target=Math.round(boot.offsetTop+travel*.62);scrollTo({top:target,left:0,behavior:'instant'});await new Promise(r=>setTimeout(r,500));
-      return {target,scrollY,travel};
-    });
-    await page.waitForFunction(()=>window.MOVX3D.runtime.instances['boot-tv'].sceneDirector.state.progress>.42,null,{timeout:7000});
+    /* v369/v374 made Scene 01 full-bleed and sticky. offsetTop is no longer a
+       reliable proxy for the visual scene origin across every browser/layout
+       pass. Drive the choreography from the same live geometry the production
+       progress function observes: current scroll + boot.getBoundingClientRect().top.
+       This still requires both v354 raw choreography and v367's damped director
+       to advance; it only removes the obsolete coordinate assumption. */
+    const driveSceneProgress=async(ratio,minProgress)=>{
+      const requested=await page.evaluate(ratio=>{
+        document.documentElement.style.scrollBehavior='auto';
+        document.body.style.scrollBehavior='auto';
+        const boot=document.querySelector('#boot');
+        const rect=boot.getBoundingClientRect();
+        const travel=Math.max(1,boot.offsetHeight-innerHeight);
+        const absoluteTop=scrollY+rect.top;
+        const target=Math.round(absoluteTop+travel*ratio);
+        window.scrollTo(0,target);
+        return {ratio,target,absoluteTop,travel};
+      },ratio);
+      await page.waitForFunction(min=>{
+        const root=document.documentElement;
+        const inst=window.MOVX3D?.runtime?.instances?.['boot-tv'];
+        const raw=Number(root.dataset.motionChoreoProgress||getComputedStyle(root).getPropertyValue('--crt-progress')||0);
+        const directed=Number(inst?.sceneDirector?.state?.progress||0);
+        return raw>min&&directed>min;
+      },minProgress,{timeout:10000,polling:'raf'});
+      return await page.evaluate(requested=>({
+        ...requested,
+        scrollY,
+        raw:Number(document.documentElement.dataset.motionChoreoProgress||0),
+        directed:Number(window.MOVX3D.runtime.instances['boot-tv'].sceneDirector.state.progress||0)
+      }),requested);
+    };
+
+    const scrollState=await driveSceneProgress(.68,.42);
     const scroll=await page.evaluate(()=>{
       const boot=document.querySelector('#boot'),inst=window.MOVX3D.runtime.instances['boot-tv'],s=inst.sceneDirector.state;
       return {progress:s.progress,beat:boot.dataset.v367Beat,cameraZ:inst.camera.position.z,baseZ:inst.sceneDirector.base.cameraZ,engage:getComputedStyle(boot).getPropertyValue('--v367-engage').trim(),overflow:document.documentElement.scrollWidth-innerWidth};
@@ -105,11 +132,7 @@ const fs=require('node:fs');
     assert.ok(Math.abs(scroll.cameraZ-scroll.baseZ)>.035,'scroll did not create a real camera path');
     assert.ok(scroll.overflow<=2);
 
-    await page.evaluate(async()=>{
-      const boot=document.querySelector('#boot');const travel=Math.max(1,boot.offsetHeight-innerHeight);
-      scrollTo({top:Math.round(boot.offsetTop+travel*.94),left:0,behavior:'instant'});await new Promise(r=>setTimeout(r,550));
-    });
-    await page.waitForFunction(()=>window.MOVX3D.runtime.instances['boot-tv'].sceneDirector.state.progress>.80,null,{timeout:7000});
+    const handoffState=await driveSceneProgress(.96,.80);
     const handoff=await page.evaluate(()=>{
       const boot=document.querySelector('#boot'),s=window.MOVX3D.runtime.instances['boot-tv'].sceneDirector.state;
       return {beat:boot.dataset.v367Beat,progress:s.progress,handoff:parseFloat(getComputedStyle(boot).getPropertyValue('--v367-handoff')||0)};
@@ -117,7 +140,7 @@ const fs=require('node:fs');
     assert.equal(handoff.beat,'handoff');assert.ok(handoff.handoff>.05,'handoff composition did not activate');
     assert.equal(errors.length,0,'page errors: '+errors.join(' | '));
     await page.screenshot({path:'_site/qa-v367-scene-director-desktop.png',fullPage:false});
-    fs.writeFileSync('_site/qa-v367-scene-director.json',JSON.stringify({initial,pointer,motion,scrollState,scroll,handoff},null,2));
+    fs.writeFileSync('_site/qa-v367-scene-director.json',JSON.stringify({initial,pointer,motion,scrollState,scroll,handoffState,handoff},null,2));
     console.log(JSON.stringify({qa:'v367-scene01-director',status:'PASS',initial,pointer,motion,scroll,handoff}));
     await page.close();
 
