@@ -126,10 +126,10 @@ jobs:
           retention-days: 7
 
   qa-scene-frame:
-    name: QA Scene 01 spatial frame and CRT light spill
+    name: QA Scene 01 spatial frame, light spill and CRT object volume
     needs: build
     runs-on: ubuntu-latest
-    timeout-minutes: 8
+    timeout-minutes: 10
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -147,7 +147,7 @@ jobs:
           path: _site
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
-      - name: Validate full-bleed composition and screen-to-room causal response
+      - name: Validate full-bleed composition, screen-to-room light and real cabinet depth
         shell: bash
         run: |
           set -euo pipefail
@@ -157,8 +157,10 @@ jobs:
           trap 'kill $SERVER_PID 2>/dev/null || true' EXIT
           sed 's/127\.0\.0\.1:4173/127.0.0.1:4174/g' scripts/qa-v369-scene01-full-bleed.cjs > _site/qa-logs/qa-v369-scene-frame.cjs
           sed 's/127\.0\.0\.1:4173/127.0.0.1:4174/g' scripts/qa-v370-crt-light-spill.cjs > _site/qa-logs/qa-v370-crt-light-spill.cjs
+          sed 's/127\.0\.0\.1:4173/127.0.0.1:4174/g' scripts/qa-v371-crt-object-volume.cjs > _site/qa-logs/qa-v371-crt-object-volume.cjs
           node _site/qa-logs/qa-v369-scene-frame.cjs
           node _site/qa-logs/qa-v370-crt-light-spill.cjs
+          node _site/qa-logs/qa-v371-crt-object-volume.cjs
       - name: Save Scene 01 visual evidence
         if: always()
         uses: actions/upload-artifact@v4
@@ -167,6 +169,7 @@ jobs:
           path: |
             _site/qa-v369-*
             _site/qa-v370-*
+            _site/qa-v371-*
             _site/qa-logs/scene-frame.log
           if-no-files-found: warn
           retention-days: 7
