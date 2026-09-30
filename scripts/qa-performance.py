@@ -1,12 +1,13 @@
 """Static performance budgets for the deployed MOVX artifact.
 
-v368 keeps the one-model-at-a-time rollout. Scene 01 / BOOT (`boot-tv`) is
+v371 keeps the one-model-at-a-time rollout. Scene 01 / BOOT (`boot-tv`) is
 the only 3D slot eligible for production and must publish exactly one canonical
 GLB: `models/movx-crt-tv.glb`. v361 channels, v362 tactility, v363 screen/dial
 manipulation, v364 cabinet orbit, v365 channel physics, v366 object presence,
-v367 scene direction and v368 scene-wide presence all share the approved v358
-renderer/context. Healthy boot uses the authored real-TV poster until the GLB
-is ready; the procedural streaming proxy must not be mounted.
+v367 scene direction, v368 scene-wide presence and v371 object-volume staging
+all share the approved v358 renderer/context. v369/v370 remain Scene-01-only
+visual layers. Healthy boot uses the authored real-TV poster until the GLB is
+ready; the procedural streaming proxy must not be mounted.
 """
 from pathlib import Path
 import json
@@ -61,7 +62,7 @@ else:
     if 'data-storyboard="v320"' not in home_text:errors.append('index.html missing v320 storyboard marker')
     if 'data-glb-runtime="v322-unified-glb-runtime"' not in home_text:errors.append('index.html missing v322 GLB runtime marker')
     if 'data-crt-runtime="v350-real-glb"' not in home_text:errors.append('index.html missing v350 real CRT marker')
-    if 'v322-glb-runtime.mjs?v=v368-scene-presence' not in home_text:errors.append('index.html missing v368 CRT runtime cache key')
+    if 'v322-glb-runtime.mjs?v=v371-object-volume' not in home_text:errors.append('index.html missing v371 CRT runtime cache key')
     if 'v322-glb-runtime.css?v=v350-real-crt' not in home_text:errors.append('index.html missing v350 CRT surface cache key')
     if 'data-model-pack="v323-tripo-model-pack"' not in home_text:errors.append('index.html missing v323 model-pack marker')
     if 'data-model-scope="v350-crt-only"' not in home_text:errors.append('index.html missing v350 CRT-only production scope marker')
@@ -73,6 +74,9 @@ else:
     if 'data-crt-presence-layer="v366-clean-boot-presence"' not in home_text:errors.append('index.html missing v366 object-presence marker')
     if 'data-crt-director-layer="v367-scene01-director"' not in home_text:errors.append('index.html missing v367 Scene-01 director marker')
     if 'data-crt-scene-presence-layer="v368-scene-presence"' not in home_text:errors.append('index.html missing v368 scene-presence marker')
+    if 'data-crt-scene-frame-layer="v369-full-bleed"' not in home_text:errors.append('index.html missing v369 full-bleed Scene-01 marker')
+    if 'data-crt-light-spill-layer="v370-screen-to-room"' not in home_text:errors.append('index.html missing v370 CRT light-spill marker')
+    if 'data-crt-object-volume-layer="v371-object-volume"' not in home_text:errors.append('index.html missing v371 CRT object-volume marker')
     if 'data-crt-loading="poster-only"' not in home_text:errors.append('index.html missing poster-only loading marker')
     if 'data-v366-crt-presence="v366-clean-boot-presence"' not in home_text:errors.append('index.html missing v366 critical inline CSS')
     if 'data-v367-scene-director="v367-scene01-director"' not in home_text:errors.append('index.html missing v367 critical inline CSS')
@@ -90,8 +94,8 @@ else:
         home_scripts.append(ref);path=out/ref
         if not path.exists():errors.append(f'index.html references missing JS {ref}')
         else:home_js_bytes+=path.stat().st_size
-    if len(home_styles)!=18:errors.append(f'index.html loads {len(home_styles)} production CSS layers; expected 18 with v366/v367 critical CSS inline')
-    if len(home_scripts)!=13:errors.append(f'index.html loads {len(home_scripts)} production JS layers; expected 13 with v366-v368 inside shared runtime')
+    if len(home_styles)!=18:errors.append(f'index.html loads {len(home_styles)} production CSS layers; expected 18 with v366/v367/v369/v370 critical CSS inline')
+    if len(home_scripts)!=13:errors.append(f'index.html loads {len(home_scripts)} production JS layers; expected 13 with v366-v371 shared-runtime modules')
     if 'v345-logo-focus.css' in home_styles:errors.append('Physical Logo focus CSS must be inactive during CRT stage')
     if 'v345-logo-focus.mjs' in home_scripts:errors.append('Physical Logo focus runtime must be inactive during CRT stage')
     if 'v324-model-framing.css' not in home_styles:errors.append('index.html missing v324-model-framing.css')
@@ -137,7 +141,8 @@ required_assets=(
     'v363-crt-direct-manipulation.css','v363-crt-direct-manipulation.mjs',
     'v364-crt-object-interaction.css','v364-crt-object-interaction.mjs',
     'v365-crt-channel-physics.mjs','v366-crt-presence.mjs','v366-crt-presence.css',
-    'v367-crt-scene-director.mjs','v367-crt-scene-director.css','v368-scene-presence.mjs'
+    'v367-crt-scene-director.mjs','v367-crt-scene-director.css','v368-scene-presence.mjs',
+    'v369-scene01-full-bleed.css','v370-crt-light-spill.css','v371-crt-object-volume.mjs'
 )
 for required in required_assets:
     if not (out/required).exists():errors.append(f'{required} is missing')
@@ -160,6 +165,9 @@ if director_css_bytes>18_000:errors.append(f'v367 Scene-01 director CSS is {dire
 scene_presence_path=out/'v368-scene-presence.mjs'
 scene_presence_bytes=scene_presence_path.stat().st_size if scene_presence_path.exists() else 0
 if scene_presence_bytes>10_000:errors.append(f'v368 scene-presence module is {scene_presence_bytes} bytes; budget is 10000')
+object_volume_path=out/'v371-crt-object-volume.mjs'
+object_volume_bytes=object_volume_path.stat().st_size if object_volume_path.exists() else 0
+if object_volume_bytes>12_000:errors.append(f'v371 object-volume module is {object_volume_bytes} bytes; budget is 12000')
 
 # Guard the exact close-up regression: WebGL owns perspective; legacy CSS must
 # not transform the active CRT slot/renderer.
@@ -170,7 +178,7 @@ if '[data-model-slot="boot-tv"].v322-runtime-active .v322-model-renderer{transfo
     errors.append('CRT renderer host still allows compounded CSS perspective')
 crt_runtime=(out/'v322-glb-runtime.mjs').read_text() if (out/'v322-glb-runtime.mjs').exists() else ''
 for contract in ("camera.position.set(.02,.03,4.72)","const CRT_PARTS=new Set(['tripo_part_7','tripo_part_13','tripo_part_18'])","version:'v358-crt-spatial-runtime'","fit:'full-product'","immersionVersion:'v358-crt-spatial'"):
-    if contract not in crt_runtime:errors.append(f'v368 real CRT runtime contract missing: {contract}')
+    if contract not in crt_runtime:errors.append(f'v371 real CRT runtime contract missing: {contract}')
 if "attachCRTChannels(instance);" not in crt_runtime:errors.append('v361 live channel runtime is missing from the unified CRT frame')
 if "attachCRTTactility(instance);" not in crt_runtime:errors.append('v362 tactile CRT runtime is missing from the unified CRT frame')
 if "attachCRTDirectManipulation(instance);" not in crt_runtime:errors.append('v363 direct CRT manipulation is missing from the unified CRT frame')
@@ -181,9 +189,16 @@ if "attachCRTScenePresence(instance);" not in crt_runtime:errors.append('v368 sc
 if "instance.scenePresence?.update(t);" not in crt_runtime:errors.append('v368 scene-wide presence is not running inside the shared CRT frame')
 if "attachCRTSceneDirector(instance);" not in crt_runtime:errors.append('v367 Scene-01 director is missing from the unified CRT frame')
 if "instance.sceneDirector?.update(t);" not in crt_runtime:errors.append('v367 Scene-01 director is not running inside the shared CRT frame')
+if "attachCRTObjectVolume(instance);" not in crt_runtime:errors.append('v371 object-volume staging is missing from the unified CRT frame')
+if "instance.objectVolume?.update(t);" not in crt_runtime:errors.append('v371 object-volume staging is not running inside the shared CRT frame')
 scene_presence_pos=crt_runtime.find('instance.scenePresence?.update(t);')
 director_pos=crt_runtime.find('attachCRTSceneDirector(instance);')
+director_update_pos=crt_runtime.find('instance.sceneDirector?.update(t);')
+volume_pos=crt_runtime.find('attachCRTObjectVolume(instance);')
+volume_update_pos=crt_runtime.find('instance.objectVolume?.update(t);')
 if scene_presence_pos<0 or director_pos<0 or scene_presence_pos>director_pos:errors.append('v368 scene presence must update before the v367 director resolves the frame')
+if director_update_pos<0 or volume_pos<0 or director_update_pos>volume_pos:errors.append('v371 object volume must resolve after the v367 director')
+if volume_pos<0 or volume_update_pos<0 or volume_pos>volume_update_pos:errors.append('v371 object-volume attachment/update order is invalid')
 if 'procedural-streaming-proxy' in crt_runtime:errors.append('healthy boot still contains the procedural streaming proxy')
 if "const dprCap=coarse?1:(memory<=4?1.18:1.36)" not in crt_runtime:errors.append('v358 adaptive CRT DPR cap is missing')
 if "instance.lights.key.intensity=4.05+modeEnergy*.78" not in crt_runtime:errors.append('v358 interactive CRT lighting contract is missing')
@@ -218,14 +233,15 @@ print(json.dumps({
     'status':'passed','sizes':sizes,
     'storyboard':{'css_layers':len(home_styles),'css_bytes':home_css_bytes,'js_layers':len(home_scripts),'js_bytes':home_js_bytes},
     'crt3d':{
-        'revision':'v368-scene-presence','renderer':'v358-crt-spatial-runtime','active_slot':'boot-tv',
+        'revision':'v371-object-volume','renderer':'v358-crt-spatial-runtime','active_slot':'boot-tv',
         'published_asset':'models/movx-crt-tv.glb','healthy_loading':'authored real-TV poster until GLB ready',
         'procedural_streaming_proxy':'disabled','production_glbs':len(published_glbs),'published_glbs':published_glbs,
         'model_bytes':model_sizes,'model_total_bytes':model_total,'channel_physics_bytes':physics_bytes,
         'object_presence_bytes':presence_bytes,'presence_css_bytes':presence_css_bytes,
         'director_bytes':director_bytes,'director_css_bytes':director_css_bytes,
-        'scene_presence_bytes':scene_presence_bytes,'director_loop':'shared v322 frame',
-        'presence_contract':'scene-wide cinematic pointer + CRT-specific physical raycast',
+        'scene_presence_bytes':scene_presence_bytes,'object_volume_bytes':object_volume_bytes,
+        'director_loop':'shared v322 frame',
+        'presence_contract':'scene-wide cinematic pointer + CRT-specific physical raycast + real-group presentation volume',
         'later_models':'forbidden until CRT approval'
     },
     'legacy_editorial':'social-media.html','deferred_video_gate':True,
