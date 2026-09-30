@@ -1,0 +1,40 @@
+/* MOVX v374 — physical framing for short desktop viewports.
+   The Scene-01 CRT already owns the left field. On 720–820px-tall laptops the
+   fixed-width CRT slot stayed visually too low, leaving the screen visible while
+   the real selector/base slipped below the viewport. That breaks both immersion
+   and direct manipulation. Move the complete existing CRT stage upward as one
+   object so poster, renderer, physical hit targets and object hint stay aligned.
+
+   No model, camera, renderer, context, scene, listener or RAF is introduced. */
+
+@media (min-width:901px) and (max-height:820px){
+  html[data-crt-safe-framing-layer="v374-short-viewport"] #boot .crt-wrap{
+    /* 820px -> -160px; 768px -> -212px; <=730px caps at -250px.
+       `top` is intentionally used instead of replacing the v354 transform: the
+       scroll choreography remains authoritative and the whole interaction surface
+       moves with the visible television. */
+    top:clamp(-250px,calc(100svh - 980px),-150px);
+  }
+
+  /* The wrap is translated as a physical unit, so the authored loading poster and
+     the real WebGL renderer remain optically registered throughout handoff. */
+  html[data-crt-safe-framing-layer="v374-short-viewport"] #boot [data-model-slot="boot-tv"],
+  html[data-crt-safe-framing-layer="v374-short-viewport"] #boot [data-model-slot="boot-tv"] .v322-model-renderer,
+  html[data-crt-safe-framing-layer="v374-short-viewport"] #boot [data-model-slot="boot-tv"] > .crt-loading-poster{
+    transform-origin:50% 50%;
+  }
+}
+
+/* Very short desktop windows need the strongest safe offset. Keep it explicit so
+   browser differences in svh rounding cannot put the physical selector below the
+   final pixels of the viewport. */
+@media (min-width:901px) and (max-height:730px){
+  html[data-crt-safe-framing-layer="v374-short-viewport"] #boot .crt-wrap{
+    top:-250px;
+  }
+}
+
+@media (max-width:900px){
+  /* Mobile keeps the validated natural flow. */
+  html[data-crt-safe-framing-layer="v374-short-viewport"] #boot .crt-wrap{top:auto}
+}
