@@ -11,11 +11,6 @@ const fs=require('node:fs');
     const page=await browser.newPage({viewport:{width:1440,height:1000},deviceScaleFactor:1});
     const errors=[];page.on('pageerror',e=>errors.push(String(e)));
 
-    /* Deterministic loading window: keep the real GLB response pending until the
-       poster has proven both pointer and semantic-channel response. A fixed delay
-       can race fast CI/network paths and turn a loading-behavior gate into a
-       timing lottery. We still fetch the real bytes immediately; only fulfillment
-       is held, so this exercises the exact production loading state. */
     let releaseDesktopGLB;
     const desktopGLBGate=new Promise(resolve=>{releaseDesktopGLB=resolve});
     await page.route('**/models/movx-crt-tv.glb',async route=>{
@@ -59,7 +54,10 @@ const fs=require('node:fs');
 
     await page.locator('[data-crt-mode-control="motion"]').click();
     await page.waitForFunction(()=>document.querySelector('#boot')?.dataset.crtMode==='motion',null,{timeout:3000});
-    await page.waitForTimeout(280);
+    await page.waitForFunction(previous=>{
+      const poster=document.querySelector('[data-model-slot="boot-tv"] .crt-loading-poster');
+      return poster&&getComputedStyle(poster).transform!==previous;
+    },pointer.transform,{timeout:3000,polling:'raf'});
     const motion=await page.evaluate(()=>{
       const boot=document.querySelector('#boot'),slot=boot.querySelector('[data-model-slot="boot-tv"]'),poster=slot.querySelector('.crt-loading-poster');
       const s=getComputedStyle(poster);
@@ -69,11 +67,18 @@ const fs=require('node:fs');
     assert.notEqual(motion.transform,pointer.transform,'channel selection produced no immediate poster response before GLB ready');
     await page.locator('#boot').screenshot({path:'_site/qa-v373-loading-presence.png'});
 
-    /* Only now permit the real asset to enter. This makes the handoff check a
-       true second phase instead of allowing asset speed to invalidate phase one. */
+    /* Release the real asset, then observe the actual optical completion instead of
+       assuming the .46s CSS transition necessarily paints within a 650ms wall-clock
+       window while SwiftShader is decoding/rendering the first GLB frames. The gate
+       remains strict: poster <2% AND renderer >98% must both become true. */
     releaseDesktopGLB();
     await page.waitForFunction(()=>document.querySelector('[data-model-slot="boot-tv"]')?.dataset.glbState==='ready',null,{timeout:25000});
-    await page.waitForTimeout(650);
+    const handoffStart=Date.now();
+    await page.waitForFunction(()=>{
+      const slot=document.querySelector('[data-model-slot="boot-tv"]'),poster=slot?.querySelector('.crt-loading-poster'),renderer=slot?.querySelector('.v322-model-renderer');
+      if(!slot||!poster||!renderer)return false;
+      return slot.dataset.glbState==='ready'&&Number(getComputedStyle(poster).opacity)<.02&&Number(getComputedStyle(renderer).opacity)>.98;
+    },null,{timeout:5000,polling:'raf'});
     const ready=await page.evaluate(()=>{
       const root=document.documentElement,boot=document.querySelector('#boot'),slot=boot.querySelector('[data-model-slot="boot-tv"]');
       const poster=slot.querySelector('.crt-loading-poster'),renderer=slot.querySelector('.v322-model-renderer');
@@ -81,6 +86,7 @@ const fs=require('node:fs');
       const inst=window.MOVX3D.runtime.instances['boot-tv'];
       return {state:slot.dataset.glbState,posterDisplay:ps.display,posterOpacity:ps.opacity,posterVisibility:ps.visibility,rendererOpacity:rs.opacity,renderers:document.querySelectorAll('.v322-model-renderer').length,activeSlots:window.MOVX3D.runtime.activeSlots,triangles:inst.stats.triangles,errors:window.MOVX3D.runtime.errors,overflow:root.scrollWidth-innerWidth};
     });
+    ready.handoffMs=Date.now()-handoffStart;
     assert.equal(ready.state,'ready');
     assert.equal(ready.posterDisplay,'block','poster must remain renderable for optical fade instead of display:none cut');
     assert.ok(Number(ready.posterOpacity)<.02,'poster did not fade away after real GLB handoff');
@@ -110,6 +116,7 @@ const fs=require('node:fs');
     assert.ok(reducedLoading.transition.split(',').every(v=>v.trim()==='0s'),'reduced-motion loading poster must not animate');
     releaseReducedGLB();
     await reduced.waitForFunction(()=>document.querySelector('[data-model-slot="boot-tv"]')?.dataset.glbState==='ready',null,{timeout:25000});
+    await reduced.waitForFunction(()=>Number(getComputedStyle(document.querySelector('[data-model-slot="boot-tv"] .crt-loading-poster')).opacity)<.02,null,{timeout:3000,polling:'raf'});
     const reducedReady=await reduced.evaluate(()=>{const root=document.documentElement,slot=document.querySelector('[data-model-slot="boot-tv"]'),poster=slot.querySelector('.crt-loading-poster');return {opacity:getComputedStyle(poster).opacity,renderers:document.querySelectorAll('.v322-model-renderer').length,activeSlots:window.MOVX3D.runtime.activeSlots,overflow:root.scrollWidth-innerWidth}});
     assert.ok(Number(reducedReady.opacity)<.02);assert.equal(reducedReady.renderers,1);assert.deepEqual(reducedReady.activeSlots,['boot-tv']);assert.ok(reducedReady.overflow<=2);
     console.log(JSON.stringify({qa:'v373-crt-instant-presence',viewport:'reduced',status:'PASS',reducedLoading,reducedReady}));
