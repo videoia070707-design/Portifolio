@@ -1,0 +1,47 @@
+/* MOVX v378 — quiet physical pickup feedback for the existing real CRT.
+   No HUD, no card, no decorative object. The cue comes from contact shadow,
+   cabinet lift and the already-existing interaction hint. */
+html[data-crt-pickup-layer="v378-physical-pickup"] #boot{
+  --v378-hover:0;
+  --v378-hold:0;
+  --v378-hand-x:0px;
+  --v378-hand-y:0px;
+  --v378-pressure:0;
+}
+
+html[data-crt-pickup-layer] #boot[data-v378-pickup="hover"] .v322-model-renderer{
+  filter:drop-shadow(var(--crt-grab-shadow-x) 30px 36px rgba(32,24,18,.24)) brightness(1.008)!important;
+}
+html[data-crt-pickup-layer] #boot[data-v378-pickup="hover"] .crt-wrap::before{
+  opacity:.58!important;
+  filter:blur(14px)!important;
+}
+html[data-crt-pickup-layer] #boot[data-v378-pickup="hover"] .crt-object-hint{
+  color:rgba(14,12,10,.96)!important;
+  border-color:rgba(255,90,24,.62)!important;
+  background:rgba(247,242,234,.94)!important;
+  box-shadow:0 12px 30px rgba(28,21,16,.12)!important;
+  transform:translate3d(var(--v378-hand-x),-4px,0) scale(1.02)!important;
+}
+html[data-crt-pickup-layer] #boot[data-v378-pickup="held"] .crt-wrap::before{
+  opacity:.43!important;
+  filter:blur(12px)!important;
+}
+html[data-crt-pickup-layer] #boot[data-v378-pickup="releasing"] .v322-model-renderer{
+  filter:drop-shadow(var(--crt-grab-shadow-x) 34px 40px rgba(34,26,20,.255))!important;
+}
+
+/* v377 owns the editorial focus pull while held. v378 only lets the environment
+   acknowledge that the cabinet is now following the visitor's hand. */
+html[data-crt-pickup-layer] #boot[data-v378-pickup="held"] .scene-inner::before{
+  opacity:calc(.74 + var(--v378-pressure)*.08)!important;
+}
+
+@media(max-width:900px){
+  html[data-crt-pickup-layer] #boot .crt-object-hint{display:none!important}
+}
+@media(prefers-reduced-motion:reduce){
+  html[data-crt-pickup-layer] #boot .v322-model-renderer,
+  html[data-crt-pickup-layer] #boot .crt-wrap::before,
+  html[data-crt-pickup-layer] #boot .crt-object-hint{transition:none!important}
+}
