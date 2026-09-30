@@ -124,7 +124,20 @@ const fs=require('node:fs');
     const mobile=await browser.newPage({viewport:{width:390,height:844},isMobile:true,hasTouch:true,deviceScaleFactor:1});
     await mobile.goto('http://127.0.0.1:4173/',{waitUntil:'domcontentloaded',timeout:30000});
     await mobile.waitForFunction(()=>document.documentElement.dataset.crtDirector==='v367-ready',null,{timeout:20000});
-    await mobile.locator('[data-crt-mode-control="digital"]').click();await mobile.waitForTimeout(250);
+    await mobile.waitForFunction(()=>document.querySelector('[data-model-slot="boot-tv"]')?.dataset.glbState==='ready',null,{timeout:20000});
+    await mobile.waitForFunction(()=>!!window.MOVX3D?.runtime?.instances?.['boot-tv']?.channels?.state?.channel,null,{timeout:8000});
+    await mobile.locator('[data-crt-mode-control="digital"]').click();
+    // The channel button updates several coupled systems (physical control,
+    // screen channel and Scene-01 director). On slower mobile/SwiftShader runs
+    // those states can settle on different frames, so gate on the causal result
+    // rather than an arbitrary 250 ms delay.
+    await mobile.waitForFunction(()=>{
+      const boot=document.querySelector('#boot');
+      const inst=window.MOVX3D?.runtime?.instances?.['boot-tv'];
+      return boot?.dataset.crtPhysicalChannel==='digital' &&
+        inst?.channels?.state?.channel==='digital' &&
+        inst?.sceneDirector?.state?.channel==='digital';
+    },null,{timeout:7000,polling:'raf'});
     const mobileState=await mobile.evaluate(()=>{
       const boot=document.querySelector('#boot'),scene=boot.querySelector('.scene-inner').getBoundingClientRect(),panel=boot.querySelector('#crt-channel-panel').getBoundingClientRect();
       const inst=window.MOVX3D.runtime.instances['boot-tv'];
@@ -137,6 +150,7 @@ const fs=require('node:fs');
     const reducedPage=await browser.newPage({viewport:{width:1280,height:800},reducedMotion:'reduce'});
     await reducedPage.goto('http://127.0.0.1:4173/',{waitUntil:'domcontentloaded',timeout:30000});
     await reducedPage.waitForFunction(()=>document.documentElement.dataset.crtDirector==='v367-ready',null,{timeout:20000});
+    await reducedPage.waitForFunction(()=>document.querySelector('[data-model-slot="boot-tv"]')?.dataset.glbState==='ready',null,{timeout:20000});
     const reducedState=await reducedPage.evaluate(()=>{const i=window.MOVX3D.runtime.instances['boot-tv'];return {reduced:i.sceneDirector.state.reduced,presence:i.sceneDirector.state.presence,activeSlots:window.MOVX3D.runtime.activeSlots}});
     assert.equal(reducedState.reduced,true);assert.ok(reducedState.presence<.01);assert.deepEqual(reducedState.activeSlots,['boot-tv']);await reducedPage.close();
   } finally {await browser.close()}
