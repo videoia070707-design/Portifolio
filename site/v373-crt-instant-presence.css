@@ -1,0 +1,109 @@
+/* MOVX v373 — instant presence before the GLB finishes decoding.
+   The authored CRT poster is not a second 3D object. It is the existing first-frame
+   fallback, now allowed to acknowledge pointer/channel intent while the single
+   approved GLB loads, then cross-fade out instead of disappearing in one frame.
+   No JS, RAF, model, canvas, scene or WebGL resource is added. */
+
+html[data-crt-instant-presence-layer="v373-poster-continuity"] #boot{
+  --v373-poster-mode-x:0px;
+  --v373-poster-mode-y:0px;
+  --v373-poster-scale:1.003;
+  --v373-poster-shadow-x:0px;
+}
+html[data-crt-instant-presence-layer="v373-poster-continuity"] #boot[data-crt-mode="direction"]{
+  --v373-poster-mode-x:-3px;
+  --v373-poster-mode-y:0px;
+  --v373-poster-scale:1.004;
+  --v373-poster-shadow-x:2px;
+}
+html[data-crt-instant-presence-layer="v373-poster-continuity"] #boot[data-crt-mode="motion"]{
+  --v373-poster-mode-x:4px;
+  --v373-poster-mode-y:-1px;
+  --v373-poster-scale:1.011;
+  --v373-poster-shadow-x:-3px;
+}
+html[data-crt-instant-presence-layer="v373-poster-continuity"] #boot[data-crt-mode="ai"]{
+  --v373-poster-mode-x:-2px;
+  --v373-poster-mode-y:-2px;
+  --v373-poster-scale:1.014;
+  --v373-poster-shadow-x:2px;
+}
+html[data-crt-instant-presence-layer="v373-poster-continuity"] #boot[data-crt-mode="digital"]{
+  --v373-poster-mode-x:3px;
+  --v373-poster-mode-y:0px;
+  --v373-poster-scale:1.007;
+  --v373-poster-shadow-x:-2px;
+}
+
+html[data-crt-instant-presence-layer="v373-poster-continuity"] #boot [data-model-slot="boot-tv"]{
+  overflow:visible;
+}
+
+/* Keep the existing authored poster in the exact model slot and let the already
+   existing v358 input variables move it a few physical pixels. The amplitude is
+   intentionally too small to expose the image as a flat card; its job is only to
+   make the site feel awake immediately while the real geometry decodes. */
+html[data-crt-instant-presence-layer="v373-poster-continuity"] #boot [data-model-slot="boot-tv"] > .crt-loading-poster{
+  display:block!important;
+  visibility:visible!important;
+  opacity:1!important;
+  z-index:3;
+  transform-origin:50% 56%;
+  transform:translate3d(var(--v373-poster-mode-x),var(--v373-poster-mode-y),0) scale(var(--v373-poster-scale));
+  filter:drop-shadow(var(--v373-poster-shadow-x) 24px 29px rgba(36,27,20,.15));
+  will-change:transform,opacity;
+  transition:
+    opacity .46s cubic-bezier(.16,.84,.2,1),
+    transform .22s cubic-bezier(.16,.84,.2,1),
+    filter .28s ease;
+}
+
+/* Chromium/Safari versions with typed calc multiplication can also consume the
+   pointer numbers directly. Browsers without it retain the mode response above. */
+@supports (width:calc(1px * 1)){
+  html[data-crt-instant-presence-layer="v373-poster-continuity"] #boot [data-model-slot="boot-tv"] > .crt-loading-poster{
+    transform:
+      translate3d(
+        calc(var(--v373-poster-mode-x) + (var(--crt-px,0) * 5px)),
+        calc(var(--v373-poster-mode-y) + (var(--crt-py,0) * 3px)),
+        0
+      )
+      scale(var(--v373-poster-scale));
+    filter:drop-shadow(calc(var(--v373-poster-shadow-x) + (var(--crt-px,0) * -3px)) 24px 29px rgba(36,27,20,.15));
+  }
+}
+
+/* v358 used display:none at ready, which made a fast but visible poster -> canvas
+   cut. Keep it rendered but transparent so the real GLB can replace it through a
+   single optical handoff. The transparent image is pointer-inert and cheap. */
+html[data-crt-instant-presence-layer="v373-poster-continuity"] #boot [data-model-slot="boot-tv"][data-glb-state="ready"] > .crt-loading-poster{
+  display:block!important;
+  visibility:visible!important;
+  opacity:0!important;
+  transition-delay:.06s,0s,0s;
+}
+html[data-crt-instant-presence-layer="v373-poster-continuity"] #boot [data-model-slot="boot-tv"] > .v322-model-renderer{
+  position:relative;
+  z-index:2;
+  opacity:0;
+  transition:opacity .42s cubic-bezier(.16,.84,.2,1);
+}
+html[data-crt-instant-presence-layer="v373-poster-continuity"] #boot [data-model-slot="boot-tv"][data-glb-state="ready"] > .v322-model-renderer{
+  opacity:1;
+}
+
+@media(max-width:900px), (pointer:coarse){
+  html[data-crt-instant-presence-layer="v373-poster-continuity"] #boot [data-model-slot="boot-tv"] > .crt-loading-poster{
+    transform:translate3d(var(--v373-poster-mode-x),var(--v373-poster-mode-y),0) scale(var(--v373-poster-scale));
+  }
+}
+
+@media(prefers-reduced-motion:reduce){
+  html[data-crt-instant-presence-layer="v373-poster-continuity"] #boot [data-model-slot="boot-tv"] > .crt-loading-poster{
+    transform:none!important;
+    transition:none!important;
+  }
+  html[data-crt-instant-presence-layer="v373-poster-continuity"] #boot [data-model-slot="boot-tv"] > .v322-model-renderer{
+    transition:none!important;
+  }
+}
