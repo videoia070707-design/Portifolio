@@ -46,14 +46,19 @@ const fs=require('node:fs');
 
     const p=await bodyPoint();assert.ok(p,'QA could not find a visible cabinet body surface');
     await page.mouse.move(p.x,p.y,{steps:4});await page.mouse.down();
-    await page.mouse.move(p.x+150,p.y-42,{steps:12});
+    /* Do not slam the authored ±0.50 rad safety stop before testing momentum.
+       95px still forces >0.36 rad — clearly beyond v364's old ±0.34 range — but
+       leaves enough angular headroom for the final pointer samples to carry a
+       measurable release velocity. The hard clamp remains covered by runtime. */
+    await page.mouse.move(p.x+95,p.y-30,{steps:12});
     await page.waitForFunction(()=>{
       const i=window.MOVX3D.runtime.instances['boot-tv'];
-      return i.objectInteraction.state.active&&i.objectInteraction.state.yaw>.38&&i.spatialGrab.state.mix>.45;
+      return i.objectInteraction.state.active&&i.objectInteraction.state.yaw>.36&&i.spatialGrab.state.mix>.45;
     },null,{timeout:6000,polling:'raf'});
     const held=await snap();
     assert.equal(held.grab,'dragging');assert.equal(held.orbitActive,true);assert.ok(held.bodyDrags>initial.bodyDrags);
-    assert.ok(held.yaw>.38,`v375 orbit range still reads like the old restrained turntable: ${held.yaw}`);
+    assert.ok(held.yaw>.36,`v375 orbit range still reads like the old restrained turntable: ${held.yaw}`);
+    assert.ok(held.yaw<.49,`inertia QA accidentally hit the v375 safety stop: ${held.yaw}`);
     const cameraOffsetX=held.cam.x-held.directorCam.x,cameraOffsetZ=held.cam.z-held.directorCam.z;
     assert.ok(Math.abs(cameraOffsetX)>.035,`direct grab did not move the viewer laterally: ${cameraOffsetX}`);
     assert.ok(cameraOffsetZ<-.025,`direct grab did not pull the viewer into the object depth: ${cameraOffsetZ}`);
@@ -71,7 +76,7 @@ const fs=require('node:fs');
     assert.ok(['inertia','dragging'].includes(released.grab),'release did not enter spatial inertia state');
     assert.equal(errors.length,0,'desktop page errors: '+errors.join(' | '));
     fs.writeFileSync('_site/qa-v375-spatial-grab.json',JSON.stringify({initial,held,released,cameraOffsetX,cameraOffsetZ},null,2));
-    console.log(JSON.stringify({qa:'v375-spatial-grab',viewport:'desktop',status:'PASS',yaw:held.yaw,cameraOffsetX,cameraOffsetZ,mix:held.mix}));
+    console.log(JSON.stringify({qa:'v375-spatial-grab',viewport:'desktop',status:'PASS',yaw:held.yaw,releaseVelocity:released.velocityYaw,cameraOffsetX,cameraOffsetZ,mix:held.mix}));
     await page.close();
 
     const mobile=await browser.newPage({viewport:{width:390,height:844},isMobile:true,hasTouch:true,deviceScaleFactor:1});
