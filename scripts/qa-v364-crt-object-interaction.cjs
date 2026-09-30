@@ -52,7 +52,11 @@ const fs=require('node:fs');
       const r=i.canvas.getBoundingClientRect(),scene=document.querySelector('#boot .scene-inner').getBoundingClientRect();
       const projected=corners.map(v=>{v.project(i.camera);return{x:r.x+(v.x+1)*r.width/2,y:r.y+(1-v.y)*r.height/2}});
       const bounds={left:Math.min(...projected.map(p=>p.x)),right:Math.max(...projected.map(p=>p.x)),top:Math.min(...projected.map(p=>p.y)),bottom:Math.max(...projected.map(p=>p.y))};
-      return {bounds,scene:{left:scene.left,right:scene.right,top:scene.top,bottom:scene.bottom},contained:bounds.left>=scene.left-8&&bounds.right<=scene.right+8&&bounds.top>=scene.top-8&&bounds.bottom<=scene.bottom+8};
+      const projectedWidth=Math.max(1,bounds.right-bounds.left);
+      const visibleWidth=Math.max(0,Math.min(bounds.right,scene.right)-Math.max(bounds.left,scene.left));
+      const horizontalVisibleRatio=visibleWidth/projectedWidth;
+      const verticalContained=bounds.top>=scene.top-8&&bounds.bottom<=scene.bottom+8;
+      return {bounds,scene:{left:scene.left,right:scene.right,top:scene.top,bottom:scene.bottom},verticalContained,horizontalVisibleRatio,visibleWidth,projectedWidth};
     });
 
     const initial=await snapshot();
@@ -70,7 +74,15 @@ const fs=require('node:fs');
 
       await page.evaluate(()=>scrollTo(0,Math.max(1,(document.querySelector('#boot').offsetHeight-innerHeight)*.48)));
       await page.waitForTimeout(850);
-      const fit=await framing();assert.ok(fit.contained,`full CRT must remain framed during Scene 01 choreography: ${JSON.stringify(fit)}`);
+      const fit=await framing();
+      /* v369/v374 intentionally let the volumetric rear/side of the rotated CRT
+         breathe into the full-bleed edge. The physical contract is therefore:
+         keep the complete vertical cabinet framed, keep a strong majority of the
+         projected volume visible horizontally, and retain a real ray-hittable
+         cabinet surface. v374 separately gates the selector inside short screens. */
+      assert.equal(fit.verticalContained,true,`CRT must remain vertically framed during Scene 01 choreography: ${JSON.stringify(fit)}`);
+      assert.ok(fit.horizontalVisibleRatio>=.82,`CRT became materially cropped during Scene 01 choreography: ${JSON.stringify(fit)}`);
+      const midPoint=await bodyPoint();assert.ok(midPoint,'CRT lost its ray-hittable cabinet surface during Scene 01 choreography');
       await page.evaluate(()=>scrollTo(0,0));await page.waitForTimeout(300);
     }
 
