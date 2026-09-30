@@ -126,10 +126,10 @@ jobs:
           retention-days: 7
 
   qa-scene-frame:
-    name: QA Scene 01 frame, light, volume and channel pose authority
+    name: QA Scene 01 frame, light, volume, channel pose and instant presence
     needs: build
     runs-on: ubuntu-latest
-    timeout-minutes: 12
+    timeout-minutes: 14
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -147,7 +147,7 @@ jobs:
           path: _site
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
-      - name: Validate full-bleed composition, CRT light, real cabinet depth and semantic channel poses
+      - name: Validate full-bleed composition, CRT light, real cabinet depth, semantic channel poses and loading continuity
         shell: bash
         run: |
           set -euo pipefail
@@ -159,10 +159,12 @@ jobs:
           sed 's/127\.0\.0\.1:4173/127.0.0.1:4174/g' scripts/qa-v370-crt-light-spill.cjs > _site/qa-logs/qa-v370-crt-light-spill.cjs
           sed 's/127\.0\.0\.1:4173/127.0.0.1:4174/g' scripts/qa-v371-crt-object-volume.cjs > _site/qa-logs/qa-v371-crt-object-volume.cjs
           sed 's/127\.0\.0\.1:4173/127.0.0.1:4174/g' scripts/qa-v372-channel-pose-authority.cjs > _site/qa-logs/qa-v372-channel-pose-authority.cjs
+          sed 's/127\.0\.0\.1:4173/127.0.0.1:4174/g' scripts/qa-v373-crt-instant-presence.cjs > _site/qa-logs/qa-v373-crt-instant-presence.cjs
           node _site/qa-logs/qa-v369-scene-frame.cjs
           node _site/qa-logs/qa-v370-crt-light-spill.cjs
           node _site/qa-logs/qa-v371-crt-object-volume.cjs
           node _site/qa-logs/qa-v372-channel-pose-authority.cjs
+          node _site/qa-logs/qa-v373-crt-instant-presence.cjs
       - name: Save Scene 01 visual evidence
         if: always()
         uses: actions/upload-artifact@v4
@@ -173,6 +175,7 @@ jobs:
             _site/qa-v370-*
             _site/qa-v371-*
             _site/qa-v372-*
+            _site/qa-v373-*
             _site/qa-logs/scene-frame.log
           if-no-files-found: warn
           retention-days: 7
