@@ -41,7 +41,7 @@ const fs=require('node:fs');
       const project=obj=>{obj.geometry.computeBoundingBox();const c=obj.geometry.boundingBox.getCenter(new THREE.Vector3());obj.localToWorld(c);c.project(i.camera);return{x:canvasRect.x+(c.x+1)*canvasRect.width/2,y:canvasRect.y+(1-c.y)*canvasRect.height/2}};
       const visiblePoint=(obj,center)=>{
         const ray=new THREE.Raycaster(),ndc=new THREE.Vector2();
-        const offsets=[0,-5,5,-10,10,-15,15,-20,20,-26,26];
+        const offsets=[0,-5,5,-10,10,-15,15,-20,20,-26,26,-34,34,-42,42];
         for(const dy of offsets){for(const dx of offsets){
           const x=center.x+dx,y=center.y+dy;
           ndc.set((x-canvasRect.x)/canvasRect.width*2-1,-(y-canvasRect.y)/canvasRect.height*2+1);
@@ -60,18 +60,32 @@ const fs=require('node:fs');
     };
     const settleKnobPoint=async()=>{
       let p=null;
-      /* The cabinet itself reacts to pointer position. Approach the tiny selector,
-         then re-project it after that response so the test clicks the surface a
-         real visitor can actually see, rather than a stale bounding-box center. */
-      for(let attempt=0;attempt<3;attempt++){
+      for(let attempt=0;attempt<5;attempt++){
         p=await points();
-        if(!p.knob.visible)break;
+        if(!p.knob.visible){await page.waitForTimeout(80);continue;}
+        const frame=await page.evaluate(()=>Number(document.querySelector('#boot')?.dataset.v371Frame||0));
         await page.mouse.move(p.knob.x,p.knob.y,{steps:4});
-        await page.waitForTimeout(180);
+        await page.waitForFunction(previous=>Number(document.querySelector('#boot')?.dataset.v371Frame||0)>previous,frame,{timeout:4000,polling:'raf'}).catch(()=>{});
+        p=await points();
+        if(p.knob.visible)return p.knob;
       }
-      p=await points();
-      assert.equal(p.knob.visible,true,`selector has no visible ray-hit near projected center ${JSON.stringify(p.knobCenter)}`);
-      return p.knob;
+      assert.fail(`selector has no converged visible ray-hit near ${JSON.stringify(p?.knobCenter||null)}`);
+    };
+    const beginKnobGesture=async()=>{
+      let point=null;
+      for(let attempt=1;attempt<=6;attempt++){
+        point=await settleKnobPoint();
+        await page.mouse.move(point.x,point.y,{steps:2});
+        await page.mouse.down();
+        try{
+          await page.waitForFunction(()=>{const d=window.MOVX3D?.runtime?.instances?.['boot-tv']?.directManipulation?.state;return d?.active===true&&d?.kind==='knob'},null,{timeout:1100,polling:'raf'});
+          return {point,attempts:attempt};
+        }catch{
+          await page.mouse.up();
+          await page.waitForFunction(()=>!window.MOVX3D?.runtime?.instances?.['boot-tv']?.directManipulation?.state?.active,null,{timeout:1200,polling:'raf'}).catch(()=>{});
+        }
+      }
+      assert.fail(`real selector never captured pointerdown after reprojection: ${JSON.stringify(point)}`);
     };
 
     const initial=await snapshot();
@@ -95,10 +109,16 @@ const fs=require('node:fs');
       await drag(p.screen,{x:p.screen.x+92,y:p.screen.y});
       const dig1=await snapshot();assert.notEqual(dig1.mobile,dig0.mobile,'screen drag must switch digital format');assert.equal(dig1.lastAction,'digital-format');
 
-      const knobPoint=await settleKnobPoint();const dial0=await snapshot();
-      await drag(knobPoint,{x:knobPoint.x,y:knobPoint.y+55});
+      /* Re-enter DIREÇÃO so one real detent has a deterministic semantic target.
+         The gesture still has to be captured by tripo_part_8 through v363 raycast. */
+      await choose('direction');
+      const dial0=await snapshot(),capture=await beginKnobGesture();
+      const target=await page.evaluate(()=>{const d=window.MOVX3D.runtime.instances['boot-tv'].directManipulation.state,r=Math.max(34,Math.hypot(d.startX-d.knobCenterX,d.startY-d.knobCenterY)),a=d.startAngle+.82;return{x:d.knobCenterX+Math.cos(a)*r,y:d.knobCenterY+Math.sin(a)*r}});
+      await page.mouse.move(target.x,target.y,{steps:8});await page.mouse.up();
       await page.waitForFunction(previous=>window.MOVX3D.runtime.instances['boot-tv'].directManipulation.state.dialDrags>previous,dial0.dialDrags,{timeout:7000,polling:'raf'});
       const dial1=await snapshot();assert.ok(dial1.dialDrags>dial0.dialDrags,'dragging selector must tune a channel');assert.equal(dial1.lastAction,'dial-tune');
+      assert.equal(dial1.channel,'motion','one real CRT selector detent from DIREÇÃO must tune MOTION');
+      assert.ok(capture.attempts<=6,'selector capture exceeded bounded retry contract');
       assert.ok(/Arraste/.test(dial1.help),'direct manipulation help must explain the physical gesture');
     }
 
