@@ -125,9 +125,52 @@ jobs:
           if-no-files-found: warn
           retention-days: 7
 
+  qa-scene-frame:
+    name: QA Scene 01 full-bleed frame
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Restore built site
+        uses: actions/download-artifact@v4
+        with:
+          name: movx-built-site
+          path: _site
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Validate Scene 01 full-bleed composition without leaking into later scenes
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p _site/qa-logs
+          python3 -m http.server 4174 --directory _site >_site/qa-logs/scene-frame.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill $SERVER_PID 2>/dev/null || true' EXIT
+          sed 's/127\.0\.0\.1:4173/127.0.0.1:4174/g' scripts/qa-v369-scene01-full-bleed.cjs > _site/qa-logs/qa-v369-scene-frame.cjs
+          node _site/qa-logs/qa-v369-scene-frame.cjs
+      - name: Save Scene 01 visual evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: movx-qa-scene-frame
+          path: |
+            _site/qa-v369-*
+            _site/qa-logs/scene-frame.log
+          if-no-files-found: warn
+          retention-days: 7
+
   deploy:
     name: Publish Pages
-    needs: [build, qa-contracts]
+    needs: [build, qa-contracts, qa-scene-frame]
     runs-on: ubuntu-latest
     timeout-minutes: 8
     environment:
