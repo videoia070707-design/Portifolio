@@ -1,7 +1,11 @@
-/* MOVX v358 — Scene 01 interaction controller.
+/* MOVX v358/v373.2 — Scene 01 interaction controller.
    The four boot labels become spatial inputs for the existing CRT. No other
    production model is activated. Cursor input is secondary to scroll and the
-   entire layer gracefully collapses for reduced motion / coarse pointers. */
+   entire layer gracefully collapses for reduced motion / coarse pointers.
+
+   v373.2 adds only a unit bridge inside the EXISTING pointer handler: the same
+   normalized pointer that drives the real CRT also publishes pixel-valued CSS
+   vars for the authored loading poster. No listener, RAF or input source is added. */
 (()=>{
   const root=document.documentElement;
   const boot=document.querySelector('#boot');
@@ -38,6 +42,8 @@
   root.dataset.crtImmersion='v358-spatial-input';
   root.style.setProperty('--crt-px','0');
   root.style.setProperty('--crt-py','0');
+  root.style.setProperty('--crt-poster-x','0px');
+  root.style.setProperty('--crt-poster-y','0px');
   root.style.setProperty('--crt-mode-yaw','0');
   root.style.setProperty('--crt-mode-pitch','0');
   root.style.setProperty('--crt-mode-roll','0');
@@ -61,6 +67,11 @@
     pointerX=clamp(nx,-1,1);pointerY=clamp(ny,-1,1);
     root.style.setProperty('--crt-px',pointerX.toFixed(4));
     root.style.setProperty('--crt-py',pointerY.toFixed(4));
+    /* v373.2: CSS calc can reliably add like units across current engines, while
+       number*length multiplication is not portable enough. Convert once here in
+       the already-existing event path; the real CRT still consumes px/py above. */
+    root.style.setProperty('--crt-poster-x',`${(pointerX*5).toFixed(2)}px`);
+    root.style.setProperty('--crt-poster-y',`${(pointerY*3).toFixed(2)}px`);
     boot.style.setProperty('--v358-hot-x',`${(50+pointerX*12).toFixed(2)}%`);
     boot.style.setProperty('--v358-hot-y',`${(44+pointerY*9).toFixed(2)}%`);
   }
