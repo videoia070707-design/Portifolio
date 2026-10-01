@@ -46,10 +46,14 @@ const fs=require('node:fs');
 
     const p=await bodyPoint();assert.ok(p,'v378 could not find a visible CRT cabinet surface');
     await page.mouse.move(p.x,p.y,{steps:8});
+    /* The hover semantic marker and the physical depth use separate dampers. In a
+       long SwiftShader suite the marker can cross its threshold one frame before
+       the forward lift does. Wait for the same >.003 depth that we assert below;
+       the contract stays strict and no runtime threshold is weakened. */
     await page.waitForFunction(()=>{
       const i=window.MOVX3D.runtime.instances['boot-tv'];
-      return document.querySelector('#boot')?.dataset.crtObjectHit==='body'&&i.physicalPickup.state.hover>.55&&document.querySelector('#boot')?.dataset.v378Pickup==='hover';
-    },null,{timeout:5000,polling:'raf'});
+      return document.querySelector('#boot')?.dataset.crtObjectHit==='body'&&i.physicalPickup.state.hover>.55&&i.physicalPickup.state.depth>.003&&document.querySelector('#boot')?.dataset.v378Pickup==='hover';
+    },null,{timeout:6500,polling:'raf'});
     const hovered=await snap();
     assert.equal(hovered.phase,'hover');assert.ok(hovered.hover>.55);assert.ok(hovered.depth>.003,'cabinet did not lift forward on physical hover');
     assert.ok(/SEGURE E ARRASTE/.test(hovered.hint),'hover affordance does not describe physical pickup');
@@ -74,10 +78,6 @@ const fs=require('node:fs');
     const releasing=await snap();
     assert.equal(releasing.orbitActive,false);assert.equal(releasing.phase,'releasing');assert.ok(releasing.hold<held.hold);assert.ok(Math.abs(releasing.handX)<Math.abs(held.handX),'held hand translation did not begin settling after release');
 
-    /* The physical condition remains strict. A long serial SwiftShader suite can
-       render the exponentially damped release at a lower frame cadence than the
-       standalone v378 gate, so give the exact same idle threshold a larger wall-
-       clock ceiling rather than weakening the physics assertion. */
     const settleStarted=Date.now();
     await page.waitForFunction(()=>{
       const p=window.MOVX3D.runtime.instances['boot-tv'].physicalPickup.state;
