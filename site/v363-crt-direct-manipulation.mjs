@@ -1,7 +1,10 @@
-/* MOVX v363 — direct manipulation for the approved CRT.
+/* MOVX v363/v386.4 — direct manipulation for the approved CRT.
    The existing screen and selector become the controls: drag the real screen to
    manipulate the active programme and drag the real selector to tune channels.
-   No extra WebGL context, visible canvas, model, or animation loop is added. */
+   v386.4 keeps exact ray hits authoritative but gives the tiny physical selector
+   a bounded screen-space pickup radius so live parallax cannot move it away in the
+   few milliseconds between reprojection and pointerdown. No extra WebGL context,
+   visible canvas, model, listener family, or animation loop is added. */
 import * as THREE from './vendor/three.module.js';
 
 const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -43,7 +46,7 @@ export function attachCRTDirectManipulation(instance){
     dragResidual:0,currentZ:knob.rotation.z||0,lastTime:performance.now(),
     startChannel:channelState.channel||'direction',startIndex:0,startArt:0,startMobile:false,
     startAmount:.5,startPhase:0,startPaused:false,startAngle:0,knobCenterX:0,knobCenterY:0,
-    lastDialIndex:-1,lastDirection:1,releaseEnergy:0
+    lastDialIndex:-1,lastDirection:1,releaseEnergy:0,selectorAssistHits:0
   };
 
   const hitAt=event=>{
@@ -60,6 +63,14 @@ export function attachCRTDirectManipulation(instance){
     box.getCenter(center);obj.localToWorld(center);center.project(instance.camera);
     const r=instance.canvas.getBoundingClientRect();
     return {x:r.x+(center.x+1)*r.width/2,y:r.y+(1-center.y)*r.height/2};
+  };
+  const nearKnob=event=>{
+    const p=projectCenter(knob),r=instance.canvas.getBoundingClientRect();
+    if(!p||!r.width||!r.height)return false;
+    /* About one fingertip/cursor target on desktop, bounded so the cabinet body
+       around the selector never becomes a giant invisible control. */
+    const radius=Math.max(24,Math.min(36,r.width*.042));
+    return Math.hypot(event.clientX-p.x,event.clientY-p.y)<=radius;
   };
   const refreshAction=()=>{
     if(!action)return;
@@ -83,8 +94,10 @@ export function attachCRTDirectManipulation(instance){
     if(event.button!==undefined&&event.button!==0)return;
     if(coarse&&event.pointerType==='touch')return;
     const hit=hitAt(event),obj=hit?.object;
-    const kind=obj===screen?'screen':obj===knob?'knob':'none';
+    const assisted=obj!==knob&&obj!==screen&&nearKnob(event);
+    const kind=obj===screen?'screen':(obj===knob||assisted)?'knob':'none';
     if(kind==='none')return;
+    if(assisted){direct.selectorAssistHits++;boot.dataset.crtSelectorAssist='pickup'}else delete boot.dataset.crtSelectorAssist;
     direct.active=true;direct.kind=kind;direct.moved=false;direct.pointerId=event.pointerId;
     direct.startX=direct.lastX=event.clientX;direct.startY=direct.lastY=event.clientY;
     direct.startChannel=channelState.channel;direct.startIndex=Math.max(0,CHANNELS.indexOf(channelState.channel));
@@ -143,6 +156,7 @@ export function attachCRTDirectManipulation(instance){
     if(direct.moved){direct.releaseEnergy=1;instance.tactility.state.pulse=Math.max(instance.tactility.state.pulse,.54)}
     direct.active=false;direct.kind='none';direct.pointerId=null;direct.dragResidual=0;
     boot.dataset.crtGesture=direct.moved?'settling':'none';
+    delete boot.dataset.crtSelectorAssist;
     try{wrap.releasePointerCapture(event.pointerId)}catch{}
   };
 
@@ -166,6 +180,7 @@ export function attachCRTDirectManipulation(instance){
 
   instance.directManipulation={state:direct,update};
   document.documentElement.dataset.crtDirect='v363-ready';
+  document.documentElement.dataset.crtSelectorPickup='v386.4-bounded';
   boot.dataset.crtDirect='ready';
   refreshHint();
   return instance.directManipulation;

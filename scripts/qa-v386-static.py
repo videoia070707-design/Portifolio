@@ -1,4 +1,4 @@
-"""Static gate for MOVX v386 visibly immersive Hero pass + v386.3 safe projection."""
+"""Static gate for MOVX v386 immersive Hero through v386.4 stability."""
 from pathlib import Path
 import json,re
 
@@ -15,6 +15,12 @@ if '#boot' not in css:errors.append('v386 CSS has no #boot scope')
 if '#boot' not in projection:errors.append('v386.3 projection CSS has no #boot scope')
 for contract in ('height:auto!important','aspect-ratio:1.2 / 1!important','aspect-ratio:1.30 / 1!important','aspect-ratio:auto!important'):
     if contract not in projection:errors.append(f'v386.3 projection contract missing: {contract}')
+for contract in (
+    'grid-template-columns:minmax(620px,1fr) minmax(400px,430px)!important',
+    'width:430px!important',
+    'column-gap:clamp(70px,5.6vw,88px)!important'
+):
+    if contract not in css:errors.append(f'v386.4 short Hero grid contract missing: {contract}')
 
 for name in ('index.html','latest.html'):
     path=out/name
@@ -24,6 +30,8 @@ for name in ('index.html','latest.html'):
     if '<style data-v386-hero-immersion="v386-spatial-hero">' not in text:errors.append(f'{name} missing v386 critical CSS')
     if 'data-v386-safe-projection="v386-3-landscape-field"' not in text:errors.append(f'{name} missing v386.3 projection marker')
     if '<style data-v386-safe-projection="v386-3-landscape-field">' not in text:errors.append(f'{name} missing v386.3 projection CSS')
+    if 'data-v386-hero-stability="v386-4-hero-selector-stability"' not in text:errors.append(f'{name} missing v386.4 stability marker')
+    if 'v322-glb-runtime.mjs?v=v386-4-hero-selector-stability' not in text:errors.append(f'{name} missing v386.4 runtime cache key')
 
 controller=out/'v358-crt-immersion.js'
 if not controller.exists():errors.append('built v358 controller missing')
@@ -35,7 +43,30 @@ else:
     ):
         if contract not in js:errors.append(f'v386 controller contract missing: {contract}')
 
+direct=out/'v363-crt-direct-manipulation.mjs'
+if not direct.exists():errors.append('built v363 direct manipulation missing')
+else:
+    js=direct.read_text()
+    for contract in ('const nearKnob=event=>','selectorAssistHits:0',"dataset.crtSelectorPickup='v386.4-bounded'"):
+        if contract not in js:errors.append(f'v386.4 selector pickup contract missing: {contract}')
+
+object_js=out/'v364-crt-object-interaction.mjs'
+if not object_js.exists():errors.append('built v364 object interaction missing')
+else:
+    js=object_js.read_text()
+    if 'if(instance.directManipulation?.state?.active)return;' not in js:
+        errors.append('v386.4 cabinet orbit can still steal a direct-control pointerdown')
+    if "dataset.crtControlOwnership='v386.4-direct-first'" not in js:
+        errors.append('v386.4 control-ownership marker missing from built object interaction')
+
+runtime=out/'v322-glb-runtime.mjs'
+if not runtime.exists():errors.append('built unified CRT runtime missing')
+else:
+    js=runtime.read_text()
+    if 'v363-crt-direct-manipulation.mjs?v=v386-4-selector-pickup' not in js:errors.append('v386.4 direct manipulation import cache key missing')
+    if 'v364-crt-object-interaction.mjs?v=v386-4-direct-control-priority' not in js:errors.append('v386.4 cabinet interaction import cache key missing')
+
 models=sorted(p.name for p in (out/'models').glob('*.glb')) if (out/'models').exists() else []
 if models!=['movx-crt-tv.glb']:errors.append(f'single-model gate failed: {models}')
-if errors:raise SystemExit('MOVX v386.3 static QA failed: '+json.dumps(errors,ensure_ascii=False))
-print(json.dumps({'qa':'v386.3-static','status':'PASS','scope':'#boot only','models':models,'strong_rest_pose':True,'projection':'landscape desktop slot'},ensure_ascii=False))
+if errors:raise SystemExit('MOVX v386.4 static QA failed: '+json.dumps(errors,ensure_ascii=False))
+print(json.dumps({'qa':'v386.4-static','status':'PASS','scope':'#boot only','models':models,'strong_rest_pose':True,'projection':'landscape desktop slot','short_grid':'separated editorial rail','selector':'bounded real-knob pickup + direct-control priority'},ensure_ascii=False))

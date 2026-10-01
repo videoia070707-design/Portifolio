@@ -1,9 +1,8 @@
-/* MOVX v386 — Scene 01 must look spatial before the first drag.
+/* MOVX v386/v386.4 — Scene 01 must look spatial before the first drag.
    Scope: #boot only. The approved CRT stays the only 3D asset.
-   This layer deliberately makes a visible composition change over v385:
-   complete cabinet framing, stronger object/readable depth, a calmer editorial
-   rail, and an interaction affordance that belongs to the room instead of sitting
-   across the television like a UI pill. */
+   v386.4 treats the user's 1366x768 viewport as a first-class composition:
+   the CRT keeps its strong three-quarter pose while the editorial rail is given
+   a fixed readable width and a real spatial gap instead of collapsing toward it. */
 
 html[data-v386-hero-immersion="v386-spatial-hero"] #boot{
   --v386-room:#eee9e1;
@@ -26,8 +25,6 @@ html[data-v386-hero-immersion] #boot .scene-inner::after{
 }
 
 @media(min-width:901px){
-  /* Replace the extreme negative v385.1 vertical offset with a balanced stage.
-     The CRT remains dominant but the complete body sits inside the opening shot. */
   html[data-v386-hero-immersion].v354-choreo #boot .boot-stage{
     grid-template-columns:minmax(0,1.08fr) minmax(430px,.92fr)!important;
     column-gap:clamp(86px,7.6vw,132px)!important;
@@ -64,7 +61,6 @@ html[data-v386-hero-immersion] #boot .scene-inner::after{
     opacity:.82!important;
   }
 
-  /* The interaction cue now sits below the physical object instead of covering it. */
   html[data-v386-hero-immersion] #boot .crt-object-hint{
     left:clamp(34px,4vw,64px)!important;
     right:auto!important;
@@ -89,8 +85,6 @@ html[data-v386-hero-immersion] #boot .scene-inner::after{
     color:rgba(18,15,12,.38)!important;
   }
 
-  /* Give the editorial side more whitespace so the title is no longer visually
-     glued to paragraph / controls. */
   html[data-v386-hero-immersion] #boot .boot-copy{
     width:min(100%,470px)!important;
     max-width:470px!important;
@@ -134,13 +128,13 @@ html[data-v386-hero-immersion] #boot .scene-inner::after{
   }
 }
 
-/* The user's screenshot is 1366×768. Treat that as a first-class composition,
-   not a compressed tall-desktop approximation. */
+/* 1366×768: reserve the physical field first, then a fixed editorial rail.
+   The rail can no longer collapse into the CRT when the viewport gets shorter. */
 @media(min-width:901px) and (max-height:820px){
   html[data-v386-hero-immersion].v354-choreo #boot .boot-stage{
-    grid-template-columns:minmax(0,1.02fr) minmax(420px,.98fr)!important;
-    column-gap:clamp(74px,6.2vw,96px)!important;
-    padding:22px clamp(44px,4.2vw,62px) 34px!important;
+    grid-template-columns:minmax(620px,1fr) minmax(400px,430px)!important;
+    column-gap:clamp(70px,5.6vw,88px)!important;
+    padding:22px clamp(38px,3.5vw,48px) 34px!important;
   }
   html[data-v386-hero-immersion] #boot .crt-wrap{
     width:min(51vw,670px)!important;
@@ -149,6 +143,10 @@ html[data-v386-hero-immersion] #boot .scene-inner::after{
     min-height:min(65svh,520px)!important;
     top:-54px!important;
     margin-left:0!important;
+  }
+  html[data-v386-hero-immersion] #boot .boot-copy{
+    width:430px!important;
+    max-width:430px!important;
   }
   html[data-v386-hero-immersion].v353-motion #boot .boot-copy .eyebrow{margin-bottom:22px!important}
   html[data-v386-hero-immersion].v353-motion #boot .boot-title{
@@ -159,6 +157,11 @@ html[data-v386-hero-immersion] #boot .scene-inner::after{
   }
   html[data-v386-hero-immersion].v353-motion #boot .boot-title span:nth-child(3){margin-left:18px!important}
   html[data-v386-hero-immersion].v353-motion #boot .boot-copy .copy{font-size:13.5px!important;line-height:1.68!important}
+  html[data-v386-hero-immersion] #boot .boot-tags,
+  html[data-v386-hero-immersion] #boot .crt-channel-panel{
+    width:430px!important;
+    max-width:430px!important;
+  }
   html[data-v386-hero-immersion] #boot .boot-tags{margin-top:26px!important}
   html[data-v386-hero-immersion] #boot .boot-tags .tag{min-height:46px!important;padding:13px 9px!important}
   html[data-v386-hero-immersion] #boot .crt-channel-panel{margin-top:13px!important;gap:4px 20px!important}

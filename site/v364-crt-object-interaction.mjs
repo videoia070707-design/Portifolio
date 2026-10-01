@@ -1,10 +1,10 @@
-/* MOVX v364/v375/v376.1 — physical manipulation for the existing production CRT.
+/* MOVX v364/v375/v376.1/v386.4 — physical manipulation for the existing production CRT.
    Dragging the cabinet rotates the actual Three.js object with visible but bounded
    inertia. v375 deepens the orbit range and couples it to camera/light; v376 turns
    the hard safety stop into an elastic physical boundary; v376.1 gives release at
    that boundary an immediate inward positional recoil before inertia continues.
-   The live screen/selector remain owned by v363. No extra model, renderer, WebGL
-   context or requestAnimationFrame is created here. */
+   v386.4 preserves control ownership: if v363 already captured the real screen or
+   selector on pointerdown, cabinet orbit cannot steal the same gesture. */
 import * as THREE from './vendor/three.module.js';
 
 const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -74,6 +74,10 @@ export function attachCRTObjectInteraction(instance){
   const begin=event=>{
     if(event.button!==undefined&&event.button!==0)return;
     if(coarse||event.pointerType==='touch')return;
+    /* v363 owns the real screen + selector and is registered first. A successful
+       direct-control capture must be exclusive, otherwise a nearby cabinet mesh
+       can start a second gesture on the same pointerdown. */
+    if(instance.directManipulation?.state?.active)return;
     const hit=hitAt(event);
     if(!isBody(hit))return;
     state.active=true;state.pointerId=event.pointerId;state.moved=false;
@@ -101,8 +105,6 @@ export function attachCRTObjectInteraction(instance){
     const rawYaw=state.startYaw+dx*.00435,rawPitch=state.startPitch+dy*.0030;
     const stepX=event.clientX-state.lastX,stepY=event.clientY-state.lastY;
 
-    /* Pointer travel, rather than the already-clamped angle, owns hand velocity.
-       Continued motion against the authored stop therefore still carries energy. */
     const handYaw=clamp((stepX*.00435)/dt,-2.2,2.2);
     const handPitch=clamp((stepY*.0030)/dt,-1.1,1.1);
     state.pointerVelocityYaw+=(handYaw-state.pointerVelocityYaw)*.58;
@@ -136,11 +138,6 @@ export function attachCRTObjectInteraction(instance){
     if(reduced){
       state.velocityYaw=state.velocityPitch=0;
     }else{
-      /* v376.1: a compressed safety stop releases like a damped physical bumper.
-         We move the cabinet a small, bounded distance inward immediately, then let
-         the inverted hand velocity continue the recoil. This avoids a frame where
-         velocity says "returning" while the visible object still sits at exactly
-         the mathematical clamp. */
       if(state.edgeCompressionYaw>.015&&Math.sign(state.velocityYaw)===Math.sign(state.yaw)){
         const compression=state.edgeCompressionYaw;
         const side=Math.sign(state.yaw)||1;
@@ -215,8 +212,6 @@ export function attachCRTObjectInteraction(instance){
       instance.group.rotation.z=(base.rz||0)-state.yaw*.045;
     }
 
-    /* Publish pixel-ready values so CSS feedback never depends on multiplying
-       unitless custom properties at style-evaluation time. */
     boot.style.setProperty('--crt-grab-x',`${(state.yaw*22).toFixed(2)}px`);
     boot.style.setProperty('--crt-grab-y',`${(state.pitch*18).toFixed(2)}px`);
     boot.style.setProperty('--crt-grab-shadow-x',`${(-state.yaw*28).toFixed(2)}px`);
@@ -238,6 +233,7 @@ export function attachCRTObjectInteraction(instance){
   document.documentElement.dataset.crtObject='v364-ready';
   document.documentElement.dataset.crtOrbitPhysics='v376-elastic-boundary';
   document.documentElement.dataset.crtOrbitRecoil='v376.1-visible-snap';
+  document.documentElement.dataset.crtControlOwnership='v386.4-direct-first';
   boot.dataset.crtObject='ready';boot.dataset.crtGrab='idle';
   return instance.objectInteraction;
 }
