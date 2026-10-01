@@ -67,14 +67,20 @@ const fs=require('node:fs');
     await page.locator('#boot').screenshot({path:'_site/qa-v377-focus-pull-held.png'});
 
     await page.mouse.up();
-    await page.waitForFunction(()=>{
-      const g=window.MOVX3D.runtime.instances['boot-tv'].spatialGrab.state;
-      return g.focus<.55&&g.focus>.04&&!window.MOVX3D.runtime.instances['boot-tv'].objectInteraction.state.active;
-    },null,{timeout:3500,polling:'raf'});
+    /* The release is spring-damped and shares the same SwiftShader frame with the
+       newer Scene-01 layers. Gate the actual physical state transition first,
+       then wait for measurable decay from the captured held focus instead of
+       assuming every runner crosses a magic [.04,.55] window inside 3.5 seconds. */
+    await page.waitForFunction(()=>!window.MOVX3D.runtime.instances['boot-tv'].objectInteraction.state.active,null,{timeout:3000,polling:'raf'});
+    await page.waitForFunction(heldFocus=>{
+      const i=window.MOVX3D.runtime.instances['boot-tv'];
+      const f=i.spatialGrab.state.focus;
+      return !i.objectInteraction.state.active && f<heldFocus*.72 && f>.025;
+    },held.focus,{timeout:8000,polling:'raf'});
     const releasing=await snap();
     assert.equal(releasing.active,false);assert.equal(releasing.focusState,'releasing');
     assert.ok(releasing.copyX<held.copyX,'editorial copy did not return with physical release');
-    assert.ok(releasing.focus<held.focus,'focus pull did not decay after release');
+    assert.ok(releasing.focus<held.focus*.72,'focus pull did not materially decay after release');
     assert.equal(errors.length,0,'desktop page errors: '+errors.join(' | '));
     fs.writeFileSync('_site/qa-v377-focus-pull.json',JSON.stringify({initial,held,releasing},null,2));
     console.log(JSON.stringify({qa:'v377-physical-focus-pull',viewport:'desktop',status:'PASS',initial,held,releasing}));
