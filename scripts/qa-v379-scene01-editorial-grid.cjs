@@ -68,14 +68,24 @@ const fs=require('node:fs');
 
       let mid=null;
       if(cfg.mid){
-        await page.evaluate(()=>{
+        const scrollTarget=await page.evaluate(()=>{
           document.documentElement.style.scrollBehavior='auto';document.body.style.scrollBehavior='auto';
           const boot=document.querySelector('#boot'),travel=Math.max(1,boot.offsetHeight-innerHeight);
-          scrollTo({top:Math.round(boot.offsetTop+travel*.48),left:0,behavior:'instant'});
+          const target=Math.round(boot.offsetTop+travel*.48);
+          scrollTo({top:target,left:0,behavior:'instant'});
+          return target;
         });
-        await page.waitForTimeout(900);
+        // Under a loaded SwiftShader runner, the shared v322 RAF may need more
+        // than a fixed 900 ms to consume the scroll position. Wait for the actual
+        // choreography state instead of treating wall-clock time as functional proof.
+        await page.waitForFunction(()=>{
+          const root=document.documentElement;
+          const progress=Number(window.MOVXCRT?.progress ?? getComputedStyle(root).getPropertyValue('--crt-progress') ?? 0);
+          return progress>.30;
+        },null,{timeout:12000});
+        await page.waitForTimeout(120);
         mid=await inspect(page);
-        assert.ok(mid.progress>.30,`${cfg.name} did not enter Scene-01 choreography: ${mid.progress}`);
+        assert.ok(mid.progress>.30,`${cfg.name} did not enter Scene-01 choreography: ${mid.progress}; target=${scrollTarget}`);
         assert.equal(mid.verticalContained,true,`${cfg.name} CRT is clipped during mid-scroll choreography: ${JSON.stringify({model:mid.model,scene:mid.scene,progress:mid.progress})}`);
         assert.ok(mid.horizontalVisibleRatio>=.82,`${cfg.name} CRT loses too much horizontal volume at mid-scroll: ${mid.horizontalVisibleRatio}`);
         assert.ok(mid.modelCopyGap>=18,`${cfg.name} CRT/copy moat collapsed during mid-scroll: ${mid.modelCopyGap}`);
@@ -86,16 +96,13 @@ const fs=require('node:fs');
 
       assert.equal(errors.length,0,`${cfg.name} page errors: ${errors.join(' | ')}`);
       await page.locator('#boot').screenshot({path:`_site/qa-v379-editorial-grid-${cfg.name}.png`});
-      console.log(JSON.stringify({qa:'v379.3-scene01-editorial-grid',viewport:cfg.name,status:'PASS',initial:s,mid}));
+      console.log(JSON.stringify({qa:'v379.4-scene01-editorial-grid',viewport:cfg.name,status:'PASS',initial:s,mid}));
       await page.close();
     }
 
     const mobile=await browser.newPage({viewport:{width:390,height:844},isMobile:true,hasTouch:true,deviceScaleFactor:1});
     await mobile.goto('http://127.0.0.1:4173/',{waitUntil:'domcontentloaded',timeout:30000});
     await mobile.waitForFunction(()=>document.querySelector('[data-model-slot="boot-tv"]')?.dataset.glbState==='ready',null,{timeout:25000});
-    // Match the desktop gate: measure the authored mobile layout only after the
-    // staggered title entrance has settled. Otherwise transformed line boxes can
-    // overlap transiently even though the final CSS gap is healthy.
     await mobile.waitForFunction(()=>document.documentElement.dataset.motionIntro==='ready',null,{timeout:12000});
     await mobile.waitForTimeout(420);
     const m=await inspect(mobile);
@@ -105,7 +112,7 @@ const fs=require('node:fs');
     assert.ok(m.modelCopyVerticalGap>=18,`mobile CRT/copy physical safe zone collapsed: ${m.modelCopyVerticalGap}px; ${JSON.stringify({model:m.model,copy:m.copy})}`);
     assert.equal(m.copyInside,true,'mobile editorial stack escaped Scene 01 after physical safe-zone reservation');
     await mobile.locator('#boot').screenshot({path:'_site/qa-v379-editorial-grid-mobile.png'});
-    console.log(JSON.stringify({qa:'v379.3-scene01-editorial-grid',viewport:'mobile',status:'PASS',state:m}));
+    console.log(JSON.stringify({qa:'v379.4-scene01-editorial-grid',viewport:'mobile',status:'PASS',state:m}));
     await mobile.close();
   } finally {await browser.close()}
 })().catch(e=>{console.error(e);process.exit(1)});
