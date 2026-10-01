@@ -65,7 +65,7 @@ export function attachCRTChannelRetune(instance){
        change while the user holds the object, but v380 never adds camera/object
        motion on top of that gesture. Coarse pointers receive a quieter impulse. */
     const authority=manualActive?0:1;
-    const device=coarse?.52:1;
+    const device=coarse ? .52 : 1;
     state.envelope=envelope*authority*device;
     state.wave=wave*authority*device;
     state.depthKick=state.envelope*.018;
