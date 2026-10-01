@@ -1,4 +1,4 @@
-/* MOVX v379.3 / v380.2 — Scene 01 editorial safe-zone grid.
+/* MOVX v379.3 / v380.2.1 — Scene 01 editorial safe-zone grid.
    The CRT is already physically interactive. This pass fixes the remaining
    composition gap: headline, copy, channel strip and CRT must read as one authored
    shot without crowding each other. CSS-only, Scene-01-only, no new 3D resources.
@@ -11,7 +11,11 @@
    v380.2 extends that same physical rule to mobile. The mobile WebGL surface is
    intentionally compact for performance, while the projected cabinet visually
    overhangs its grid row. Reserve that authored overhang before the copy starts so
-   the headline can never be painted through the television. */
+   the headline can never be painted through the television.
+
+   v380.2.1 keeps the desktop editorial column a small distance farther right. This
+   preserves the physical CRT-to-copy moat while the shared Scene-01 choreography
+   swings the real cabinet toward the copy at mid-scroll. */
 
 @media(min-width:901px){
   html[data-crt-editorial-grid-layer="v379-editorial-safe-zones"].v354-choreo #boot .boot-stage{
@@ -27,6 +31,8 @@
     justify-self:end;
     padding-inline-start:0;
     align-self:center;
+    position:relative;
+    inset-inline-start:clamp(16px,1.25vw,20px);
   }
 
   html[data-crt-editorial-grid-layer].v353-motion #boot .boot-copy .eyebrow{
