@@ -31,7 +31,7 @@ const fs=require('node:fs');
         viewport:{w:innerWidth,h:innerHeight},scene:{left:scene.left,right:scene.right,top:scene.top,bottom:scene.bottom},stage:{left:sr.left,right:sr.right,top:sr.top,bottom:sr.bottom},
         copy:{left:cr.left,right:cr.right,top:cr.top,bottom:cr.bottom,width:cr.width},title:{top:tr.top,bottom:tr.bottom,width:tr.width},
         paragraph:{top:pr.top,bottom:pr.bottom,width:pr.width},tags:{top:tar.top,bottom:tar.bottom,width:tar.width},panel:{top:par.top,bottom:par.bottom,width:par.width},
-        lineGaps,model,modelCopyGap:cr.left-model.right,
+        lineGaps,model,modelCopyGap:cr.left-model.right,modelCopyVerticalGap:cr.top-model.bottom,
         verticalContained:model.top>=scene.top-8&&model.bottom<=scene.bottom+8,
         horizontalVisibleRatio:visibleWidth/projectedWidth,
         panelInside:par.bottom<=scene.bottom+1,
@@ -86,7 +86,7 @@ const fs=require('node:fs');
 
       assert.equal(errors.length,0,`${cfg.name} page errors: ${errors.join(' | ')}`);
       await page.locator('#boot').screenshot({path:`_site/qa-v379-editorial-grid-${cfg.name}.png`});
-      console.log(JSON.stringify({qa:'v379.2.2-scene01-editorial-grid',viewport:cfg.name,status:'PASS',initial:s,mid}));
+      console.log(JSON.stringify({qa:'v379.3-scene01-editorial-grid',viewport:cfg.name,status:'PASS',initial:s,mid}));
       await page.close();
     }
 
@@ -102,8 +102,10 @@ const fs=require('node:fs');
     assert.equal(m.layer,'v379-editorial-safe-zones');assert.equal(m.renderers,1);assert.deepEqual(m.activeSlots,['boot-tv']);assert.ok(m.overflow<=2);
     assert.ok(m.lineGaps.every(g=>g>=1),`mobile headline rhythm collapsed: ${JSON.stringify(m.lineGaps)}`);
     assert.ok(m.copy.left>=16&&m.copy.right<=374,'mobile editorial content escaped natural gutters');
+    assert.ok(m.modelCopyVerticalGap>=18,`mobile CRT/copy physical safe zone collapsed: ${m.modelCopyVerticalGap}px; ${JSON.stringify({model:m.model,copy:m.copy})}`);
+    assert.equal(m.copyInside,true,'mobile editorial stack escaped Scene 01 after physical safe-zone reservation');
     await mobile.locator('#boot').screenshot({path:'_site/qa-v379-editorial-grid-mobile.png'});
-    console.log(JSON.stringify({qa:'v379.2.2-scene01-editorial-grid',viewport:'mobile',status:'PASS',state:m}));
+    console.log(JSON.stringify({qa:'v379.3-scene01-editorial-grid',viewport:'mobile',status:'PASS',state:m}));
     await mobile.close();
   } finally {await browser.close()}
 })().catch(e=>{console.error(e);process.exit(1)});
