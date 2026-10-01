@@ -1,0 +1,36 @@
+/* MOVX v385.1 — Hero-only physical framing hotfix.
+   v385 made the CRT the dominant object, but its 72svh renderer field plus the
+   legacy v374 offset still let the physical cabinet fall below the Scene-01 edge.
+   Keep the same composition and GLB, but give the real projection enough vertical
+   air to show screen + selector + cabinet base on first paint and mid choreography.
+   Scope remains strictly #boot. */
+
+@media (min-width:901px){
+  html[data-v385-hero-only="v385-hero-recovery"] #boot .crt-wrap{
+    /* Tall desktop: a small lift + slightly shorter optical field. The object
+       remains dominant; this removes the accidental bottom crop, not its scale. */
+    top:-118px!important;
+    min-height:min(64svh,640px)!important;
+  }
+}
+
+@media (min-width:901px) and (max-height:820px){
+  html[data-v385-hero-only="v385-hero-recovery"] #boot .crt-wrap{
+    /* 820px -> -260px, 768px -> -312px, <=740px approaches -340px.
+       This supersedes v374 because the new v385 grid changed the renderer field. */
+    top:clamp(-340px,calc(100svh - 1080px),-250px)!important;
+    min-height:min(61svh,500px)!important;
+  }
+}
+
+@media (min-width:901px) and (max-height:730px){
+  html[data-v385-hero-only="v385-hero-recovery"] #boot .crt-wrap{
+    top:-340px!important;
+    min-height:min(59svh,440px)!important;
+  }
+}
+
+@media (max-width:900px){
+  /* Mobile keeps the object-first natural flow validated by v385. */
+  html[data-v385-hero-only="v385-hero-recovery"] #boot .crt-wrap{top:auto!important}
+}
