@@ -23,25 +23,21 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: '22'
           cache: npm
-
       - name: Install pinned dependencies
         run: npm ci --no-audit --no-fund
-
       - name: Ensure FFmpeg for optimized media
         run: ffmpeg -version || (sudo apt-get update && sudo apt-get install -y ffmpeg)
-
       - name: Build optimized MOVX source
         run: npm run build
-
       - name: Enforce performance budgets
         run: python3 scripts/qa-performance.py
-
+      - name: Enforce v379 Scene 01 static contract
+        run: python3 scripts/qa-v379-static.py
       - name: Store immutable build for downstream jobs
         uses: actions/upload-artifact@v4
         with:
@@ -126,10 +122,10 @@ jobs:
           retention-days: 7
 
   qa-scene-frame:
-    name: QA Scene 01 frame, light, volume, instant presence, channel pose, spatial grab, elastic orbit, focus pull and pickup
+    name: QA Scene 01 frame, light, volume, interactions and editorial safe zones
     needs: build
     runs-on: ubuntu-latest
-    timeout-minutes: 21
+    timeout-minutes: 23
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -147,7 +143,7 @@ jobs:
           path: _site
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
-      - name: Validate full-bleed composition, CRT light, real cabinet depth, loading continuity, semantic channel poses, spatial grab, elastic orbit, focus pull and physical pickup
+      - name: Validate Scene 01 physical and editorial composition
         shell: bash
         run: |
           set -euo pipefail
@@ -164,6 +160,7 @@ jobs:
           sed 's/127\.0\.0\.1:4173/127.0.0.1:4174/g' scripts/qa-v376-crt-elastic-orbit.cjs > _site/qa-logs/qa-v376-crt-elastic-orbit.cjs
           sed 's/127\.0\.0\.1:4173/127.0.0.1:4174/g' scripts/qa-v377-crt-focus-pull.cjs > _site/qa-logs/qa-v377-crt-focus-pull.cjs
           sed 's/127\.0\.0\.1:4173/127.0.0.1:4174/g' scripts/qa-v378-crt-physical-pickup.cjs > _site/qa-logs/qa-v378-crt-physical-pickup.cjs
+          sed 's/127\.0\.0\.1:4173/127.0.0.1:4174/g' scripts/qa-v379-scene01-editorial-grid.cjs > _site/qa-logs/qa-v379-editorial-grid.cjs
           node _site/qa-logs/qa-v369-scene-frame.cjs
           node _site/qa-logs/qa-v370-crt-light-spill.cjs
           node _site/qa-logs/qa-v371-crt-object-volume.cjs
@@ -173,6 +170,7 @@ jobs:
           node _site/qa-logs/qa-v376-crt-elastic-orbit.cjs
           node _site/qa-logs/qa-v377-crt-focus-pull.cjs
           node _site/qa-logs/qa-v378-crt-physical-pickup.cjs
+          node _site/qa-logs/qa-v379-editorial-grid.cjs
       - name: Save Scene 01 visual evidence
         if: always()
         uses: actions/upload-artifact@v4
@@ -188,6 +186,7 @@ jobs:
             _site/qa-v376-*
             _site/qa-v377-*
             _site/qa-v378-*
+            _site/qa-v379-*
             _site/qa-logs/scene-frame.log
           if-no-files-found: warn
           retention-days: 7
