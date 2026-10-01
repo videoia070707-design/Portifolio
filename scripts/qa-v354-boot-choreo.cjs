@@ -14,6 +14,7 @@ const assert=require('node:assert/strict');
       await page.waitForFunction(()=>document.documentElement.dataset.motionChoreoReady==='true',null,{timeout:15000});
       await page.waitForFunction(()=>document.querySelector('[data-model-slot="boot-tv"]')?.dataset.glbState==='ready',null,{timeout:30000});
       await page.waitForFunction(()=>document.documentElement.dataset.motionIntro==='ready',null,{timeout:10000});
+      await page.waitForFunction(()=>document.documentElement.dataset.crtDirector==='v367-ready',null,{timeout:15000});
 
       const before=await page.evaluate(()=>{
         const root=document.documentElement;
@@ -21,6 +22,7 @@ const assert=require('node:assert/strict');
         const inner=boot.querySelector('.scene-inner');
         const wrap=boot.querySelector('.crt-wrap');
         const copy=boot.querySelector('.boot-copy');
+        const inst=window.MOVX3D?.runtime?.instances?.['boot-tv'];
         return {
           choreography:root.dataset.motionChoreo,
           reduced:root.dataset.motionChoreoReduced,
@@ -36,10 +38,15 @@ const assert=require('node:assert/strict');
           laterStates:[...document.querySelectorAll('[data-model-slot]')].filter(el=>el.dataset.modelSlot!=='boot-tv').map(el=>el.dataset.glbState),
           overflow:root.scrollWidth-root.clientWidth,
           runtimeErrors:window.MOVX3D?.runtime?.errors||[],
+          directorReady:root.dataset.crtDirector,
+          directorProgress:Number(inst?.sceneDirector?.state?.progress||0),
+          camera:inst?{x:inst.camera.position.x,y:inst.camera.position.y,z:inst.camera.position.z,fov:inst.camera.fov}:null,
         };
       });
       assert.equal(before.choreography,'v354-boot-scroll');
       assert.equal(before.reduced,'false');
+      assert.equal(before.directorReady,'v367-ready','shared physical Scene-01 director is not ready');
+      assert.ok(before.camera,'real CRT camera state is unavailable');
       if(cfg.name==='mobile'){
         assert.equal(before.sticky,'relative','mobile must keep channels in natural flow');
         await page.locator('[data-crt-mode-control="digital"]').click();
@@ -70,20 +77,23 @@ const assert=require('node:assert/strict');
       assert.ok(Math.abs(scrollState.scrollY-scrollState.target)<12,
         `deterministic choreography scroll missed target: ${JSON.stringify(scrollState)}`);
 
-      // v354 intentionally smooths progress over RAFs. Wait for the visible
-      // choreography state itself instead of sampling immediately after the
-      // numeric progress threshold; this removes CI timing races without
-      // weakening the visual contract.
+      // v354 originally moved the CRT wrapper with a CSS transform. The current
+      // production architecture (v367+) intentionally keeps that wrapper neutral
+      // and hands scroll choreography to the real Three.js camera/group inside the
+      // shared v322 render frame. Wait for the authored visible state, then assert
+      // the physical camera response instead of requiring the retired CSS technique.
       await page.waitForFunction(()=>{
         const root=document.documentElement;
         const boot=document.querySelector('#boot');
         const copy=boot?.querySelector('.boot-copy');
         const cue=boot?.querySelector('.boot-scroll-cue-v354');
-        if(!boot||!copy||!cue)return false;
+        const inst=window.MOVX3D?.runtime?.instances?.['boot-tv'];
+        if(!boot||!copy||!cue||!inst?.sceneDirector)return false;
         const progress=parseFloat(root.dataset.motionChoreoProgress||'0');
         const copyOpacity=parseFloat(getComputedStyle(copy).opacity);
         const cueOpacity=parseFloat(getComputedStyle(cue).opacity);
-        return progress>.52 && copyOpacity<.88 && cueOpacity<.2;
+        const directorProgress=Number(inst.sceneDirector.state.progress||0);
+        return progress>.52 && directorProgress>.42 && copyOpacity<.88 && cueOpacity<.2;
       },null,{timeout:12000});
       await page.waitForTimeout(120);
 
@@ -93,6 +103,7 @@ const assert=require('node:assert/strict');
         const wrap=boot.querySelector('.crt-wrap');
         const copy=boot.querySelector('.boot-copy');
         const cue=boot.querySelector('.boot-scroll-cue-v354');
+        const inst=window.MOVX3D?.runtime?.instances?.['boot-tv'];
         return {
           progress:parseFloat(root.dataset.motionChoreoProgress||'0'),
           phase:boot.dataset.v354Phase,
@@ -104,10 +115,23 @@ const assert=require('node:assert/strict');
           heroState:document.querySelector('[data-model-slot="hero-movx-logo"]')?.dataset.glbState,
           overflow:root.scrollWidth-root.clientWidth,
           scrollY:window.scrollY,
+          directorReady:root.dataset.crtDirector,
+          directorProgress:Number(inst?.sceneDirector?.state?.progress||0),
+          camera:inst?{x:inst.camera.position.x,y:inst.camera.position.y,z:inst.camera.position.z,fov:inst.camera.fov}:null,
         };
       });
       assert.ok(mid.progress>.52,'scroll choreography progress did not advance');
-      assert.notEqual(mid.wrapTransform,before.wrapTransform,'CRT wrapper did not change during choreography');
+      assert.equal(mid.directorReady,'v367-ready','physical Scene-01 director dropped during choreography');
+      assert.ok(mid.directorProgress>.42,`physical Scene-01 director did not consume scroll progress: ${mid.directorProgress}`);
+      assert.ok(mid.camera,'real CRT camera state disappeared during choreography');
+      const cameraDelta=Math.hypot(
+        mid.camera.x-before.camera.x,
+        mid.camera.y-before.camera.y,
+        mid.camera.z-before.camera.z
+      );
+      const fovDelta=Math.abs(mid.camera.fov-before.camera.fov);
+      assert.ok(cameraDelta>.025||fovDelta>.05,
+        `real CRT camera did not respond to choreography: ${JSON.stringify({before:before.camera,mid:mid.camera,cameraDelta,fovDelta})}`);
       assert.ok(mid.copyOpacity<.88,'boot copy did not phase out');
       assert.ok(mid.cueOpacity<.2,'scroll cue did not clear after engagement');
       assert.ok(mid.crtProgress>.50,'scroll progress was not handed to 3D runtime');
@@ -117,7 +141,7 @@ const assert=require('node:assert/strict');
       assert.equal(errors.length,0,'page errors: '+errors.join(' | '));
 
       await page.screenshot({path:`_site/qa-v354-boot-choreo-${cfg.name}.png`,fullPage:false});
-      console.log(JSON.stringify({qa:'v354-boot-choreo',viewport:cfg.name,status:'PASS',before,scrollState,mid}));
+      console.log(JSON.stringify({qa:'v382.1-physical-boot-choreo',viewport:cfg.name,status:'PASS',before,scrollState,mid,cameraDelta,fovDelta}));
       await page.close();
     }
 
