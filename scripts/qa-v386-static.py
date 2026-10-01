@@ -34,7 +34,7 @@ for name in ('index.html','latest.html'):
     if 'aspect-ratio:1.12 / 1!important' not in text:errors.append(f'{name} missing v386.5 mobile projection CSS')
     if 'data-v386-hero-stability="v386-4-hero-selector-stability"' not in text:errors.append(f'{name} missing v386.4 stability marker')
     if 'data-v386-mobile-projection="v386-5-mobile-safe-projection"' not in text:errors.append(f'{name} missing v386.5 projection marker')
-    if 'v322-glb-runtime.mjs?v=v386-5-mobile-safe-projection' not in text:errors.append(f'{name} missing v386.5 final runtime cache key')
+    if 'v322-glb-runtime.mjs?v=v386-4-hero-selector-stability' not in text:errors.append(f'{name} missing fresh v386.4 shell runtime cache key')
 
 controller=out/'v358-crt-immersion.js'
 if not controller.exists():errors.append('built v358 controller missing')
@@ -67,4 +67,4 @@ else:
 models=sorted(p.name for p in (out/'models').glob('*.glb')) if (out/'models').exists() else []
 if models!=['movx-crt-tv.glb']:errors.append(f'single-model gate failed: {models}')
 if errors:raise SystemExit('MOVX v386.5 static QA failed: '+json.dumps(errors,ensure_ascii=False))
-print(json.dumps({'qa':'v386.5-static','status':'PASS','scope':'#boot only','models':models,'projection':'desktop/short/mobile safe fields','short_visible_crt':True,'selector':'bounded physical-knob intent priority + direct-first ownership'},ensure_ascii=False))
+print(json.dumps({'qa':'v386.5-static','status':'PASS','scope':'#boot only','models':models,'projection':'desktop/short/mobile safe fields','short_visible_crt':True,'runtime_shell':'fresh unpublished v386.4 URL','selector':'v386.5 intent-priority child module + direct-first ownership'},ensure_ascii=False))
