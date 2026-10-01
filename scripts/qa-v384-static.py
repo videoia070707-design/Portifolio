@@ -39,9 +39,11 @@ for contract in (
     '#playground .float.cd{',
     'left:55%!important;top:64%!important;',
     '#people .people-visual img{',
-    'transform:scale(1.90)!important;',
+    'object-position:100% 48%!important;',
+    'transform:scale(2.24)!important;',
     '@media(max-width:900px)',
-    'transform:scale(1.82)!important;',
+    'object-position:100% 44%!important;',
+    'transform:scale(2.28)!important;',
 ):
     if contract not in source: errors.append(f'v384 CSS contract missing: {contract}')
 
@@ -49,4 +51,4 @@ models=sorted(p.name for p in (out/'models').glob('*.glb')) if (out/'models').ex
 if models!=['movx-crt-tv.glb']: errors.append(f'v384 single-model invariant failed: {models}')
 
 if errors: raise SystemExit('MOVX v384 static QA failed: '+json.dumps(errors,ensure_ascii=False))
-print(json.dumps({'status':'passed','release':release,'css_bytes':css_bytes,'published_glbs':models,'scope':'desktop Playground containing block + spacing + People crop'},ensure_ascii=False))
+print(json.dumps({'status':'passed','release':release,'css_bytes':css_bytes,'published_glbs':models,'scope':'desktop Playground containing block + spacing + tighter People crop'},ensure_ascii=False))
