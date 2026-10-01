@@ -28,8 +28,14 @@ if not source: errors.append('missing v384-composition-polish.css')
 if css_bytes>10_000: errors.append(f'v384 CSS exceeds budget: {css_bytes}')
 for contract in (
     '@media(min-width:901px)',
+    '#playground .float-zone{',
+    'position:absolute!important;',
+    'bottom:8%!important;',
+    'height:auto!important;',
     '#playground .float.camera{',
     'left:24%!important;top:34%!important;',
+    '#playground .float.cube{',
+    'left:2%!important;top:61%!important;',
     '#playground .float.cd{',
     'left:55%!important;top:64%!important;',
     '#people .people-visual img{',
@@ -43,4 +49,4 @@ models=sorted(p.name for p in (out/'models').glob('*.glb')) if (out/'models').ex
 if models!=['movx-crt-tv.glb']: errors.append(f'v384 single-model invariant failed: {models}')
 
 if errors: raise SystemExit('MOVX v384 static QA failed: '+json.dumps(errors,ensure_ascii=False))
-print(json.dumps({'status':'passed','release':release,'css_bytes':css_bytes,'published_glbs':models,'scope':'desktop Playground spacing + People crop'},ensure_ascii=False))
+print(json.dumps({'status':'passed','release':release,'css_bytes':css_bytes,'published_glbs':models,'scope':'desktop Playground containing block + spacing + People crop'},ensure_ascii=False))
