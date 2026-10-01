@@ -1,15 +1,20 @@
-"""Static gate for MOVX v386 visibly immersive Hero pass."""
+"""Static gate for MOVX v386 visibly immersive Hero pass + v386.3 safe projection."""
 from pathlib import Path
 import json,re
 
 root=Path(__file__).resolve().parents[1]
 out=root/'_site'
 css=(root/'site'/'v386-hero-immersion.css').read_text()
+projection=(root/'site'/'v386-3-crt-safe-projection.css').read_text()
 errors=[]
 
 for forbidden in ('#hero','#portal','#work','#machine','#playground','#studio','#people','#contact'):
     if forbidden in css:errors.append(f'v386 CSS escaped #boot via {forbidden}')
+    if forbidden in projection:errors.append(f'v386.3 projection CSS escaped #boot via {forbidden}')
 if '#boot' not in css:errors.append('v386 CSS has no #boot scope')
+if '#boot' not in projection:errors.append('v386.3 projection CSS has no #boot scope')
+for contract in ('height:auto!important','aspect-ratio:1.2 / 1!important','aspect-ratio:1.30 / 1!important','aspect-ratio:auto!important'):
+    if contract not in projection:errors.append(f'v386.3 projection contract missing: {contract}')
 
 for name in ('index.html','latest.html'):
     path=out/name
@@ -17,6 +22,8 @@ for name in ('index.html','latest.html'):
     text=path.read_text()
     if 'data-v386-hero-immersion="v386-spatial-hero"' not in text:errors.append(f'{name} missing v386 marker')
     if '<style data-v386-hero-immersion="v386-spatial-hero">' not in text:errors.append(f'{name} missing v386 critical CSS')
+    if 'data-v386-safe-projection="v386-3-landscape-field"' not in text:errors.append(f'{name} missing v386.3 projection marker')
+    if '<style data-v386-safe-projection="v386-3-landscape-field">' not in text:errors.append(f'{name} missing v386.3 projection CSS')
 
 controller=out/'v358-crt-immersion.js'
 if not controller.exists():errors.append('built v358 controller missing')
@@ -30,5 +37,5 @@ else:
 
 models=sorted(p.name for p in (out/'models').glob('*.glb')) if (out/'models').exists() else []
 if models!=['movx-crt-tv.glb']:errors.append(f'single-model gate failed: {models}')
-if errors:raise SystemExit('MOVX v386 static QA failed: '+json.dumps(errors,ensure_ascii=False))
-print(json.dumps({'qa':'v386-static','status':'PASS','scope':'#boot only','models':models,'strong_rest_pose':True},ensure_ascii=False))
+if errors:raise SystemExit('MOVX v386.3 static QA failed: '+json.dumps(errors,ensure_ascii=False))
+print(json.dumps({'qa':'v386.3-static','status':'PASS','scope':'#boot only','models':models,'strong_rest_pose':True,'projection':'landscape desktop slot'},ensure_ascii=False))
