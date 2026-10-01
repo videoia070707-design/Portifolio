@@ -43,6 +43,7 @@ jobs:
           python3 scripts/qa-v379-static.py
           python3 scripts/qa-v380-static.py
           python3 scripts/qa-v381-static.py
+          python3 scripts/qa-v382-static.py
       - name: Store immutable build for downstream jobs
         uses: actions/upload-artifact@v4
         with:
@@ -127,7 +128,7 @@ jobs:
           retention-days: 7
 
   qa-scene-frame:
-    name: QA visual surface, Scene 01 interactions and art direction
+    name: QA reference synthesis, Scene 01 interactions and visual surface
     needs: build
     runs-on: ubuntu-latest
     timeout-minutes: 25
@@ -148,7 +149,7 @@ jobs:
           path: _site
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
-      - name: Validate current art direction and Scene 01 physical composition
+      - name: Validate current reference synthesis and Scene 01 physical composition
         shell: bash
         run: |
           set -euo pipefail
@@ -156,10 +157,10 @@ jobs:
           python3 -m http.server 4174 --directory _site >_site/qa-logs/scene-frame.log 2>&1 &
           SERVER_PID=$!
           trap 'kill $SERVER_PID 2>/dev/null || true' EXIT
+          sed 's/127\.0\.0\.1:4173/127.0.0.1:4174/g' scripts/qa-v382-reference-synthesis.cjs > _site/qa-logs/qa-v382-reference-synthesis.cjs
           sed 's/127\.0\.0\.1:4173/127.0.0.1:4174/g' scripts/qa-v381-art-direction.cjs > _site/qa-logs/qa-v381-art-direction.cjs
           sed 's/127\.0\.0\.1:4173/127.0.0.1:4174/g' scripts/qa-v379-scene01-editorial-grid.cjs > _site/qa-logs/qa-v379-editorial-grid.cjs
           sed 's/127\.0\.0\.1:4173/127.0.0.1:4174/g' scripts/qa-v380-crt-channel-retune.cjs > _site/qa-logs/qa-v380-channel-retune.cjs
-          sed 's/127\.0\.0\.1:4173/127.0.0.1:4174/g' scripts/qa-v369-scene01-full-bleed.cjs > _site/qa-logs/qa-v369-scene-frame.cjs
           sed 's/127\.0\.0\.1:4173/127.0.0.1:4174/g' scripts/qa-v370-crt-light-spill.cjs > _site/qa-logs/qa-v370-crt-light-spill.cjs
           sed 's/127\.0\.0\.1:4173/127.0.0.1:4174/g' scripts/qa-v371-crt-object-volume.cjs > _site/qa-logs/qa-v371-crt-object-volume.cjs
           sed 's/127\.0\.0\.1:4173/127.0.0.1:4174/g' scripts/qa-v372-channel-pose-authority.cjs > _site/qa-logs/qa-v372-channel-pose-authority.cjs
@@ -169,14 +170,15 @@ jobs:
           sed 's/127\.0\.0\.1:4173/127.0.0.1:4174/g' scripts/qa-v377-crt-focus-pull.cjs > _site/qa-logs/qa-v377-crt-focus-pull.cjs
           sed 's/127\.0\.0\.1:4173/127.0.0.1:4174/g' scripts/qa-v378-crt-physical-pickup.cjs > _site/qa-logs/qa-v378-crt-physical-pickup.cjs
 
-          # Current surface first. v381 verifies the site-wide visual reset, then
-          # v379/v380 prove that the redesign did not compromise the real CRT.
+          # Current authored surface first. v382 owns the global/full-bleed visual
+          # contract; v381/v379/v380 keep the redesign and real CRT regressions honest.
+          node _site/qa-logs/qa-v382-reference-synthesis.cjs
           node _site/qa-logs/qa-v381-art-direction.cjs
           node _site/qa-logs/qa-v379-editorial-grid.cjs
           node _site/qa-logs/qa-v380-channel-retune.cjs
 
-          # Historical physical regression coverage remains complete.
-          node _site/qa-logs/qa-v369-scene-frame.cjs
+          # v369's old Scene-02 rounded-card invariant is intentionally superseded
+          # by v381/v382. Physical Scene-01 regressions remain covered by v370-v378.
           node _site/qa-logs/qa-v370-crt-light-spill.cjs
           node _site/qa-logs/qa-v371-crt-object-volume.cjs
           node _site/qa-logs/qa-v373-crt-instant-presence.cjs
@@ -191,8 +193,8 @@ jobs:
         with:
           name: movx-qa-scene-frame
           path: |
+            _site/qa-v382-*
             _site/qa-v381-*
-            _site/qa-v369-*
             _site/qa-v370-*
             _site/qa-v371-*
             _site/qa-v372-*
