@@ -1,4 +1,4 @@
-/* MOVX v379.2 — Scene 01 editorial safe-zone grid.
+/* MOVX v379.3 / v380.2 — Scene 01 editorial safe-zone grid.
    The CRT is already physically interactive. This pass fixes the remaining
    composition gap: headline, copy, channel strip and CRT must read as one authored
    shot without crowding each other. CSS-only, Scene-01-only, no new 3D resources.
@@ -6,7 +6,12 @@
    v379.1 proved the real projected GLB can extend materially beyond its grid cell.
    The moat therefore cannot be a decorative column-gap alone: the editorial block
    is now deliberately right-aligned inside a wider second track so the *projected*
-   cabinet, not merely the CRT DOM wrapper, owns the left side of the scene. */
+   cabinet, not merely the CRT DOM wrapper, owns the left side of the scene.
+
+   v380.2 extends that same physical rule to mobile. The mobile WebGL surface is
+   intentionally compact for performance, while the projected cabinet visually
+   overhangs its grid row. Reserve that authored overhang before the copy starts so
+   the headline can never be painted through the television. */
 
 @media(min-width:901px){
   html[data-crt-editorial-grid-layer="v379-editorial-safe-zones"].v354-choreo #boot .boot-stage{
@@ -129,8 +134,15 @@
 }
 
 @media(max-width:900px){
-  /* Mobile remains a natural vertical composition. Add rhythm only; do not import
-     desktop separators or sticky assumptions. */
+  /* Mobile remains a natural vertical composition. The real GLB projects below
+     the compact WebGL grid row by roughly one cabinet depth. Reserve that physical
+     footprint as layout space instead of enlarging the canvas/model itself. */
+  html[data-crt-editorial-grid-layer] #boot{
+    --v379-mobile-crt-overhang:clamp(228px,28svh,250px);
+  }
+  html[data-crt-editorial-grid-layer] #boot .boot-copy{
+    margin-top:var(--v379-mobile-crt-overhang)!important;
+  }
   html[data-crt-editorial-grid-layer].v353-motion #boot .boot-copy .eyebrow{margin-bottom:20px!important}
   html[data-crt-editorial-grid-layer].v353-motion #boot .boot-title{
     display:flex;
