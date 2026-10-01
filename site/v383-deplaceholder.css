@@ -1,0 +1,332 @@
+/* MOVX v383 — de-placeholder pass.
+   The CRT remains the only production GLB. Deferred scenes should not pretend to
+   contain finished 3D assets: use bold graphic systems, typography and existing
+   interactions until their real models are approved. */
+
+html[data-v383-deplaceholder="v383-graphic-world"]{
+  --v383-ink:#070707;
+  --v383-paper:#eeeae1;
+  --v383-orange:#ff5a18;
+  --v383-line:rgba(7,7,7,.16);
+  --v383-light-line:rgba(238,234,225,.17);
+}
+
+/* 03 / PORTAL — keep the existing scroll-linked portal variables but remove the
+   fake perspective tunnel and pseudo-metal 3D X. One graphic X scales in the same
+   authored scroll state, so motion survives while the visual language becomes
+   flat, intentional and much closer to the approved editorial references. */
+html[data-v383-deplaceholder] #portal,
+html[data-v383-deplaceholder] #portal .scene-inner,
+html[data-v383-deplaceholder] #portal [data-model-slot="x-portal"],
+html[data-v383-deplaceholder] #portal .v316-portal-stage{
+  background:var(--v383-orange)!important;
+  color:var(--v383-ink)!important;
+}
+html[data-v383-deplaceholder] #portal [data-model-slot="x-portal"]{
+  perspective:none!important;
+  min-height:calc(100vh - 104px)!important;
+}
+html[data-v383-deplaceholder] #portal .tunnel-stage::before,
+html[data-v383-deplaceholder] #portal .tunnel-stage::after,
+html[data-v383-deplaceholder] #portal .v316-depth-field,
+html[data-v383-deplaceholder] #portal .v316-tunnel-frame,
+html[data-v383-deplaceholder] #portal .v316-x-cut{display:none!important}
+html[data-v383-deplaceholder] #portal .v316-x-core{
+  width:min(43vw,620px)!important;
+  filter:none!important;
+}
+html[data-v383-deplaceholder] #portal .v316-x-core::before,
+html[data-v383-deplaceholder] #portal .v316-x-core::after{
+  width:18%!important;
+  height:126%!important;
+  border-radius:0!important;
+  background:var(--v383-ink)!important;
+  box-shadow:none!important;
+}
+html[data-v383-deplaceholder] #portal .v316-portal-copy{
+  left:clamp(20px,4.6vw,68px)!important;
+  max-width:520px!important;
+}
+html[data-v383-deplaceholder] #portal .v316-portal-copy small{
+  color:#402014!important;
+  letter-spacing:.16em!important;
+}
+html[data-v383-deplaceholder] #portal .v316-portal-copy h2{
+  max-width:5ch;
+  color:var(--v383-ink)!important;
+  mix-blend-mode:normal!important;
+  font-size:clamp(68px,8.2vw,138px)!important;
+  line-height:.78!important;
+  letter-spacing:-.085em!important;
+}
+html[data-v383-deplaceholder] #portal .v316-portal-copy p{
+  color:#3f2419!important;
+  max-width:32ch!important;
+  font-size:13px!important;
+}
+html[data-v383-deplaceholder] #portal .v316-portal-side,
+html[data-v383-deplaceholder] #portal .v316-portal-cue,
+html[data-v383-deplaceholder] #portal .v316-portal-status{color:#3d2116!important}
+html[data-v383-deplaceholder] #portal .v316-portal-cue::after{background:var(--v383-ink)!important}
+
+/* 06 / PLAYGROUND — preserve drag/touch semantics, remove the fake cassette,
+   camera, CD and UI-window renderings. The same draggable nodes become kinetic
+   typographic tokens: the interaction stays, the pseudo-product aesthetic goes. */
+html[data-v383-deplaceholder] #playground .play-stage{
+  min-height:calc(100vh - 104px)!important;
+  padding:clamp(38px,5vw,78px)!important;
+}
+html[data-v383-deplaceholder] #playground .float-zone{
+  left:3%!important;
+  right:auto!important;
+  top:8%!important;
+  bottom:8%!important;
+  width:64%!important;
+  height:auto!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  border-radius:0!important;
+}
+html[data-v383-deplaceholder] #playground .float-zone::before{display:none!important}
+html[data-v383-deplaceholder] #playground .float{
+  width:auto!important;
+  height:auto!important;
+  min-width:0!important;
+  min-height:0!important;
+  padding:0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  filter:none!important;
+  display:block!important;
+  overflow:visible!important;
+  color:transparent!important;
+}
+html[data-v383-deplaceholder] #playground .float::before{
+  position:relative!important;
+  inset:auto!important;
+  display:block!important;
+  width:auto!important;
+  height:auto!important;
+  border:0!important;
+  border-radius:0!important;
+  background:none!important;
+  box-shadow:none!important;
+  filter:none!important;
+  transform:none!important;
+  clip-path:none!important;
+  color:var(--v383-ink)!important;
+  text-shadow:none!important;
+  font:950 clamp(46px,6.2vw,104px)/.78 Arial,Helvetica,sans-serif!important;
+  letter-spacing:-.075em!important;
+  white-space:nowrap;
+}
+html[data-v383-deplaceholder] #playground .float::after{
+  position:relative!important;
+  inset:auto!important;
+  display:block!important;
+  width:max-content!important;
+  height:auto!important;
+  margin-top:10px;
+  padding-top:7px;
+  border-radius:0!important;
+  border-top:1px solid rgba(7,7,7,.3)!important;
+  background:none!important;
+  box-shadow:none!important;
+  filter:none!important;
+  transform:none!important;
+  clip-path:none!important;
+  color:#655f57!important;
+  font:700 7px/1 "Courier New",monospace!important;
+  letter-spacing:.17em!important;
+  white-space:nowrap;
+}
+html[data-v383-deplaceholder] #playground .float.cassette{left:2%!important;top:9%!important}
+html[data-v383-deplaceholder] #playground .float.cassette::before{content:"IDEAS"!important}
+html[data-v383-deplaceholder] #playground .float.cassette::after{content:"01 / START WITH A THOUGHT"!important}
+html[data-v383-deplaceholder] #playground .float.camera{left:35%!important;top:29%!important}
+html[data-v383-deplaceholder] #playground .float.camera::before{content:"CAPTURE"!important}
+html[data-v383-deplaceholder] #playground .float.camera::after{content:"02 / FRAME THE SIGNAL"!important}
+html[data-v383-deplaceholder] #playground .float.cube{left:7%!important;top:57%!important;transform:none!important}
+html[data-v383-deplaceholder] #playground .float.cube::before{content:"FORM"!important;color:var(--v383-orange)!important}
+html[data-v383-deplaceholder] #playground .float.cube::after{content:"03 / BUILD THE SHAPE"!important}
+html[data-v383-deplaceholder] #playground .float.cd{left:47%!important;top:66%!important}
+html[data-v383-deplaceholder] #playground .float.cd::before{content:"LOOP"!important}
+html[data-v383-deplaceholder] #playground .float.cd::after{content:"04 / TEST THE RHYTHM"!important}
+html[data-v383-deplaceholder] #playground .float.window{left:55%!important;top:5%!important}
+html[data-v383-deplaceholder] #playground .float.window::before{content:"FRAME"!important}
+html[data-v383-deplaceholder] #playground .float.window::after{content:"05 / SHIP THE IDEA"!important}
+html[data-v383-deplaceholder] #playground .float.cursor{display:none!important}
+html[data-v383-deplaceholder] #playground .float.dragging{
+  filter:none!important;
+  opacity:.56;
+}
+html[data-v383-deplaceholder] #playground .play-copy{
+  width:27%!important;
+  max-width:410px!important;
+  border-left:1px solid var(--v383-line)!important;
+  padding-left:clamp(22px,2.6vw,42px)!important;
+}
+
+/* 07 / STUDIO — the real Spatial Studio model is still deferred. Do not present
+   a CSS room as if it were the finished asset. Replace the pseudo-room with one
+   stark typographic stage that can later hand off cleanly to the approved GLB. */
+html[data-v383-deplaceholder] #studio,
+html[data-v383-deplaceholder] #studio .scene-inner,
+html[data-v383-deplaceholder] #studio [data-model-slot="spatial-studio"]{
+  background:#080808!important;
+  color:var(--v383-paper)!important;
+}
+html[data-v383-deplaceholder] #studio [data-model-slot="spatial-studio"]{
+  min-height:calc(100vh - 104px)!important;
+  border:0!important;
+  border-radius:0!important;
+  box-shadow:none!important;
+  perspective:none!important;
+  transform:none!important;
+  overflow:hidden!important;
+}
+html[data-v383-deplaceholder] #studio .studio-ceiling,
+html[data-v383-deplaceholder] #studio .studio-floor,
+html[data-v383-deplaceholder] #studio .studio-wall,
+html[data-v383-deplaceholder] #studio .studio-screen,
+html[data-v383-deplaceholder] #studio .studio-desk,
+html[data-v383-deplaceholder] #studio .studio-chair,
+html[data-v383-deplaceholder] #studio .v319-ambient,
+html[data-v383-deplaceholder] #studio .v319-status{display:none!important}
+html[data-v383-deplaceholder] #studio .studio-stage::before{
+  content:"STUDIO"!important;
+  display:block!important;
+  position:absolute!important;
+  left:3.2%!important;
+  right:auto!important;
+  top:50%!important;
+  width:auto!important;
+  height:auto!important;
+  transform:translateY(-52%)!important;
+  clip-path:none!important;
+  background:none!important;
+  color:transparent!important;
+  -webkit-text-stroke:1px rgba(238,234,225,.20);
+  font:950 clamp(170px,27vw,480px)/.70 Arial,Helvetica,sans-serif!important;
+  letter-spacing:-.095em!important;
+  white-space:nowrap;
+  opacity:1!important;
+  pointer-events:none;
+}
+html[data-v383-deplaceholder] #studio .studio-stage::after{
+  content:"DIRECTION / MOTION / IMAGE / INTERACTION"!important;
+  display:block!important;
+  position:absolute!important;
+  left:auto!important;
+  right:3.5%!important;
+  top:8%!important;
+  bottom:auto!important;
+  width:auto!important;
+  height:auto!important;
+  transform:none!important;
+  background:none!important;
+  color:#78736c!important;
+  opacity:1!important;
+  font:700 7px/1 "Courier New",monospace!important;
+  letter-spacing:.18em!important;
+  white-space:nowrap;
+}
+html[data-v383-deplaceholder] #studio .studio-copy{
+  left:4.2%!important;
+  right:auto!important;
+  bottom:7%!important;
+  max-width:620px!important;
+  padding:0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+  color:var(--v383-paper)!important;
+}
+html[data-v383-deplaceholder] #studio .studio-copy h2{
+  max-width:7ch;
+  color:var(--v383-paper)!important;
+  font-size:clamp(72px,8.2vw,146px)!important;
+  line-height:.78!important;
+  letter-spacing:-.08em!important;
+}
+html[data-v383-deplaceholder] #studio .studio-copy .copy{
+  max-width:38ch!important;
+  color:#9b958d!important;
+}
+html[data-v383-deplaceholder] #studio .studio-copy::after{
+  content:"MOVX / CREATIVE SYSTEM / 07"!important;
+  color:#706b64!important;
+}
+
+/* People: v382 fixed the collapsed image. v383 tightens the crop so the section
+   reads as a human portrait, not as a second campaign slide competing with copy. */
+html[data-v383-deplaceholder] #people .people-visual img{
+  object-position:82% 52%!important;
+  transform:scale(1.52)!important;
+  transform-origin:82% 52%!important;
+}
+
+@media(max-width:900px){
+  html[data-v383-deplaceholder] #portal [data-model-slot="x-portal"]{min-height:72vh!important}
+  html[data-v383-deplaceholder] #portal .v316-x-core{width:min(72vw,430px)!important}
+  html[data-v383-deplaceholder] #portal .v316-portal-copy{
+    left:18px!important;
+    right:18px!important;
+    bottom:7%!important;
+    top:auto!important;
+    max-width:none!important;
+  }
+  html[data-v383-deplaceholder] #portal .v316-portal-copy h2{font-size:clamp(54px,17vw,88px)!important}
+  html[data-v383-deplaceholder] #portal .v316-portal-copy p{max-width:28ch!important}
+
+  html[data-v383-deplaceholder] #playground .play-stage{
+    min-height:980px!important;
+    padding:38px 18px 52px!important;
+  }
+  html[data-v383-deplaceholder] #playground .float-zone{
+    position:relative!important;
+    left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;
+    width:100%!important;height:520px!important;
+    margin:0 0 44px!important;
+  }
+  html[data-v383-deplaceholder] #playground .float::before{font-size:clamp(38px,13vw,64px)!important}
+  html[data-v383-deplaceholder] #playground .float.cassette{left:0!important;top:4%!important}
+  html[data-v383-deplaceholder] #playground .float.window{left:42%!important;top:18%!important}
+  html[data-v383-deplaceholder] #playground .float.camera{left:10%!important;top:38%!important}
+  html[data-v383-deplaceholder] #playground .float.cube{left:2%!important;top:68%!important}
+  html[data-v383-deplaceholder] #playground .float.cd{left:47%!important;top:64%!important}
+  html[data-v383-deplaceholder] #playground .play-copy{
+    position:relative!important;
+    left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;
+    width:100%!important;max-width:none!important;
+    margin:0!important;padding:30px 0 0!important;
+    border-left:0!important;border-top:1px solid var(--v383-line)!important;
+  }
+
+  html[data-v383-deplaceholder] #studio [data-model-slot="spatial-studio"]{min-height:760px!important}
+  html[data-v383-deplaceholder] #studio .studio-stage::before{
+    left:-4%!important;
+    top:38%!important;
+    font-size:clamp(128px,44vw,220px)!important;
+  }
+  html[data-v383-deplaceholder] #studio .studio-stage::after{right:18px!important;top:7%!important}
+  html[data-v383-deplaceholder] #studio .studio-copy{
+    left:18px!important;right:18px!important;bottom:7%!important;max-width:none!important;
+  }
+  html[data-v383-deplaceholder] #studio .studio-copy h2{font-size:clamp(56px,16vw,86px)!important}
+
+  html[data-v383-deplaceholder] #people .people-visual img{
+    object-position:80% 50%!important;
+    transform:scale(1.55)!important;
+    transform-origin:80% 50%!important;
+  }
+}
+
+@media(prefers-reduced-motion:reduce){
+  html[data-v383-deplaceholder] #portal .v316-x-core{transform:translate(-50%,-50%) scale(.9)!important}
+}
