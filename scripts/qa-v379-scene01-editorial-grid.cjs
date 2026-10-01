@@ -86,19 +86,24 @@ const fs=require('node:fs');
 
       assert.equal(errors.length,0,`${cfg.name} page errors: ${errors.join(' | ')}`);
       await page.locator('#boot').screenshot({path:`_site/qa-v379-editorial-grid-${cfg.name}.png`});
-      console.log(JSON.stringify({qa:'v379.2.1-scene01-editorial-grid',viewport:cfg.name,status:'PASS',initial:s,mid}));
+      console.log(JSON.stringify({qa:'v379.2.2-scene01-editorial-grid',viewport:cfg.name,status:'PASS',initial:s,mid}));
       await page.close();
     }
 
     const mobile=await browser.newPage({viewport:{width:390,height:844},isMobile:true,hasTouch:true,deviceScaleFactor:1});
     await mobile.goto('http://127.0.0.1:4173/',{waitUntil:'domcontentloaded',timeout:30000});
     await mobile.waitForFunction(()=>document.querySelector('[data-model-slot="boot-tv"]')?.dataset.glbState==='ready',null,{timeout:25000});
+    // Match the desktop gate: measure the authored mobile layout only after the
+    // staggered title entrance has settled. Otherwise transformed line boxes can
+    // overlap transiently even though the final CSS gap is healthy.
+    await mobile.waitForFunction(()=>document.documentElement.dataset.motionIntro==='ready',null,{timeout:12000});
+    await mobile.waitForTimeout(420);
     const m=await inspect(mobile);
     assert.equal(m.layer,'v379-editorial-safe-zones');assert.equal(m.renderers,1);assert.deepEqual(m.activeSlots,['boot-tv']);assert.ok(m.overflow<=2);
-    assert.ok(m.lineGaps.every(g=>g>=1),'mobile headline rhythm collapsed');
+    assert.ok(m.lineGaps.every(g=>g>=1),`mobile headline rhythm collapsed: ${JSON.stringify(m.lineGaps)}`);
     assert.ok(m.copy.left>=16&&m.copy.right<=374,'mobile editorial content escaped natural gutters');
     await mobile.locator('#boot').screenshot({path:'_site/qa-v379-editorial-grid-mobile.png'});
-    console.log(JSON.stringify({qa:'v379.2.1-scene01-editorial-grid',viewport:'mobile',status:'PASS',state:m}));
+    console.log(JSON.stringify({qa:'v379.2.2-scene01-editorial-grid',viewport:'mobile',status:'PASS',state:m}));
     await mobile.close();
   } finally {await browser.close()}
 })().catch(e=>{console.error(e);process.exit(1)});
