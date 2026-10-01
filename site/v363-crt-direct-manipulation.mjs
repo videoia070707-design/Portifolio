@@ -1,10 +1,11 @@
-/* MOVX v363/v386.4 — direct manipulation for the approved CRT.
+/* MOVX v363/v386.5 — direct manipulation for the approved CRT.
    The existing screen and selector become the controls: drag the real screen to
    manipulate the active programme and drag the real selector to tune channels.
-   v386.4 keeps exact ray hits authoritative but gives the tiny physical selector
-   a bounded screen-space pickup radius so live parallax cannot move it away in the
-   few milliseconds between reprojection and pointerdown. No extra WebGL context,
-   visible canvas, model, listener family, or animation loop is added. */
+   The tiny selector keeps exact ray hits as the primary signal, plus a bounded
+   projected pickup footprint. v386.5 gives that footprint local intent priority:
+   if a live parallax frame makes the screen/body win the first ray by a few pixels,
+   the pointer can still grab the real selector at its visible projected position.
+   No extra WebGL context, visible canvas, model, listener family or RAF is added. */
 import * as THREE from './vendor/three.module.js';
 
 const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -67,8 +68,9 @@ export function attachCRTDirectManipulation(instance){
   const nearKnob=event=>{
     const p=projectCenter(knob),r=instance.canvas.getBoundingClientRect();
     if(!p||!r.width||!r.height)return false;
-    /* About one fingertip/cursor target on desktop, bounded so the cabinet body
-       around the selector never becomes a giant invisible control. */
+    /* Deliberately local: enough to survive a live camera/object frame between
+       reprojection and pointerdown, but far too small to turn the cabinet into an
+       invisible dial. */
     const radius=Math.max(24,Math.min(36,r.width*.042));
     return Math.hypot(event.clientX-p.x,event.clientY-p.y)<=radius;
   };
@@ -94,8 +96,13 @@ export function attachCRTDirectManipulation(instance){
     if(event.button!==undefined&&event.button!==0)return;
     if(coarse&&event.pointerType==='touch')return;
     const hit=hitAt(event),obj=hit?.object;
-    const assisted=obj!==knob&&obj!==screen&&nearKnob(event);
-    const kind=obj===screen?'screen':(obj===knob||assisted)?'knob':'none';
+    const selectorIntent=nearKnob(event);
+    /* Physical affordance priority: within the real selector's tiny projected
+       footprint, the dial owns the pointer even if the curved screen/cabinet is
+       the first ray-hit on this particular live-parallax frame. Outside that
+       footprint, exact screen raycasting remains unchanged. */
+    const assisted=selectorIntent&&obj!==knob;
+    const kind=(obj===knob||selectorIntent)?'knob':obj===screen?'screen':'none';
     if(kind==='none')return;
     if(assisted){direct.selectorAssistHits++;boot.dataset.crtSelectorAssist='pickup'}else delete boot.dataset.crtSelectorAssist;
     direct.active=true;direct.kind=kind;direct.moved=false;direct.pointerId=event.pointerId;
@@ -180,7 +187,7 @@ export function attachCRTDirectManipulation(instance){
 
   instance.directManipulation={state:direct,update};
   document.documentElement.dataset.crtDirect='v363-ready';
-  document.documentElement.dataset.crtSelectorPickup='v386.4-bounded';
+  document.documentElement.dataset.crtSelectorPickup='v386.5-intent-priority';
   boot.dataset.crtDirect='ready';
   refreshHint();
   return instance.directManipulation;
