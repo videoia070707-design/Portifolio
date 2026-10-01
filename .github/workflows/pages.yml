@@ -19,7 +19,7 @@ jobs:
   build:
     name: Build once
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -31,7 +31,7 @@ jobs:
       - name: Install pinned dependencies
         run: npm ci --no-audit --no-fund
       - name: Ensure FFmpeg for optimized media
-        timeout-minutes: 3
+        timeout-minutes: 8
         shell: bash
         run: |
           set -euo pipefail
@@ -39,8 +39,8 @@ jobs:
             ffmpeg -version | head -1
             exit 0
           fi
-          sudo timeout 90s apt-get -o Acquire::Retries=3 update
-          sudo timeout 90s apt-get -o Acquire::Retries=3 install -y ffmpeg
+          sudo apt-get -o Acquire::Retries=5 update
+          sudo env DEBIAN_FRONTEND=noninteractive apt-get -o Acquire::Retries=5 install -y --no-install-recommends ffmpeg
           ffmpeg -version | head -1
       - name: Build optimized MOVX source
         run: npm run build
