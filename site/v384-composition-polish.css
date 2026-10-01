@@ -3,11 +3,21 @@
    desktop Playground collision pattern and tightens the People crop. */
 
 /* PLAYGROUND / desktop — keep the v383 drag nodes, but give every word a
-   dedicated authored anchor. The previous diagonal cluster caused the generated
-   words to overlap even though the interaction itself was healthy. */
+   dedicated authored anchor. v318 still set .float-zone to position:relative;
+   with only absolutely positioned children that collapsed its desktop height,
+   making percentage tops converge. Restore the intended absolute containing
+   block so top + bottom establish a real vertical field while drag still writes
+   left/top directly to the same tokens. */
 @media(min-width:901px){
   html[data-v384-composition-polish="v384-clean-spacing"] #playground .float-zone{
+    position:absolute!important;
+    left:3%!important;
+    right:auto!important;
+    top:8%!important;
+    bottom:8%!important;
     width:64%!important;
+    height:auto!important;
+    min-height:0!important;
   }
   html[data-v384-composition-polish] #playground .float::before{
     font-size:clamp(44px,4.5vw,76px)!important;
