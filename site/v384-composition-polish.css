@@ -47,20 +47,20 @@
   }
 }
 
-/* PEOPLE — bias fully toward the human subject. The source slide remains the
-   same approved project image, but campaign typography is now pushed outside the
-   visible crop so the MOVX manifesto owns the page. */
+/* PEOPLE — the v384.2 evidence still exposed the source slide's campaign copy
+   at the far-left edge. A tighter right-anchored crop keeps the human face and
+   PPE as the subject while pushing that inherited typography outside the frame. */
 html[data-v384-composition-polish] #people .people-visual img{
-  object-position:100% 52%!important;
-  transform:scale(1.90)!important;
-  transform-origin:100% 52%!important;
+  object-position:100% 48%!important;
+  transform:scale(2.24)!important;
+  transform-origin:100% 48%!important;
 }
 
 @media(max-width:900px){
   /* v383 mobile Playground already reads cleanly; leave its composition intact. */
   html[data-v384-composition-polish] #people .people-visual img{
-    object-position:100% 50%!important;
-    transform:scale(1.82)!important;
-    transform-origin:100% 50%!important;
+    object-position:100% 44%!important;
+    transform:scale(2.28)!important;
+    transform-origin:100% 44%!important;
   }
 }
