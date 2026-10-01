@@ -37,7 +37,7 @@ const fs=require('node:fs');
         panelInside:par.bottom<=scene.bottom+1,
         copyInside:cr.top>=scene.top-1&&cr.bottom<=scene.bottom+1&&cr.left>=scene.left-1&&cr.right<=scene.right+1,
         titleToCopy:pr.top-tr.bottom,copyToTags:tar.top-pr.bottom,
-        progress:Number(window.MOVXCRT?.progress||0),scrollY,
+        progress:Number(window.MOVXCRT?.progress ?? getComputedStyle(root).getPropertyValue('--crt-progress') ?? 0),scrollY,
         renderers:document.querySelectorAll('.v322-model-renderer').length,activeSlots:window.MOVX3D.runtime.activeSlots,
         triangles:inst.stats.triangles,overflow:root.scrollWidth-innerWidth,errors:window.MOVX3D.runtime.errors,
       };
@@ -86,7 +86,7 @@ const fs=require('node:fs');
 
       assert.equal(errors.length,0,`${cfg.name} page errors: ${errors.join(' | ')}`);
       await page.locator('#boot').screenshot({path:`_site/qa-v379-editorial-grid-${cfg.name}.png`});
-      console.log(JSON.stringify({qa:'v379.2-scene01-editorial-grid',viewport:cfg.name,status:'PASS',initial:s,mid}));
+      console.log(JSON.stringify({qa:'v379.2.1-scene01-editorial-grid',viewport:cfg.name,status:'PASS',initial:s,mid}));
       await page.close();
     }
 
@@ -98,7 +98,7 @@ const fs=require('node:fs');
     assert.ok(m.lineGaps.every(g=>g>=1),'mobile headline rhythm collapsed');
     assert.ok(m.copy.left>=16&&m.copy.right<=374,'mobile editorial content escaped natural gutters');
     await mobile.locator('#boot').screenshot({path:'_site/qa-v379-editorial-grid-mobile.png'});
-    console.log(JSON.stringify({qa:'v379.2-scene01-editorial-grid',viewport:'mobile',status:'PASS',state:m}));
+    console.log(JSON.stringify({qa:'v379.2.1-scene01-editorial-grid',viewport:'mobile',status:'PASS',state:m}));
     await mobile.close();
   } finally {await browser.close()}
 })().catch(e=>{console.error(e);process.exit(1)});
