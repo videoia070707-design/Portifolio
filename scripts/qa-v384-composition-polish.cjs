@@ -20,8 +20,6 @@ const fs=require('node:fs');
 
     const inspect=async page=>page.evaluate(()=>{
       const root=document.documentElement;
-      // Count only the five authored draggable model slots. Later runtime layers
-      // may expose additional .float helper/proxy nodes; those are not visual tokens.
       const floats=[...document.querySelectorAll('#playground .float-zone > .float[data-model-slot]')].map(el=>{
         const r=el.getBoundingClientRect();
         return {cls:el.className,slot:el.dataset.modelSlot,left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:r.width,height:r.height};
@@ -58,12 +56,12 @@ const fs=require('node:fs');
     const worst=d.overlaps.reduce((m,x)=>x.ratio>m.ratio?x:m,{ratio:0});
     assert.ok(worst.ratio<.08,`desktop Playground tokens overlap: ${JSON.stringify(worst)}`);
     const tops=d.floats.map(x=>x.top);assert.ok(Math.max(...tops)-Math.min(...tops)>300,'desktop Playground lost vertical composition spread');
-    assert.ok(d.people.scale>=1.85,`desktop People crop too loose: ${d.people.scale}`);
-    assert.ok(d.people.objectPosition.startsWith('100%'),`desktop People crop must anchor right: ${d.people.objectPosition}`);
+    assert.ok(d.people.scale>=2.20,`desktop People crop too loose: ${d.people.scale}`);
+    assert.equal(d.people.objectPosition,'100% 48%',`desktop People crop anchor changed: ${d.people.objectPosition}`);
     assert.equal(errors.length,0,`desktop page errors: ${errors.join(' | ')}`);
     await playground.screenshot({path:'_site/qa-v384-playground-desktop.png'});
     const people=page.locator('#people');await people.scrollIntoViewIfNeeded();await page.waitForTimeout(700);await people.screenshot({path:'_site/qa-v384-people-desktop.png'});
-    console.log(JSON.stringify({qa:'v384.1-composition-polish',viewport:'desktop',status:'PASS',state:d}));
+    console.log(JSON.stringify({qa:'v384.3-composition-polish',viewport:'desktop',status:'PASS',state:d}));
     await page.close();
 
     const {p:mobile,errors:mobileErrors}=await open({viewport:{width:390,height:844},isMobile:true,hasTouch:true,deviceScaleFactor:1});
@@ -71,12 +69,12 @@ const fs=require('node:fs');
     const m=await inspect(mobile);
     assert.equal(m.marker,'v384-clean-spacing');assert.equal(m.renderers,1);assert.deepEqual(m.activeSlots,['boot-tv']);assert.equal(m.runtimeErrors.length,0);assert.ok(m.overflow<=2);
     assert.equal(m.floats.length,5,'mobile Playground token count changed');
-    assert.ok(m.people.scale>=1.75,`mobile People crop too loose: ${m.people.scale}`);
-    assert.ok(m.people.objectPosition.startsWith('100%'),`mobile People crop must anchor right: ${m.people.objectPosition}`);
+    assert.ok(m.people.scale>=2.24,`mobile People crop too loose: ${m.people.scale}`);
+    assert.equal(m.people.objectPosition,'100% 44%',`mobile People crop anchor changed: ${m.people.objectPosition}`);
     assert.equal(mobileErrors.length,0,`mobile page errors: ${mobileErrors.join(' | ')}`);
     await mp.screenshot({path:'_site/qa-v384-playground-mobile.png'});
     const mpe=mobile.locator('#people');await mpe.scrollIntoViewIfNeeded();await mobile.waitForTimeout(700);await mpe.screenshot({path:'_site/qa-v384-people-mobile.png'});
-    console.log(JSON.stringify({qa:'v384.1-composition-polish',viewport:'mobile',status:'PASS',state:m}));
+    console.log(JSON.stringify({qa:'v384.3-composition-polish',viewport:'mobile',status:'PASS',state:m}));
     await mobile.close();
   } finally {await browser.close()}
 })().catch(e=>{console.error(e);process.exit(1)});
