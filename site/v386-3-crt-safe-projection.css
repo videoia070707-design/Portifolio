@@ -1,4 +1,4 @@
-/* MOVX v386.3 — safe projection field for the approved Scene-01 CRT.
+/* MOVX v386.3/v386.5 — safe projection field for the approved Scene-01 CRT.
    The real TV is a landscape/deep object. Older layers let the WebGL slot inherit
    the tall .crt-wrap height, producing a portrait-ish camera aspect and clipping
    the cabinet horizontally at strong v386 rest poses. Keep the physical model,
@@ -37,9 +37,26 @@
   }
 }
 
-/* Mobile keeps the validated natural-flow field from v358/v385. */
+/* v386.5: mobile must also project the *landscape* TV through a landscape field.
+   The outer .crt-wrap stays tall so copy begins safely below the physical object;
+   only the internal WebGL/poster projection surface becomes 1.12:1. This widens
+   the camera aspect enough to keep the transformed GLB silhouette inside NDC at
+   the approved three-quarter pose instead of shrinking/flattening the model. */
 @media(max-width:900px){
   html[data-v386-safe-projection="v386-3-landscape-field"] #boot [data-model-slot="boot-tv"]{
-    aspect-ratio:auto!important;
+    width:100%!important;
+    height:auto!important;
+    min-height:0!important;
+    max-height:none!important;
+    aspect-ratio:1.12 / 1!important;
+    align-self:start!important;
+    justify-self:stretch!important;
+    overflow:visible!important;
+  }
+  html[data-v386-safe-projection="v386-3-landscape-field"] #boot [data-model-slot="boot-tv"]>.v322-model-renderer,
+  html[data-v386-safe-projection="v386-3-landscape-field"] #boot [data-model-slot="boot-tv"]>.crt-loading-poster{
+    inset:0!important;
+    width:100%!important;
+    height:100%!important;
   }
 }
