@@ -36,8 +36,12 @@ jobs:
         run: npm run build
       - name: Enforce performance budgets
         run: python3 scripts/qa-performance.py
-      - name: Enforce v379 Scene 01 static contract
-        run: python3 scripts/qa-v379-static.py
+      - name: Enforce Scene 01 static contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/qa-v379-static.py
+          python3 scripts/qa-v380-static.py
       - name: Store immutable build for downstream jobs
         uses: actions/upload-artifact@v4
         with:
@@ -122,7 +126,7 @@ jobs:
           retention-days: 7
 
   qa-scene-frame:
-    name: QA Scene 01 frame, light, volume, interactions and editorial safe zones
+    name: QA Scene 01 frame, light, volume, interactions, editorial safe zones and channel retune
     needs: build
     runs-on: ubuntu-latest
     timeout-minutes: 23
@@ -161,6 +165,7 @@ jobs:
           sed 's/127\.0\.0\.1:4173/127.0.0.1:4174/g' scripts/qa-v377-crt-focus-pull.cjs > _site/qa-logs/qa-v377-crt-focus-pull.cjs
           sed 's/127\.0\.0\.1:4173/127.0.0.1:4174/g' scripts/qa-v378-crt-physical-pickup.cjs > _site/qa-logs/qa-v378-crt-physical-pickup.cjs
           sed 's/127\.0\.0\.1:4173/127.0.0.1:4174/g' scripts/qa-v379-scene01-editorial-grid.cjs > _site/qa-logs/qa-v379-editorial-grid.cjs
+          sed 's/127\.0\.0\.1:4173/127.0.0.1:4174/g' scripts/qa-v380-crt-channel-retune.cjs > _site/qa-logs/qa-v380-channel-retune.cjs
           node _site/qa-logs/qa-v369-scene-frame.cjs
           node _site/qa-logs/qa-v370-crt-light-spill.cjs
           node _site/qa-logs/qa-v371-crt-object-volume.cjs
@@ -171,6 +176,7 @@ jobs:
           node _site/qa-logs/qa-v377-crt-focus-pull.cjs
           node _site/qa-logs/qa-v378-crt-physical-pickup.cjs
           node _site/qa-logs/qa-v379-editorial-grid.cjs
+          node _site/qa-logs/qa-v380-channel-retune.cjs
       - name: Save Scene 01 visual evidence
         if: always()
         uses: actions/upload-artifact@v4
@@ -187,6 +193,7 @@ jobs:
             _site/qa-v377-*
             _site/qa-v378-*
             _site/qa-v379-*
+            _site/qa-v380-*
             _site/qa-logs/scene-frame.log
           if-no-files-found: warn
           retention-days: 7
