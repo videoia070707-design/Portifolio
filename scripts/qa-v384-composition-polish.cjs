@@ -20,9 +20,11 @@ const fs=require('node:fs');
 
     const inspect=async page=>page.evaluate(()=>{
       const root=document.documentElement;
-      const floats=[...document.querySelectorAll('#playground .float:not(.cursor)')].map(el=>{
+      // Count only the five authored draggable model slots. Later runtime layers
+      // may expose additional .float helper/proxy nodes; those are not visual tokens.
+      const floats=[...document.querySelectorAll('#playground .float-zone > .float[data-model-slot]')].map(el=>{
         const r=el.getBoundingClientRect();
-        return {cls:el.className,left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:r.width,height:r.height};
+        return {cls:el.className,slot:el.dataset.modelSlot,left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:r.width,height:r.height};
       });
       const overlaps=[];
       for(let i=0;i<floats.length;i++)for(let j=i+1;j<floats.length;j++){
@@ -31,7 +33,7 @@ const fs=require('node:fs');
         const h=Math.max(0,Math.min(a.bottom,b.bottom)-Math.max(a.top,b.top));
         const area=w*h;
         const base=Math.max(1,Math.min(a.width*a.height,b.width*b.height));
-        overlaps.push({a:a.cls,b:b.cls,area,ratio:area/base});
+        overlaps.push({a:a.slot,b:b.slot,area,ratio:area/base});
       }
       const people=document.querySelector('#people .people-visual img');
       const transform=getComputedStyle(people).transform;
@@ -61,7 +63,7 @@ const fs=require('node:fs');
     assert.equal(errors.length,0,`desktop page errors: ${errors.join(' | ')}`);
     await playground.screenshot({path:'_site/qa-v384-playground-desktop.png'});
     const people=page.locator('#people');await people.scrollIntoViewIfNeeded();await page.waitForTimeout(700);await people.screenshot({path:'_site/qa-v384-people-desktop.png'});
-    console.log(JSON.stringify({qa:'v384-composition-polish',viewport:'desktop',status:'PASS',state:d}));
+    console.log(JSON.stringify({qa:'v384.1-composition-polish',viewport:'desktop',status:'PASS',state:d}));
     await page.close();
 
     const {p:mobile,errors:mobileErrors}=await open({viewport:{width:390,height:844},isMobile:true,hasTouch:true,deviceScaleFactor:1});
@@ -74,7 +76,7 @@ const fs=require('node:fs');
     assert.equal(mobileErrors.length,0,`mobile page errors: ${mobileErrors.join(' | ')}`);
     await mp.screenshot({path:'_site/qa-v384-playground-mobile.png'});
     const mpe=mobile.locator('#people');await mpe.scrollIntoViewIfNeeded();await mobile.waitForTimeout(700);await mpe.screenshot({path:'_site/qa-v384-people-mobile.png'});
-    console.log(JSON.stringify({qa:'v384-composition-polish',viewport:'mobile',status:'PASS',state:m}));
+    console.log(JSON.stringify({qa:'v384.1-composition-polish',viewport:'mobile',status:'PASS',state:m}));
     await mobile.close();
   } finally {await browser.close()}
 })().catch(e=>{console.error(e);process.exit(1)});
