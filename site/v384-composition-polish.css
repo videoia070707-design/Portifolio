@@ -1,0 +1,56 @@
+/* MOVX v384 — composition polish after visual evidence review.
+   No new model, renderer, runtime loop or listener. This layer only fixes the
+   desktop Playground collision pattern and tightens the People crop. */
+
+/* PLAYGROUND / desktop — keep the v383 drag nodes, but give every word a
+   dedicated authored anchor. The previous diagonal cluster caused the generated
+   words to overlap even though the interaction itself was healthy. */
+@media(min-width:901px){
+  html[data-v384-composition-polish="v384-clean-spacing"] #playground .float-zone{
+    width:64%!important;
+  }
+  html[data-v384-composition-polish] #playground .float::before{
+    font-size:clamp(44px,4.5vw,76px)!important;
+    line-height:.80!important;
+    letter-spacing:-.068em!important;
+  }
+  html[data-v384-composition-polish] #playground .float::after{
+    margin-top:12px!important;
+  }
+  html[data-v384-composition-polish] #playground .float.cassette{
+    left:1%!important;top:8%!important;
+  }
+  html[data-v384-composition-polish] #playground .float.window{
+    left:58%!important;top:9%!important;
+  }
+  html[data-v384-composition-polish] #playground .float.camera{
+    left:24%!important;top:34%!important;
+  }
+  html[data-v384-composition-polish] #playground .float.cube{
+    left:2%!important;top:61%!important;
+  }
+  html[data-v384-composition-polish] #playground .float.cd{
+    left:55%!important;top:64%!important;
+  }
+  html[data-v384-composition-polish] #playground .play-copy{
+    width:25%!important;
+  }
+}
+
+/* PEOPLE — bias fully toward the human subject. The source slide remains the
+   same approved project image, but campaign typography is now pushed outside the
+   visible crop so the MOVX manifesto owns the page. */
+html[data-v384-composition-polish] #people .people-visual img{
+  object-position:100% 52%!important;
+  transform:scale(1.90)!important;
+  transform-origin:100% 52%!important;
+}
+
+@media(max-width:900px){
+  /* v383 mobile Playground already reads cleanly; leave its composition intact. */
+  html[data-v384-composition-polish] #people .people-visual img{
+    object-position:100% 50%!important;
+    transform:scale(1.82)!important;
+    transform-origin:100% 50%!important;
+  }
+}

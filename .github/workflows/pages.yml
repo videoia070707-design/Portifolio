@@ -45,6 +45,7 @@ jobs:
           python3 scripts/qa-v381-static.py
           python3 scripts/qa-v382-static.py
           python3 scripts/qa-v383-static.py
+          python3 scripts/qa-v384-static.py
       - name: Store immutable build for downstream jobs
         uses: actions/upload-artifact@v4
         with:
@@ -129,10 +130,10 @@ jobs:
           retention-days: 7
 
   qa-scene-frame:
-    name: QA visual surface, deferred scenes and Scene 01 interactions
+    name: QA v384 visual composition, deferred scenes and Scene 01 interactions
     needs: build
     runs-on: ubuntu-latest
-    timeout-minutes: 28
+    timeout-minutes: 30
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -158,6 +159,7 @@ jobs:
           python3 -m http.server 4174 --directory _site >_site/qa-logs/scene-frame.log 2>&1 &
           SERVER_PID=$!
           trap 'kill $SERVER_PID 2>/dev/null || true' EXIT
+          sed 's/127\.0\.0\.1:4173/127.0.0.1:4174/g' scripts/qa-v384-composition-polish.cjs > _site/qa-logs/qa-v384-composition-polish.cjs
           sed 's/127\.0\.0\.1:4173/127.0.0.1:4174/g' scripts/qa-v383-deplaceholder.cjs > _site/qa-logs/qa-v383-deplaceholder.cjs
           sed 's/127\.0\.0\.1:4173/127.0.0.1:4174/g' scripts/qa-v382-reference-synthesis.cjs > _site/qa-logs/qa-v382-reference-synthesis.cjs
           sed 's/127\.0\.0\.1:4173/127.0.0.1:4174/g' scripts/qa-v381-art-direction.cjs > _site/qa-logs/qa-v381-art-direction.cjs
@@ -172,9 +174,9 @@ jobs:
           sed 's/127\.0\.0\.1:4173/127.0.0.1:4174/g' scripts/qa-v377-crt-focus-pull.cjs > _site/qa-logs/qa-v377-crt-focus-pull.cjs
           sed 's/127\.0\.0\.1:4173/127.0.0.1:4174/g' scripts/qa-v378-crt-physical-pickup.cjs > _site/qa-logs/qa-v378-crt-physical-pickup.cjs
 
-          # Latest visual direction first. v383 verifies that deferred scenes no
-          # longer fake finished 3D; v382/v381 verify the global redesign; v379/
-          # v380 protect the real CRT composition and channel response.
+          # Latest visual direction first. v384 explicitly gates the desktop
+          # Playground collision fix and the tighter People crop.
+          node _site/qa-logs/qa-v384-composition-polish.cjs
           node _site/qa-logs/qa-v383-deplaceholder.cjs
           node _site/qa-logs/qa-v382-reference-synthesis.cjs
           node _site/qa-logs/qa-v381-art-direction.cjs
@@ -189,14 +191,15 @@ jobs:
           node _site/qa-logs/qa-v372-channel-pose-authority.cjs
           node _site/qa-logs/qa-v375-crt-spatial-grab.cjs
           node _site/qa-logs/qa-v376-crt-elastic-orbit.cjs
-          node _site/qa-logs/qa-v377-focus-pull.cjs
-          node _site/qa-logs/qa-v378-physical-pickup.cjs
+          node _site/qa-logs/qa-v377-crt-focus-pull.cjs
+          node _site/qa-logs/qa-v378-crt-physical-pickup.cjs
       - name: Save visual evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: movx-qa-scene-frame
           path: |
+            _site/qa-v384-*
             _site/qa-v383-*
             _site/qa-v382-*
             _site/qa-v381-*
