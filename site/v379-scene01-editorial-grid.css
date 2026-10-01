@@ -1,20 +1,26 @@
-/* MOVX v379.1 — Scene 01 editorial safe-zone grid.
+/* MOVX v379.2 — Scene 01 editorial safe-zone grid.
    The CRT is already physically interactive. This pass fixes the remaining
    composition gap: headline, copy, channel strip and CRT must read as one authored
-   shot without crowding each other. CSS-only, Scene-01-only, no new 3D resources. */
+   shot without crowding each other. CSS-only, Scene-01-only, no new 3D resources.
+
+   v379.1 proved the real projected GLB can extend materially beyond its grid cell.
+   The moat therefore cannot be a decorative column-gap alone: the editorial block
+   is now deliberately right-aligned inside a wider second track so the *projected*
+   cabinet, not merely the CRT DOM wrapper, owns the left side of the scene. */
 
 @media(min-width:901px){
   html[data-crt-editorial-grid-layer="v379-editorial-safe-zones"].v354-choreo #boot .boot-stage{
-    grid-template-columns:minmax(0,1.14fr) minmax(410px,.86fr);
-    column-gap:clamp(54px,6.1vw,108px);
-    padding-left:clamp(38px,4.8vw,82px);
-    padding-right:clamp(48px,6.2vw,106px);
+    grid-template-columns:minmax(0,1.02fr) minmax(430px,.98fr);
+    column-gap:clamp(68px,6.8vw,112px);
+    padding-left:clamp(36px,4.35vw,72px);
+    padding-right:clamp(36px,4.35vw,72px);
   }
 
   html[data-crt-editorial-grid-layer] #boot .boot-copy{
-    width:min(100%,560px);
-    max-width:560px;
-    padding-inline-start:clamp(0px,.4vw,8px);
+    width:min(100%,470px);
+    max-width:470px;
+    justify-self:end;
+    padding-inline-start:0;
     align-self:center;
   }
 
@@ -43,7 +49,7 @@
   }
 
   html[data-crt-editorial-grid-layer].v353-motion #boot .boot-copy .copy{
-    max-width:455px;
+    max-width:445px;
     margin:0;
     font-size:clamp(14px,1.08vw,16px);
     line-height:1.68!important;
@@ -51,16 +57,17 @@
 
   html[data-crt-editorial-grid-layer] #boot .boot-tags{
     margin-top:clamp(31px,2.7vw,40px)!important;
-    width:min(100%,525px);
+    width:min(100%,470px);
   }
   html[data-crt-editorial-grid-layer] #boot .crt-channel-panel{
-    width:min(100%,525px);
-    max-width:525px!important;
+    width:min(100%,470px);
+    max-width:470px!important;
     margin-top:clamp(16px,1.45vw,21px)!important;
   }
 
   /* Keep a visible spatial moat between the real CRT and the editorial column.
-     The columns remain independent even while v377 lets the room recede on grab. */
+     The separator marks the protected boundary rather than pretending the model
+     stops at the end of its CSS grid track. */
   html[data-crt-editorial-grid-layer] #boot .crt-wrap{
     justify-self:stretch;
     min-width:0;
@@ -69,26 +76,33 @@
     content:"";
     position:absolute;
     pointer-events:none;
-    left:clamp(-38px,-2.7vw,-22px);
+    left:clamp(-46px,-3.15vw,-30px);
     top:8%;
     bottom:8%;
     width:1px;
     background:linear-gradient(180deg,transparent,rgba(24,20,17,.12) 26%,rgba(24,20,17,.12) 74%,transparent);
-    opacity:.58;
+    opacity:.52;
   }
 }
 
-/* Short desktops keep the headline readable by balancing the physical TV field
-   against the copy field. v379.0 gave the CRT 1.12fr here; at 1366×768 that made
-   the real projected cabinet about 6% too large during the scroll choreography.
-   A near-even split preserves the editorial moat and lets v374 remain the sole
-   authority for the TV's vertical wrapper offset/selector visibility. */
+/* Short desktops have the hardest geometry: the CRT must stay fully framed while
+   the copy still needs a real moat. Keep the near-even physical tracks from v379.1,
+   but right-align a 400px editorial block and nudge that block inside the remaining
+   right-hand breathing room. v374 remains the sole authority over CRT vertical
+   position/selector visibility. */
 @media(min-width:901px) and (max-height:820px){
   html[data-crt-editorial-grid-layer="v379-editorial-safe-zones"].v354-choreo #boot .boot-stage{
     grid-template-columns:minmax(0,1.03fr) minmax(400px,.97fr);
-    column-gap:clamp(38px,4.25vw,64px);
-    padding-left:clamp(34px,4.25vw,62px);
-    padding-right:clamp(34px,4.25vw,62px);
+    column-gap:clamp(48px,4.8vw,68px);
+    padding-left:clamp(30px,3.8vw,54px);
+    padding-right:clamp(30px,3.8vw,54px);
+  }
+  html[data-crt-editorial-grid-layer] #boot .boot-copy{
+    width:min(100%,400px);
+    max-width:400px;
+    justify-self:end;
+    position:relative;
+    inset-inline-start:clamp(18px,1.75vw,24px);
   }
   html[data-crt-editorial-grid-layer].v353-motion #boot .boot-title{
     font-size:clamp(43px,3.95vw,57px)!important;
@@ -97,19 +111,21 @@
     margin-bottom:24px!important;
   }
   html[data-crt-editorial-grid-layer].v353-motion #boot .boot-copy .eyebrow{margin-bottom:17px!important}
-  html[data-crt-editorial-grid-layer].v353-motion #boot .boot-copy .copy{font-size:14px;line-height:1.56!important;max-width:430px}
-  html[data-crt-editorial-grid-layer] #boot .boot-tags{margin-top:19px!important}
-  html[data-crt-editorial-grid-layer] #boot .crt-channel-panel{margin-top:9px!important}
+  html[data-crt-editorial-grid-layer].v353-motion #boot .boot-copy .copy{font-size:14px;line-height:1.56!important;max-width:400px}
+  html[data-crt-editorial-grid-layer] #boot .boot-tags{margin-top:19px!important;width:min(100%,400px)}
+  html[data-crt-editorial-grid-layer] #boot .crt-channel-panel{margin-top:9px!important;width:min(100%,400px);max-width:400px!important}
   html[data-crt-editorial-grid-layer] #boot .crt-program-help{margin-top:2px!important;line-height:1.25}
 }
 
 /* Wide displays get stronger separation rather than a stretched copy column. */
 @media(min-width:1540px){
   html[data-crt-editorial-grid-layer="v379-editorial-safe-zones"].v354-choreo #boot .boot-stage{
-    grid-template-columns:minmax(0,1.18fr) minmax(430px,.82fr);
-    column-gap:clamp(88px,7vw,132px);
+    grid-template-columns:minmax(0,1.08fr) minmax(470px,.92fr);
+    column-gap:clamp(96px,7.2vw,138px);
   }
-  html[data-crt-editorial-grid-layer] #boot .boot-copy{max-width:575px}
+  html[data-crt-editorial-grid-layer] #boot .boot-copy{width:min(100%,500px);max-width:500px;justify-self:end}
+  html[data-crt-editorial-grid-layer] #boot .boot-tags,
+  html[data-crt-editorial-grid-layer] #boot .crt-channel-panel{width:min(100%,500px);max-width:500px!important}
 }
 
 @media(max-width:900px){

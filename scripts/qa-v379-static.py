@@ -1,4 +1,4 @@
-"""Static release gate for MOVX v379 Scene-01 editorial safe zones."""
+"""Static release gate for MOVX v379.2 Scene-01 editorial safe zones."""
 from pathlib import Path
 import json
 
@@ -33,13 +33,19 @@ else:
     css_bytes=css.stat().st_size
     if css_bytes>14_000:errors.append(f'{css_name} is {css_bytes} bytes; budget 14000')
     source=css.read_text()
-    for contract in ('grid-template-columns:minmax(0,1.14fr) minmax(410px,.86fr)', 'gap:.092em', 'max-width:560px', 'model never'):
-        if contract=='model never':continue
-        if contract not in source:errors.append(f'v379 CSS contract missing: {contract}')
+    for contract in (
+        'grid-template-columns:minmax(0,1.02fr) minmax(430px,.98fr)',
+        'gap:.092em',
+        'max-width:470px',
+        'justify-self:end',
+        'grid-template-columns:minmax(0,1.03fr) minmax(400px,.97fr)',
+        'inset-inline-start:clamp(18px,1.75vw,24px)',
+    ):
+        if contract not in source:errors.append(f'v379.2 CSS contract missing: {contract}')
 
 models=sorted(p.name for p in (out/'models').glob('*.glb')) if (out/'models').exists() else []
 if models!=['movx-crt-tv.glb']:
     errors.append(f'v379 single-model invariant failed: {models}')
 
-if errors:raise SystemExit('MOVX v379 static QA failed: '+json.dumps(errors,ensure_ascii=False))
-print(json.dumps({'status':'passed','release':release,'css_bytes':css_bytes,'published_glbs':models,'scope':'Scene 01 editorial layout only'},ensure_ascii=False))
+if errors:raise SystemExit('MOVX v379.2 static QA failed: '+json.dumps(errors,ensure_ascii=False))
+print(json.dumps({'status':'passed','release':release,'revision':'v379.2-editorial-moat','css_bytes':css_bytes,'published_glbs':models,'scope':'Scene 01 editorial layout only'},ensure_ascii=False))

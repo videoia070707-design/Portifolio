@@ -34,7 +34,8 @@ const fs=require('node:fs');
         lineGaps,model,modelCopyGap:cr.left-model.right,
         verticalContained:model.top>=scene.top-8&&model.bottom<=scene.bottom+8,
         horizontalVisibleRatio:visibleWidth/projectedWidth,
-        panelInside:par.bottom<=scene.bottom+1,copyInside:cr.top>=scene.top-1&&cr.bottom<=scene.bottom+1,
+        panelInside:par.bottom<=scene.bottom+1,
+        copyInside:cr.top>=scene.top-1&&cr.bottom<=scene.bottom+1&&cr.left>=scene.left-1&&cr.right<=scene.right+1,
         titleToCopy:pr.top-tr.bottom,copyToTags:tar.top-pr.bottom,
         progress:Number(window.MOVXCRT?.progress||0),scrollY,
         renderers:document.querySelectorAll('.v322-model-renderer').length,activeSlots:window.MOVX3D.runtime.activeSlots,
@@ -43,7 +44,7 @@ const fs=require('node:fs');
     });
 
     for(const cfg of [
-      {name:'desktop',viewport:{width:1440,height:1000},mid:false},
+      {name:'desktop',viewport:{width:1440,height:1000},mid:true},
       {name:'short-1366',viewport:{width:1366,height:768},mid:true},
       {name:'short-1280',viewport:{width:1280,height:720},mid:true},
     ]){
@@ -56,7 +57,7 @@ const fs=require('node:fs');
       const s=await inspect(page);
       assert.equal(s.layer,'v379-editorial-safe-zones');assert.equal(s.inline,true);
       assert.equal(s.renderers,1);assert.deepEqual(s.activeSlots,['boot-tv']);assert.equal(s.triangles,44831);assert.ok(s.overflow<=2);assert.equal(s.errors.length,0);
-      assert.ok(s.copy.width>=380&&s.copy.width<=580,`${cfg.name} copy column is not bounded editorially: ${s.copy.width}`);
+      assert.ok(s.copy.width>=380&&s.copy.width<=510,`${cfg.name} copy column is not bounded editorially: ${s.copy.width}`);
       assert.ok(s.lineGaps.every(g=>g>=2),`${cfg.name} title lines are still visually collapsed: ${JSON.stringify(s.lineGaps)}`);
       assert.ok(s.titleToCopy>=18,`${cfg.name} headline/copy rhythm is too tight: ${s.titleToCopy}`);
       assert.ok(s.copyToTags>=15,`${cfg.name} copy/channel rhythm is too tight: ${s.copyToTags}`);
@@ -77,13 +78,15 @@ const fs=require('node:fs');
         assert.ok(mid.progress>.30,`${cfg.name} did not enter Scene-01 choreography: ${mid.progress}`);
         assert.equal(mid.verticalContained,true,`${cfg.name} CRT is clipped during mid-scroll choreography: ${JSON.stringify({model:mid.model,scene:mid.scene,progress:mid.progress})}`);
         assert.ok(mid.horizontalVisibleRatio>=.82,`${cfg.name} CRT loses too much horizontal volume at mid-scroll: ${mid.horizontalVisibleRatio}`);
+        assert.ok(mid.modelCopyGap>=18,`${cfg.name} CRT/copy moat collapsed during mid-scroll: ${mid.modelCopyGap}`);
+        assert.equal(mid.copyInside,true,`${cfg.name} copy escaped Scene 01 during mid-scroll`);
         assert.ok(mid.overflow<=2,`${cfg.name} mid-scroll overflow regression`);
         await page.evaluate(()=>scrollTo({top:0,left:0,behavior:'instant'}));await page.waitForTimeout(220);
       }
 
       assert.equal(errors.length,0,`${cfg.name} page errors: ${errors.join(' | ')}`);
       await page.locator('#boot').screenshot({path:`_site/qa-v379-editorial-grid-${cfg.name}.png`});
-      console.log(JSON.stringify({qa:'v379.1-scene01-editorial-grid',viewport:cfg.name,status:'PASS',initial:s,mid}));
+      console.log(JSON.stringify({qa:'v379.2-scene01-editorial-grid',viewport:cfg.name,status:'PASS',initial:s,mid}));
       await page.close();
     }
 
@@ -95,7 +98,7 @@ const fs=require('node:fs');
     assert.ok(m.lineGaps.every(g=>g>=1),'mobile headline rhythm collapsed');
     assert.ok(m.copy.left>=16&&m.copy.right<=374,'mobile editorial content escaped natural gutters');
     await mobile.locator('#boot').screenshot({path:'_site/qa-v379-editorial-grid-mobile.png'});
-    console.log(JSON.stringify({qa:'v379.1-scene01-editorial-grid',viewport:'mobile',status:'PASS',state:m}));
+    console.log(JSON.stringify({qa:'v379.2-scene01-editorial-grid',viewport:'mobile',status:'PASS',state:m}));
     await mobile.close();
   } finally {await browser.close()}
 })().catch(e=>{console.error(e);process.exit(1)});
