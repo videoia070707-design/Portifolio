@@ -2,7 +2,7 @@ name: Deploy MOVX Portfolio
 
 on:
   push:
-    branches: [main, movx-v380-channel-retune]
+    branches: [main]
   workflow_dispatch:
 
 permissions:
