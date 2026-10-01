@@ -89,7 +89,7 @@ const fs=require('node:fs');
     const reverse=await inspect(page);assert.equal(reverse.state.channel,'direction');assert.equal(reverse.state.direction,-1);assert.ok(reverse.state.envelope>.02);
     assert.equal(errors.length,0,`desktop page errors: ${errors.join(' | ')}`);
     await page.locator('#boot').screenshot({path:'_site/qa-v380-channel-retune-desktop.png'});
-    console.log(JSON.stringify({qa:'v380.1-channel-retune',viewport:'desktop',status:'PASS',initial,motion,settled,ai,reverse}));
+    console.log(JSON.stringify({qa:'v380.1.1-channel-retune',viewport:'desktop',status:'PASS',initial,motion,settled,ai,reverse}));
     await page.close();
 
     const calm=await browser.newPage({viewport:{width:1280,height:800},deviceScaleFactor:1});
@@ -101,12 +101,14 @@ const fs=require('node:fs');
     await calm.waitForTimeout(80);
     const reducedState=await inspect(calm);
     assert.equal(reducedState.state.reduced,true);assert.equal(reducedState.state.channel,'digital');
-    assert.equal(reducedState.phase,'settled');assert.equal(reducedState.state.envelope,0);assert.equal(reducedState.state.wave,0);
-    assert.equal(reducedState.state.depthKick,0);assert.equal(reducedState.state.fovKick,0);
+    assert.equal(reducedState.phase,'settled');
+    for(const [name,value] of Object.entries({envelope:reducedState.state.envelope,wave:reducedState.state.wave,depthKick:reducedState.state.depthKick,fovKick:reducedState.state.fovKick})){
+      assert.ok(Number.isFinite(value)&&Math.abs(value)===0,`reduced-motion ${name} must be zero (signed zero allowed): ${value}`);
+    }
     assert.equal(reducedState.state.elapsedMs,reducedState.state.duration);
     assert.ok(Math.abs(reducedState.state.knobAngle-1.35)<.001,`reduced-motion selector must settle immediately: ${reducedState.state.knobAngle}`);
     assert.equal(reducedState.renderers,1);assert.deepEqual(reducedState.activeSlots,['boot-tv']);assert.equal(reducedState.errors.length,0);
-    console.log(JSON.stringify({qa:'v380.1-channel-retune',viewport:'reduced-motion',status:'PASS',state:reducedState}));
+    console.log(JSON.stringify({qa:'v380.1.1-channel-retune',viewport:'reduced-motion',status:'PASS',state:reducedState}));
     await calm.close();
   } finally {await browser.close()}
 })().catch(e=>{console.error(e);process.exit(1)});
