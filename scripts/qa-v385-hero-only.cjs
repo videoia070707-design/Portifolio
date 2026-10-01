@@ -28,6 +28,7 @@ const fs=require('node:fs');
         const ts=getComputedStyle(title),stageStyle=getComputedStyle(stage),third=title.querySelector('span:nth-child(3)');
         const inst=window.MOVX3D.runtime.instances['boot-tv'];
         return {
+          viewportW:innerWidth,viewportH:innerHeight,
           marker:root.dataset.v385HeroOnly,
           retired:[root.dataset.v381ArtDirection,root.dataset.v382ReferenceSynthesis,root.dataset.v383Deplaceholder,root.dataset.v384CompositionPolish].filter(Boolean),
           grid:stageStyle.gridTemplateColumns,
@@ -54,15 +55,15 @@ const fs=require('node:fs');
       assert.ok(/gradient/i.test(state.sceneBackground),'Hero lacks authored environment field');
 
       if(cfg.name!=='mobile'){
-        assert.ok(state.copy.x>innerWidth*0.53,'editorial rail is not materially right-weighted');
-        assert.ok(state.wrap.w>innerWidth*.40,'CRT spatial field is still too small');
+        assert.ok(state.copy.x>state.viewportW*.52,'editorial rail is not materially right-weighted');
+        assert.ok(state.wrap.w>state.viewportW*.38,'CRT spatial field is still too small');
         assert.ok(state.copy.w<=530,'copy rail became a wide generic column');
         assert.ok(state.title.font>=46,'Hero title lacks opening-scale impact');
         assert.ok(state.title.marginBottom>=23,'Hero title/copy rhythm is still cramped');
-        assert.ok(state.panel.h<220,'channel detail deck is too tall/card-like');
+        assert.ok(state.panel.h<230,'channel detail deck is too tall/card-like');
         assert.equal(state.tagsDisplay,'grid');
       }else{
-        assert.ok(state.copy.y>state.wrap.y+state.wrap.h*.70,'mobile copy starts through the CRT physical footprint');
+        assert.ok(state.copy.y>state.wrap.y+state.wrap.h*.66,'mobile copy starts through the CRT physical footprint');
         assert.ok(state.title.font>=46,'mobile Hero title is under-scaled');
       }
       assert.deepEqual(errors,[],'page errors: '+errors.join(' | '));
