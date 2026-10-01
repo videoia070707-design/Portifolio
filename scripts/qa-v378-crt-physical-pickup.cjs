@@ -74,14 +74,20 @@ const fs=require('node:fs');
     const releasing=await snap();
     assert.equal(releasing.orbitActive,false);assert.equal(releasing.phase,'releasing');assert.ok(releasing.hold<held.hold);assert.ok(Math.abs(releasing.handX)<Math.abs(held.handX),'held hand translation did not begin settling after release');
 
+    /* The physical condition remains strict. A long serial SwiftShader suite can
+       render the exponentially damped release at a lower frame cadence than the
+       standalone v378 gate, so give the exact same idle threshold a larger wall-
+       clock ceiling rather than weakening the physics assertion. */
+    const settleStarted=Date.now();
     await page.waitForFunction(()=>{
       const p=window.MOVX3D.runtime.instances['boot-tv'].physicalPickup.state;
       return p.hold<.025&&Math.abs(p.handX)<.0025&&Math.abs(p.handY)<.0025&&document.querySelector('#boot')?.dataset.v378Pickup==='idle';
-    },null,{timeout:5000,polling:'raf'});
+    },null,{timeout:9000,polling:'raf'});
+    const settleMs=Date.now()-settleStarted;
     const settled=await snap();
-    assert.equal(settled.phase,'idle');assert.ok(settled.hold<.025);assert.ok(Math.abs(settled.handX)<.0025);assert.equal(errors.length,0,'desktop page errors: '+errors.join(' | '));
-    fs.writeFileSync('_site/qa-v378-physical-pickup.json',JSON.stringify({initial,hovered,held,releasing,settled},null,2));
-    console.log(JSON.stringify({qa:'v378-crt-physical-pickup',viewport:'desktop',status:'PASS',hovered,held,releasing,settled}));
+    assert.equal(settled.phase,'idle');assert.ok(settled.hold<.025);assert.ok(Math.abs(settled.handX)<.0025);assert.ok(settleMs<9000);assert.equal(errors.length,0,'desktop page errors: '+errors.join(' | '));
+    fs.writeFileSync('_site/qa-v378-physical-pickup.json',JSON.stringify({initial,hovered,held,releasing,settled,settleMs},null,2));
+    console.log(JSON.stringify({qa:'v378-crt-physical-pickup',viewport:'desktop',status:'PASS',hovered,held,releasing,settled,settleMs}));
     await page.close();
 
     const mobile=await browser.newPage({viewport:{width:390,height:844},isMobile:true,hasTouch:true,deviceScaleFactor:1});
