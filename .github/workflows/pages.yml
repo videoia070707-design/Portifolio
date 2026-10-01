@@ -36,12 +36,13 @@ jobs:
         run: npm run build
       - name: Enforce performance budgets
         run: python3 scripts/qa-performance.py
-      - name: Enforce Scene 01 static contracts
+      - name: Enforce current visual and Scene 01 static contracts
         shell: bash
         run: |
           set -euo pipefail
           python3 scripts/qa-v379-static.py
           python3 scripts/qa-v380-static.py
+          python3 scripts/qa-v381-static.py
       - name: Store immutable build for downstream jobs
         uses: actions/upload-artifact@v4
         with:
@@ -126,10 +127,10 @@ jobs:
           retention-days: 7
 
   qa-scene-frame:
-    name: QA Scene 01 frame, light, volume, interactions, editorial safe zones and channel retune
+    name: QA visual surface, Scene 01 interactions and art direction
     needs: build
     runs-on: ubuntu-latest
-    timeout-minutes: 23
+    timeout-minutes: 25
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -147,7 +148,7 @@ jobs:
           path: _site
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
-      - name: Validate Scene 01 physical and editorial composition
+      - name: Validate current art direction and Scene 01 physical composition
         shell: bash
         run: |
           set -euo pipefail
@@ -155,6 +156,9 @@ jobs:
           python3 -m http.server 4174 --directory _site >_site/qa-logs/scene-frame.log 2>&1 &
           SERVER_PID=$!
           trap 'kill $SERVER_PID 2>/dev/null || true' EXIT
+          sed 's/127\.0\.0\.1:4173/127.0.0.1:4174/g' scripts/qa-v381-art-direction.cjs > _site/qa-logs/qa-v381-art-direction.cjs
+          sed 's/127\.0\.0\.1:4173/127.0.0.1:4174/g' scripts/qa-v379-scene01-editorial-grid.cjs > _site/qa-logs/qa-v379-editorial-grid.cjs
+          sed 's/127\.0\.0\.1:4173/127.0.0.1:4174/g' scripts/qa-v380-crt-channel-retune.cjs > _site/qa-logs/qa-v380-channel-retune.cjs
           sed 's/127\.0\.0\.1:4173/127.0.0.1:4174/g' scripts/qa-v369-scene01-full-bleed.cjs > _site/qa-logs/qa-v369-scene-frame.cjs
           sed 's/127\.0\.0\.1:4173/127.0.0.1:4174/g' scripts/qa-v370-crt-light-spill.cjs > _site/qa-logs/qa-v370-crt-light-spill.cjs
           sed 's/127\.0\.0\.1:4173/127.0.0.1:4174/g' scripts/qa-v371-crt-object-volume.cjs > _site/qa-logs/qa-v371-crt-object-volume.cjs
@@ -164,15 +168,14 @@ jobs:
           sed 's/127\.0\.0\.1:4173/127.0.0.1:4174/g' scripts/qa-v376-crt-elastic-orbit.cjs > _site/qa-logs/qa-v376-crt-elastic-orbit.cjs
           sed 's/127\.0\.0\.1:4173/127.0.0.1:4174/g' scripts/qa-v377-crt-focus-pull.cjs > _site/qa-logs/qa-v377-crt-focus-pull.cjs
           sed 's/127\.0\.0\.1:4173/127.0.0.1:4174/g' scripts/qa-v378-crt-physical-pickup.cjs > _site/qa-logs/qa-v378-crt-physical-pickup.cjs
-          sed 's/127\.0\.0\.1:4173/127.0.0.1:4174/g' scripts/qa-v379-scene01-editorial-grid.cjs > _site/qa-logs/qa-v379-editorial-grid.cjs
-          sed 's/127\.0\.0\.1:4173/127.0.0.1:4174/g' scripts/qa-v380-crt-channel-retune.cjs > _site/qa-logs/qa-v380-channel-retune.cjs
 
-          # Current release gates first: fail fast on the authored mobile/editorial
-          # geometry and the physical channel retune before spending time on the
-          # complete historical Scene 01 regression suite.
+          # Current surface first. v381 verifies the site-wide visual reset, then
+          # v379/v380 prove that the redesign did not compromise the real CRT.
+          node _site/qa-logs/qa-v381-art-direction.cjs
           node _site/qa-logs/qa-v379-editorial-grid.cjs
           node _site/qa-logs/qa-v380-channel-retune.cjs
 
+          # Historical physical regression coverage remains complete.
           node _site/qa-logs/qa-v369-scene-frame.cjs
           node _site/qa-logs/qa-v370-crt-light-spill.cjs
           node _site/qa-logs/qa-v371-crt-object-volume.cjs
@@ -182,12 +185,13 @@ jobs:
           node _site/qa-logs/qa-v376-crt-elastic-orbit.cjs
           node _site/qa-logs/qa-v377-crt-focus-pull.cjs
           node _site/qa-logs/qa-v378-crt-physical-pickup.cjs
-      - name: Save Scene 01 visual evidence
+      - name: Save visual evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: movx-qa-scene-frame
           path: |
+            _site/qa-v381-*
             _site/qa-v369-*
             _site/qa-v370-*
             _site/qa-v371-*

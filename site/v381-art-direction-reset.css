@@ -1,0 +1,263 @@
+/* MOVX v381 — reference-led art-direction reset.
+   Visual layer only: no new model, renderer, scene, RAF or input bus.
+   The real CRT remains the only active 3D object. Later storyboard slots stay DOM-only.
+   Goals: continuous chapters, editorial scale, Y2K restraint, fewer cards/frames. */
+
+html[data-v381-art-direction="v381-reference-reset"]{
+  --v381-ink:#070707;
+  --v381-paper:#eeeae1;
+  --v381-paper-2:#e5dfd3;
+  --v381-orange:#ff5a18;
+  --v381-muted:#77736b;
+  --v381-line:rgba(7,7,7,.16);
+  --v381-light-line:rgba(238,234,225,.18);
+  --v381-ease:cubic-bezier(.16,1,.3,1);
+}
+
+html[data-v381-art-direction] body{background:var(--v381-ink)}
+html[data-v381-art-direction] .global{
+  background:#070707;
+  border-bottom:1px solid rgba(255,255,255,.14);
+  backdrop-filter:none;
+  -webkit-backdrop-filter:none;
+  box-shadow:none;
+}
+html[data-v381-art-direction] .brand{font-weight:950;letter-spacing:-.085em}
+html[data-v381-art-direction] .brand b{color:var(--v381-orange)}
+html[data-v381-art-direction] .top-meta{color:#8f8b84;opacity:.9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+html[data-v381-art-direction] .nav{gap:clamp(14px,1.8vw,28px)}
+html[data-v381-art-direction] .nav a{opacity:.66;transition:opacity .25s ease,color .25s ease}
+html[data-v381-art-direction] .nav a:hover{opacity:1;color:var(--v381-orange)}
+html[data-v381-art-direction] .progress-rail{width:2px;background:rgba(255,255,255,.08)}
+html[data-v381-art-direction] .progress-rail::after{background:var(--v381-orange)!important}
+
+/* Kill the boxed-page feeling. Chapters touch each other and share one visual system. */
+html[data-v381-art-direction] .scene{padding-left:0!important;padding-right:0!important;padding-bottom:0!important}
+html[data-v381-art-direction] .scene-inner{
+  border-radius:0!important;
+  box-shadow:none!important;
+}
+html[data-v381-art-direction] .scene:not(#boot)>.scene-inner{border-left:0!important;border-right:0!important;border-bottom:0!important}
+html[data-v381-art-direction] .scene-bar{
+  padding-inline:clamp(18px,3.25vw,56px)!important;
+  border-bottom-width:1px!important;
+  background:transparent!important;
+  font-size:9px;
+}
+html[data-v381-art-direction] .scene-no{font-size:13px;color:var(--v381-orange)}
+html[data-v381-art-direction] .scene-name{letter-spacing:.14em}
+html[data-v381-art-direction] .scene-note{opacity:.42;letter-spacing:.12em}
+html[data-v381-art-direction] .eyebrow{letter-spacing:.16em}
+html[data-v381-art-direction] .copy{letter-spacing:-.012em}
+html[data-v381-art-direction] .btn{
+  border-radius:0;
+  padding:12px 0;
+  border-width:0 0 1px;
+  gap:28px;
+  background:transparent;
+}
+html[data-v381-art-direction] .btn:hover{transform:none;background:transparent;color:var(--v381-orange);border-color:var(--v381-orange)}
+
+/* SCENE 01 — preserve all validated geometry; change only the art direction. */
+html[data-v381-art-direction] #boot,
+html[data-v381-art-direction] #boot .scene-inner{background:var(--v381-paper)!important;color:var(--v381-ink)}
+html[data-v381-art-direction] #boot .scene-bar{border-color:var(--v381-line)!important}
+html[data-v381-art-direction] #boot .boot-stage{
+  background:
+    radial-gradient(ellipse at 23% 46%,rgba(255,90,24,.055),transparent 34%),
+    linear-gradient(180deg,#f1ede5 0%,#e9e4da 100%)!important;
+}
+html[data-v381-art-direction] #boot .boot-copy .eyebrow{color:#5f5b54!important}
+html[data-v381-art-direction] #boot .boot-copy .eyebrow::before{content:"●";color:var(--v381-orange);margin-right:9px;font-size:.8em}
+html[data-v381-art-direction] #boot .boot-title{color:#0a0a0a!important;font-weight:950!important;text-transform:uppercase}
+html[data-v381-art-direction] #boot .boot-title span:last-child{color:var(--v381-orange)}
+html[data-v381-art-direction] #boot .boot-copy .copy{color:#514d46!important}
+html[data-v381-art-direction] #boot .tag{
+  border-radius:0!important;
+  border:0!important;
+  border-bottom:1px solid rgba(7,7,7,.28)!important;
+  padding:7px 0!important;
+  margin-right:15px;
+  background:transparent!important;
+  color:#403d37!important;
+}
+html[data-v381-art-direction] #boot .boot-copy::before{opacity:.32!important;background:rgba(7,7,7,.22)!important}
+html[data-v381-art-direction] #boot .crt-channel-panel{
+  border-radius:0!important;
+  box-shadow:none!important;
+  background:rgba(255,255,255,.16)!important;
+  border-color:rgba(7,7,7,.18)!important;
+}
+
+/* SCENE 02 — remove the fake glass-logo object. Until its real GLB exists this is
+   a deliberate typographic chapter, not a pretend 3D model. */
+html[data-v381-art-direction] #hero,
+html[data-v381-art-direction] #hero .scene-inner{background:var(--v381-ink)!important;color:var(--v381-paper)!important}
+html[data-v381-art-direction] #hero .scene-bar{border-color:var(--v381-light-line)!important}
+html[data-v381-art-direction] #hero .hero-grid{
+  grid-template-columns:minmax(0,.82fr) minmax(420px,1.18fr)!important;
+  gap:clamp(30px,5vw,90px)!important;
+  padding:clamp(34px,5.4vw,92px)!important;
+}
+html[data-v381-art-direction] #hero .hero-copy .display{font-weight:950;max-width:7ch;letter-spacing:-.075em}
+html[data-v381-art-direction] #hero .hero-copy .copy{color:#aaa59d!important;max-width:430px}
+html[data-v381-art-direction] #hero .movx-chassis{display:none!important}
+html[data-v381-art-direction] #hero .movx-object{
+  min-height:0!important;
+  height:min(72vh,780px)!important;
+  border-left:1px solid rgba(255,255,255,.12);
+  overflow:hidden;
+}
+html[data-v381-art-direction] #hero .movx-object::before{
+  content:"X";
+  position:absolute;
+  left:8%;
+  top:50%;
+  transform:translateY(-52%);
+  color:var(--v381-orange);
+  font:950 clamp(280px,39vw,720px)/.72 Arial,Helvetica,sans-serif;
+  letter-spacing:-.12em;
+}
+html[data-v381-art-direction] #hero .movx-object::after{
+  content:"FORM / MOTION / SYSTEM";
+  position:absolute;
+  left:10%;bottom:7%;
+  color:#8b867f;
+  font:700 9px/1 "Courier New",monospace;
+  letter-spacing:.18em;
+}
+html[data-v381-art-direction] #hero .hero-badge{right:5%;bottom:7%;color:#8b867f}
+
+/* SCENE 03 — no decorative wireframe tunnel. One graphic gesture is enough. */
+html[data-v381-art-direction] #portal,
+html[data-v381-art-direction] #portal .scene-inner{background:var(--v381-orange)!important;color:#090909!important}
+html[data-v381-art-direction] #portal .scene-bar{border-color:rgba(7,7,7,.22)!important}
+html[data-v381-art-direction] #portal .tunnel-stage{background:var(--v381-orange)!important}
+html[data-v381-art-direction] #portal .tunnel-lines,
+html[data-v381-art-direction] #portal .tunnel-frame{display:none!important}
+html[data-v381-art-direction] #portal .portal-x{
+  left:50%;top:50%;
+  width:min(42vw,560px);height:min(68vh,680px);
+  background:#0a0a0a!important;
+  box-shadow:none!important;
+  opacity:.96;
+}
+html[data-v381-art-direction] #portal .tunnel-copy,
+html[data-v381-art-direction] #portal .tunnel-side{
+  top:auto!important;bottom:7%!important;
+  font-size:clamp(32px,4.2vw,74px)!important;
+  line-height:.88!important;
+  letter-spacing:-.06em!important;
+}
+html[data-v381-art-direction] #portal .scroll-cue{color:#17120e}
+
+/* WORK — let the work own the viewport; remove tech-grid decoration. */
+html[data-v381-art-direction] #work .scene-inner{border-radius:0!important;border-inline:0!important}
+html[data-v381-art-direction] #work .work-carousel-stage::before{display:none!important}
+html[data-v381-art-direction] #work .work-carousel-stage::after{color:#6f6b65!important;letter-spacing:.2em!important}
+html[data-v381-art-direction] #work .case-card{filter:saturate(.58) brightness(.72);opacity:.34}
+html[data-v381-art-direction] #work .case-card.is-active{filter:saturate(.94) brightness(.94);opacity:1}
+html[data-v381-art-direction] #work .case-media{border:0!important;box-shadow:0 28px 72px rgba(0,0,0,.45)!important}
+html[data-v381-art-direction] #work .case-media::after{border:0!important;border-bottom:1px solid rgba(255,255,255,.4)!important;background:rgba(5,6,6,.78)!important}
+html[data-v381-art-direction] #work .case-meta{border-color:rgba(255,255,255,.18)!important}
+html[data-v381-art-direction] #work .work-overlay h2{font-weight:950;text-transform:uppercase;letter-spacing:-.065em!important}
+html[data-v381-art-direction] #work .work-overlay .copy{color:#97928b!important}
+
+/* CAPABILITIES — industrial editorial grid, not a rounded dashboard. */
+html[data-v381-art-direction] #machine,
+html[data-v381-art-direction] #machine .scene-inner{background:var(--v381-paper)!important;color:var(--v381-ink)!important}
+html[data-v381-art-direction] #machine .machine-stage{grid-template-columns:.72fr 1.28fr!important;gap:clamp(40px,6vw,108px)!important;padding:clamp(40px,6vw,96px)!important}
+html[data-v381-art-direction] #machine .machine-copy h2{font-weight:950!important;text-transform:uppercase;letter-spacing:-.07em!important}
+html[data-v381-art-direction] #machine .machine-copy .copy{color:#5d5952!important}
+html[data-v381-art-direction] #machine .console311{
+  padding:0!important;
+  gap:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  border-top:1px solid var(--v381-line);
+  border-bottom:1px solid var(--v381-line);
+}
+html[data-v381-art-direction] #machine .console-unit{
+  min-height:390px!important;
+  border:0!important;
+  border-left:1px solid var(--v381-line)!important;
+  background:transparent!important;
+  padding:clamp(14px,1.5vw,24px)!important;
+}
+html[data-v381-art-direction] #machine .console-unit:last-child{border-right:1px solid var(--v381-line)!important}
+html[data-v381-art-direction] #machine .console-unit .screen{border:0!important;border-bottom:1px solid var(--v381-line)!important;height:58%!important}
+html[data-v381-art-direction] #machine .console-unit .screen::before{opacity:.35}
+html[data-v381-art-direction] #machine .knobs i{border-radius:0!important;width:16px!important;height:3px!important;box-shadow:none!important;background:#555!important}
+
+/* PLAYGROUND — more blank space, fewer fake floating-card cues. */
+html[data-v381-art-direction] #playground,
+html[data-v381-art-direction] #playground .scene-inner{background:#f3efe7!important;color:var(--v381-ink)!important}
+html[data-v381-art-direction] #playground .play-stage{min-height:calc(100vh - 104px)!important}
+html[data-v381-art-direction] #playground .play-copy h2{font-weight:950!important;text-transform:uppercase;letter-spacing:-.07em!important}
+html[data-v381-art-direction] #playground .play-copy .copy{color:#5b5750!important}
+html[data-v381-art-direction] #playground .float{box-shadow:none!important}
+html[data-v381-art-direction] #playground .float.cursor{display:none!important}
+
+/* STUDIO — quiet black chapter; typography and space carry it until real 3D arrives. */
+html[data-v381-art-direction] #studio,
+html[data-v381-art-direction] #studio .scene-inner{background:#080808!important;color:var(--v381-paper)!important}
+html[data-v381-art-direction] #studio .scene-bar{border-color:var(--v381-light-line)!important}
+html[data-v381-art-direction] #studio .studio-stage{background:#080808!important}
+html[data-v381-art-direction] #studio .studio-ceiling,
+html[data-v381-art-direction] #studio .studio-floor,
+html[data-v381-art-direction] #studio .studio-wall,
+html[data-v381-art-direction] #studio .studio-desk,
+html[data-v381-art-direction] #studio .studio-chair{opacity:.16!important;filter:grayscale(1)}
+html[data-v381-art-direction] #studio .studio-copy h2{font-weight:950!important;text-transform:uppercase;letter-spacing:-.07em!important}
+html[data-v381-art-direction] #studio .studio-copy .copy{color:#96918a!important}
+
+/* PEOPLE — human image + manifesto, not a dashboard of stats. */
+html[data-v381-art-direction] #people,
+html[data-v381-art-direction] #people .scene-inner{background:var(--v381-paper)!important;color:var(--v381-ink)!important}
+html[data-v381-art-direction] #people .people-stage{gap:0!important;padding:0!important;min-height:calc(100vh - 104px)!important}
+html[data-v381-art-direction] #people .people-visual{min-height:calc(100vh - 104px)!important}
+html[data-v381-art-direction] #people .people-visual img{filter:saturate(.72) contrast(1.04)!important}
+html[data-v381-art-direction] #people .people-copy{padding:clamp(38px,6vw,100px)!important}
+html[data-v381-art-direction] #people .people-copy h2{font-weight:950!important;text-transform:uppercase;letter-spacing:-.07em!important}
+html[data-v381-art-direction] #people .people-copy .copy{color:#56524b!important}
+html[data-v381-art-direction] #people .stats{border-top:1px solid var(--v381-line)!important;gap:0!important}
+html[data-v381-art-direction] #people .stats>div{border-right:1px solid var(--v381-line);padding:18px 18px 0 0}
+html[data-v381-art-direction] #people .stats>div:last-child{border-right:0}
+
+/* CONTACT — finish on one decisive color field instead of another framed card. */
+html[data-v381-art-direction] #contact,
+html[data-v381-art-direction] #contact .scene-inner{background:var(--v381-orange)!important;color:#080808!important}
+html[data-v381-art-direction] #contact .scene-bar{border-color:rgba(7,7,7,.22)!important}
+html[data-v381-art-direction] #contact .contact-stage{background:var(--v381-orange)!important}
+html[data-v381-art-direction] #contact .contact-copy h2{font-weight:950!important;text-transform:uppercase;letter-spacing:-.075em!important}
+html[data-v381-art-direction] #contact .contact-copy .copy{color:#332116!important}
+html[data-v381-art-direction] #contact .contact-window{border-radius:0!important;border-color:rgba(7,7,7,.28)!important;box-shadow:none!important;filter:saturate(.72)}
+html[data-v381-art-direction] #contact .btn{border-color:#080808!important;color:#080808!important}
+
+@media(max-width:900px){
+  html[data-v381-art-direction] .global{grid-template-columns:auto 1fr;height:58px;padding-inline:18px}
+  html[data-v381-art-direction] .top-meta{justify-self:end;font-size:7px;max-width:58vw}
+  html[data-v381-art-direction] .scene-note{display:none}
+  html[data-v381-art-direction] .scene-bar{grid-template-columns:34px 1fr;padding-inline:18px!important}
+  html[data-v381-art-direction] #hero .hero-grid{grid-template-columns:1fr!important;padding:34px 18px 0!important;gap:18px!important}
+  html[data-v381-art-direction] #hero .hero-copy .display{font-size:clamp(58px,18vw,92px)!important}
+  html[data-v381-art-direction] #hero .movx-object{height:46vh!important;border-left:0;border-top:1px solid rgba(255,255,255,.12)}
+  html[data-v381-art-direction] #hero .movx-object::before{left:0;font-size:clamp(250px,82vw,410px)}
+  html[data-v381-art-direction] #portal .portal-x{width:72vw;height:56vh}
+  html[data-v381-art-direction] #portal .tunnel-copy,
+  html[data-v381-art-direction] #portal .tunnel-side{font-size:clamp(28px,10vw,48px)!important;bottom:6%!important}
+  html[data-v381-art-direction] #machine .machine-stage{grid-template-columns:1fr!important;padding:38px 18px!important;gap:38px!important}
+  html[data-v381-art-direction] #machine .console311{grid-template-columns:1fr 1fr!important}
+  html[data-v381-art-direction] #machine .console-unit{min-height:280px!important}
+  html[data-v381-art-direction] #people .people-stage{grid-template-columns:1fr!important}
+  html[data-v381-art-direction] #people .people-visual{min-height:58vh!important}
+  html[data-v381-art-direction] #people .people-copy{padding:44px 18px 60px!important}
+  html[data-v381-art-direction] #people .stats{grid-template-columns:1fr!important}
+  html[data-v381-art-direction] #people .stats>div{border-right:0;border-bottom:1px solid var(--v381-line);padding:15px 0!important}
+  html[data-v381-art-direction] #contact .contact-stage{padding-inline:18px!important}
+}
+
+@media(prefers-reduced-motion:reduce){
+  html[data-v381-art-direction] *{scroll-behavior:auto}
+}
