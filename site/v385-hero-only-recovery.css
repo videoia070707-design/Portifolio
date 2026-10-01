@@ -1,0 +1,362 @@
+/* MOVX v385 — HERO-ONLY recovery.
+   Scope lock: every visual selector is anchored to #boot. This layer deliberately
+   replaces the site-wide v381-v384 experiment. It does not style any later scene.
+   The approved CRT remains the sole production 3D asset and all existing physical
+   interaction/runtime layers remain untouched. */
+
+/* Scene 01 becomes the actual opening world rather than a cream card containing
+   a product viewer. Full bleed is visual only; the validated sticky/choreography
+   geometry continues to come from v369/v374/v379. */
+html[data-v385-hero-only="v385-hero-recovery"] #boot{
+  background:#0a0908!important;
+  color:#0b0a09;
+}
+html[data-v385-hero-only] #boot .scene-inner{
+  border-radius:0!important;
+  box-shadow:none!important;
+  border-left:0!important;
+  border-right:0!important;
+  overflow:hidden!important;
+  background:
+    radial-gradient(ellipse 72% 82% at 23% 50%,rgba(255,111,42,.105) 0%,rgba(255,111,42,.025) 43%,transparent 72%),
+    radial-gradient(ellipse 66% 84% at 77% 42%,rgba(255,255,255,.94) 0%,rgba(244,240,232,.84) 48%,rgba(224,219,209,.72) 100%),
+    linear-gradient(118deg,#e4ded4 0%,#f2eee7 54%,#d8d2c8 100%)!important;
+}
+html[data-v385-hero-only] #boot .scene-inner::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:1;
+  pointer-events:none;
+  background:
+    linear-gradient(90deg,rgba(9,8,7,.055) 0,transparent 17%,transparent 82%,rgba(9,8,7,.045) 100%),
+    linear-gradient(180deg,rgba(255,255,255,.18),transparent 22%,transparent 78%,rgba(15,12,10,.035));
+  mix-blend-mode:multiply;
+}
+html[data-v385-hero-only] #boot .scene-bar,
+html[data-v385-hero-only] #boot .boot-stage,
+html[data-v385-hero-only] #boot .boot-scroll-cue-v354{position:relative;z-index:3}
+
+/* Header rail belongs to the opening shot. Remove card-like chrome and let the
+   numbered scene label read as editorial metadata. */
+html[data-v385-hero-only] #boot .scene-bar{
+  min-height:52px!important;
+  padding:0 clamp(26px,3.8vw,64px)!important;
+  display:grid!important;
+  grid-template-columns:54px minmax(180px,.7fr) 1fr!important;
+  align-items:center!important;
+  border-bottom:1px solid rgba(14,12,10,.16)!important;
+  background:rgba(242,238,231,.18)!important;
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+}
+html[data-v385-hero-only] #boot .scene-no{
+  color:#ff5a18!important;
+  font-size:13px!important;
+  letter-spacing:.05em!important;
+}
+html[data-v385-hero-only] #boot .scene-name{letter-spacing:.14em!important}
+html[data-v385-hero-only] #boot .scene-note{justify-self:end;opacity:.48!important;letter-spacing:.11em!important}
+
+/* The central change: physical-object-first asymmetric grid. The CRT gets the
+   larger spatial field, while the copy gets a narrow, intentional editorial rail.
+   It is not enlarged by CSS transform, so the real projected cabinet stays fully
+   inside the safe viewport established by v374. */
+@media(min-width:901px){
+  html[data-v385-hero-only].v354-choreo #boot .boot-stage{
+    min-height:calc(100svh - 52px)!important;
+    grid-template-columns:minmax(0,1.22fr) minmax(420px,.78fr)!important;
+    column-gap:clamp(74px,7vw,132px)!important;
+    padding:clamp(26px,3.3vw,52px) clamp(44px,4.8vw,84px) clamp(34px,4vw,64px)!important;
+    align-items:center!important;
+  }
+  html[data-v385-hero-only] #boot .crt-wrap{
+    width:100%!important;
+    max-width:none!important;
+    min-width:0!important;
+    min-height:min(72svh,720px)!important;
+    justify-self:stretch!important;
+    align-self:center!important;
+    overflow:visible!important;
+    isolation:isolate;
+  }
+  html[data-v385-hero-only] #boot .v322-model-renderer,
+  html[data-v385-hero-only] #boot [data-model-slot="boot-tv"]{
+    overflow:visible!important;
+  }
+
+  /* Ground the model in the same room as the typography. */
+  html[data-v385-hero-only] #boot .crt-wrap::before{
+    content:""!important;
+    position:absolute!important;
+    left:8%!important;
+    right:3%!important;
+    top:20%!important;
+    bottom:5%!important;
+    z-index:-1!important;
+    pointer-events:none!important;
+    border-radius:50%!important;
+    background:
+      radial-gradient(ellipse at 48% 78%,rgba(21,16,12,.16),transparent 48%),
+      radial-gradient(circle at 40% 42%,rgba(255,92,24,.105),transparent 46%)!important;
+    filter:blur(24px)!important;
+    opacity:.78!important;
+    transform:none!important;
+  }
+
+  /* Existing real interaction hint becomes an editorial caption, not a pill UI. */
+  html[data-v385-hero-only] #boot .crt-object-hint{
+    left:clamp(2px,1vw,14px)!important;
+    bottom:clamp(4px,1.2vw,16px)!important;
+    padding:9px 0!important;
+    border:0!important;
+    border-top:1px solid rgba(16,13,11,.34)!important;
+    border-radius:0!important;
+    background:transparent!important;
+    box-shadow:none!important;
+    backdrop-filter:none!important;
+    -webkit-backdrop-filter:none!important;
+    color:rgba(18,15,12,.72)!important;
+    letter-spacing:.13em!important;
+  }
+  html[data-v385-hero-only] #boot .crt-object-hint::after{
+    content:" / TELA = CONTEÚDO / DIAL = CANAIS";
+    color:rgba(18,15,12,.44);
+  }
+
+  /* Editorial rail: more breathing room than v379 and a materially different
+     silhouette from the old compact right-hand card stack. */
+  html[data-v385-hero-only] #boot .boot-copy{
+    width:min(100%,520px)!important;
+    max-width:520px!important;
+    justify-self:end!important;
+    align-self:center!important;
+    inset-inline-start:0!important;
+    padding:0!important;
+    position:relative!important;
+    z-index:5;
+  }
+  html[data-v385-hero-only] #boot .boot-copy::before{
+    content:""!important;
+    position:absolute!important;
+    left:clamp(-58px,-4vw,-42px)!important;
+    top:1%!important;
+    bottom:2%!important;
+    width:1px!important;
+    background:linear-gradient(180deg,transparent,rgba(15,13,11,.18) 11%,rgba(15,13,11,.18) 88%,transparent)!important;
+    opacity:1!important;
+  }
+  html[data-v385-hero-only].v353-motion #boot .boot-copy .eyebrow{
+    margin:0 0 clamp(30px,3.2vh,44px)!important;
+    color:#625d56!important;
+    font-size:8px!important;
+    letter-spacing:.18em!important;
+  }
+  html[data-v385-hero-only].v353-motion #boot .boot-copy .eyebrow::before{
+    content:"●";
+    margin-right:10px;
+    color:#ff5a18;
+    font-size:.9em;
+  }
+  html[data-v385-hero-only].v353-motion #boot .boot-title{
+    display:grid!important;
+    gap:.13em!important;
+    margin:0 0 clamp(36px,4.1vh,58px)!important;
+    max-width:8.4ch!important;
+    font-size:clamp(62px,6vw,96px)!important;
+    line-height:.84!important;
+    letter-spacing:-.068em!important;
+    font-weight:950!important;
+    text-transform:uppercase!important;
+    text-wrap:balance;
+  }
+  html[data-v385-hero-only].v353-motion #boot .boot-title span{
+    display:block!important;
+    margin:0!important;
+    transform-origin:left center;
+  }
+  html[data-v385-hero-only].v353-motion #boot .boot-title span:nth-child(2){
+    margin-left:clamp(18px,2vw,32px)!important;
+  }
+  html[data-v385-hero-only].v353-motion #boot .boot-title span:nth-child(3){
+    color:#ff5a18!important;
+    margin-left:clamp(42px,4.7vw,76px)!important;
+  }
+  html[data-v385-hero-only].v353-motion #boot .boot-copy .copy{
+    width:min(100%,450px)!important;
+    max-width:450px!important;
+    margin:0!important;
+    color:#57524b!important;
+    font-size:clamp(14px,1.05vw,16px)!important;
+    line-height:1.72!important;
+    letter-spacing:-.012em!important;
+  }
+
+  /* Four-channel tuning strip: one instrument, not four generic cards. */
+  html[data-v385-hero-only] #boot .boot-tags{
+    width:min(100%,520px)!important;
+    display:grid!important;
+    grid-template-columns:repeat(4,minmax(0,1fr))!important;
+    gap:0!important;
+    margin-top:clamp(34px,3.8vh,52px)!important;
+    border-top:1px solid rgba(15,13,11,.26)!important;
+    border-bottom:1px solid rgba(15,13,11,.20)!important;
+  }
+  html[data-v385-hero-only] #boot .boot-tags .tag{
+    min-height:54px!important;
+    margin:0!important;
+    padding:16px 10px 14px!important;
+    border:0!important;
+    border-right:1px solid rgba(15,13,11,.14)!important;
+    border-radius:0!important;
+    background:transparent!important;
+    color:#25211d!important;
+    box-shadow:none!important;
+    text-align:left!important;
+    font-size:9px!important;
+    letter-spacing:.12em!important;
+  }
+  html[data-v385-hero-only] #boot .boot-tags .tag:last-child{border-right:0!important}
+  html[data-v385-hero-only] #boot .boot-tags .tag[aria-pressed="true"]{
+    color:#080706!important;
+    background:linear-gradient(180deg,transparent 0%,rgba(255,90,24,.10) 100%)!important;
+  }
+  html[data-v385-hero-only] #boot .boot-tags .tag::after{
+    height:3px!important;
+    left:9px!important;
+    right:9px!important;
+    bottom:7px!important;
+    background:#ff5a18!important;
+  }
+
+  /* Details are one quiet two-column caption deck under the tuning strip. */
+  html[data-v385-hero-only] #boot .crt-channel-panel{
+    width:min(100%,520px)!important;
+    max-width:520px!important;
+    min-height:0!important;
+    margin-top:clamp(18px,2vh,26px)!important;
+    padding:0!important;
+    display:grid!important;
+    grid-template-columns:minmax(0,1.08fr) minmax(172px,.92fr)!important;
+    grid-template-areas:"description controls" "explore controls" "help help"!important;
+    gap:5px 28px!important;
+    border:0!important;
+    border-radius:0!important;
+    background:transparent!important;
+    box-shadow:none!important;
+    backdrop-filter:none!important;
+  }
+  html[data-v385-hero-only] #boot .crt-channel-panel>p[aria-live]{grid-area:description!important;margin:0!important;max-width:33ch!important;color:#5d5851!important;line-height:1.5!important}
+  html[data-v385-hero-only] #boot .crt-channel-panel>a{grid-area:explore!important;align-self:start!important;margin-top:4px!important}
+  html[data-v385-hero-only] #boot .crt-program-controls{grid-area:controls!important;margin:0!important;align-self:start!important}
+  html[data-v385-hero-only] #boot .crt-program-help{
+    grid-area:help!important;
+    margin:13px 0 0!important;
+    padding-top:9px!important;
+    border-top:1px solid rgba(15,13,11,.12)!important;
+    color:#706a62!important;
+    opacity:.82!important;
+    font-size:8px!important;
+    letter-spacing:.06em!important;
+  }
+}
+
+/* Laptop/short desktop: retain the new hierarchy without clipping the real TV. */
+@media(min-width:901px) and (max-height:820px){
+  html[data-v385-hero-only].v354-choreo #boot .boot-stage{
+    grid-template-columns:minmax(0,1.16fr) minmax(400px,.84fr)!important;
+    column-gap:clamp(58px,5.2vw,84px)!important;
+    padding:20px clamp(34px,4vw,60px) 26px!important;
+  }
+  html[data-v385-hero-only] #boot .crt-wrap{min-height:min(69svh,560px)!important}
+  html[data-v385-hero-only].v353-motion #boot .boot-copy .eyebrow{margin-bottom:18px!important}
+  html[data-v385-hero-only].v353-motion #boot .boot-title{
+    font-size:clamp(48px,4.7vw,66px)!important;
+    gap:.095em!important;
+    margin-bottom:25px!important;
+  }
+  html[data-v385-hero-only].v353-motion #boot .boot-title span:nth-child(2){margin-left:16px!important}
+  html[data-v385-hero-only].v353-motion #boot .boot-title span:nth-child(3){margin-left:34px!important}
+  html[data-v385-hero-only].v353-motion #boot .boot-copy .copy{font-size:13px!important;line-height:1.56!important}
+  html[data-v385-hero-only] #boot .boot-tags{margin-top:22px!important}
+  html[data-v385-hero-only] #boot .boot-tags .tag{min-height:45px!important;padding:12px 8px!important}
+  html[data-v385-hero-only] #boot .crt-channel-panel{margin-top:10px!important;gap:3px 22px!important}
+  html[data-v385-hero-only] #boot .crt-program-help{margin-top:5px!important;padding-top:6px!important}
+}
+
+/* Mobile: let the real object arrive first, then the editorial message. No model
+   crop, no text drawn through the cabinet, no desktop hover ornament. */
+@media(max-width:900px){
+  html[data-v385-hero-only] #boot .scene-bar{
+    min-height:46px!important;
+    padding:0 18px!important;
+    grid-template-columns:42px 1fr!important;
+  }
+  html[data-v385-hero-only] #boot .scene-note{display:none!important}
+  html[data-v385-hero-only] #boot .scene-inner{
+    background:linear-gradient(160deg,#eee9e0 0%,#ddd6cc 100%)!important;
+  }
+  html[data-v385-hero-only] #boot .boot-stage{
+    padding-left:18px!important;
+    padding-right:18px!important;
+  }
+  html[data-v385-hero-only] #boot .crt-wrap{
+    min-height:clamp(390px,57svh,520px)!important;
+    overflow:visible!important;
+  }
+  html[data-v385-hero-only] #boot .boot-copy{
+    margin-top:clamp(205px,25svh,235px)!important;
+    padding:0 0 48px!important;
+    max-width:none!important;
+    width:100%!important;
+  }
+  html[data-v385-hero-only].v353-motion #boot .boot-copy .eyebrow{margin-bottom:22px!important;letter-spacing:.16em!important}
+  html[data-v385-hero-only].v353-motion #boot .boot-title{
+    display:grid!important;
+    gap:.10em!important;
+    max-width:8ch!important;
+    margin:0 0 30px!important;
+    font-size:clamp(48px,15.5vw,72px)!important;
+    line-height:.86!important;
+    letter-spacing:-.068em!important;
+  }
+  html[data-v385-hero-only].v353-motion #boot .boot-title span{margin:0!important}
+  html[data-v385-hero-only].v353-motion #boot .boot-title span:nth-child(2){margin-left:12px!important}
+  html[data-v385-hero-only].v353-motion #boot .boot-title span:nth-child(3){margin-left:28px!important;color:#ff5a18!important}
+  html[data-v385-hero-only].v353-motion #boot .boot-copy .copy{font-size:14px!important;line-height:1.65!important;max-width:34ch!important}
+  html[data-v385-hero-only] #boot .boot-tags{
+    display:grid!important;
+    grid-template-columns:repeat(2,1fr)!important;
+    gap:0!important;
+    margin-top:28px!important;
+    border-top:1px solid rgba(15,13,11,.24)!important;
+    border-bottom:1px solid rgba(15,13,11,.18)!important;
+  }
+  html[data-v385-hero-only] #boot .boot-tags .tag{
+    min-height:48px!important;
+    margin:0!important;
+    padding:13px 8px!important;
+    border:0!important;
+    border-right:1px solid rgba(15,13,11,.12)!important;
+    border-bottom:1px solid rgba(15,13,11,.12)!important;
+    border-radius:0!important;
+    background:transparent!important;
+  }
+  html[data-v385-hero-only] #boot .boot-tags .tag:nth-child(2n){border-right:0!important}
+  html[data-v385-hero-only] #boot .boot-tags .tag:nth-last-child(-n+2){border-bottom:0!important}
+  html[data-v385-hero-only] #boot .crt-channel-panel{
+    margin-top:18px!important;
+    min-height:0!important;
+    border:0!important;
+    border-radius:0!important;
+    background:transparent!important;
+    box-shadow:none!important;
+  }
+  html[data-v385-hero-only] #boot .crt-object-hint{display:none!important}
+}
+
+@media(prefers-reduced-motion:reduce){
+  html[data-v385-hero-only] #boot .scene-inner,
+  html[data-v385-hero-only] #boot .boot-title span,
+  html[data-v385-hero-only] #boot .crt-object-hint{transition:none!important}
+}
