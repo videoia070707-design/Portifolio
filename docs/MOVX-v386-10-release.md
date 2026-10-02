@@ -1,0 +1,1 @@
+Runtime click ownership now follows the full Scene-01 field and locks the Three.js hit at pointerdown. Current Scene-01 QA samples the real CRT group across the field. Scope remains boot-tv only.
