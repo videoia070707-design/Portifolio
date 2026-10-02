@@ -1,12 +1,12 @@
-/* MOVX v363/v386.8 — direct manipulation for the approved CRT.
+/* MOVX v363/v386.9 — direct manipulation for the approved CRT.
    The existing screen and selector become the controls: drag the real screen to
    manipulate the active programme and drag the real selector to tune channels.
-   v386.5 gave the tiny selector local projected intent priority. v386.8 moves the
-   pointer event surface from the CSS wrapper to the complete Scene-01 stage while
-   keeping all hit decisions in Three.js raycasting. The real GLB can therefore be
-   picked anywhere it is visibly rendered, including portions that project beyond
-   the wrapper after the stronger v386 three-quarter framing. No new listener
-   family, WebGL context, visible canvas, model or animation loop is added. */
+   v386.5 gave the tiny selector local projected intent priority. v386.9 binds the
+   same pointer family to `.scene-inner`, the complete visible Scene-01 field, while
+   keeping all hit decisions in Three.js raycasting. This covers real GLB geometry
+   that the v386 camera/framing can project beyond both `.crt-wrap` and `.boot-stage`.
+   Semantic editorial controls remain excluded. No new listener family, WebGL
+   context, visible canvas, model or animation loop is added. */
 import * as THREE from './vendor/three.module.js';
 
 const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -21,7 +21,7 @@ export function attachCRTDirectManipulation(instance){
   if(instance.directManipulation||!instance.channels||!instance.tactility||instance.procedural||instance.previewProcedural)return instance.directManipulation;
   const boot=document.querySelector('#boot');
   const wrap=boot?.querySelector('.crt-wrap');
-  const surface=boot?.querySelector('.boot-stage')||wrap;
+  const surface=boot?.querySelector('.scene-inner')||boot?.querySelector('.boot-stage')||wrap;
   const screen=instance.channels.screen;
   const channelState=instance.channels.state;
   const knob=instance.model.getObjectByName('tripo_part_8');
@@ -50,7 +50,7 @@ export function attachCRTDirectManipulation(instance){
     startChannel:channelState.channel||'direction',startIndex:0,startArt:0,startMobile:false,
     startAmount:.5,startPhase:0,startPaused:false,startAngle:0,knobCenterX:0,knobCenterY:0,
     lastDialIndex:-1,lastDirection:1,releaseEnergy:0,selectorAssistHits:0,
-    inputSurface:'boot-stage'
+    inputSurface:'scene-inner'
   };
 
   const hitAt=event=>{
@@ -71,9 +71,6 @@ export function attachCRTDirectManipulation(instance){
   const nearKnob=event=>{
     const p=projectCenter(knob),r=instance.canvas.getBoundingClientRect();
     if(!p||!r.width||!r.height)return false;
-    /* Deliberately local: enough to survive a live camera/object frame between
-       reprojection and pointerdown, but far too small to turn the cabinet into an
-       invisible dial. */
     const radius=Math.max(24,Math.min(36,r.width*.042));
     return Math.hypot(event.clientX-p.x,event.clientY-p.y)<=radius;
   };
@@ -108,10 +105,6 @@ export function attachCRTDirectManipulation(instance){
     if(isEditorialControl(event))return;
     const hit=hitAt(event),obj=hit?.object;
     const selectorIntent=nearKnob(event);
-    /* Physical affordance priority: within the real selector's tiny projected
-       footprint, the dial owns the pointer even if the curved screen/cabinet is
-       the first ray-hit on this particular live-parallax frame. Outside that
-       footprint, exact screen raycasting remains unchanged. */
     const assisted=selectorIntent&&obj!==knob;
     const kind=(obj===knob||selectorIntent)?'knob':obj===screen?'screen':'none';
     if(kind==='none')return;
@@ -199,9 +192,9 @@ export function attachCRTDirectManipulation(instance){
   instance.directManipulation={state:direct,update};
   document.documentElement.dataset.crtDirect='v363-ready';
   document.documentElement.dataset.crtSelectorPickup='v386.5-intent-priority';
-  document.documentElement.dataset.crtInputSurface='v386.8-stage-pick';
+  document.documentElement.dataset.crtInputSurface='v386.9-scene-field';
   boot.dataset.crtDirect='ready';
-  boot.dataset.crtInputSurface='stage';
+  boot.dataset.crtInputSurface='scene';
   refreshHint();
   return instance.directManipulation;
 }
