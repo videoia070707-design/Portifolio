@@ -16,6 +16,7 @@ const fs=require('node:fs');
       page.on('pageerror',e=>errors.push(String(e)));
       await page.goto(process.env.MOVX_TEST_URL||'http://127.0.0.1:4173/',{waitUntil:'domcontentloaded',timeout:30000});
       await page.waitForFunction(()=>document.documentElement.dataset.v386HeroImmersion==='v386-spatial-hero',null,{timeout:7000});
+      await page.waitForFunction(()=>document.documentElement.dataset.v386TallFraming==='v386-14-tall-viewport',null,{timeout:7000});
       await page.waitForFunction(()=>document.querySelector('[data-model-slot="boot-tv"]')?.dataset.glbState==='ready',null,{timeout:25000});
       await page.waitForFunction(()=>window.MOVX3D?.runtime?.instances?.['boot-tv']?.objectVolume?.state,null,{timeout:10000});
       await page.waitForTimeout(650);
@@ -55,6 +56,7 @@ const fs=require('node:fs');
         };
         return {
           marker:root.dataset.v386HeroImmersion,
+          tallFraming:root.dataset.v386TallFraming,
           viewport:{w:innerWidth,h:innerHeight},
           scene:{x:sr.x,y:sr.y,w:sr.width,h:sr.height},wrap:{x:wr.x,y:wr.y,w:wr.width,h:wr.height},copy:{x:cr.x,y:cr.y,w:cr.width,h:cr.height},
           gap:cr.x-(wr.x+wr.width),titleMargin:parseFloat(getComputedStyle(title).marginBottom),cursor:getComputedStyle(wrap).cursor,
@@ -65,11 +67,17 @@ const fs=require('node:fs');
         };
       });
 
-      assert.equal(state.marker,'v386-spatial-hero');assert.equal(state.renderers,1);assert.equal(state.canvases,1);assert.deepEqual(state.activeSlots,['boot-tv']);assert.equal(state.triangles,44831);assert.ok(state.overflow<=2);
+      assert.equal(state.marker,'v386-spatial-hero');assert.equal(state.tallFraming,'v386-14-tall-viewport');
+      assert.equal(state.renderers,1);assert.equal(state.canvases,1);assert.deepEqual(state.activeSlots,['boot-tv']);assert.equal(state.triangles,44831);assert.ok(state.overflow<=2);
       assert.ok(state.ndc.vertices>1000,'real CRT projection sampled too few vertices');
-      assert.ok(state.ndc.minX>-.985&&state.ndc.maxX<.985&&state.ndc.minY>-.985&&state.ndc.maxY<.985,`real CRT geometry is actually clipped: ${JSON.stringify(state.ndc)}`);
+      assert.ok(state.ndc.minX>-.985&&state.ndc.maxX<.985&&state.ndc.minY>-.985&&state.ndc.maxY<.985,`real CRT geometry is actually clipped inside its WebGL field: ${JSON.stringify(state.ndc)}`);
 
       if(cfg.name!=='mobile'){
+        const sceneRight=state.scene.x+state.scene.w,sceneBottom=state.scene.y+state.scene.h;
+        assert.ok(state.projectedPixels.left>=state.scene.x-4,`physical CRT silhouette escapes Scene 01 left edge: ${JSON.stringify(state.projectedPixels)}`);
+        assert.ok(state.projectedPixels.right<=sceneRight+4,`physical CRT silhouette escapes Scene 01 right edge: ${JSON.stringify(state.projectedPixels)}`);
+        assert.ok(state.projectedPixels.top>=state.scene.y-4,`physical CRT silhouette escapes Scene 01 top edge: ${JSON.stringify(state.projectedPixels)}`);
+        assert.ok(state.projectedPixels.bottom<=sceneBottom+4,`physical CRT base/selector is visibly cut by Scene 01: ${JSON.stringify(state.projectedPixels)}`);
         assert.ok(state.wrap.x>=0&&state.wrap.x+state.wrap.w<=state.viewport.w+1,'CRT interaction field escapes viewport');
         assert.ok(state.copy.x>state.viewport.w*.55,'copy rail is not clearly separated from CRT field');
         assert.ok(state.gap>24,`CRT/copy gap is too cramped: ${state.gap}`);
