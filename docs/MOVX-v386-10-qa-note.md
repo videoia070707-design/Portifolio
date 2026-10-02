@@ -1,0 +1,1 @@
+The v386.10 current-scene contract supersedes the old instantaneous v371 group-yaw comparison in the Pages Hero gate. It validates the same physical requirement against the current v386 composition by sampling the real CRT group on both sides of the full Scene-01 pointer field.
