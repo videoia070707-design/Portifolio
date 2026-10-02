@@ -1,0 +1,35 @@
+/* MOVX v386.14 — tall-desktop physical framing for Scene 01.
+   v386.5 solved the short 1366x768 composition, but the >820px desktop branch
+   still left the real CRT too low in the shot: its WebGL silhouette stayed valid
+   in NDC while the cabinet base/selector projected below the visible Scene-01
+   viewport. Move only the existing CRT field upward on tall desktop heights.
+   No scale reduction, no new model, no camera rewrite and no mobile change. */
+
+@media (min-width:901px) and (min-height:821px){
+  html[data-v386-tall-framing="v386-14-tall-viewport"] #boot .crt-wrap{
+    /* 1440x1000 resolves to -260px, bringing the physical cabinet base back into
+       the visible shot. Taller monitors ease toward -220px so the TV remains large
+       and spatial rather than becoming an undersized product viewer. */
+    top:clamp(-300px,calc(100svh - 1260px),-220px)!important;
+  }
+}
+
+/* Keep the established v386.5 short-laptop behavior authoritative. */
+@media (min-width:901px) and (max-height:820px){
+  html[data-v386-tall-framing="v386-14-tall-viewport"] #boot .crt-wrap{
+    top:clamp(-300px,calc(100svh - 1030px),-190px)!important;
+  }
+}
+
+@media (min-width:901px) and (max-height:700px){
+  html[data-v386-tall-framing="v386-14-tall-viewport"] #boot .crt-wrap{
+    top:-300px!important;
+  }
+}
+
+/* Mobile remains the v386.5 natural-flow composition. */
+@media (max-width:900px){
+  html[data-v386-tall-framing="v386-14-tall-viewport"] #boot .crt-wrap{
+    top:auto!important;
+  }
+}
