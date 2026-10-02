@@ -1,4 +1,4 @@
-"""Static gate for MOVX v386 immersive Hero through v386.8 scene pick surface."""
+"""Static gate for MOVX v386 immersive Hero through v386.9 scene-field input."""
 from pathlib import Path
 import json
 
@@ -34,7 +34,7 @@ for name in ('index.html','latest.html'):
     if 'aspect-ratio:1.12 / 1!important' not in text:errors.append(f'{name} missing v386.5 mobile projection CSS')
     if 'data-v386-hero-stability="v386-4-hero-selector-stability"' not in text:errors.append(f'{name} missing v386.4 stability marker')
     if 'data-v386-mobile-projection="v386-5-mobile-safe-projection"' not in text:errors.append(f'{name} missing v386.5 projection marker')
-    if 'data-v386-input-surface="v386-8-scene-pick-surface"' not in text:errors.append(f'{name} missing v386.8 input-surface marker')
+    if 'data-v386-input-surface="v386-9-scene-field-input"' not in text:errors.append(f'{name} missing v386.9 scene-field marker')
     if 'v322-glb-runtime.mjs?v=v386-4-hero-selector-stability' not in text:errors.append(f'{name} missing still-fresh v386.4 shell runtime URL')
 
 controller=out/'v358-crt-immersion.js'
@@ -52,12 +52,13 @@ else:
         'const nearKnob=event=>',
         'const selectorIntent=nearKnob(event);',
         "const kind=(obj===knob||selectorIntent)?'knob':obj===screen?'screen':'none';",
-        "const surface=boot?.querySelector('.boot-stage')||wrap;",
+        "const surface=boot?.querySelector('.scene-inner')||boot?.querySelector('.boot-stage')||wrap;",
         "surface.addEventListener('pointerdown',begin,{passive:false});",
         "dataset.crtSelectorPickup='v386.5-intent-priority'",
-        "dataset.crtInputSurface='v386.8-stage-pick'",
+        "dataset.crtInputSurface='v386.9-scene-field'",
+        "inputSurface:'scene-inner'",
     ):
-        if contract not in js:errors.append(f'v386.8 direct-control contract missing: {contract}')
+        if contract not in js:errors.append(f'v386.9 direct-control contract missing: {contract}')
 
 object_js=out/'v364-crt-object-interaction.mjs'
 if not object_js.exists():errors.append('built v364 object interaction missing')
@@ -65,11 +66,12 @@ else:
     js=object_js.read_text()
     for contract in (
         'if(instance.directManipulation?.state?.active)return;',
-        "const surface=boot?.querySelector('.boot-stage')||wrap;",
+        "const surface=boot?.querySelector('.scene-inner')||boot?.querySelector('.boot-stage')||wrap;",
         "surface.addEventListener('pointerdown',begin,{passive:false});",
-        "dataset.crtControlOwnership='v386.8-stage-direct-first'",
+        "dataset.crtControlOwnership='v386.9-scene-direct-first'",
+        "inputSurface:'scene-inner'",
     ):
-        if contract not in js:errors.append(f'v386.8 cabinet-control contract missing: {contract}')
+        if contract not in js:errors.append(f'v386.9 cabinet-control contract missing: {contract}')
 
 runtime=out/'v322-glb-runtime.mjs'
 if not runtime.exists():errors.append('built unified CRT runtime missing')
@@ -80,5 +82,5 @@ else:
 
 models=sorted(p.name for p in (out/'models').glob('*.glb')) if (out/'models').exists() else []
 if models!=['movx-crt-tv.glb']:errors.append(f'single-model gate failed: {models}')
-if errors:raise SystemExit('MOVX v386.8 static QA failed: '+json.dumps(errors,ensure_ascii=False))
-print(json.dumps({'qa':'v386.8-static','status':'PASS','scope':'#boot only','models':models,'projection':'desktop/short/mobile safe fields','short_visible_crt':True,'runtime_shell':'fresh unpublished v386.4 URL carrying v386.8 source','selector':'v386.5 intent priority on Scene-01 stage','cabinet':'v386.8 Three.js raycast on same Scene-01 stage'},ensure_ascii=False))
+if errors:raise SystemExit('MOVX v386.9 static QA failed: '+json.dumps(errors,ensure_ascii=False))
+print(json.dumps({'qa':'v386.9-static','status':'PASS','scope':'#boot only','models':models,'projection':'desktop/short/mobile safe fields','short_visible_crt':True,'runtime_shell':'fresh unpublished v386.4 URL carrying v386.9 source','selector':'v386.5 intent priority on full Scene-01 field','cabinet':'v386.9 Three.js raycast on same full Scene-01 field'},ensure_ascii=False))
