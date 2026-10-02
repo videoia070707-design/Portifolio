@@ -28,6 +28,8 @@ const fs=require('node:fs');
         sceneMix:inst.scenePresence.state.mix,
         objectMix:inst.presence.state.hoverMix,
         cameraX:inst.camera.position.x,
+        presenceSurface:root.dataset.crtPresenceSurface||'',
+        presenceInput:inst.presence.state.inputSurface||'',
         renderers:document.querySelectorAll('.v322-model-renderer').length,
         activeSlots:r.activeSlots,
         deferred:r.deferredSlots,
@@ -39,6 +41,8 @@ const fs=require('node:fs');
     assert.equal(initial.marker,'v368-ready');
     assert.equal(initial.loop,'shared-v322-frame');
     assert.equal(initial.layer,'v368-scene-presence');
+    assert.equal(initial.presenceSurface,'v386.13-scene-field');
+    assert.equal(initial.presenceInput,'scene-inner');
     assert.equal(initial.renderers,1);
     assert.deepEqual(initial.activeSlots,['boot-tv']);
     assert.ok(initial.deferred.includes('hero-movx-logo')&&initial.deferred.includes('x-portal'),'later models escaped the gate');
@@ -77,20 +81,44 @@ const fs=require('node:fs');
     assert.ok(Math.abs(editorial.cameraDelta)>.007,'editorial pointer did not move the actual Three.js camera');
     assert.ok(editorial.title.some(x=>x!=='none'),'editorial typography did not share the scene response');
 
-    // The existing v366 physical layer must still work when the pointer actually
-    // reaches the television. Scene awareness does not replace object presence.
-    const wrap=page.locator('#boot .crt-wrap');
-    const tvBox=await wrap.boundingBox();assert.ok(tvBox&&tvBox.width>100&&tvBox.height>100);
-    await page.mouse.move(tvBox.x+tvBox.width*.53,tvBox.y+tvBox.height*.48,{steps:10});
+    // Current v386 geometry can project outside the historical .crt-wrap. Find a
+    // point that raycasts the *actual transformed GLB* inside the authored scene
+    // instead of assuming the old wrapper centre still overlaps the television.
+    const visibleTVPoint=await page.evaluate(async()=>{
+      const THREE=await import('./vendor/three.module.js');
+      const inst=window.MOVX3D.runtime.instances['boot-tv'];
+      const scene=document.querySelector('#boot .scene-inner').getBoundingClientRect();
+      const canvas=inst.canvas.getBoundingClientRect();
+      const ray=new THREE.Raycaster(),ndc=new THREE.Vector2();
+      inst.scene.updateMatrixWorld(true);inst.camera.updateMatrixWorld(true);
+      const xs=[.10,.16,.22,.28,.34,.40,.46,.52,.58,.64,.70,.76,.82,.88];
+      const ys=[.16,.22,.28,.34,.40,.46,.52,.58,.64,.70,.76,.82,.88];
+      for(const fy of ys)for(const fx of xs){
+        const x=scene.left+scene.width*fx,y=scene.top+scene.height*fy;
+        if(x<canvas.left||x>canvas.right||y<canvas.top||y>canvas.bottom)continue;
+        const dom=document.elementFromPoint(x,y);
+        if(dom?.closest?.('button,a,input,label,select,textarea'))continue;
+        ndc.set((x-canvas.left)/canvas.width*2-1,-((y-canvas.top)/canvas.height*2-1));
+        ray.setFromCamera(ndc,inst.camera);
+        const hit=ray.intersectObject(inst.model,true)[0];
+        if(hit)return{x,y,name:hit.object.name};
+      }
+      return null;
+    });
+    assert.ok(visibleTVPoint,`v368 QA could not find visible real CRT geometry in Scene 01: ${JSON.stringify(visibleTVPoint)}`);
+    await page.mouse.move(visibleTVPoint.x,visibleTVPoint.y,{steps:10});
     await page.waitForFunction(()=>{
       const i=window.MOVX3D.runtime.instances['boot-tv'];
-      return i.scenePresence.state.mix>.25 && i.presence.state.hoverMix>.12;
+      return document.documentElement.dataset.crtPresenceSurface==='v386.13-scene-field' &&
+        i.presence.state.inputSurface==='scene-inner' &&
+        i.scenePresence.state.mix>.25 && i.presence.state.hoverMix>.12;
     },null,{timeout:7000,polling:'raf'});
-    const tv=await page.evaluate(()=>{
+    const tv=await page.evaluate((point)=>{
       const i=window.MOVX3D.runtime.instances['boot-tv'];
-      return {sceneMix:i.scenePresence.state.mix,objectMix:i.presence.state.hoverMix,scenePointer:document.querySelector('#boot').dataset.v368ScenePointer};
-    });
-    assert.ok(tv.sceneMix>.25);assert.ok(tv.objectMix>.12,'physical CRT presence stopped working under v368');
+      return {sceneMix:i.scenePresence.state.mix,objectMix:i.presence.state.hoverMix,scenePointer:document.querySelector('#boot').dataset.v368ScenePointer,presenceSurface:document.documentElement.dataset.crtPresenceSurface,inputSurface:i.presence.state.inputSurface,point};
+    },visibleTVPoint);
+    assert.ok(tv.sceneMix>.25);assert.ok(tv.objectMix>.12,'physical CRT presence stopped working under v368/v386.13');
+    assert.equal(tv.presenceSurface,'v386.13-scene-field');assert.equal(tv.inputSurface,'scene-inner');
 
     await page.locator('[data-crt-mode-control="motion"]').click();
     await page.waitForFunction(()=>window.MOVX3D.runtime.instances['boot-tv'].channels.state.channel==='motion',null,{timeout:7000});
@@ -126,9 +154,10 @@ const fs=require('node:fs');
     await mobile.waitForFunction(()=>document.querySelector('[data-model-slot="boot-tv"]')?.dataset.glbState==='ready',null,{timeout:20000});
     const mobileState=await mobile.evaluate(()=>{
       const root=document.documentElement,i=window.MOVX3D.runtime.instances['boot-tv'];
-      return {coarse:i.scenePresence.state.coarse,mix:i.scenePresence.state.mix,inside:i.scenePresence.state.inside,renderers:document.querySelectorAll('.v322-model-renderer').length,activeSlots:window.MOVX3D.runtime.activeSlots,overflow:root.scrollWidth-innerWidth,errors:window.MOVX3D.runtime.errors};
+      return {coarse:i.scenePresence.state.coarse,mix:i.scenePresence.state.mix,inside:i.scenePresence.state.inside,presenceSurface:root.dataset.crtPresenceSurface||'',inputSurface:i.presence.state.inputSurface||'',renderers:document.querySelectorAll('.v322-model-renderer').length,activeSlots:window.MOVX3D.runtime.activeSlots,overflow:root.scrollWidth-innerWidth,errors:window.MOVX3D.runtime.errors};
     });
     assert.equal(mobileState.coarse,true);assert.ok(mobileState.mix<.01,'coarse pointer must not run continuous scene parallax');
+    assert.equal(mobileState.presenceSurface,'v386.13-scene-field');assert.equal(mobileState.inputSurface,'scene-inner');
     assert.equal(mobileState.renderers,1);assert.deepEqual(mobileState.activeSlots,['boot-tv']);assert.ok(mobileState.overflow<=2);assert.equal(mobileState.errors.length,0);assert.equal(mobileErrors.length,0);
     await mobile.screenshot({path:'_site/qa-v368-scene-presence-mobile.png',fullPage:false});
     console.log(JSON.stringify({qa:'v368-scene-presence',viewport:'mobile',status:'PASS',mobileState}));
@@ -137,11 +166,12 @@ const fs=require('node:fs');
     const reducedPage=await browser.newPage({viewport:{width:1280,height:800},reducedMotion:'reduce'});
     await reducedPage.goto('http://127.0.0.1:4173/',{waitUntil:'domcontentloaded',timeout:30000});
     await reducedPage.waitForFunction(()=>document.documentElement.dataset.crtScenePresence==='v368-ready',null,{timeout:20000});
+    await reducedPage.waitForFunction(()=>document.querySelector('[data-model-slot="boot-tv"]')?.dataset.glbState==='ready',null,{timeout:20000});
     const scene=await reducedPage.locator('#boot .scene-inner').boundingBox();
     if(scene)await reducedPage.mouse.move(scene.x+scene.width*.8,scene.y+scene.height*.25,{steps:8});
     await reducedPage.waitForTimeout(240);
-    const reducedState=await reducedPage.evaluate(()=>{const i=window.MOVX3D.runtime.instances['boot-tv'];return {reduced:i.scenePresence.state.reduced,mix:i.scenePresence.state.mix,activeSlots:window.MOVX3D.runtime.activeSlots}});
-    assert.equal(reducedState.reduced,true);assert.ok(reducedState.mix<.01,'reduced motion must suppress continuous scene presence');assert.deepEqual(reducedState.activeSlots,['boot-tv']);
+    const reducedState=await reducedPage.evaluate(()=>{const root=document.documentElement,i=window.MOVX3D.runtime.instances['boot-tv'];return {reduced:i.scenePresence.state.reduced,mix:i.scenePresence.state.mix,presenceSurface:root.dataset.crtPresenceSurface||'',inputSurface:i.presence.state.inputSurface||'',activeSlots:window.MOVX3D.runtime.activeSlots}});
+    assert.equal(reducedState.reduced,true);assert.ok(reducedState.mix<.01,'reduced motion must suppress continuous scene presence');assert.equal(reducedState.presenceSurface,'v386.13-scene-field');assert.equal(reducedState.inputSurface,'scene-inner');assert.deepEqual(reducedState.activeSlots,['boot-tv']);
     console.log(JSON.stringify({qa:'v368-scene-presence',viewport:'reduced',status:'PASS',reducedState}));
     await reducedPage.close();
   } finally {await browser.close()}
