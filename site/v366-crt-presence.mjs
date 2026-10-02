@@ -1,6 +1,10 @@
-/* MOVX v366 — stronger physical presence for the approved Scene-01 CRT.
+/* MOVX v366 / v386.13 — physical presence for the approved Scene-01 CRT.
    Pointer presence, press depth, camera parallax and light tracking all run inside
-   the existing v358 render frame. No extra model, canvas, scene, WebGL context or RAF. */
+   the existing v358 render frame. v386.13 aligns this older physical-presence
+   family with the full Scene-01 input field already used by v363/v364/v361.
+   Three.js raycasting remains the hit authority: editorial DOM is never treated
+   as the TV merely because the event is delivered by the larger scene surface.
+   No extra model, canvas, scene, WebGL context, listener family or RAF. */
 import * as THREE from './vendor/three.module.js';
 
 const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -12,16 +16,19 @@ export function attachCRTPresence(instance){
   if(instance.presence||!instance.channelPhysics||!instance.objectInteraction||!instance.channels||instance.procedural||instance.previewProcedural)return instance.presence;
   const boot=document.querySelector('#boot');
   const wrap=boot?.querySelector('.crt-wrap');
-  if(!boot||!wrap||!instance.canvas||!instance.model||!instance.camera||!instance.group)return null;
+  const surface=boot?.querySelector('.scene-inner')||boot?.querySelector('.boot-stage')||wrap;
+  if(!boot||!wrap||!surface||!instance.canvas||!instance.model||!instance.camera||!instance.group)return null;
 
   const ray=new THREE.Raycaster();
   const pointer=new THREE.Vector2();
   const state={
     reduced,coarse,hover:false,pressed:false,pointerId:null,
     tx:0,ty:0,x:0,y:0,hoverMix:0,pressMix:0,
-    enterAt:performance.now(),lastTime:performance.now(),frames:0,lastSurface:'none'
+    enterAt:performance.now(),lastTime:performance.now(),frames:0,lastSurface:'none',
+    inputSurface:'scene-inner'
   };
 
+  const editorialTarget=event=>event.target instanceof Element&&!!event.target.closest('button,a,input,label,select,textarea');
   const hitAt=event=>{
     const r=instance.canvas.getBoundingClientRect();
     if(!r.width||!r.height)return null;
@@ -37,27 +44,22 @@ export function attachCRTPresence(instance){
     boot.style.setProperty('--v366-px',state.tx.toFixed(4));
     boot.style.setProperty('--v366-py',state.ty.toFixed(4));
   };
-  const enter=event=>{
+  const updateHit=event=>{
     if(coarse||event.pointerType==='touch')return;
     setTarget(event);
-    const hit=hitAt(event);
+    const hit=editorialTarget(event)?null:hitAt(event);
     state.hover=!!hit;state.lastSurface=hit?.name||'none';
     boot.dataset.crtPresence=state.hover?'hover':'idle';
   };
-  const move=event=>{
-    if(coarse||event.pointerType==='touch')return;
-    setTarget(event);
-    const hit=hitAt(event);
-    state.hover=!!hit;state.lastSurface=hit?.name||'none';
-    boot.dataset.crtPresence=state.hover?'hover':'idle';
-  };
+  const enter=event=>updateHit(event);
+  const move=event=>updateHit(event);
   const leave=()=>{
     if(state.pressed)return;
     state.hover=false;state.tx=state.ty=0;state.lastSurface='none';
     boot.dataset.crtPresence='idle';
   };
   const down=event=>{
-    if(coarse||event.pointerType==='touch'||event.button!==0)return;
+    if(coarse||event.pointerType==='touch'||event.button!==0||editorialTarget(event))return;
     const hit=hitAt(event);if(!hit)return;
     state.pressed=true;state.pointerId=event.pointerId;state.hover=true;
     boot.dataset.crtPresence='press';
@@ -68,12 +70,15 @@ export function attachCRTPresence(instance){
     boot.dataset.crtPresence=state.hover?'hover':'idle';
   };
 
-  wrap.addEventListener('pointerenter',enter,{passive:true});
-  wrap.addEventListener('pointermove',move,{passive:true});
-  wrap.addEventListener('pointerleave',leave,{passive:true});
-  wrap.addEventListener('pointerdown',down,{passive:true});
-  wrap.addEventListener('pointerup',up,{passive:true});
-  wrap.addEventListener('pointercancel',up,{passive:true});
+  /* v386.13: same physical presence family, broader delivery surface. The raycast
+     above still decides whether the pointer is actually over transformed CRT
+     geometry, matching current drag/click/pickup behavior. */
+  surface.addEventListener('pointerenter',enter,{passive:true});
+  surface.addEventListener('pointermove',move,{passive:true});
+  surface.addEventListener('pointerleave',leave,{passive:true});
+  surface.addEventListener('pointerdown',down,{passive:true});
+  surface.addEventListener('pointerup',up,{passive:true});
+  surface.addEventListener('pointercancel',up,{passive:true});
 
   function update(time){
     const dt=Math.min(Math.max((time-state.lastTime)/1000,0),.08);state.lastTime=time;
@@ -132,6 +137,7 @@ export function attachCRTPresence(instance){
 
   instance.presence={state,update};
   document.documentElement.dataset.crtPresence='v366-ready';
+  document.documentElement.dataset.crtPresenceSurface='v386.13-scene-field';
   boot.dataset.crtPresence='idle';
   return instance.presence;
 }
