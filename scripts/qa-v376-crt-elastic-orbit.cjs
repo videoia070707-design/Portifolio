@@ -14,25 +14,56 @@ const fs=require('node:fs');
     await page.waitForFunction(()=>document.documentElement.dataset.crtOrbitPhysics==='v376-elastic-boundary',null,{timeout:10000});
     await page.waitForFunction(()=>document.documentElement.dataset.crtOrbitRecoil==='v376.1-visible-snap',null,{timeout:10000});
     await page.waitForFunction(()=>document.documentElement.dataset.crtSpatialGrab==='v375-ready',null,{timeout:10000});
+    await page.waitForFunction(()=>document.documentElement.dataset.crtInputSurface==='v386.9-scene-field',null,{timeout:5000});
 
-    const bodyPoint=()=>page.evaluate(async()=>{
+    const findBodyPoint=()=>page.evaluate(async()=>{
       const THREE=await import('./vendor/three.module.js');
       const i=window.MOVX3D.runtime.instances['boot-tv'];
       const ray=new THREE.Raycaster(),p=new THREE.Vector2(),r=i.canvas.getBoundingClientRect();
       const screen=i.channels.screen,knob=i.model.getObjectByName('tripo_part_8');
-      for(const fy of [.25,.34,.55,.70,.82])for(const fx of [.18,.25,.72,.82,.40,.62]){
+      knob.geometry.computeBoundingBox();const kc=knob.geometry.boundingBox.getCenter(new THREE.Vector3());knob.localToWorld(kc);kc.project(i.camera);
+      const knobPoint={x:r.x+(kc.x+1)*r.width/2,y:r.y+(1-kc.y)*r.height/2};
+      const selectorRadius=Math.max(24,Math.min(36,r.width*.042))+22;
+      const candidates=[[.16,.24],[.24,.24],[.34,.22],[.64,.22],[.76,.24],[.84,.30],[.14,.43],[.82,.45],[.16,.62],[.82,.64],[.22,.77],[.70,.78],[.36,.86],[.58,.86]];
+      for(const [fx,fy] of candidates){
+        const x=r.x+fx*r.width,y=r.y+fy*r.height;
+        if(Math.hypot(x-knobPoint.x,y-knobPoint.y)<=selectorRadius)continue;
         p.set(fx*2-1,-(fy*2-1));ray.setFromCamera(p,i.camera);
         const hit=ray.intersectObject(i.model,true)[0]?.object;
-        if(hit&&hit!==screen&&hit!==knob)return{x:r.x+fx*r.width,y:r.y+fy*r.height,name:hit.name};
+        if(hit&&hit!==screen&&hit!==knob)return{x,y,name:hit.name,knobPoint,selectorRadius};
       }
       return null;
     });
+    const stillBody=point=>page.evaluate(async point=>{
+      const THREE=await import('./vendor/three.module.js');
+      const i=window.MOVX3D.runtime.instances['boot-tv'],r=i.canvas.getBoundingClientRect();
+      const screen=i.channels.screen,knob=i.model.getObjectByName('tripo_part_8');
+      knob.geometry.computeBoundingBox();const kc=knob.geometry.boundingBox.getCenter(new THREE.Vector3());knob.localToWorld(kc);kc.project(i.camera);
+      const knobPoint={x:r.x+(kc.x+1)*r.width/2,y:r.y+(1-kc.y)*r.height/2};
+      const selectorRadius=Math.max(24,Math.min(36,r.width*.042))+18;
+      if(Math.hypot(point.x-knobPoint.x,point.y-knobPoint.y)<=selectorRadius)return false;
+      const ndc=new THREE.Vector2((point.x-r.x)/r.width*2-1,-(point.y-r.y)/r.height*2+1),ray=new THREE.Raycaster();
+      ray.setFromCamera(ndc,i.camera);const hit=ray.intersectObject(i.model,true)[0]?.object;
+      return !!hit&&hit!==screen&&hit!==knob;
+    },point);
+    const bodyPoint=async()=>{
+      let point=null;
+      for(let attempt=0;attempt<6;attempt++){
+        point=await findBodyPoint();assert.ok(point,`elastic QA could not find visible cabinet body on attempt ${attempt+1}`);
+        const frame=await page.evaluate(()=>Number(document.querySelector('#boot')?.dataset.v371Frame||0));
+        await page.mouse.move(point.x,point.y,{steps:attempt?3:6});
+        await page.waitForFunction(previous=>Number(document.querySelector('#boot')?.dataset.v371Frame||0)>previous,frame,{timeout:4000,polling:'raf'});
+        if(await stillBody(point))return {...point,attempts:attempt+1};
+      }
+      assert.fail(`elastic QA cabinet body never converged under live parallax: ${JSON.stringify(point)}`);
+    };
+
     const snap=()=>page.evaluate(()=>{
       const root=document.documentElement,boot=document.querySelector('#boot'),i=window.MOVX3D.runtime.instances['boot-tv'];
       const o=i.objectInteraction.state,g=i.spatialGrab.state;
       return {
         layer:root.dataset.crtOrbitPhysicsLayer,recoilLayer:root.dataset.crtOrbitRecoilLayer,
-        ready:root.dataset.crtOrbitPhysics,recoilReady:root.dataset.crtOrbitRecoil,
+        ready:root.dataset.crtOrbitPhysics,recoilReady:root.dataset.crtOrbitRecoil,inputSurface:root.dataset.crtInputSurface,
         grab:boot.dataset.crtGrab,boundary:boot.dataset.crtBoundary||'',
         active:o.active,yaw:o.yaw,pitch:o.pitch,velocityYaw:o.velocityYaw,pointerVelocityYaw:o.pointerVelocityYaw,
         edgeYaw:o.edgeCompressionYaw,bounce:o.boundaryBounce,boundaryHits:o.boundaryHits,lastSnapYaw:o.lastBoundarySnapYaw,
@@ -45,12 +76,14 @@ const fs=require('node:fs');
     const initial=await snap();
     assert.equal(initial.layer,'v376-elastic-boundary');assert.equal(initial.recoilLayer,'v376-1-visible-recoil');
     assert.equal(initial.ready,'v376-elastic-boundary');assert.equal(initial.recoilReady,'v376.1-visible-snap');
+    assert.equal(initial.inputSurface,'v386.9-scene-field');
     assert.equal(initial.triangles,44831);assert.equal(initial.renderers,1);assert.deepEqual(initial.activeSlots,['boot-tv']);assert.ok(initial.overflow<=2);
 
-    const p=await bodyPoint();assert.ok(p,'QA could not find a visible CRT cabinet surface');
-    await page.mouse.move(p.x,p.y,{steps:4});await page.mouse.down();
-    /* Deliberately push well through the authored +0.50 rad stop. The cabinet must
-       remain bounded while hand velocity/compression survives at the stop. */
+    const p=await bodyPoint();
+    await page.mouse.down();
+    await page.waitForFunction(()=>{
+      const i=window.MOVX3D.runtime.instances['boot-tv'];return i.objectInteraction.state.active&&i.directManipulation.state.active===false;
+    },null,{timeout:2500,polling:'raf'});
     await page.mouse.move(p.x+165,p.y-20,{steps:14});
     await page.waitForFunction(()=>{
       const i=window.MOVX3D.runtime.instances['boot-tv'],o=i.objectInteraction.state;
@@ -81,8 +114,8 @@ const fs=require('node:fs');
     assert.ok(Math.abs(recoil.yaw)<=.5001,'recoil exceeded authored orbit safety limit');
     assert.equal(recoil.renderers,1);assert.deepEqual(recoil.activeSlots,['boot-tv']);assert.ok(recoil.overflow<=2);
     assert.equal(errors.length,0,'desktop page errors: '+errors.join(' | '));
-    fs.writeFileSync('_site/qa-v376-elastic-orbit.json',JSON.stringify({initial,compressed,released,recoil},null,2));
-    console.log(JSON.stringify({qa:'v376.1-crt-elastic-orbit',status:'PASS',compressed,released,recoil}));
+    fs.writeFileSync('_site/qa-v376-elastic-orbit.json',JSON.stringify({initial,pick:p,compressed,released,recoil},null,2));
+    console.log(JSON.stringify({qa:'v376.1-crt-elastic-orbit',status:'PASS',pickAttempts:p.attempts,compressed,released,recoil}));
     await page.close();
 
     const reduced=await browser.newPage({viewport:{width:1280,height:800},reducedMotion:'reduce'});
