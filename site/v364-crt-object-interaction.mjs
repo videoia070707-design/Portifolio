@@ -1,10 +1,12 @@
-/* MOVX v364/v375/v376.1/v386.4 — physical manipulation for the existing production CRT.
+/* MOVX v364/v375/v376.1/v386.8 — physical manipulation for the existing production CRT.
    Dragging the cabinet rotates the actual Three.js object with visible but bounded
    inertia. v375 deepens the orbit range and couples it to camera/light; v376 turns
    the hard safety stop into an elastic physical boundary; v376.1 gives release at
    that boundary an immediate inward positional recoil before inertia continues.
-   v386.4 preserves control ownership: if v363 already captured the real screen or
-   selector on pointerdown, cabinet orbit cannot steal the same gesture. */
+   v386.4 preserves direct-control ownership. v386.8 binds the same pointer logic
+   to the complete Scene-01 stage so the visible cabinet remains pickable even when
+   the v386 framing projects real geometry beyond the old CSS wrapper box. Three.js
+   raycasting still decides whether the pointer actually touches the cabinet. */
 import * as THREE from './vendor/three.module.js';
 
 const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -17,9 +19,10 @@ export function attachCRTObjectInteraction(instance){
   if(instance.objectInteraction||!instance.directManipulation||!instance.channels||instance.procedural||instance.previewProcedural)return instance.objectInteraction;
   const boot=document.querySelector('#boot');
   const wrap=boot?.querySelector('.crt-wrap');
+  const surface=boot?.querySelector('.boot-stage')||wrap;
   const screen=instance.channels.screen;
   const knob=instance.model.getObjectByName('tripo_part_8');
-  if(!boot||!wrap||!screen?.isMesh||!knob)return null;
+  if(!boot||!wrap||!surface||!screen?.isMesh||!knob)return null;
 
   const ray=new THREE.Raycaster();
   const pointer=new THREE.Vector2();
@@ -30,7 +33,8 @@ export function attachCRTObjectInteraction(instance){
     pointerVelocityYaw:0,pointerVelocityPitch:0,
     edgeCompressionYaw:0,edgeCompressionPitch:0,boundaryBounce:0,boundaryHits:0,
     atYawBoundary:false,atPitchBoundary:false,lastBoundarySnapYaw:0,lastBoundarySnapPitch:0,
-    bodyDrags:0,lastAction:'none',lastRelease:0,engaged:false,grabEnergy:0
+    bodyDrags:0,lastAction:'none',lastRelease:0,engaged:false,grabEnergy:0,
+    inputSurface:'boot-stage'
   };
 
   let hint=wrap.querySelector('.crt-object-hint');
@@ -52,6 +56,12 @@ export function attachCRTObjectInteraction(instance){
     return ray.intersectObject(instance.model,true)[0]?.object||null;
   };
   const isBody=obj=>!!obj&&obj!==screen&&obj!==knob;
+  const isEditorialControl=event=>{
+    const target=event.target;
+    if(!target?.closest)return false;
+    if(wrap.contains(target))return false;
+    return !!target.closest('button,a,input,select,textarea,[contenteditable="true"],[role="button"]');
+  };
   const setBodyHit=value=>{
     if(value)boot.dataset.crtObjectHit='body';
     else delete boot.dataset.crtObjectHit;
@@ -66,17 +76,17 @@ export function attachCRTObjectInteraction(instance){
   };
 
   const hover=event=>{
-    if(coarse||state.active||event.pointerType==='touch')return;
+    if(coarse||state.active||event.pointerType==='touch'||isEditorialControl(event))return;
     setBodyHit(isBody(hitAt(event)));
   };
   const leave=()=>{if(!state.active)setBodyHit(false)};
 
   const begin=event=>{
+    if(state.active)return;
     if(event.button!==undefined&&event.button!==0)return;
-    if(coarse||event.pointerType==='touch')return;
-    /* v363 owns the real screen + selector and is registered first. A successful
-       direct-control capture must be exclusive, otherwise a nearby cabinet mesh
-       can start a second gesture on the same pointerdown. */
+    if(coarse||event.pointerType==='touch'||isEditorialControl(event))return;
+    /* v363 owns the real screen + selector and is registered first on the same
+       Scene-01 input surface. A successful direct-control capture is exclusive. */
     if(instance.directManipulation?.state?.active)return;
     const hit=hitAt(event);
     if(!isBody(hit))return;
@@ -91,7 +101,7 @@ export function attachCRTObjectInteraction(instance){
     state.lastMoveTime=performance.now();
     state.grabEnergy=Math.max(state.grabEnergy,.25);
     boot.dataset.crtObjectGesture='orbit';boot.dataset.crtGrab='armed';setBodyHit(true);updateBoundaryMarker();
-    try{wrap.setPointerCapture(event.pointerId)}catch{}
+    try{surface.setPointerCapture(event.pointerId)}catch{}
     event.preventDefault();
   };
 
@@ -162,15 +172,15 @@ export function attachCRTObjectInteraction(instance){
     state.atYawBoundary=state.atPitchBoundary=false;
     boot.dataset.crtGrab=state.moved?'inertia':'idle';
     delete boot.dataset.crtObjectGesture;setBodyHit(false);updateBoundaryMarker();
-    try{wrap.releasePointerCapture(event.pointerId)}catch{}
+    try{surface.releasePointerCapture(event.pointerId)}catch{}
   };
 
-  wrap.addEventListener('pointermove',hover,{passive:true});
-  wrap.addEventListener('pointerleave',leave,{passive:true});
-  wrap.addEventListener('pointerdown',begin,{passive:false});
-  wrap.addEventListener('pointermove',move,{passive:false});
-  wrap.addEventListener('pointerup',end,{passive:true});
-  wrap.addEventListener('pointercancel',end,{passive:true});
+  surface.addEventListener('pointermove',hover,{passive:true});
+  surface.addEventListener('pointerleave',leave,{passive:true});
+  surface.addEventListener('pointerdown',begin,{passive:false});
+  surface.addEventListener('pointermove',move,{passive:false});
+  surface.addEventListener('pointerup',end,{passive:true});
+  surface.addEventListener('pointercancel',end,{passive:true});
 
   function integrateElastic(value,velocity,limit,restitution,dt){
     let next=value+velocity*dt;
@@ -233,7 +243,8 @@ export function attachCRTObjectInteraction(instance){
   document.documentElement.dataset.crtObject='v364-ready';
   document.documentElement.dataset.crtOrbitPhysics='v376-elastic-boundary';
   document.documentElement.dataset.crtOrbitRecoil='v376.1-visible-snap';
-  document.documentElement.dataset.crtControlOwnership='v386.4-direct-first';
-  boot.dataset.crtObject='ready';boot.dataset.crtGrab='idle';
+  document.documentElement.dataset.crtControlOwnership='v386.8-stage-direct-first';
+  document.documentElement.dataset.crtInputSurface='v386.8-stage-pick';
+  boot.dataset.crtObject='ready';boot.dataset.crtGrab='idle';boot.dataset.crtInputSurface='stage';
   return instance.objectInteraction;
 }

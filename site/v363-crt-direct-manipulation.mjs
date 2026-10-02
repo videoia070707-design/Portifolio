@@ -1,11 +1,12 @@
-/* MOVX v363/v386.5 — direct manipulation for the approved CRT.
+/* MOVX v363/v386.8 — direct manipulation for the approved CRT.
    The existing screen and selector become the controls: drag the real screen to
    manipulate the active programme and drag the real selector to tune channels.
-   The tiny selector keeps exact ray hits as the primary signal, plus a bounded
-   projected pickup footprint. v386.5 gives that footprint local intent priority:
-   if a live parallax frame makes the screen/body win the first ray by a few pixels,
-   the pointer can still grab the real selector at its visible projected position.
-   No extra WebGL context, visible canvas, model, listener family or RAF is added. */
+   v386.5 gave the tiny selector local projected intent priority. v386.8 moves the
+   pointer event surface from the CSS wrapper to the complete Scene-01 stage while
+   keeping all hit decisions in Three.js raycasting. The real GLB can therefore be
+   picked anywhere it is visibly rendered, including portions that project beyond
+   the wrapper after the stronger v386 three-quarter framing. No new listener
+   family, WebGL context, visible canvas, model or animation loop is added. */
 import * as THREE from './vendor/three.module.js';
 
 const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -20,10 +21,11 @@ export function attachCRTDirectManipulation(instance){
   if(instance.directManipulation||!instance.channels||!instance.tactility||instance.procedural||instance.previewProcedural)return instance.directManipulation;
   const boot=document.querySelector('#boot');
   const wrap=boot?.querySelector('.crt-wrap');
+  const surface=boot?.querySelector('.boot-stage')||wrap;
   const screen=instance.channels.screen;
   const channelState=instance.channels.state;
   const knob=instance.model.getObjectByName('tripo_part_8');
-  if(!boot||!wrap||!screen?.isMesh||!knob)return null;
+  if(!boot||!wrap||!surface||!screen?.isMesh||!knob)return null;
 
   const buttons=[...boot.querySelectorAll('[data-crt-mode-control]')];
   const range=boot.querySelector('.crt-program-range input');
@@ -47,7 +49,8 @@ export function attachCRTDirectManipulation(instance){
     dragResidual:0,currentZ:knob.rotation.z||0,lastTime:performance.now(),
     startChannel:channelState.channel||'direction',startIndex:0,startArt:0,startMobile:false,
     startAmount:.5,startPhase:0,startPaused:false,startAngle:0,knobCenterX:0,knobCenterY:0,
-    lastDialIndex:-1,lastDirection:1,releaseEnergy:0,selectorAssistHits:0
+    lastDialIndex:-1,lastDirection:1,releaseEnergy:0,selectorAssistHits:0,
+    inputSurface:'boot-stage'
   };
 
   const hitAt=event=>{
@@ -74,6 +77,12 @@ export function attachCRTDirectManipulation(instance){
     const radius=Math.max(24,Math.min(36,r.width*.042));
     return Math.hypot(event.clientX-p.x,event.clientY-p.y)<=radius;
   };
+  const isEditorialControl=event=>{
+    const target=event.target;
+    if(!target?.closest)return false;
+    if(wrap.contains(target))return false;
+    return !!target.closest('button,a,input,select,textarea,[contenteditable="true"],[role="button"]');
+  };
   const refreshAction=()=>{
     if(!action)return;
     action.textContent=channelState.channel==='direction'?'Próxima arte ↗':channelState.channel==='motion'?(channelState.paused?'Reproduzir animação':'Pausar animação'):channelState.channel==='ai'?'Gerar outra variação ↗':(channelState.mobile?'Ver desktop ↗':'Ver mobile ↗');
@@ -93,8 +102,10 @@ export function attachCRTDirectManipulation(instance){
   };
 
   const begin=event=>{
+    if(direct.active)return;
     if(event.button!==undefined&&event.button!==0)return;
     if(coarse&&event.pointerType==='touch')return;
+    if(isEditorialControl(event))return;
     const hit=hitAt(event),obj=hit?.object;
     const selectorIntent=nearKnob(event);
     /* Physical affordance priority: within the real selector's tiny projected
@@ -114,7 +125,7 @@ export function attachCRTDirectManipulation(instance){
       const p=projectCenter(knob);if(p){direct.knobCenterX=p.x;direct.knobCenterY=p.y;direct.startAngle=Math.atan2(event.clientY-p.y,event.clientX-p.x)}
     }
     boot.dataset.crtGesture=kind;
-    try{wrap.setPointerCapture(event.pointerId)}catch{}
+    try{surface.setPointerCapture(event.pointerId)}catch{}
     if(event.pointerType!=='touch')event.preventDefault();
   };
 
@@ -164,13 +175,13 @@ export function attachCRTDirectManipulation(instance){
     direct.active=false;direct.kind='none';direct.pointerId=null;direct.dragResidual=0;
     boot.dataset.crtGesture=direct.moved?'settling':'none';
     delete boot.dataset.crtSelectorAssist;
-    try{wrap.releasePointerCapture(event.pointerId)}catch{}
+    try{surface.releasePointerCapture(event.pointerId)}catch{}
   };
 
-  wrap.addEventListener('pointerdown',begin,{passive:false});
-  wrap.addEventListener('pointermove',move,{passive:false});
-  wrap.addEventListener('pointerup',end,{passive:true});
-  wrap.addEventListener('pointercancel',end,{passive:true});
+  surface.addEventListener('pointerdown',begin,{passive:false});
+  surface.addEventListener('pointermove',move,{passive:false});
+  surface.addEventListener('pointerup',end,{passive:true});
+  surface.addEventListener('pointercancel',end,{passive:true});
 
   function update(time){
     const dt=Math.min(Math.max((time-direct.lastTime)/1000,0),.1);direct.lastTime=time;
@@ -188,7 +199,9 @@ export function attachCRTDirectManipulation(instance){
   instance.directManipulation={state:direct,update};
   document.documentElement.dataset.crtDirect='v363-ready';
   document.documentElement.dataset.crtSelectorPickup='v386.5-intent-priority';
+  document.documentElement.dataset.crtInputSurface='v386.8-stage-pick';
   boot.dataset.crtDirect='ready';
+  boot.dataset.crtInputSurface='stage';
   refreshHint();
   return instance.directManipulation;
 }
