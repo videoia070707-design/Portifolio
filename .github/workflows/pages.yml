@@ -171,7 +171,6 @@ jobs:
           sed 's/127\.0\.0\.1:4173/127.0.0.1:4174/g' scripts/qa-v385-hero-only.cjs > _site/qa-logs/qa-v385-hero-only.cjs
           sed 's/127\.0\.0\.1:4173/127.0.0.1:4174/g' scripts/qa-v380-crt-channel-retune.cjs > _site/qa-logs/qa-v380-channel-retune.cjs
           sed 's/127\.0\.0\.1:4173/127.0.0.1:4174/g' scripts/qa-v370-crt-light-spill.cjs > _site/qa-logs/qa-v370-crt-light-spill.cjs
-          sed 's/127\.0\.0\.1:4173/127.0.0.1:4174/g' scripts/qa-v371-crt-object-volume.cjs > _site/qa-logs/qa-v371-crt-object-volume.cjs
           sed 's/127\.0\.0\.1:4173/127.0.0.1:4174/g' scripts/qa-v372-channel-pose-authority.cjs > _site/qa-logs/qa-v372-channel-pose-authority.cjs
           sed 's/127\.0\.0\.1:4173/127.0.0.1:4174/g' scripts/qa-v373-crt-instant-presence.cjs > _site/qa-logs/qa-v373-crt-instant-presence.cjs
           sed 's/127\.0\.0\.1:4173/127.0.0.1:4174/g' scripts/qa-v375-crt-spatial-grab.cjs > _site/qa-logs/qa-v375-crt-spatial-grab.cjs
@@ -183,7 +182,7 @@ jobs:
           node _site/qa-logs/qa-v385-hero-only.cjs
           node _site/qa-logs/qa-v380-channel-retune.cjs
           node _site/qa-logs/qa-v370-crt-light-spill.cjs
-          node _site/qa-logs/qa-v371-crt-object-volume.cjs
+          node scripts/qa-v386-10-current-scene-contract.cjs
           node _site/qa-logs/qa-v373-crt-instant-presence.cjs
           node _site/qa-logs/qa-v372-channel-pose-authority.cjs
           node _site/qa-logs/qa-v375-crt-spatial-grab.cjs
@@ -200,7 +199,6 @@ jobs:
             _site/qa-v385-*
             _site/qa-v380-*
             _site/qa-v370-*
-            _site/qa-v371-*
             _site/qa-v372-*
             _site/qa-v373-*
             _site/qa-v375-*

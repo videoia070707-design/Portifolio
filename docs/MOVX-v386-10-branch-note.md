@@ -1,0 +1,1 @@
+Branch scope: Scene 01 release stabilization only. No additional 3D model is activated.
