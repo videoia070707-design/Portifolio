@@ -6,8 +6,9 @@ was still bound to `.crt-wrap`, so visibly projected cabinet geometry outside th
 historical DOM box could drag/click but would not receive hover depth/light response.
 
 This release keeps exactly the same v366 presence family and Three.js raycast hit
-authority, but ships the updated source under a fresh child-module cache key and a
-fresh unified-runtime shell URL. No new model, renderer, context, scene, RAF or
+authority, but ships the updated source under a fresh child-module cache key. The
+still-unpublished v386.4 unified-runtime shell URL remains stable, matching the
+existing release-chain contract. No new model, renderer, context, scene, RAF or
 listener family is introduced.
 """
 from pathlib import Path
@@ -51,21 +52,12 @@ for name in ('index.html','latest.html'):
         raise SystemExit(f'MOVX v386.13 requires the current v386.9 Scene-01 input field in {name}')
     if 'data-v386-channel-click="v386-10-channel-click-field"' not in text:
         raise SystemExit(f'MOVX v386.13 requires the current v386.10 click field in {name}')
+    if 'v322-glb-runtime.mjs?v=v386-4-hero-selector-stability' not in text:
+        raise SystemExit(f'MOVX v386.13 requires the still-unpublished v386.4 shell URL in {name}')
     if 'data-v386-object-presence=' not in text:
         text=text.replace('<html ',f'<html data-v386-object-presence="{release}" ',1)
     else:
         text=re.sub(r'data-v386-object-presence="[^"]+"',f'data-v386-object-presence="{release}"',text,count=1)
-    # The v386.4 shell had intentionally stayed cache-stable while only already-
-    # unpublished child modules changed. v386.13 changes a child module whose old
-    # URL may already exist in browser caches, so the shell itself must now be fresh.
-    text,count=re.subn(
-        r'v322-glb-runtime\.mjs\?v=v386-4-hero-selector-stability',
-        f'v322-glb-runtime.mjs?v={release}',
-        text,
-        count=1,
-    )
-    if count!=1:
-        raise SystemExit(f'MOVX v386.13 could not promote unified runtime cache key in {name}')
     path.write_text(text);installed.append(name)
 
 models=sorted(p.name for p in (out/'models').glob('*.glb'))
@@ -81,7 +73,7 @@ print(json.dumps({
     'existing_input_families':'v361/v363/v364/v366 reused; no new family',
     'new_listener_families':0,
     'new_webgl_resources':0,
-    'runtime_shell':'fresh v386.13 cache URL',
+    'runtime_shell':'still-unpublished v386.4 shell URL retained',
     'presence_child_cache':'fresh v386.13 URL',
     'models':models,
 },ensure_ascii=False))
