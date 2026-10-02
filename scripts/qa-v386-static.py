@@ -1,4 +1,4 @@
-"""Static gate for MOVX v386 immersive Hero through v386.15 surface contact."""
+"""Static gate for MOVX v386 immersive Hero through v386.16 mobile silhouette."""
 from pathlib import Path
 import json
 
@@ -13,7 +13,7 @@ for forbidden in ('#hero','#portal','#work','#machine','#playground','#studio','
     if forbidden in projection:errors.append(f'v386 projection CSS escaped #boot via {forbidden}')
 if '#boot' not in css:errors.append('v386 CSS has no #boot scope')
 if '#boot' not in projection:errors.append('v386 projection CSS has no #boot scope')
-for contract in ('height:auto!important','aspect-ratio:1.2 / 1!important','aspect-ratio:1.30 / 1!important','aspect-ratio:1.12 / 1!important'):
+for contract in ('height:auto!important','aspect-ratio:1.2 / 1!important','aspect-ratio:1.30 / 1!important','aspect-ratio:1.16 / 1!important'):
     if contract not in projection:errors.append(f'v386 safe-projection contract missing: {contract}')
 for contract in (
     'grid-template-columns:minmax(620px,1fr) minmax(400px,430px)!important',
@@ -21,7 +21,7 @@ for contract in (
     'column-gap:clamp(70px,5.6vw,88px)!important',
     'top:clamp(-300px,calc(100svh - 1030px),-190px)!important',
 ):
-    if contract not in css:errors.append(f'v386.5 Hero/grid contract missing: {contract}')
+    if contract not in css:errors.append(f'v386 Hero/grid contract missing: {contract}')
 
 for name in ('index.html','latest.html'):
     path=out/name
@@ -31,7 +31,7 @@ for name in ('index.html','latest.html'):
     if '<style data-v386-hero-immersion="v386-spatial-hero">' not in text:errors.append(f'{name} missing v386 critical CSS')
     if 'data-v386-safe-projection="v386-3-landscape-field"' not in text:errors.append(f'{name} missing v386.3 projection marker')
     if '<style data-v386-safe-projection="v386-3-landscape-field">' not in text:errors.append(f'{name} missing v386 projection CSS')
-    if 'aspect-ratio:1.12 / 1!important' not in text:errors.append(f'{name} missing v386.5 mobile projection CSS')
+    if 'aspect-ratio:1.16 / 1!important' not in text:errors.append(f'{name} missing v386.16 mobile projection CSS')
     if 'data-v386-hero-stability="v386-4-hero-selector-stability"' not in text:errors.append(f'{name} missing v386.4 stability marker')
     if 'data-v386-mobile-projection="v386-5-mobile-safe-projection"' not in text:errors.append(f'{name} missing v386.5 projection marker')
     if 'data-v386-input-surface="v386-9-scene-field-input"' not in text:errors.append(f'{name} missing v386.9 scene-field marker')
@@ -101,5 +101,5 @@ else:
 
 models=sorted(p.name for p in (out/'models').glob('*.glb')) if (out/'models').exists() else []
 if models!=['movx-crt-tv.glb']:errors.append(f'single-model gate failed: {models}')
-if errors:raise SystemExit('MOVX v386.15 static QA failed: '+json.dumps(errors,ensure_ascii=False))
-print(json.dumps({'qa':'v386.15-static','status':'PASS','scope':'#boot only','models':models,'projection':'desktop/short/mobile safe fields','short_visible_crt':True,'runtime_shell':'fresh v386.15 URL','selector':'v386.5 intent priority on full Scene-01 field','cabinet':'v386.9 Three.js raycast on same full Scene-01 field','contact':'v386.15 surface-aware feedback from existing v366 raycast presence'},ensure_ascii=False))
+if errors:raise SystemExit('MOVX v386.16 static QA failed: '+json.dumps(errors,ensure_ascii=False))
+print(json.dumps({'qa':'v386.16-static','status':'PASS','scope':'#boot only','models':models,'projection':'desktop/short/mobile full-silhouette fields','mobile_projection':'1.16:1','short_visible_crt':True,'runtime_shell':'fresh v386.15 URL','selector':'v386.5 intent priority on full Scene-01 field','cabinet':'v386.9 Three.js raycast on same full Scene-01 field','contact':'v386.15 surface-aware feedback from existing v366 raycast presence'},ensure_ascii=False))
