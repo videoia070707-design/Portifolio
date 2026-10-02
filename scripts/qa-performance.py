@@ -1,11 +1,11 @@
 """Static performance budgets for the deployed MOVX artifact.
 
-v386.4 keeps the one-model-at-a-time rollout. Scene 01 / BOOT (`boot-tv`) is
+v386.7 keeps the one-model-at-a-time rollout. Scene 01 / BOOT (`boot-tv`) is
 the only 3D slot eligible for production and must publish exactly one canonical
 GLB: `models/movx-crt-tv.glb`. The current Hero runtime layers channels, tactile
 screen/dial controls, cabinet orbit, channel physics, object/scene presence,
-scene direction, object volume, semantic pose authority and the v386.4 selector
-pickup/ownership fix on the same approved v358 renderer/context. Healthy boot
+scene direction, object volume, semantic pose authority and the v386.5 selector
+intent/ownership fix on the same approved v358 renderer/context. Healthy boot
 uses the authored real-TV poster until the GLB is ready; the procedural streaming
 proxy must not be mounted.
 """
@@ -62,7 +62,7 @@ else:
     if 'data-storyboard="v320"' not in home_text:errors.append('index.html missing v320 storyboard marker')
     if 'data-glb-runtime="v322-unified-glb-runtime"' not in home_text:errors.append('index.html missing v322 GLB runtime marker')
     if 'data-crt-runtime="v350-real-glb"' not in home_text:errors.append('index.html missing v350 real CRT marker')
-    if 'v322-glb-runtime.mjs?v=v386-4-hero-selector-stability' not in home_text:errors.append('index.html missing v386.4 CRT runtime cache key')
+    if 'v322-glb-runtime.mjs?v=v386-4-hero-selector-stability' not in home_text:errors.append('index.html missing v386.4 fresh unified-runtime shell cache key')
     if 'v322-glb-runtime.css?v=v350-real-crt' not in home_text:errors.append('index.html missing v350 CRT surface cache key')
     if 'data-model-pack="v323-tripo-model-pack"' not in home_text:errors.append('index.html missing v323 model-pack marker')
     if 'data-model-scope="v350-crt-only"' not in home_text:errors.append('index.html missing v350 CRT-only production scope marker')
@@ -79,6 +79,7 @@ else:
     if 'data-crt-object-volume-layer="v371-object-volume"' not in home_text:errors.append('index.html missing v371 CRT object-volume marker')
     if 'data-crt-channel-pose-layer="v372-channel-pose-authority"' not in home_text:errors.append('index.html missing v372 channel-pose marker')
     if 'data-v386-hero-stability="v386-4-hero-selector-stability"' not in home_text:errors.append('index.html missing v386.4 Hero stability marker')
+    if 'data-v386-mobile-projection="v386-5-mobile-safe-projection"' not in home_text:errors.append('index.html missing v386.5 mobile projection marker')
     if 'data-crt-loading="poster-only"' not in home_text:errors.append('index.html missing poster-only loading marker')
     if 'data-v366-crt-presence="v366-clean-boot-presence"' not in home_text:errors.append('index.html missing v366 critical inline CSS')
     if 'data-v367-scene-director="v367-scene01-director"' not in home_text:errors.append('index.html missing v367 critical inline CSS')
@@ -204,7 +205,7 @@ if "const targetX=(modePitch*.45) + (reduced?0:-py*.025);" not in crt_runtime:er
 if "const targetZ=modeRoll*.45;" not in crt_runtime:errors.append('v372 semantic roll authority is missing from the real CRT base pose')
 if "modeEnergy*.035 + modeZoom*.08" not in crt_runtime:errors.append('v372 semantic zoom/depth authority is missing from the real CRT base pose')
 if "const targetY=-.12 +" in crt_runtime:errors.append('legacy fixed -0.12 CRT yaw survived v372')
-if 'v363-crt-direct-manipulation.mjs?v=v386-4-selector-pickup' not in crt_runtime:errors.append('v386.4 direct-control import cache key is missing')
+if 'v363-crt-direct-manipulation.mjs?v=v386-5-selector-intent' not in crt_runtime:errors.append('v386.5 final direct-control import cache key is missing')
 if 'v364-crt-object-interaction.mjs?v=v386-4-direct-control-priority' not in crt_runtime:errors.append('v386.4 cabinet-control ownership cache key is missing')
 if 'procedural-streaming-proxy' in crt_runtime:errors.append('healthy boot still contains the procedural streaming proxy')
 if "const dprCap=coarse?1:(memory<=4?1.18:1.36)" not in crt_runtime:errors.append('v358 adaptive CRT DPR cap is missing')
@@ -240,7 +241,7 @@ print(json.dumps({
     'status':'passed','sizes':sizes,
     'storyboard':{'css_layers':len(home_styles),'css_bytes':home_css_bytes,'js_layers':len(home_scripts),'js_bytes':home_js_bytes},
     'crt3d':{
-        'revision':'v386-4-hero-selector-stability','renderer':'v358-crt-spatial-runtime','active_slot':'boot-tv',
+        'revision':'v386-7-final-cache-contract','renderer':'v358-crt-spatial-runtime','active_slot':'boot-tv',
         'published_asset':'models/movx-crt-tv.glb','healthy_loading':'authored real-TV poster until GLB ready',
         'procedural_streaming_proxy':'disabled','production_glbs':len(published_glbs),'published_glbs':published_glbs,
         'model_bytes':model_sizes,'model_total_bytes':model_total,'channel_physics_bytes':physics_bytes,
@@ -250,7 +251,7 @@ print(json.dumps({
         'director_loop':'shared v322 frame',
         'presence_contract':'scene-wide cinematic pointer + CRT-specific physical raycast + real-group presentation volume',
         'channel_pose_contract':'semantic yaw/pitch/roll/zoom drive the real cabinet base pose; later Hero layers refine it',
-        'selector_contract':'bounded real-knob pickup + v363 direct controls own gesture before v364 cabinet orbit',
+        'selector_contract':'v386.5 bounded real-knob intent priority + v363 direct controls own gesture before v364 cabinet orbit',
         'later_models':'forbidden until CRT approval'
     },
     'legacy_editorial':'social-media.html','deferred_video_gate':True,
