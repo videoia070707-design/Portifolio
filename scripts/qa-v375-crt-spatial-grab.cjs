@@ -12,7 +12,10 @@ const fs=require('node:fs');
     await page.goto('http://127.0.0.1:4173/',{waitUntil:'domcontentloaded',timeout:30000});
     await page.waitForFunction(()=>document.querySelector('[data-model-slot="boot-tv"]')?.dataset.glbState==='ready',null,{timeout:25000});
     await page.waitForFunction(()=>document.documentElement.dataset.crtSpatialGrab==='v375-ready',null,{timeout:10000});
-    await page.waitForFunction(()=>document.documentElement.dataset.crtInputSurface==='v386.8-stage-pick',null,{timeout:5000});
+    /* v386.9 is the strict scene-field superset of v386.8's stage-pick surface.
+       Keep the physical body-grab contract, but require the current production
+       marker rather than a historical implementation label. */
+    await page.waitForFunction(()=>document.documentElement.dataset.crtInputSurface==='v386.9-scene-field',null,{timeout:5000});
     await page.waitForFunction(()=>Number(document.querySelector('#boot')?.dataset.v375Frame||0)>6,null,{timeout:5000,polling:'raf'});
 
     /* Find a cabinet ray-hit that is explicitly outside the selector's v386.5
@@ -80,7 +83,7 @@ const fs=require('node:fs');
 
     const initial=await snap();
     assert.equal(initial.layer,'v375-spatial-grab');assert.equal(initial.ready,'v375-ready');assert.equal(initial.loop,'shared-v322-frame');
-    assert.equal(initial.inputSurface,'v386.8-stage-pick');
+    assert.equal(initial.inputSurface,'v386.9-scene-field');
     assert.equal(initial.triangles,44831);assert.equal(initial.renderers,1);assert.deepEqual(initial.activeSlots,['boot-tv']);assert.ok(initial.overflow<=2);
     assert.ok(/ORBITAR/.test(initial.hint),'v375 physical grab affordance is missing');
 
@@ -128,7 +131,7 @@ const fs=require('node:fs');
     await mobile.waitForFunction(()=>document.querySelector('[data-model-slot="boot-tv"]')?.dataset.glbState==='ready',null,{timeout:25000});
     await mobile.waitForFunction(()=>document.documentElement.dataset.crtSpatialGrab==='v375-ready',null,{timeout:10000});
     const mobileState=await mobile.evaluate(()=>{const i=window.MOVX3D.runtime.instances['boot-tv'];return {coarse:i.spatialGrab.state.coarse,mix:i.spatialGrab.state.mix,bodyDrags:i.objectInteraction.state.bodyDrags,hint:getComputedStyle(document.querySelector('.crt-object-hint')).display,inputSurface:document.documentElement.dataset.crtInputSurface,renderers:document.querySelectorAll('.v322-model-renderer').length,activeSlots:window.MOVX3D.runtime.activeSlots,overflow:document.documentElement.scrollWidth-innerWidth}});
-    assert.equal(mobileState.coarse,true);assert.ok(mobileState.mix<.01);assert.equal(mobileState.bodyDrags,0);assert.equal(mobileState.hint,'none');assert.equal(mobileState.inputSurface,'v386.8-stage-pick');assert.equal(mobileState.renderers,1);assert.deepEqual(mobileState.activeSlots,['boot-tv']);assert.ok(mobileState.overflow<=2);
+    assert.equal(mobileState.coarse,true);assert.ok(mobileState.mix<.01);assert.equal(mobileState.bodyDrags,0);assert.equal(mobileState.hint,'none');assert.equal(mobileState.inputSurface,'v386.9-scene-field');assert.equal(mobileState.renderers,1);assert.deepEqual(mobileState.activeSlots,['boot-tv']);assert.ok(mobileState.overflow<=2);
     console.log(JSON.stringify({qa:'v375-spatial-grab',viewport:'mobile',status:'PASS',mobileState}));
     await mobile.close();
   } finally {await browser.close()}
