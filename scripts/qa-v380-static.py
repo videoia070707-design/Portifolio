@@ -2,7 +2,7 @@
 
 v380.1 remains a required runtime capability, but later Scene-01 releases own the
 final page cache key. Validate the v380 marker/import/update ordering plus the
-current v386.4 final runtime instead of requiring a historical page query string.
+current v386.15 final runtime instead of requiring a historical page query string.
 """
 from pathlib import Path
 import json
@@ -12,7 +12,7 @@ out=root/'_site'
 errors=[]
 release='v380-physical-channel-retune'
 cache_release='v380-1-frame-stable-retune'
-final_release='v386-4-hero-selector-stability'
+final_release='v386-15-surface-contact'
 js_name='v380-crt-channel-retune.mjs'
 
 for name in ('index.html','latest.html'):
@@ -28,9 +28,11 @@ for name in ('index.html','latest.html'):
     if 'data-crt-pickup-layer="v378-physical-pickup"' not in text:
         errors.append(f'{name} lost v378 physical pickup')
     if f'v322-glb-runtime.mjs?v={final_release}' not in text:
-        errors.append(f'{name} missing current v386.4 final runtime cache key')
+        errors.append(f'{name} missing current v386.15 final runtime cache key')
     if 'data-v386-hero-stability="v386-4-hero-selector-stability"' not in text:
         errors.append(f'{name} missing current v386.4 Hero stability marker')
+    if 'data-v386-surface-contact="v386-15-surface-contact"' not in text:
+        errors.append(f'{name} missing current v386.15 contact marker')
 
 runtime=out/'v322-glb-runtime.mjs'
 if not runtime.exists():
@@ -73,4 +75,4 @@ if models!=['movx-crt-tv.glb']:
     errors.append(f'v380.1 single-model invariant failed: {models}')
 
 if errors:raise SystemExit('MOVX v380.1 static compatibility QA failed: '+json.dumps(errors,ensure_ascii=False))
-print(json.dumps({'status':'passed','release':release,'capability_cache':cache_release,'final_release':final_release,'js_bytes':js_bytes,'published_glbs':models,'scope':'frame-stable channel switch physical retune preserved inside v386.4'},ensure_ascii=False))
+print(json.dumps({'status':'passed','release':release,'capability_cache':cache_release,'final_release':final_release,'js_bytes':js_bytes,'published_glbs':models,'scope':'frame-stable channel switch physical retune preserved inside v386.15'},ensure_ascii=False))
