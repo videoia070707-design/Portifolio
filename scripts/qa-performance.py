@@ -1,13 +1,13 @@
 """Static performance budgets for the deployed MOVX artifact.
 
-v386.7 keeps the one-model-at-a-time rollout. Scene 01 / BOOT (`boot-tv`) is
+v386.15 keeps the one-model-at-a-time rollout. Scene 01 / BOOT (`boot-tv`) is
 the only 3D slot eligible for production and must publish exactly one canonical
 GLB: `models/movx-crt-tv.glb`. The current Hero runtime layers channels, tactile
 screen/dial controls, cabinet orbit, channel physics, object/scene presence,
-scene direction, object volume, semantic pose authority and the v386.5 selector
-intent/ownership fix on the same approved v358 renderer/context. Healthy boot
-uses the authored real-TV poster until the GLB is ready; the procedural streaming
-proxy must not be mounted.
+scene direction, object volume, semantic pose authority, the v386.5 selector
+intent/ownership fix and v386.15 surface-aware contact on the same approved v358
+renderer/context. Healthy boot uses the authored real-TV poster until the GLB is
+ready; the procedural streaming proxy must not be mounted.
 """
 from pathlib import Path
 import json
@@ -62,7 +62,7 @@ else:
     if 'data-storyboard="v320"' not in home_text:errors.append('index.html missing v320 storyboard marker')
     if 'data-glb-runtime="v322-unified-glb-runtime"' not in home_text:errors.append('index.html missing v322 GLB runtime marker')
     if 'data-crt-runtime="v350-real-glb"' not in home_text:errors.append('index.html missing v350 real CRT marker')
-    if 'v322-glb-runtime.mjs?v=v386-4-hero-selector-stability' not in home_text:errors.append('index.html missing v386.4 fresh unified-runtime shell cache key')
+    if 'v322-glb-runtime.mjs?v=v386-15-surface-contact' not in home_text:errors.append('index.html missing v386.15 fresh unified-runtime shell cache key')
     if 'v322-glb-runtime.css?v=v350-real-crt' not in home_text:errors.append('index.html missing v350 CRT surface cache key')
     if 'data-model-pack="v323-tripo-model-pack"' not in home_text:errors.append('index.html missing v323 model-pack marker')
     if 'data-model-scope="v350-crt-only"' not in home_text:errors.append('index.html missing v350 CRT-only production scope marker')
@@ -80,6 +80,10 @@ else:
     if 'data-crt-channel-pose-layer="v372-channel-pose-authority"' not in home_text:errors.append('index.html missing v372 channel-pose marker')
     if 'data-v386-hero-stability="v386-4-hero-selector-stability"' not in home_text:errors.append('index.html missing v386.4 Hero stability marker')
     if 'data-v386-mobile-projection="v386-5-mobile-safe-projection"' not in home_text:errors.append('index.html missing v386.5 mobile projection marker')
+    if 'data-v386-object-presence="v386-13-full-field-object-presence"' not in home_text:errors.append('index.html missing v386.13 full-field object presence marker')
+    if 'data-v386-tall-framing="v386-14-tall-viewport"' not in home_text:errors.append('index.html missing v386.14 tall viewport framing marker')
+    if 'data-v386-surface-contact="v386-15-surface-contact"' not in home_text:errors.append('index.html missing v386.15 surface-contact marker')
+    if '<style data-v386-surface-contact="v386-15-surface-contact">' not in home_text:errors.append('index.html missing v386.15 critical inline CSS')
     if 'data-crt-loading="poster-only"' not in home_text:errors.append('index.html missing poster-only loading marker')
     if 'data-v366-crt-presence="v366-clean-boot-presence"' not in home_text:errors.append('index.html missing v366 critical inline CSS')
     if 'data-v367-scene-director="v367-scene01-director"' not in home_text:errors.append('index.html missing v367 critical inline CSS')
@@ -97,7 +101,7 @@ else:
         home_scripts.append(ref);path=out/ref
         if not path.exists():errors.append(f'index.html references missing JS {ref}')
         else:home_js_bytes+=path.stat().st_size
-    if len(home_styles)!=18:errors.append(f'index.html loads {len(home_styles)} production CSS layers; expected 18 with v366/v367/v369/v370 critical CSS inline')
+    if len(home_styles)!=18:errors.append(f'index.html loads {len(home_styles)} production CSS layers; expected 18 with critical Scene-01 CSS inline')
     if len(home_scripts)!=13:errors.append(f'index.html loads {len(home_scripts)} production JS layers; expected 13 shared-runtime modules')
     if 'v345-logo-focus.css' in home_styles:errors.append('Physical Logo focus CSS must be inactive during CRT stage')
     if 'v345-logo-focus.mjs' in home_scripts:errors.append('Physical Logo focus runtime must be inactive during CRT stage')
@@ -145,7 +149,8 @@ required_assets=(
     'v364-crt-object-interaction.css','v364-crt-object-interaction.mjs',
     'v365-crt-channel-physics.mjs','v366-crt-presence.mjs','v366-crt-presence.css',
     'v367-crt-scene-director.mjs','v367-crt-scene-director.css','v368-scene-presence.mjs',
-    'v369-scene01-full-bleed.css','v370-crt-light-spill.css','v371-crt-object-volume.mjs'
+    'v369-scene01-full-bleed.css','v370-crt-light-spill.css','v371-crt-object-volume.mjs',
+    'v386-15-crt-surface-contact.mjs','v386-15-crt-surface-contact.css'
 )
 for required in required_assets:
     if not (out/required).exists():errors.append(f'{required} is missing')
@@ -171,6 +176,11 @@ if scene_presence_bytes>10_000:errors.append(f'v368 scene-presence module is {sc
 object_volume_path=out/'v371-crt-object-volume.mjs'
 object_volume_bytes=object_volume_path.stat().st_size if object_volume_path.exists() else 0
 if object_volume_bytes>12_000:errors.append(f'v371 object-volume module is {object_volume_bytes} bytes; budget is 12000')
+contact_path=out/'v386-15-crt-surface-contact.mjs';contact_css_path=out/'v386-15-crt-surface-contact.css'
+contact_bytes=contact_path.stat().st_size if contact_path.exists() else 0
+contact_css_bytes=contact_css_path.stat().st_size if contact_css_path.exists() else 0
+if contact_bytes>12_000:errors.append(f'v386.15 contact module is {contact_bytes} bytes; budget is 12000')
+if contact_css_bytes>9_000:errors.append(f'v386.15 critical CSS is {contact_css_bytes} bytes; budget is 9000')
 
 crt_surface=(out/'v322-glb-runtime.css').read_text() if (out/'v322-glb-runtime.css').exists() else ''
 if '[data-model-slot="boot-tv"].v322-runtime-active{transform:none!important' not in crt_surface:
@@ -207,6 +217,9 @@ if "modeEnergy*.035 + modeZoom*.08" not in crt_runtime:errors.append('v372 seman
 if "const targetY=-.12 +" in crt_runtime:errors.append('legacy fixed -0.12 CRT yaw survived v372')
 if 'v363-crt-direct-manipulation.mjs?v=v386-5-selector-intent' not in crt_runtime:errors.append('v386.5 final direct-control import cache key is missing')
 if 'v364-crt-object-interaction.mjs?v=v386-4-direct-control-priority' not in crt_runtime:errors.append('v386.4 cabinet-control ownership cache key is missing')
+if 'v386-15-crt-surface-contact.mjs?v=v386-15-surface-contact' not in crt_runtime:errors.append('v386.15 contact module cache key is missing')
+if 'attachCRTSurfaceContact(instance);' not in crt_runtime:errors.append('v386.15 surface-contact attachment is missing from shared CRT frame')
+if 'instance.surfaceContact?.update(t);' not in crt_runtime:errors.append('v386.15 surface-contact update is missing from shared CRT frame')
 if 'procedural-streaming-proxy' in crt_runtime:errors.append('healthy boot still contains the procedural streaming proxy')
 if "const dprCap=coarse?1:(memory<=4?1.18:1.36)" not in crt_runtime:errors.append('v358 adaptive CRT DPR cap is missing')
 if "instance.lights.key.intensity=4.05+modeEnergy*.78" not in crt_runtime:errors.append('v358 interactive CRT lighting contract is missing')
@@ -241,17 +254,19 @@ print(json.dumps({
     'status':'passed','sizes':sizes,
     'storyboard':{'css_layers':len(home_styles),'css_bytes':home_css_bytes,'js_layers':len(home_scripts),'js_bytes':home_js_bytes},
     'crt3d':{
-        'revision':'v386-7-final-cache-contract','renderer':'v358-crt-spatial-runtime','active_slot':'boot-tv',
+        'revision':'v386-15-surface-contact','renderer':'v358-crt-spatial-runtime','active_slot':'boot-tv',
         'published_asset':'models/movx-crt-tv.glb','healthy_loading':'authored real-TV poster until GLB ready',
         'procedural_streaming_proxy':'disabled','production_glbs':len(published_glbs),'published_glbs':published_glbs,
         'model_bytes':model_sizes,'model_total_bytes':model_total,'channel_physics_bytes':physics_bytes,
         'object_presence_bytes':presence_bytes,'presence_css_bytes':presence_css_bytes,
         'director_bytes':director_bytes,'director_css_bytes':director_css_bytes,
         'scene_presence_bytes':scene_presence_bytes,'object_volume_bytes':object_volume_bytes,
+        'surface_contact_bytes':contact_bytes,'surface_contact_css_bytes':contact_css_bytes,
         'director_loop':'shared v322 frame',
         'presence_contract':'scene-wide cinematic pointer + CRT-specific physical raycast + real-group presentation volume',
         'channel_pose_contract':'semantic yaw/pitch/roll/zoom drive the real cabinet base pose; later Hero layers refine it',
         'selector_contract':'v386.5 bounded real-knob intent priority + v363 direct controls own gesture before v364 cabinet orbit',
+        'contact_contract':'v386.15 reuses v366 Three.js raycast presence to advertise body/screen/dial interactivity before drag',
         'later_models':'forbidden until CRT approval'
     },
     'legacy_editorial':'social-media.html','deferred_video_gate':True,

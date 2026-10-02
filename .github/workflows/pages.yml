@@ -138,7 +138,7 @@ jobs:
           retention-days: 7
 
   qa-scene-frame:
-    name: QA v386 visibly immersive Hero and Scene 01 interactions
+    name: QA v386 immersive Hero, physical CRT and surface contact
     needs: build
     runs-on: ubuntu-latest
     timeout-minutes: 32
@@ -177,6 +177,7 @@ jobs:
           sed 's/127\.0\.0\.1:4173/127.0.0.1:4174/g' scripts/qa-v376-crt-elastic-orbit.cjs > _site/qa-logs/qa-v376-crt-elastic-orbit.cjs
           sed 's/127\.0\.0\.1:4173/127.0.0.1:4174/g' scripts/qa-v377-crt-focus-pull.cjs > _site/qa-logs/qa-v377-crt-focus-pull.cjs
           sed 's/127\.0\.0\.1:4173/127.0.0.1:4174/g' scripts/qa-v378-crt-physical-pickup.cjs > _site/qa-logs/qa-v378-crt-physical-pickup.cjs
+          sed 's/127\.0\.0\.1:4173/127.0.0.1:4174/g' scripts/qa-v386-15-crt-surface-contact.cjs > _site/qa-logs/qa-v386-15-crt-surface-contact.cjs
 
           node _site/qa-logs/qa-v386-hero-immersion.cjs
           node _site/qa-logs/qa-v385-hero-only.cjs
@@ -189,6 +190,7 @@ jobs:
           node _site/qa-logs/qa-v376-crt-elastic-orbit.cjs
           node _site/qa-logs/qa-v377-crt-focus-pull.cjs
           node _site/qa-logs/qa-v378-crt-physical-pickup.cjs
+          node _site/qa-logs/qa-v386-15-crt-surface-contact.cjs
       - name: Save Hero visual evidence
         if: always()
         uses: actions/upload-artifact@v4

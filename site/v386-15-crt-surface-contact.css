@@ -1,0 +1,49 @@
+/* MOVX v386.15 — subtle contact response around the real CRT only.
+   The light cue is derived from the existing raycast/presence state; it is not a
+   decorative HUD and it disappears entirely when the visitor is not on the model. */
+html[data-v386-surface-contact="v386-15-surface-contact"] #boot{
+  --v386-contact-x:50%;
+  --v386-contact-y:52%;
+  --v386-contact-mix:0;
+  --v386-contact-press:0;
+  --v386-contact-shadow-x:0px;
+}
+
+html[data-v386-surface-contact] #boot .crt-wrap::before{
+  background:
+    radial-gradient(circle at var(--v386-contact-x) var(--v386-contact-y),rgba(255,104,37,calc(.04 + var(--v386-contact-mix)*.11)),transparent 30%),
+    radial-gradient(ellipse 58% 22% at 48% 84%,rgba(18,13,10,calc(.20 + var(--v386-contact-press)*.06)),transparent 72%),
+    radial-gradient(circle at 38% 42%,rgba(255,90,24,.10),transparent 48%)!important;
+  transform:translate3d(var(--v386-contact-shadow-x),0,0)!important;
+  opacity:calc(.76 + var(--v386-contact-mix)*.18)!important;
+}
+
+html[data-v386-surface-contact] #boot[data-v386-contact="body"] .crt-object-hint,
+html[data-v386-surface-contact] #boot[data-v386-contact="screen"] .crt-object-hint,
+html[data-v386-surface-contact] #boot[data-v386-contact="dial"] .crt-object-hint{
+  color:rgba(18,15,12,.90)!important;
+  border-bottom-color:rgba(255,90,24,.72)!important;
+}
+
+html[data-v386-surface-contact] #boot[data-v386-contact="screen"] .crt-object-hint::after{
+  content:" · ARRASTE / CLIQUE"!important;
+}
+html[data-v386-surface-contact] #boot[data-v386-contact="dial"] .crt-object-hint::after{
+  content:" · 4 CANAIS"!important;
+}
+html[data-v386-surface-contact] #boot[data-v386-contact="body"] .crt-object-hint::after{
+  content:" · ÓRBITA + INÉRCIA"!important;
+}
+
+@media(max-width:900px){
+  html[data-v386-surface-contact] #boot .crt-wrap::before{transform:none!important}
+}
+
+@media(prefers-reduced-motion:reduce){
+  html[data-v386-surface-contact] #boot .crt-wrap::before{
+    transform:none!important;
+    background:
+      radial-gradient(ellipse 58% 22% at 48% 84%,rgba(18,13,10,.20),transparent 72%),
+      radial-gradient(circle at 38% 42%,rgba(255,90,24,.10),transparent 48%)!important;
+  }
+}

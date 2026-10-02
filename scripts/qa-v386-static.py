@@ -1,4 +1,4 @@
-"""Static gate for MOVX v386 immersive Hero through v386.9 scene-field input."""
+"""Static gate for MOVX v386 immersive Hero through v386.15 surface contact."""
 from pathlib import Path
 import json
 
@@ -35,7 +35,9 @@ for name in ('index.html','latest.html'):
     if 'data-v386-hero-stability="v386-4-hero-selector-stability"' not in text:errors.append(f'{name} missing v386.4 stability marker')
     if 'data-v386-mobile-projection="v386-5-mobile-safe-projection"' not in text:errors.append(f'{name} missing v386.5 projection marker')
     if 'data-v386-input-surface="v386-9-scene-field-input"' not in text:errors.append(f'{name} missing v386.9 scene-field marker')
-    if 'v322-glb-runtime.mjs?v=v386-4-hero-selector-stability' not in text:errors.append(f'{name} missing still-fresh v386.4 shell runtime URL')
+    if 'data-v386-surface-contact="v386-15-surface-contact"' not in text:errors.append(f'{name} missing v386.15 surface-contact marker')
+    if '<style data-v386-surface-contact="v386-15-surface-contact">' not in text:errors.append(f'{name} missing v386.15 critical CSS')
+    if 'v322-glb-runtime.mjs?v=v386-15-surface-contact' not in text:errors.append(f'{name} missing fresh v386.15 shell runtime URL')
 
 controller=out/'v358-crt-immersion.js'
 if not controller.exists():errors.append('built v358 controller missing')
@@ -73,14 +75,31 @@ else:
     ):
         if contract not in js:errors.append(f'v386.9 cabinet-control contract missing: {contract}')
 
+contact=out/'v386-15-crt-surface-contact.mjs'
+contact_css=out/'v386-15-crt-surface-contact.css'
+if not contact.exists():errors.append('built v386.15 surface-contact runtime missing')
+else:
+    js=contact.read_text()
+    for contract in (
+        "root.dataset.crtSurfaceContact='v386.15-ready'",
+        "root.dataset.crtSurfaceContactLoop='shared-v322-frame'",
+        "const surface=classify(presence.lastSurface);",
+        "instance.group.position.z+=state.depth",
+    ):
+        if contract not in js:errors.append(f'v386.15 contact contract missing: {contract}')
+if not contact_css.exists():errors.append('built v386.15 surface-contact CSS missing')
+
 runtime=out/'v322-glb-runtime.mjs'
 if not runtime.exists():errors.append('built unified CRT runtime missing')
 else:
     js=runtime.read_text()
     if 'v363-crt-direct-manipulation.mjs?v=v386-5-selector-intent' not in js:errors.append('fresh v386.5 direct module cache key missing')
     if 'v364-crt-object-interaction.mjs?v=v386-4-direct-control-priority' not in js:errors.append('fresh v386.4 cabinet module cache key missing')
+    if 'v386-15-crt-surface-contact.mjs?v=v386-15-surface-contact' not in js:errors.append('fresh v386.15 contact module cache key missing')
+    if 'attachCRTSurfaceContact(instance);' not in js:errors.append('v386.15 contact attachment missing from shared frame')
+    if 'instance.surfaceContact?.update(t);' not in js:errors.append('v386.15 contact update missing from shared frame')
 
 models=sorted(p.name for p in (out/'models').glob('*.glb')) if (out/'models').exists() else []
 if models!=['movx-crt-tv.glb']:errors.append(f'single-model gate failed: {models}')
-if errors:raise SystemExit('MOVX v386.9 static QA failed: '+json.dumps(errors,ensure_ascii=False))
-print(json.dumps({'qa':'v386.9-static','status':'PASS','scope':'#boot only','models':models,'projection':'desktop/short/mobile safe fields','short_visible_crt':True,'runtime_shell':'fresh unpublished v386.4 URL carrying v386.9 source','selector':'v386.5 intent priority on full Scene-01 field','cabinet':'v386.9 Three.js raycast on same full Scene-01 field'},ensure_ascii=False))
+if errors:raise SystemExit('MOVX v386.15 static QA failed: '+json.dumps(errors,ensure_ascii=False))
+print(json.dumps({'qa':'v386.15-static','status':'PASS','scope':'#boot only','models':models,'projection':'desktop/short/mobile safe fields','short_visible_crt':True,'runtime_shell':'fresh v386.15 URL','selector':'v386.5 intent priority on full Scene-01 field','cabinet':'v386.9 Three.js raycast on same full Scene-01 field','contact':'v386.15 surface-aware feedback from existing v366 raycast presence'},ensure_ascii=False))
