@@ -1,12 +1,12 @@
-"""MOVX v386.5 — full-silhouette projection + stable physical selector intent.
+"""MOVX v386.5/v386.16 — full-silhouette projection + stable physical selector intent.
 
 Runs after v386.4. The v386.3 projection stylesheet is rebuilt from source earlier
-in the pipeline; v386.5 verifies the 1.12:1 mobile field, lifts the short CRT through
-its updated Hero CSS, and promotes only the selector module cache key. The v386.4
-unified-runtime page URL is intentionally retained because that release never
-reached Pages; it is therefore an unpublished/fresh shell URL, while the changed
-v363 child module gets its own v386.5 cache key. No model, renderer, context, scene,
-RAF or new listener family is introduced.
+in the pipeline; v386.16 verifies the widened 1.16:1 mobile field, lifts the short
+CRT through its updated Hero CSS, and promotes only the selector module cache key.
+The v386.4 unified-runtime page URL is intentionally retained at this stage because
+later installers own the final published shell key, while the changed v363 child
+module gets its own v386.5 cache key. No model, renderer, context, scene, RAF or
+new listener family is introduced.
 """
 from pathlib import Path
 import json,re
@@ -14,7 +14,7 @@ import json,re
 root=Path(__file__).resolve().parents[1]
 out=root/'_site'
 release='v386-5-mobile-safe-projection'
-needle='aspect-ratio:1.12 / 1!important'
+needle='aspect-ratio:1.16 / 1!important'
 runtime=out/'v322-glb-runtime.mjs'
 
 if not runtime.exists():raise SystemExit('MOVX v386.5 requires built unified CRT runtime')
@@ -44,7 +44,7 @@ for name in ('index.html','latest.html'):
     if 'data-v386-hero-stability="v386-4-hero-selector-stability"' not in text:
         raise SystemExit(f'MOVX v386.5 requires v386.4 in {name}')
     if needle not in text:
-        raise SystemExit(f'MOVX v386.5 mobile projection CSS missing in {name}')
+        raise SystemExit(f'MOVX v386.16 mobile projection CSS missing in {name}')
     if 'top:clamp(-300px,calc(100svh - 1030px),-190px)!important' not in text:
         raise SystemExit(f'MOVX v386.5 short visible-CRT lift missing in {name}')
     if 'v322-glb-runtime.mjs?v=v386-4-hero-selector-stability' not in text:
@@ -62,12 +62,13 @@ if models!=['movx-crt-tv.glb']:
 
 print(json.dumps({
     'release':release,
+    'projection_revision':'v386.16-mobile-full-silhouette',
     'installed':installed,
     'scope':'#boot / approved CRT only',
-    'mobile_projection':'1.12:1 internal WebGL field inside unchanged tall natural-flow wrapper',
+    'mobile_projection':'1.16:1 internal WebGL field inside unchanged tall natural-flow wrapper',
     'short_projection':'physical knob/base lifted into visible 1366x768 viewport',
     'selector':'bounded projected intent owns its local footprint before screen/body hit ambiguity',
-    'runtime_shell_cache':'v386-4-hero-selector-stability (unpublished/fresh)',
+    'runtime_shell_cache':'v386-4-hero-selector-stability at this pipeline stage',
     'selector_cache':'v386-5-selector-intent',
     'pose':'unchanged approved v386 three-quarter pose',
     'new_webgl_resources':0,
