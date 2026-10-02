@@ -1,9 +1,13 @@
-"""MOVX v386.4 — stabilize Scene-01 short viewport layout + physical selector pickup.
+"""MOVX v386.4/v386.6 — stabilize Scene-01 short viewport layout + physical selector pickup.
 
 Runs after v386.3. It adds no model, renderer, context, scene, RAF or input
 listener. The source modules copied earlier in the build already contain the
-v386.4 selector pickup / gesture ownership fix; this final installer only marks
-that contract and cache-busts those modules + the unified runtime for production.
+selector pickup / gesture ownership fix. Because the build always copies the
+current repository source before this historical installer runs, the direct
+manipulation module can legitimately contain the newer v386.5 intent-priority
+superset. This installer therefore validates the capability itself instead of
+requiring the obsolete v386.4 marker, then cache-busts those modules + the
+unified runtime for production.
 """
 from pathlib import Path
 import json,re
@@ -42,11 +46,20 @@ for name in ('index.html','latest.html'):
     path.write_text(html)
     installed.append(name)
 
-# Verify source copies in the built artifact, not only repository sources.
+# Verify capabilities in the built artifact, not stale release-label strings.
+# v386.5 intentionally supersedes the older bounded selector marker while keeping
+# the same nearKnob pickup primitive and strengthening ownership under parallax.
 direct=(out/'v363-crt-direct-manipulation.mjs').read_text()
 object_js=(out/'v364-crt-object-interaction.mjs').read_text()
-if 'const nearKnob=event=>' not in direct or "dataset.crtSelectorPickup='v386.4-bounded'" not in direct:
-    raise SystemExit('MOVX v386.4 selector pickup source did not reach built artifact')
+selector_contracts=(
+    'const nearKnob=event=>',
+    'const selectorIntent=nearKnob(event);',
+    "const kind=(obj===knob||selectorIntent)?'knob':obj===screen?'screen':'none';",
+    "dataset.crtSelectorPickup='v386.5-intent-priority'",
+)
+missing=[contract for contract in selector_contracts if contract not in direct]
+if missing:
+    raise SystemExit(f'MOVX v386.4/v386.6 selector pickup capability missing from built artifact: {missing}')
 if 'if(instance.directManipulation?.state?.active)return;' not in object_js:
     raise SystemExit('MOVX v386.4 direct-control priority did not reach built artifact')
 
@@ -56,10 +69,11 @@ if models!=['movx-crt-tv.glb']:
 
 print(json.dumps({
     'release':release,
+    'build_gate_revision':'v386.6-capability-aware-selector-check',
     'installed':installed,
     'scope':'#boot / boot-tv only',
     'short_viewport':'fixed editorial rail + dedicated CRT field',
-    'selector':'bounded projected pickup around the real tripo_part_8 selector',
+    'selector':'bounded projected pickup with v386.5 local intent priority',
     'gesture_ownership':'v363 direct controls before v364 cabinet orbit',
     'new_webgl_resources':0,
     'models':models,
