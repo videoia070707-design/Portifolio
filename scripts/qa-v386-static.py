@@ -35,7 +35,7 @@ for name in ('index.html','latest.html'):
     if 'data-v386-hero-stability="v386-4-hero-selector-stability"' not in text:errors.append(f'{name} missing v386.4 stability marker')
     if 'data-v386-mobile-projection="v386-5-mobile-safe-projection"' not in text:errors.append(f'{name} missing v386.5 projection marker')
     if 'data-v386-input-surface="v386-8-scene-pick-surface"' not in text:errors.append(f'{name} missing v386.8 input-surface marker')
-    if 'v322-glb-runtime.mjs?v=v386-8-scene-pick-surface' not in text:errors.append(f'{name} missing v386.8 unified runtime cache key')
+    if 'v322-glb-runtime.mjs?v=v386-4-hero-selector-stability' not in text:errors.append(f'{name} missing still-fresh v386.4 shell runtime URL')
 
 controller=out/'v358-crt-immersion.js'
 if not controller.exists():errors.append('built v358 controller missing')
@@ -75,10 +75,10 @@ runtime=out/'v322-glb-runtime.mjs'
 if not runtime.exists():errors.append('built unified CRT runtime missing')
 else:
     js=runtime.read_text()
-    if 'v363-crt-direct-manipulation.mjs?v=v386-8-stage-pick' not in js:errors.append('v386.8 direct module cache key missing')
-    if 'v364-crt-object-interaction.mjs?v=v386-8-stage-pick' not in js:errors.append('v386.8 cabinet module cache key missing')
+    if 'v363-crt-direct-manipulation.mjs?v=v386-5-selector-intent' not in js:errors.append('fresh v386.5 direct module cache key missing')
+    if 'v364-crt-object-interaction.mjs?v=v386-4-direct-control-priority' not in js:errors.append('fresh v386.4 cabinet module cache key missing')
 
 models=sorted(p.name for p in (out/'models').glob('*.glb')) if (out/'models').exists() else []
 if models!=['movx-crt-tv.glb']:errors.append(f'single-model gate failed: {models}')
 if errors:raise SystemExit('MOVX v386.8 static QA failed: '+json.dumps(errors,ensure_ascii=False))
-print(json.dumps({'qa':'v386.8-static','status':'PASS','scope':'#boot only','models':models,'projection':'desktop/short/mobile safe fields','short_visible_crt':True,'runtime_shell':'v386.8 scene pick surface','selector':'v386.5 intent priority on Scene-01 stage','cabinet':'v386.8 Three.js raycast on same Scene-01 stage'},ensure_ascii=False))
+print(json.dumps({'qa':'v386.8-static','status':'PASS','scope':'#boot only','models':models,'projection':'desktop/short/mobile safe fields','short_visible_crt':True,'runtime_shell':'fresh unpublished v386.4 URL carrying v386.8 source','selector':'v386.5 intent priority on Scene-01 stage','cabinet':'v386.8 Three.js raycast on same Scene-01 stage'},ensure_ascii=False))
