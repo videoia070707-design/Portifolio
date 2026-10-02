@@ -50,16 +50,35 @@ const fs=require('node:fs');
     const framing=()=>page.evaluate(async()=>{
       const THREE=await import('./vendor/three.module.js');
       const i=window.MOVX3D.runtime.instances['boot-tv'];i.scene.updateMatrixWorld(true);i.camera.updateMatrixWorld(true);
-      const box=new THREE.Box3().setFromObject(i.model),min=box.min,max=box.max;
-      const corners=[];for(const x of [min.x,max.x])for(const y of [min.y,max.y])for(const z of [min.z,max.z])corners.push(new THREE.Vector3(x,y,z));
       const r=i.canvas.getBoundingClientRect(),scene=document.querySelector('#boot .scene-inner').getBoundingClientRect();
-      const projected=corners.map(v=>{v.project(i.camera);return{x:r.x+(v.x+1)*r.width/2,y:r.y+(1-v.y)*r.height/2}});
-      const bounds={left:Math.min(...projected.map(p=>p.x)),right:Math.max(...projected.map(p=>p.x)),top:Math.min(...projected.map(p=>p.y)),bottom:Math.max(...projected.map(p=>p.y))};
+
+      /* v386.1 established the correct release geometry contract: a world-aligned
+         Box3 around a rotated/deep CRT invents empty corners that are not occupied
+         by the cabinet and can report false clipping. Sample the actual transformed
+         GLB vertices here too, so this historical v364 interaction gate measures
+         the same real silhouette as the current Hero gate. */
+      let minX=Infinity,maxX=-Infinity,minY=Infinity,maxY=-Infinity,vertices=0;
+      const p=new THREE.Vector3();
+      i.model.traverse(node=>{
+        if(!node.isMesh)return;
+        const pos=node.geometry?.attributes?.position;if(!pos)return;
+        for(let j=0;j<pos.count;j++){
+          p.fromBufferAttribute(pos,j).applyMatrix4(node.matrixWorld).project(i.camera);
+          if(!Number.isFinite(p.x)||!Number.isFinite(p.y))continue;
+          minX=Math.min(minX,p.x);maxX=Math.max(maxX,p.x);minY=Math.min(minY,p.y);maxY=Math.max(maxY,p.y);vertices++;
+        }
+      });
+      const bounds={
+        left:r.x+(minX+1)*r.width/2,
+        right:r.x+(maxX+1)*r.width/2,
+        top:r.y+(1-maxY)*r.height/2,
+        bottom:r.y+(1-minY)*r.height/2,
+      };
       const projectedWidth=Math.max(1,bounds.right-bounds.left);
       const visibleWidth=Math.max(0,Math.min(bounds.right,scene.right)-Math.max(bounds.left,scene.left));
       const horizontalVisibleRatio=visibleWidth/projectedWidth;
       const verticalContained=bounds.top>=scene.top-8&&bounds.bottom<=scene.bottom+8;
-      return {bounds,scene:{left:scene.left,right:scene.right,top:scene.top,bottom:scene.bottom},verticalContained,horizontalVisibleRatio,visibleWidth,projectedWidth};
+      return {bounds,ndc:{minX,maxX,minY,maxY,vertices},scene:{left:scene.left,right:scene.right,top:scene.top,bottom:scene.bottom},verticalContained,horizontalVisibleRatio,visibleWidth,projectedWidth};
     });
 
     const initial=await snapshot();
@@ -93,9 +112,9 @@ const fs=require('node:fs');
       const fit=await framing();
       /* v369/v374 intentionally let the volumetric rear/side of the rotated CRT
          breathe into the full-bleed edge. The physical contract is therefore:
-         keep the complete vertical cabinet framed, keep a strong majority of the
-         projected volume visible horizontally, and retain a real ray-hittable
-         cabinet surface. v374 separately gates the selector inside short screens. */
+         keep the complete real vertical cabinet silhouette framed, keep a strong
+         majority visible horizontally, and retain a ray-hittable cabinet surface. */
+      assert.ok(fit.ndc.vertices>1000,`CRT silhouette gate sampled too few vertices: ${JSON.stringify(fit)}`);
       assert.equal(fit.verticalContained,true,`CRT must remain vertically framed during Scene 01 choreography: ${JSON.stringify(fit)}`);
       assert.ok(fit.horizontalVisibleRatio>=.82,`CRT became materially cropped during Scene 01 choreography: ${JSON.stringify(fit)}`);
       const midPoint=await bodyPoint();assert.ok(midPoint,'CRT lost its ray-hittable cabinet surface during Scene 01 choreography');
