@@ -1,16 +1,11 @@
-"""MOVX v386.8 — make the visible Scene-01 field the physical CRT input surface.
+"""MOVX v386.8/v386.9 — validate physical CRT input coverage.
 
-The v386 Hero projects parts of the real CRT beyond the historical `.crt-wrap`
-box. The WebGL renderer is pointer-transparent, so binding the v363 screen/dial
-and v364 cabinet gestures only to that wrapper can make visible geometry impossible
-to grab even while the Three.js raycast sees it.
-
-v386.8 moves the existing listener families to `.boot-stage`; Three.js remains the
-hit authority and editorial controls are excluded. The v386.4 shell / v386.5 direct
-module cache URLs are intentionally retained here: every v386.4–v386.7 Pages run
-was blocked before publish, so these URLs are still fresh on the public site. This
-also keeps the static/performance contracts deterministic while changing only the
-actual source capability that will be served at first successful publication.
+The original v386.8 fix moved v363/v364 from `.crt-wrap` to `.boot-stage`.
+v386.9 is a strict superset: the same listener families now live on the complete
+`.scene-inner` because the v386 camera can visibly project screen/cabinet beyond
+both historical boxes. Three.js remains hit authority; semantic editorial controls
+are excluded. This historical build stage validates the current superset rather
+than rejecting it by release-label string.
 """
 from pathlib import Path
 import json,re
@@ -31,17 +26,17 @@ for contract in (
 direct=(out/'v363-crt-direct-manipulation.mjs').read_text()
 object_js=(out/'v364-crt-object-interaction.mjs').read_text()
 for contract in (
-    "const surface=boot?.querySelector('.boot-stage')||wrap;",
+    "const surface=boot?.querySelector('.scene-inner')||boot?.querySelector('.boot-stage')||wrap;",
     "surface.addEventListener('pointerdown',begin,{passive:false});",
-    "document.documentElement.dataset.crtInputSurface='v386.8-stage-pick';",
+    "document.documentElement.dataset.crtInputSurface='v386.9-scene-field';",
 ):
-    if contract not in direct:raise SystemExit(f'MOVX v386.8 direct input-surface contract missing: {contract}')
+    if contract not in direct:raise SystemExit(f'MOVX v386.8/v386.9 direct input-surface capability missing: {contract}')
 for contract in (
-    "const surface=boot?.querySelector('.boot-stage')||wrap;",
+    "const surface=boot?.querySelector('.scene-inner')||boot?.querySelector('.boot-stage')||wrap;",
     "surface.addEventListener('pointerdown',begin,{passive:false});",
-    "document.documentElement.dataset.crtControlOwnership='v386.8-stage-direct-first';",
+    "document.documentElement.dataset.crtControlOwnership='v386.9-scene-direct-first';",
 ):
-    if contract not in object_js:raise SystemExit(f'MOVX v386.8 cabinet input-surface contract missing: {contract}')
+    if contract not in object_js:raise SystemExit(f'MOVX v386.8/v386.9 cabinet input-surface capability missing: {contract}')
 
 installed=[]
 for name in ('index.html','latest.html'):
@@ -61,12 +56,13 @@ if models!=['movx-crt-tv.glb']:raise SystemExit(f'MOVX v386.8 single-model invar
 
 print(json.dumps({
     'release':release,
+    'build_gate_revision':'v386.9 scene-field superset accepted',
     'installed':installed,
     'scope':'Scene 01 / boot-tv only',
-    'input_surface':'existing v363/v364 pointer families moved from crt-wrap to boot-stage',
+    'input_surface':'existing v363/v364 pointer families on complete scene-inner field',
     'hit_authority':'Three.js raycast; editorial controls excluded',
     'selector':'v386.5 local selector intent preserved',
-    'ownership':'v363 direct screen/dial capture precedes v364 cabinet orbit on same surface',
+    'ownership':'v363 direct screen/dial capture precedes v364 cabinet orbit',
     'new_listeners':0,
     'new_webgl_resources':0,
     'runtime_shell_cache':'v386-4-hero-selector-stability (still unpublished/fresh)',
